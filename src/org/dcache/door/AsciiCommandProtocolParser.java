@@ -10,6 +10,7 @@ import com.sun.grizzly.ProtocolParser;
 public class AsciiCommandProtocolParser implements ProtocolParser<String> {
 
     private ByteBuffer _buffer;
+    private ByteBuffer _messageBuffer = ByteBuffer.allocate(8192);
 
 
     protected CharsetDecoder _asciiDecoder = Charset.forName("ISO-8859-1").newDecoder();
@@ -20,11 +21,14 @@ public class AsciiCommandProtocolParser implements ProtocolParser<String> {
 
     @Override
     public String getNextMessage() {
+        System.out.println("getNextMessage");
 
-        ByteBuffer tmp = _buffer.duplicate();
+        ByteBuffer tmp = _messageBuffer.duplicate();
         String dcapRequest = null;
         try {
+            tmp.flip();
             dcapRequest = _asciiDecoder.decode(tmp).toString();
+            _messageBuffer.flip();
         } catch (CharacterCodingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -35,43 +39,55 @@ public class AsciiCommandProtocolParser implements ProtocolParser<String> {
 
     @Override
     public boolean hasMoreBytesToParse() {
-        return _eom && _buffer != null && _buffer.position() > 0;
+        boolean rc = _buffer != null && _buffer.hasRemaining();
+        System.out.println("hasMoreBytesToParse " + rc);
+        return rc;
     }
 
     @Override
     public boolean hasNextMessage() {
-
         if( _buffer == null ) {
+            System.out.println("hasNextMessage false");
             return false;
         }
 
-        _eom = _buffer.get( _buffer.limit() -1 ) == '\n';
+        while( !_eom && _messageBuffer.remaining() > 0 && _buffer.hasRemaining()) {
+            byte b = _buffer.get() ;
+            if( b == '\n' ) {
+               _eom = true;
+            }
+             _messageBuffer.put(b);
+        }
 
+        System.out.println("hasNextMessage " + _eom);
         return _eom;
     }
 
     @Override
     public boolean isExpectingMoreData() {
-        return ! _eom;
+        boolean rc =  !_eom && _messageBuffer.position() > 0;
+        System.out.println("isExpectingMoreData " + rc);
+        return rc;
     }
 
     @Override
     public boolean releaseBuffer() {
+        System.out.println("releaseBuffer");
         if (_buffer != null) {
             _buffer.compact();
             _buffer.clear();
             _buffer = null;
         }
 
-        _eom = false;
-
         return false;
     }
 
     @Override
     public void startBuffer(ByteBuffer buffer) {
+        System.out.println("startBuffer");
         _buffer = buffer;
         _buffer.flip();
+        _eom = false;
     }
 
 }

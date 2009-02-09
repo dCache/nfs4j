@@ -13,6 +13,7 @@ public class DcapProtocolFilter implements ProtocolFilter {
 
     enum DcapAsciiCommands {
         hello,
+		bye,
         open
     }
 

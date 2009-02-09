@@ -17,6 +17,8 @@ public class DcapDoor {
 
     public static void main(String[] args) {
 
+        System.out.println("starting on:" + DEFAULT_PORT );
+
         final ProtocolFilter asciiCommandParser = new AsciiCommandProtocolFilter();
         final ProtocolFilter dcap = new DcapProtocolFilter();
 
