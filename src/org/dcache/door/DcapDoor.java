@@ -10,14 +10,19 @@ import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.TCPSelectorHandler;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
+
 public class DcapDoor {
 
-
+    private final static Logger _log = Logger.getLogger(DcapDoor.class.getName());
+    
     static final int DEFAULT_PORT = 2317;
 
     public static void main(String[] args) {
 
-        System.out.println("starting on:" + DEFAULT_PORT );
+        _log.log(Level.CONFIG, "starting on:" + DEFAULT_PORT );
 
         final ProtocolFilter asciiCommandParser = new AsciiCommandProtocolFilter();
         final ProtocolFilter dcap = new DcapProtocolFilter();
@@ -53,7 +58,7 @@ public class DcapDoor {
         try {
             controller.start();
         } catch (Exception e) {
-            System.out.println("Exception in controller...");
+            _log.log(Level.SEVERE,"Exception in controller...", e);
         }
     }
 

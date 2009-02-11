@@ -9,11 +9,16 @@ import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.ProtocolParser;
 import com.sun.grizzly.util.OutputWriter;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 public class DcapProtocolFilter implements ProtocolFilter {
 
+    private final static Logger _log = Logger.getLogger(DcapProtocolFilter.class.getName());
+    
     enum DcapAsciiCommands {
         hello,
-		bye,
+        bye,
         open
     }
 
@@ -37,7 +42,7 @@ public class DcapProtocolFilter implements ProtocolFilter {
             subSessionId = Integer.valueOf(args.argv(1));
             DcapAsciiCommands dcapCommand = DcapAsciiCommands.valueOf(args.argv(3));
 
-            System.out.println("processing request = " + args);
+            _log.log(Level.FINE, "processing request = " + args);
             ByteBuffer buffer;
             switch( dcapCommand) {
 
@@ -59,7 +64,7 @@ public class DcapProtocolFilter implements ProtocolFilter {
             OutputWriter.flushChannel(channel, buffer);
             return false;
         }catch(IllegalArgumentException e) {
-            System.out.println("could not parse request = " + args);
+            _log.log(Level.WARNING, "could not parse request = " + args);
             StringBuilder sb =  new StringBuilder();
             sb.append(sessionId).append(" ").append(subSessionId).
                 append(" server failed 17 \"Protocol violation : unsupported command [").
