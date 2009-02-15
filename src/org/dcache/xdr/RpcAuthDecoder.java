@@ -5,19 +5,19 @@ import java.util.logging.Level;
 
 public class RpcAuthDecoder {
 
-	private final static Logger _log = Logger.getLogger(RpcAuthDecoder.class.getName());
+    private final static Logger _log = Logger.getLogger(RpcAuthDecoder.class.getName());
 
-	public static RpcAuth getRpcAuth(Xdr xdr) {
+    public static RpcAuth getRpcAuth(Xdr xdr) {
 
-		int type = xdr.get_int();
+        int type = xdr.get_int();
 
-		_log.log(Level.FINEST, "decoding auth type: " + type);
+        _log.log(Level.FINEST, "decoding auth type: " + type);
 
-		if( type == 1) {
-//			return new RpcAuthTypeUnix(xdr);
-		}
-		throw new UnsupportedOperationException("Auth type not supported");
+        if( type == 1) {
+//          return new RpcAuthTypeUnix(xdr);
+        }
+        throw new UnsupportedOperationException("Auth type not supported");
 
-	}
+    }
 
 }

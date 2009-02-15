@@ -7,26 +7,26 @@ import java.util.logging.Logger;
 
 public class RpcCallInfo {
 
-	private final static Logger _log = Logger.getLogger(RpcCallInfo.class.getName());
-	
-	private final InetSocketAddress _remote;
-	private final InetSocketAddress _local;
+    private final static Logger _log = Logger.getLogger(RpcCallInfo.class.getName());
 
-	RpcCallInfo() {
-		this(null, null);
-	}
+    private final InetSocketAddress _remote;
+    private final InetSocketAddress _local;
 
-	RpcCallInfo(InetSocketAddress local, InetSocketAddress remote) {
-		_local = local;
-		_remote = remote;
-		_log.log(Level.FINEST, "Rpc call: remote/local: " + _remote + "/" + _local);
-	}
+    RpcCallInfo() {
+        this(null, null);
+    }
 
-	InetSocketAddress getLocalSocketAddress() {
-		return _local;
-	}
+    RpcCallInfo(InetSocketAddress local, InetSocketAddress remote) {
+        _local = local;
+        _remote = remote;
+        _log.log(Level.FINEST, "Rpc call: remote/local: " + _remote + "/" + _local);
+    }
 
-	InetSocketAddress getRemoteSocketAddress() {
-		return _remote;
-	}
+    InetSocketAddress getLocalSocketAddress() {
+        return _local;
+    }
+
+    InetSocketAddress getRemoteSocketAddress() {
+        return _remote;
+    }
 }

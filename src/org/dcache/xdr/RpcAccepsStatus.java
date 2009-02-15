@@ -6,24 +6,24 @@ package org.dcache.xdr;
  */
 public interface  RpcAccepsStatus {
 
-	/** 
-	 * RPC executed successfully
-	 */
-	public static final int SUCCESS  = 0;
-	/**
-	 * Remote hasn't exported program.
-	 */
-	public static final int PROG_UNAVAIL = 1;
-	/**
-	 * Remote can't support version #.
-	 */
-	public static final int PROG_MISMATCH = 2;
-	/**
-	 * Program can't support procedure.
-	 */
-	public static final int PROC_UNAVAIL = 3;
-	/**
-	 * Procedure can't decode params.
-	 */
-	public static final int GARBAGE_ARGS = 4;
+    /**
+     * RPC executed successfully
+     */
+    public static final int SUCCESS  = 0;
+    /**
+     * Remote hasn't exported program.
+     */
+    public static final int PROG_UNAVAIL = 1;
+    /**
+     * Remote can't support version #.
+     */
+    public static final int PROG_MISMATCH = 2;
+    /**
+     * Program can't support procedure.
+     */
+    public static final int PROC_UNAVAIL = 3;
+    /**
+     * Procedure can't decode params.
+     */
+    public static final int GARBAGE_ARGS = 4;
 }

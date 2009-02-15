@@ -17,7 +17,7 @@ import java.util.logging.Level;
 public class SimpleRpcServer {
 
     private final static Logger _log = Logger.getLogger(SimpleRpcServer.class.getName());
-    
+
     static final int DEFAULT_PORT = 2049;
 
     public static void main(String[] args) {
@@ -25,7 +25,7 @@ public class SimpleRpcServer {
         _log.log(Level.CONFIG, "starting on:" + DEFAULT_PORT );
 
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
-		final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
+        final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
 
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
         tcp_handler.setPort(DEFAULT_PORT);
@@ -38,7 +38,7 @@ public class SimpleRpcServer {
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
         protocolChain.addFilter(rpcFilter);
-		protocolChain.addFilter(rpcProcessor);
+        protocolChain.addFilter(rpcProcessor);
 
         ((DefaultProtocolChain) protocolChain).setContinuousExecution(true);
 

@@ -11,6 +11,6 @@ package org.dcache.xdr;
  */
 public interface XdrEncodable {
 
-	void encode(Xdr xdr) throws XdrException ;
+    void encode(Xdr xdr) throws XdrException ;
 
 }

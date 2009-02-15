@@ -5,12 +5,12 @@ package org.dcache.xdr;
  */
 public interface RpcRejectStatus {
 
-	/**
-	 * RPC version number != 2.
-	 */
-	public static final int RPC_MISMATCH = 0;
-	/**
-	 * Remote can't authenticate caller.
-	 */
-	public static final int AUTH_ERROR = 1;
+    /**
+     * RPC version number != 2.
+     */
+    public static final int RPC_MISMATCH = 0;
+    /**
+     * Remote can't authenticate caller.
+     */
+    public static final int AUTH_ERROR = 1;
 }

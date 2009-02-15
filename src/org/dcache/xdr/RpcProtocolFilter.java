@@ -14,61 +14,60 @@ import java.util.logging.Level;
 
 class RpcProtocolFilter implements ProtocolFilter {
 
-	private final static Logger _log = Logger.getLogger(RpcProtocolFilter.class.getName());
+    private final static Logger _log = Logger.getLogger(RpcProtocolFilter.class.getName());
 
-	public RpcProtocolFilter() {
-	}
+    public RpcProtocolFilter() {
+    }
 
-	@Override
-	public boolean execute(Context context) throws IOException {
-		Xdr  xdr = (Xdr) context.removeAttribute(ProtocolParser.MESSAGE);
-		
+    @Override
+    public boolean execute(Context context) throws IOException {
+        Xdr  xdr = (Xdr) context.removeAttribute(ProtocolParser.MESSAGE);
+
         if (xdr == null) {
             return false;
         }
-		
-		Rpc rpc =  new Rpc();
-		try {
-			
-			xdr.decode(rpc);
-			RpcCall call = rpc.call();
-			RpcCallInfo _callInfo = new RpcCallInfo();
-			_log.log(Level.FINE, "New message to process: " + call);
-			
-		}catch(XdrException re) {
-			_log.log(Level.INFO, "RPC exception: " + re.getMessage());
-			reply(re, rpc, context);
-			return false;
-		}
-		return true;
-	}
 
-	@Override
-	public boolean postExecute(Context arg0) throws IOException {
-		return true;
-	}
+        Rpc rpc =  new Rpc();
+        try {
 
-	private void reply(XdrException re, Rpc rpc, Context context) throws IOException {
+            xdr.decode(rpc);
+            RpcCall call = rpc.call();
+            RpcCallInfo _callInfo = new RpcCallInfo();
+            _log.log(Level.FINE, "New message to process: " + call);
 
-		ByteBuffer buf = ByteBuffer.allocate(1024);
-		Xdr xdr = new Xdr(1024);
-		
-		try {
-			xdr.startEncode();
-			xdr.put_int(rpc.xid());
-			xdr.put_int(RpcMessageType.REPLY);
-			xdr.encode(re);
-			xdr.stopEncode();
-		}catch(XdrException e ) {
-			throw new IOException(e.getMessage());
-		}
+        }catch(XdrException re) {
+            _log.log(Level.INFO, "RPC exception: " + re.getMessage());
+            reply(re, rpc, context);
+            return false;
+        }
+        return true;
+    }
 
-		SelectableChannel channel = context.getSelectionKey().channel();
-		ByteBuffer message = xdr.body();
+    @Override
+    public boolean postExecute(Context arg0) throws IOException {
+        return true;
+    }
 
-		OutputWriter.flushChannel(channel, message);
+    private void reply(XdrException re, Rpc rpc, Context context) throws IOException {
+
+        Xdr xdr = new Xdr(1024);
+
+        try {
+            xdr.startEncode();
+            xdr.put_int(rpc.xid());
+            xdr.put_int(RpcMessageType.REPLY);
+            xdr.encode(re);
+            xdr.stopEncode();
+        }catch(XdrException e ) {
+            throw new IOException(e.getMessage());
+        }
+
+        SelectableChannel channel = context.getSelectionKey().channel();
+        ByteBuffer message = xdr.body();
+
+        OutputWriter.flushChannel(channel, message);
 
 
-	}
+    }
 
 }
