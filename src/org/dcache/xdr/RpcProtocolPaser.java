@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-public class RpcProtocolPaser implements ProtocolParser<Xdr> {
+public class RpcProtocolPaser implements ProtocolParser<Rpc> {
 
 	private final static Logger _log = Logger.getLogger(RpcProtocolPaser.class.getName());
 	private final static int MAX_XDR_SIZE = 8192;
@@ -14,7 +14,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 	/**
 	 * Xdr which we try to construct.
 	 */
-	private Xdr _xdr = null;
+	private Rpc _rpc = null;
 	private int _messageLen = 0;
 	private boolean _eom = true;
 	/**
@@ -54,8 +54,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 	 * @see com.sun.grizzly.ProtocolParser#getNextMessage()
 	 */
 	@Override
-	public Xdr getNextMessage() {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public Rpc getNextMessage() {
+		return _rpc;
 	}
 
 	/**
@@ -85,20 +85,30 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
 			_inHeader = false;
 			_inMessage = true;
+			boolean lastFragment;
 			_tmp.flip();
-			int size = _tmp.getInt();
+			int fragmentLength = _tmp.getInt();
+
+            if ( (fragmentLength & 0x80000000) != 0 ) {
+                fragmentLength &= 0x7FFFFFFF;
+                lastFragment = true;
+            } else {
+                lastFragment = false;
+            }
+			_log.log(Level.FINEST, "last = " + lastFragment);
+			
 			_tmp.clear();
-			_log.log(Level.FINEST, "expected message size = " + size);
-			if( size > MAX_XDR_SIZE ) {
-				_log.log(Level.INFO, "hasNextMessage false, overflow size=" + size );
+			_log.log(Level.FINEST, "expected message size = " + fragmentLength);
+			if( fragmentLength > MAX_XDR_SIZE ) {
+				_log.log(Level.INFO, "hasNextMessage false, overflow size=" + fragmentLength );
 				return false;
 			}
-			_xdr = new Xdr(size);
-			_xdr.fill(_buffer);
-
+			_rpc = new Rpc(fragmentLength);
 		}
 
-		boolean rc = _xdr.isComplete();
+		_rpc.fill(_buffer);
+
+		boolean rc = _rpc.isComplete();
 		_log.log(Level.FINEST, "hasNextMessage " + rc);
 		return rc;
 	}

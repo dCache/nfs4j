@@ -18,13 +18,14 @@ public class SimpleRpcServer {
 
     private final static Logger _log = Logger.getLogger(SimpleRpcServer.class.getName());
     
-    static final int DEFAULT_PORT = 1717;
+    static final int DEFAULT_PORT = 2049;
 
     public static void main(String[] args) {
 
         _log.log(Level.CONFIG, "starting on:" + DEFAULT_PORT );
 
-        final ProtocolFilter rpcFilter = new RpcProtocolFilter();
+        final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
+		final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
 
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
         tcp_handler.setPort(DEFAULT_PORT);
@@ -37,6 +38,8 @@ public class SimpleRpcServer {
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
         protocolChain.addFilter(rpcFilter);
+		protocolChain.addFilter(rpcProcessor);
+
         ((DefaultProtocolChain) protocolChain).setContinuousExecution(true);
 
         ProtocolChainInstanceHandler pciHandler = new DefaultProtocolChainInstanceHandler() {
