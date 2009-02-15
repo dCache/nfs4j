@@ -1,59 +1,51 @@
 package org.dcache.xdr;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Rpc {
+public class Rpc implements XdrDecodable, XdrEncodable {
 
 	private final static Logger _log = Logger.getLogger(Rpc.class.getName());
-	private final ByteBuffer _buffer;
 
 	private int _xid;
-	private int _msgType;
+	private int _type;
 
-    /**
-     * Build a new Xdr object with a buffer of given size
-     *
-     * @param size	of the buffer in bytes
-     */
-	public Rpc(int size) {
-		_buffer = ByteBuffer.allocate(size);
-		// internal java byte order is BIG ENDIAN
-		_buffer.order(ByteOrder.BIG_ENDIAN);
-	}
-
-
-	void fill(ByteBuffer b) {
-
-		_buffer.put(b);
-
-	}
-
-
-	boolean isComplete() {
-		_log.log(Level.FINEST, "isComplete " + _buffer.remaining());		
-		return !_buffer.hasRemaining();
-	}
-
-	RpcMsg getMessage() throws RpcException {
-		_buffer.flip();
-		_xid = _buffer.getInt();
-		_msgType = _buffer.getInt() == 0 ? RpcMessageType.CALL : RpcMessageType.REPLY;
-
-		_log.log(Level.FINEST, "msgType = " + _msgType);
-		_log.log(Level.FINEST, "xid     = " + _xid);
-
-
-		if(_msgType == RpcMessageType.CALL) {
-				return new RpcCall(_xid, _buffer);
-		}
-		return null;
-	}
+	private RpcCall _call;
+	private RpcReply _reply;
 
 	int xid() {
 		return _xid;
+	}
+
+	int type() {
+		return _type;
+	}
+
+	RpcCall call() {
+		return _call;
+	}	
+
+	public void decode(Xdr xdr) throws XdrException {
+		_xid = xdr.get_int();
+		_type = xdr.get_int();
+		_log.log(Level.FINEST, "type = " + _type);
+		_log.log(Level.FINEST, "xid  = " + _xid);
+		if(_type == RpcMessageType.CALL ) {
+			_call = new RpcCall();
+			xdr.decode(_call);
+		}
+	}
+
+	public void encode(Xdr xdr) throws XdrException {
+		xdr.put_int(_xid);
+		xdr.put_int(_type);
+		if(_type == RpcMessageType.REPLY ) {
+			xdr.encode(_reply);
+		}
+	}
+
+	void xid(int xid) {
+		_xid = xid;
 	}
 
 }

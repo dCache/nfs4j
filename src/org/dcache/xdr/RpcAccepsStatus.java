@@ -4,7 +4,7 @@ package org.dcache.xdr;
  * Given that a call message was accepted, the following is the
  * status of an attempt to call a remote procedure.
  */
-public interface  RcpAccepsStatus {
+public interface  RpcAccepsStatus {
 
 	/** 
 	 * RPC executed successfully

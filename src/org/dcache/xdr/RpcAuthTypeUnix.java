@@ -3,19 +3,21 @@ package org.dcache.xdr;
 import java.util.logging.Logger;
 import java.util.Arrays;
 
-public class RpcAuthTypeUnix implements RpcAuth {
+public class RpcAuthTypeUnix implements RpcAuth, XdrDecodable {
 
-	private final RpcAuthType _type =  RpcAuthType.UNIX;
+	private final int _type =  RpcAuthType.UNIX;
 
-	private final int _uid;
-	private final int _gid;
-	private final int _gids[];
-	private final int _stamp;
-	private final String _machine;
+	private int _uid;
+	private int _gid;
+	private int _gids[];
+	private int _stamp;
+	private String _machine;
 
 	private final static Logger _log = Logger.getLogger(RpcAuthTypeUnix.class.getName());
 
-	RpcAuthTypeUnix(Xdr xdr) {
+	RpcAuthTypeUnix() {}
+	
+	public void decode(Xdr xdr) {
 
 		int len = xdr.get_int();
 		_stamp = xdr.get_int();
@@ -25,7 +27,7 @@ public class RpcAuthTypeUnix implements RpcAuth {
 		_gids = xdr.get_int_array();
 	}
 
-	public RpcAuthType type() {
+	public int type() {
 		return _type;
 	}
 

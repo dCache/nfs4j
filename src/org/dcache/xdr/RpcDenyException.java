@@ -1,7 +1,7 @@
 package org.dcache.xdr;
 
 
-public class RpcDenyException  extends RpcException {
+public class RpcDenyException  extends XdrException {
 	
 	private static final long serialVersionUID = -83246023219821408L;
 
@@ -13,9 +13,8 @@ public class RpcDenyException  extends RpcException {
 	}
 
 	@Override
-	void encode(RpcReply reply) {
-		super.encode(reply);
-		Xdr xdr = reply.xdr();
+	public void encode(Xdr xdr) {
+		super.encode(xdr);
 		xdr.put_int(_rejectStatus);
 	}
 

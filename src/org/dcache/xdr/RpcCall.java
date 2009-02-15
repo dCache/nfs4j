@@ -1,32 +1,30 @@
 package org.dcache.xdr;
 
-import java.nio.ByteBuffer;
+public class RpcCall implements XdrDecodable {
 
-public class RpcCall extends RpcMsg {
+	private final static int RPCVERS = 2;
 
 	private int _prog;
 	private int _version;
 	private int _proc;
 	private int _rpcvers;
-
-	private final Xdr _xdr;
-
-	private final RpcAuth _auth;
+	private RpcAuth _auth;
 
 
-	public RpcCall(int xid, ByteBuffer body) throws RpcException {
-		super(xid, RpcMessageType.CALL, body) ;
-		_xdr = super.xdr();
-		_rpcvers = _xdr.get_int();
-		_prog = _xdr.get_int();
-		_version = _xdr.get_int();
-		if( _version != 5) {
-			throw new RpcMismatchException("RPC version mismatch: " + _version, 2, 2);
+	public void decode(Xdr xdr) throws XdrException {
+		_rpcvers = xdr.get_int();
+		_prog = xdr.get_int();
+		_version = xdr.get_int();
+		if( _rpcvers != RPCVERS ) {
+			throw new RpcMismatchException("RPC version mismatch: " + _rpcvers, 2, 2);
 		}
-		_proc = _xdr.get_int();
-
-		_auth = RpcAuthDecoder.getRpcAuth(_xdr);
-		
+		_proc = xdr.get_int();
+		int authType = xdr.get_int();
+		switch(authType) {
+			case RpcAuthType.UNIX :
+				_auth = new RpcAuthTypeUnix();
+				xdr.decode(_auth);
+		}
 
 	}
 
@@ -43,6 +41,10 @@ public class RpcCall extends RpcMsg {
 		sb.append("Procedure: ").append(_proc).append("\n");
 		
 		return sb.toString();
+	}
+
+	public void encode(Xdr xdr) {
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 }

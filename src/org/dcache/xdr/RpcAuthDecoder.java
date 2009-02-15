@@ -14,7 +14,7 @@ public class RpcAuthDecoder {
 		_log.log(Level.FINEST, "decoding auth type: " + type);
 
 		if( type == 1) {
-			return new RpcAuthTypeUnix(xdr);
+//			return new RpcAuthTypeUnix(xdr);
 		}
 		throw new UnsupportedOperationException("Auth type not supported");
 

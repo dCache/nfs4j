@@ -21,17 +21,21 @@ class RpcProtocolFilter implements ProtocolFilter {
 
 	@Override
 	public boolean execute(Context context) throws IOException {
-		Rpc  rpc = (Rpc) context.removeAttribute(ProtocolParser.MESSAGE);		
+		Xdr  xdr = (Xdr) context.removeAttribute(ProtocolParser.MESSAGE);
 		
-        if (rpc == null) {
+        if (xdr == null) {
             return false;
         }
-
+		
+		Rpc rpc =  new Rpc();
 		try {
-			RpcMsg rpcMsg =  rpc.getMessage();
+			
+			xdr.decode(rpc);
+			RpcCall call = rpc.call();
 			RpcCallInfo _callInfo = new RpcCallInfo();
-			_log.log(Level.FINE, "New message to process: " + rpcMsg);
-		}catch(RpcException re) {
+			_log.log(Level.FINE, "New message to process: " + call);
+			
+		}catch(XdrException re) {
 			_log.log(Level.INFO, "RPC exception: " + re.getMessage());
 			reply(re, rpc, context);
 			return false;
@@ -44,19 +48,26 @@ class RpcProtocolFilter implements ProtocolFilter {
 		return true;
 	}
 
-	private void reply(RpcException re, Rpc rpc, Context context) throws IOException {
+	private void reply(XdrException re, Rpc rpc, Context context) throws IOException {
 
 		ByteBuffer buf = ByteBuffer.allocate(1024);
-		RpcReply reply = new RpcReply(rpc.xid(), buf);
-
-		re.encode(reply);
+		Xdr xdr = new Xdr(1024);
+		
+		try {
+			xdr.startEncode();
+			xdr.put_int(rpc.xid());
+			xdr.put_int(RpcMessageType.REPLY);
+			xdr.encode(re);
+			xdr.stopEncode();
+		}catch(XdrException e ) {
+			throw new IOException(e.getMessage());
+		}
 
 		SelectableChannel channel = context.getSelectionKey().channel();
-		ByteBuffer message = reply.body();
-		int len = message.position() -4 ;
-		message.putInt(0, len |= 0x80000000 );
-		message.flip();
+		ByteBuffer message = xdr.body();
+
 		OutputWriter.flushChannel(channel, message);
+
 
 	}
 

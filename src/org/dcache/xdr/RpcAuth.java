@@ -1,8 +1,6 @@
 package org.dcache.xdr;
 
-public interface RpcAuth {
+public interface RpcAuth extends XdrDecodable {
 
-
-	RpcAuthType type();
-
+	int type();
 }

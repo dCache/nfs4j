@@ -1,8 +1,8 @@
 package org.dcache.xdr;
 
-public enum RpcAuthType {
+public interface  RpcAuthType {
 
-	NONE,
-	UNIX,
+	static public final int NONE = 0;
+	static public final int UNIX = 1;
 
 }

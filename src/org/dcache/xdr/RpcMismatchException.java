@@ -12,9 +12,8 @@ public class RpcMismatchException extends RpcDenyException {
 	}
 
 	@Override
-	void encode(RpcReply reply) {
-		super.encode(reply);
-		Xdr xdr = reply.xdr();
+	public void encode(Xdr xdr) {
+		super.encode(xdr);
 		xdr.put_int(_min);
 		xdr.put_int(_max);
 	}

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-public class RpcProtocolPaser implements ProtocolParser<Rpc> {
+public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
 	private final static Logger _log = Logger.getLogger(RpcProtocolPaser.class.getName());
 	private final static int MAX_XDR_SIZE = 8192;
@@ -14,7 +14,7 @@ public class RpcProtocolPaser implements ProtocolParser<Rpc> {
 	/**
 	 * Xdr which we try to construct.
 	 */
-	private Rpc _rpc = null;
+	private Xdr _xdr = null;
 	private int _messageLen = 0;
 	private boolean _eom = true;
 	/**
@@ -54,8 +54,8 @@ public class RpcProtocolPaser implements ProtocolParser<Rpc> {
 	 * @see com.sun.grizzly.ProtocolParser#getNextMessage()
 	 */
 	@Override
-	public Rpc getNextMessage() {
-		return _rpc;
+	public Xdr getNextMessage() {
+		return _xdr;
 	}
 
 	/**
@@ -103,12 +103,12 @@ public class RpcProtocolPaser implements ProtocolParser<Rpc> {
 				_log.log(Level.INFO, "hasNextMessage false, overflow size=" + fragmentLength );
 				return false;
 			}
-			_rpc = new Rpc(fragmentLength);
+			_xdr = new Xdr(fragmentLength);
 		}
 
-		_rpc.fill(_buffer);
+		_xdr.fill(_buffer);
 
-		boolean rc = _rpc.isComplete();
+		boolean rc = _xdr.isComplete();
 		_log.log(Level.FINEST, "hasNextMessage " + rc);
 		return rc;
 	}
