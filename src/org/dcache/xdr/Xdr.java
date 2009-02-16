@@ -92,7 +92,7 @@ public class Xdr {
      * @param offset in the buffer.
      * @param len number of bytes to read.
      */
-    void get_row_bytes(byte[] buf, int offset, int len) {
+    void get_raw_bytes(byte[] buf, int offset, int len) {
         int padding = (4 - (len & 3)) & 3;
         _body.get(buf, offset, len);
         _body.position(_body.position() + padding);
@@ -111,7 +111,7 @@ public class Xdr {
 
         if (len > 0) {
             byte[] bytes = new byte[len];
-            get_row_bytes(bytes, 0, len);
+            get_raw_bytes(bytes, 0, len);
             ret = new String(bytes);
         } else {
             ret = "";
@@ -136,5 +136,25 @@ public class Xdr {
 
     void encode(XdrAble data) throws XdrException {
         data.xdrEncode(this);
+    }
+
+    public void put_int_array(int[] gids) {        
+        _body.putInt(gids.length);
+        for (int i = 0; i < gids.length; i++) {
+            _body.putInt( gids[i] );
+        }        
+    }
+
+    public void put_string(String string) {
+        if( string == null ) string = ""; 
+        put_raw_bytes(string.getBytes(), 0, string.length());
+    }    
+    
+    private static final byte [] paddingZeros = { 0, 0, 0, 0 };
+    public void put_raw_bytes(byte[] bytes, int offset, int len) {
+        int padding = (4 - (len & 3)) & 3;
+        _body.putInt(len);
+        _body.put(bytes, offset, len);
+        _body.put(paddingZeros, 0, padding);        
     }
 }

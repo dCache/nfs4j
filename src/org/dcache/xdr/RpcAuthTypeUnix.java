@@ -6,7 +6,8 @@ import java.util.Arrays;
 public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     private final int _type =  RpcAuthType.UNIX;
-
+    
+    private int _len;
     private int _uid;
     private int _gid;
     private int _gids[];
@@ -19,7 +20,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     public void xdrDecode(Xdr xdr) {
 
-        int len = xdr.get_int();
+        _len = xdr.get_int();
         _stamp = xdr.get_int();
         _machine = xdr.get_string();
         _uid = xdr.get_int();
@@ -45,8 +46,13 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
-        // TODO Auto-generated method stub
-        
+       xdr.put_int(_type);
+       xdr.put_int(_len);
+       xdr.put_int(_stamp);
+       xdr.put_string(_machine);
+       xdr.put_int(_uid);
+       xdr.put_int(_gid);
+       xdr.put_int_array(_gids);        
     }
 
 }

@@ -8,6 +8,7 @@ public class RpcCall extends RpcMsg {
     private int _version;
     private int _proc;
     private int _rpcvers;
+    private RpcAuth _authVerf;
     private RpcAuth _auth;
 
     
@@ -27,8 +28,21 @@ public class RpcCall extends RpcMsg {
         switch(authType) {
             case RpcAuthType.UNIX :
                 _auth = new RpcAuthTypeUnix();
-                xdr.decode(_auth);
+                break;
+            case RpcAuthType.NONE:
+                _auth = new RpcAuthTypeNone();
         }
+        xdr.decode(_auth);
+
+        authType = xdr.get_int();
+        switch(authType) {
+            case RpcAuthType.UNIX :
+                _authVerf = new RpcAuthTypeUnix();
+                break;
+            case RpcAuthType.NONE:
+                _authVerf = new RpcAuthTypeNone();
+        }
+        xdr.decode(_authVerf);
     }
 
     @Override
@@ -51,4 +65,33 @@ public class RpcCall extends RpcMsg {
         
     }
 
+    
+    /**
+     * @return the RPC call program id
+     */
+    public int getProgram() {
+        return _prog;
+    }
+
+    /**
+     * @return the RPC call program version
+     */
+    public int getProgramVersion() {
+        return _version;
+    }
+
+    /**
+     * @return the RPC call program procedure
+     */
+    public int getProcedure() {
+        return _proc;
+    }
+
+    public RpcAuth getAuth() {
+        return _auth;
+    }
+   
+    public RpcAuth getAuthVerf() {
+        return _authVerf;
+    } 
 }

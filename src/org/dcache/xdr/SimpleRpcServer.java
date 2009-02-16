@@ -26,7 +26,8 @@ public class SimpleRpcServer {
 
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
         final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
-
+        final ProtocolFilter rpcDispatcher = new RpcDispatcher();
+        
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
         tcp_handler.setPort(DEFAULT_PORT);
         final Controller controller = new Controller();
@@ -39,6 +40,7 @@ public class SimpleRpcServer {
         final ProtocolChain protocolChain = new DefaultProtocolChain();
         protocolChain.addFilter(rpcFilter);
         protocolChain.addFilter(rpcProcessor);
+        protocolChain.addFilter(rpcDispatcher);
 
         ((DefaultProtocolChain) protocolChain).setContinuousExecution(true);
 

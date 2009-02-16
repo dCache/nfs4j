@@ -18,6 +18,7 @@ class RpcProtocolFilter implements ProtocolFilter {
 
     public static final String RPC_CALL = "RPC_CALL";
     public static final String RPC_CALL_INFO = "RPC_CALL_INFO";
+    public static final String RPC_XDR = "RPC_XDR";
     
     private final static Logger _log = Logger.getLogger(RpcProtocolFilter.class.getName());
 
@@ -61,7 +62,8 @@ class RpcProtocolFilter implements ProtocolFilter {
          */
         
         context.setAttribute(RPC_CALL, msg);
-        context.setAttribute(RPC_CALL_INFO, callInfo);
+        context.setAttribute(RPC_CALL_INFO, callInfo);        
+        context.setAttribute(RPC_XDR, xdr);
         
         _log.log(Level.FINE, "New message to process: " + msg);
 
@@ -76,6 +78,7 @@ class RpcProtocolFilter implements ProtocolFilter {
          */
         context.removeAttribute(RPC_CALL);
         context.removeAttribute(RPC_CALL_INFO);
+        context.removeAttribute(RPC_XDR);
         
         return true;
     }
