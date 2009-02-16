@@ -3,7 +3,7 @@ package org.dcache.xdr;
 import java.util.logging.Logger;
 import java.util.Arrays;
 
-public class RpcAuthTypeUnix implements RpcAuth, XdrDecodable {
+public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     private final int _type =  RpcAuthType.UNIX;
 
@@ -17,7 +17,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrDecodable {
 
     RpcAuthTypeUnix() {}
 
-    public void decode(Xdr xdr) {
+    public void xdrDecode(Xdr xdr) {
 
         int len = xdr.get_int();
         _stamp = xdr.get_int();
@@ -41,6 +41,12 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrDecodable {
         sb.append("gids: ").append(Arrays.toString(_gids)).append("\n");
 
         return sb.toString();
+    }
+
+    @Override
+    public void xdrEncode(Xdr xdr) throws XdrException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

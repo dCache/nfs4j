@@ -2,11 +2,11 @@ package org.dcache.xdr;
 
 public class RpcReply extends RpcMsg {
 
-    public void decode(Xdr xdr) {
+    public void xdrDecode(Xdr xdr) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void encode(Xdr xdr) {
+    public void xdrEncode(Xdr xdr) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -13,8 +13,8 @@ public class RpcDenyException  extends XdrException {
     }
 
     @Override
-    public void encode(Xdr xdr) {
-        super.encode(xdr);
+    public void xdrEncode(Xdr xdr) throws XdrException {
+        super.xdrEncode(xdr);
         xdr.put_int(_rejectStatus);
     }
 

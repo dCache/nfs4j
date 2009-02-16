@@ -1,6 +1,6 @@
 package org.dcache.xdr;
 
-public class RpcCall implements XdrDecodable {
+public class RpcCall implements XdrAble {
 
     private final static int RPCVERS = 2;
 
@@ -11,7 +11,7 @@ public class RpcCall implements XdrDecodable {
     private RpcAuth _auth;
 
 
-    public void decode(Xdr xdr) throws XdrException {
+    public void xdrDecode(Xdr xdr) throws XdrException {
         _rpcvers = xdr.get_int();
         _prog = xdr.get_int();
         _version = xdr.get_int();
@@ -42,7 +42,8 @@ public class RpcCall implements XdrDecodable {
         return sb.toString();
     }
 
-    public void encode(Xdr xdr) {
+    @Override
+    public void xdrEncode(Xdr xdr) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

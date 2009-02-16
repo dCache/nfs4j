@@ -56,7 +56,7 @@ class RpcProtocolFilter implements ProtocolFilter {
             xdr.startEncode();
             xdr.put_int(rpc.xid());
             xdr.put_int(RpcMessageType.REPLY);
-            xdr.encode(re);
+            re.xdrEncode(xdr);
             xdr.stopEncode();
         }catch(XdrException e ) {
             throw new IOException(e.getMessage());

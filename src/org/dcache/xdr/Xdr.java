@@ -122,12 +122,12 @@ public class Xdr {
         return _body;
     }
 
-    void decode(XdrDecodable data) throws XdrException {
+    void decode(XdrAble data) throws XdrException {
         if(!_inDecode) {
             _body.flip();
             _inDecode = true;
         }
-        data.decode(this);
+        data.xdrDecode(this);
     }
 
     void encode(XdrEncodable data) throws XdrException {
