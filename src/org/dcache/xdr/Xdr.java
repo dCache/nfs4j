@@ -25,6 +25,14 @@ public class Xdr {
         _body.order(ByteOrder.BIG_ENDIAN);
     }
 
+    
+    void startDecode() {
+        _body.flip();        
+    }
+    
+    void stopDecode() {
+        // NOP
+    }
     void startEncode() {
         _body.clear().position(4);
     }
@@ -80,7 +88,7 @@ public class Xdr {
      * Get next opaque data.  The decoded data
      * is always padded to be a multiple of four.
      *
-     * @param buf buffer whare date have to be stored
+     * @param buf buffer where date have to be stored
      * @param offset in the buffer.
      * @param len number of bytes to read.
      */
@@ -123,14 +131,10 @@ public class Xdr {
     }
 
     void decode(XdrAble data) throws XdrException {
-        if(!_inDecode) {
-            _body.flip();
-            _inDecode = true;
-        }
         data.xdrDecode(this);
     }
 
-    void encode(XdrEncodable data) throws XdrException {
-        data.encode(this);
+    void encode(XdrAble data) throws XdrException {
+        data.xdrEncode(this);
     }
 }

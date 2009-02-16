@@ -19,7 +19,7 @@ public class RpcCallInfo {
     RpcCallInfo(InetSocketAddress local, InetSocketAddress remote) {
         _local = local;
         _remote = remote;
-        _log.log(Level.FINEST, "Rpc call: remote/local: " + _remote + "/" + _local);
+        _log.log(Level.FINE, "RPC call: remote/local: " + _remote + "/" + _local);
     }
 
     InetSocketAddress getLocalSocketAddress() {

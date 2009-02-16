@@ -1,6 +1,6 @@
 package org.dcache.xdr;
 
-public class RpcCall implements XdrAble {
+public class RpcCall extends RpcMsg {
 
     private final static int RPCVERS = 2;
 
@@ -10,6 +10,10 @@ public class RpcCall implements XdrAble {
     private int _rpcvers;
     private RpcAuth _auth;
 
+    
+    public RpcCall(int xid) {
+        super(xid, RpcMessageType.CALL);
+    }
 
     public void xdrDecode(Xdr xdr) throws XdrException {
         _rpcvers = xdr.get_int();
@@ -25,7 +29,6 @@ public class RpcCall implements XdrAble {
                 _auth = new RpcAuthTypeUnix();
                 xdr.decode(_auth);
         }
-
     }
 
     @Override
@@ -34,7 +37,7 @@ public class RpcCall implements XdrAble {
 
         sb.append(_auth);
 
-        sb.append("RPC ver  : ").append(_rpcvers).append("\n");
+        sb.append("RPC vers.: ").append(_rpcvers).append("\n");
         sb.append("Program  : ").append(_prog).append("\n");
         sb.append("Version  : ").append(_version).append("\n");
         sb.append("Procedure: ").append(_proc).append("\n");
@@ -43,8 +46,9 @@ public class RpcCall implements XdrAble {
     }
 
     @Override
-    public void xdrEncode(Xdr xdr) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void xdrEncode(Xdr xdr) throws XdrException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

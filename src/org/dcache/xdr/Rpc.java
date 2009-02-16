@@ -10,19 +10,10 @@ public class Rpc implements XdrAble {
     private int _xid;
     private int _type;
 
-    private RpcCall _call;
-    private RpcReply _reply;
+    private RpcMsg _msg;   
 
-    int xid() {
-        return _xid;
-    }
-
-    int type() {
-        return _type;
-    }
-
-    RpcCall call() {
-        return _call;
+    RpcMsg getMessage(Xdr xdr) {
+        return _msg;
     }
 
     public void xdrDecode(Xdr xdr) throws XdrException {
@@ -30,22 +21,14 @@ public class Rpc implements XdrAble {
         _type = xdr.get_int();
         _log.log(Level.FINEST, "type = " + _type);
         _log.log(Level.FINEST, "xid  = " + _xid);
-        if(_type == RpcMessageType.CALL ) {
-            _call = new RpcCall();
-            _call.xdrDecode(xdr);
-        }
     }
 
     public void xdrEncode(Xdr xdr) throws XdrException {
         xdr.put_int(_xid);
         xdr.put_int(_type);
         if(_type == RpcMessageType.REPLY ) {
-            _reply.xdrEncode(xdr);
+            _msg.xdrEncode(xdr);
         }
-    }
-
-    void xid(int xid) {
-        _xid = xid;
     }
 
 }
