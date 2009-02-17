@@ -21,7 +21,8 @@ public class RpcCall extends RpcMsg {
         _prog = xdr.get_int();
         _version = xdr.get_int();
         if( _rpcvers != RPCVERS ) {
-            throw new RpcMismatchException("RPC version mismatch: " + _rpcvers, 2, 2);
+            throw new RpcException("RPC version mismatch: " + _rpcvers,
+                    new RpcMismatchReply(xid(), 2, 2));
         }
         _proc = xdr.get_int();
         int authType = xdr.get_int();
@@ -61,8 +62,7 @@ public class RpcCall extends RpcMsg {
 
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
-        // TODO Auto-generated method stub
-        
+        // TODO Auto-generated method stub        
     }
 
     

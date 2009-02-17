@@ -39,8 +39,12 @@ class RpcProtocolFilter implements ProtocolFilter {
             msg = new RpcCall(xid);
             try {
                msg.xdrDecode(xdr); 
+            }catch (RpcException e) {
+                reply( e.getRpcReply(), context);
+                return false;
             }catch (XdrException e) {
-                reply(e, xid, context);
+                _log.log(Level.INFO, "failed to process RPC request: " + e.getMessage());
+                return false;
             }
         } else {
             /*
@@ -83,16 +87,13 @@ class RpcProtocolFilter implements ProtocolFilter {
         return true;
     }
 
-    private void reply(XdrException re, int xid, Context context) throws IOException {
+    private void reply(RpcReply reply, Context context) throws IOException {
 
         Xdr xdr = new Xdr(1024);
 
-        try {
-            RpcReply msg = new RpcReply(xid);
-            msg.setMessageObject(re);
-            
+        try {            
             xdr.startEncode();
-            xdr.encode(msg);
+            xdr.encode(reply);
             xdr.stopEncode();
         }catch(XdrException e ) {
             throw new IOException(e.getMessage());

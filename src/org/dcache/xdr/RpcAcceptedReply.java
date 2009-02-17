@@ -1,12 +1,9 @@
 package org.dcache.xdr;
 
-public class RpcProgUnavailable extends RpcAcceptedReply {
+public abstract class RpcAcceptedReply extends RpcReply {
 
-    private final RpcAuth _auth;    
-    
-    public RpcProgUnavailable(int xid, RpcAuth auth) {
+    public RpcAcceptedReply(int xid) {
         super(xid);
-        _auth = auth;
     }
 
     /* (non-Javadoc)
@@ -24,8 +21,7 @@ public class RpcProgUnavailable extends RpcAcceptedReply {
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
         super.xdrEncode(xdr);
-        _auth.xdrEncode(xdr);
-        xdr.put_int(RpcAccepsStatus.PROG_UNAVAIL);
+        xdr.put_int(RpcReplyStats.MSG_ACCEPTED);
     }
 
 }
