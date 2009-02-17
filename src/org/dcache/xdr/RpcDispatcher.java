@@ -17,10 +17,10 @@ import java.util.logging.Logger;
 public class RpcDispatcher implements ProtocolFilter {
 
     private final static Logger _log = Logger.getLogger(RpcDispatcher.class.getName());
-    
+
     private final Map<Integer, Object> _programs = new HashMap<Integer, Object>();
-    
-    
+
+
     @Override
     public boolean execute(Context context) throws IOException {
         
@@ -28,7 +28,7 @@ public class RpcDispatcher implements ProtocolFilter {
         RpcCall call = (RpcCall)context.getAttribute(RpcProtocolFilter.RPC_CALL);
         RpcCallInfo info = (RpcCallInfo)context.getAttribute(RpcProtocolFilter.RPC_CALL_INFO);
         Xdr xdr = (Xdr)context.getAttribute(RpcProtocolFilter.RPC_XDR);
-        
+
         int prog = call.getProgram();
         int vers = call.getProgramVersion();
         int proc = call.getProcedure();
@@ -36,14 +36,12 @@ public class RpcDispatcher implements ProtocolFilter {
         String msg = String.format("processing request prog=%d, vers=%d, proc=%d",
                 proc, vers, proc);
         _log.log(Level.INFO, msg);
-        
-        
+
         Object program = _programs.get(Integer.valueOf(prog));
         if( program == null ) {
             reply( new RpcProgUnavailable(call.xid(), call.getAuthVerf()), context);
         }
-        
-        
+
         return true;
     }
 
