@@ -12,10 +12,6 @@ public class RpcCallInfo {
     private final InetSocketAddress _remote;
     private final InetSocketAddress _local;
 
-    RpcCallInfo() {
-        this(null, null);
-    }
-
     RpcCallInfo(InetSocketAddress local, InetSocketAddress remote) {
         _local = local;
         _remote = remote;
