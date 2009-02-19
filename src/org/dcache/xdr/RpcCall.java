@@ -1,7 +1,19 @@
 package org.dcache.xdr;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectableChannel;
+
+import com.sun.grizzly.Context;
+import com.sun.grizzly.util.OutputWriter;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class RpcCall extends RpcMsg {
 
+    private final static Logger _log = Logger.getLogger(RpcCall.class.getName());
+    
     private final static int RPCVERS = 2;
 
     private int _prog;
@@ -10,10 +22,16 @@ public class RpcCall extends RpcMsg {
     private int _rpcvers;
     private RpcAuth _authVerf;
     private RpcAuth _auth;
-
     
-    public RpcCall(int xid) {
+    /**
+     * Grizzly information context.
+     * @see com.sun.grizzly.Context
+     */
+    private final Context _context;
+    
+    public RpcCall(int xid, Context context) {
         super(xid, RpcMessageType.CALL);
+        _context = context;
     }
 
     public void xdrDecode(Xdr xdr) throws XdrException {
@@ -93,5 +111,27 @@ public class RpcCall extends RpcMsg {
    
     public RpcAuth getAuthVerf() {
         return _authVerf;
-    } 
+    }
+    
+    
+    public void reply(RpcReply reply) {
+        Xdr xdr = new Xdr(1024);
+
+        try {
+            xdr.startEncode();
+            xdr.encode(reply);
+            xdr.stopEncode();
+
+            SelectableChannel channel = _context.getSelectionKey().channel();
+            ByteBuffer message = xdr.body();
+
+            OutputWriter.flushChannel(channel, message);
+            
+        } catch (XdrException e) {
+            _log.log(Level.WARNING, "Xdr exception: ", e);
+        } catch (IOException e) {
+            _log.log(Level.SEVERE, "Failed send reply: ", e);
+        }
+    }
+    
 }

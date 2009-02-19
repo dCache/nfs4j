@@ -18,7 +18,11 @@ public class RpcDispatcher implements ProtocolFilter {
 
     private final static Logger _log = Logger.getLogger(RpcDispatcher.class.getName());
 
-    private final Map<Integer, Object> _programs = new HashMap<Integer, Object>();
+    /*
+     * List of registered RPC services
+     */
+    private final Map<Integer, RpcDispatchible> _programs =
+            new HashMap<Integer, RpcDispatchible>();
 
 
     @Override
@@ -37,9 +41,9 @@ public class RpcDispatcher implements ProtocolFilter {
                 proc, vers, proc);
         _log.log(Level.INFO, msg);
 
-        Object program = _programs.get(Integer.valueOf(prog));
+        RpcDispatchible program = _programs.get(Integer.valueOf(prog));
         if( program == null ) {
-            reply( new RpcProgUnavailable(call.xid(), call.getAuthVerf()), context);
+            call.reply( new RpcProgUnavailable(call.xid(), call.getAuthVerf()) );
         }
 
         return true;
@@ -50,24 +54,5 @@ public class RpcDispatcher implements ProtocolFilter {
         // TODO Auto-generated method stub
         return false;
     }
-
-    
-    private void reply(RpcReply reply, Context context) throws IOException {
-
-        Xdr xdr = new Xdr(1024);
-
-        try {            
-            xdr.startEncode();
-            xdr.encode(reply);
-            xdr.stopEncode();
-        }catch(XdrException e ) {
-            throw new IOException(e.getMessage());
-        }
-
-        SelectableChannel channel = context.getSelectionKey().channel();
-        ByteBuffer message = xdr.body();
-
-        OutputWriter.flushChannel(channel, message);
-    }
-
+   
 }

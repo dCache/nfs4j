@@ -36,7 +36,7 @@ class RpcProtocolFilter implements ProtocolFilter {
         int type = xdr.get_int();
         RpcMsg msg;
         if (type == RpcMessageType.CALL) {
-            msg = new RpcCall(xid);
+            msg = new RpcCall(xid, context);
             try {
                msg.xdrDecode(xdr); 
             }catch (RpcException e) {
