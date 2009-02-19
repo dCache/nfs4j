@@ -1,19 +1,15 @@
 package org.dcache.xdr;
 
-public class RpcReply extends RpcMsg {
+public class RpcReply implements XdrAble {
     
-    public RpcReply(int xid) {
-        super(xid, RpcMessageType.REPLY);
-    }
-    
+    @Override    
     public void xdrDecode(Xdr xdr) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // NOP
     }
 
     
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
-        xdr.put_int(super.xid());
-        xdr.put_int(super.type());
+        //NOP
     }
 }

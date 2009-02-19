@@ -10,7 +10,7 @@ import com.sun.grizzly.util.OutputWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RpcCall extends RpcMsg {
+public class RpcCall implements XdrAble {
 
     private final static Logger _log = Logger.getLogger(RpcCall.class.getName());
     
@@ -28,10 +28,12 @@ public class RpcCall extends RpcMsg {
      * @see com.sun.grizzly.Context
      */
     private final Context _context;
+
+    private int _xid;
     
     public RpcCall(int xid, Context context) {
-        super(xid, RpcMessageType.CALL);
         _context = context;
+        _xid = xid;
     }
 
     public void xdrDecode(Xdr xdr) throws XdrException {
@@ -40,7 +42,7 @@ public class RpcCall extends RpcMsg {
         _version = xdr.get_int();
         if( _rpcvers != RPCVERS ) {
             throw new RpcException("RPC version mismatch: " + _rpcvers,
-                    new RpcMismatchReply(xid(), 2, 2));
+                    new RpcMismatchReply(2, 2));
         }
         _proc = xdr.get_int();
         int authType = xdr.get_int();
@@ -119,6 +121,9 @@ public class RpcCall extends RpcMsg {
 
         try {
             xdr.startEncode();
+            xdr.put_int(_xid);
+            xdr.put_int(RpcMessageType.REPLY);
+            xdr.encode(getAuthVerf());
             xdr.encode(reply);
             xdr.stopEncode();
 

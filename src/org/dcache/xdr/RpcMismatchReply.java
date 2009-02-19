@@ -5,19 +5,9 @@ public class RpcMismatchReply extends RpcRejectedReply {
     private int _min;
     private int _max;
 
-    public RpcMismatchReply(int xid, int min, int max) {
-        super(xid);
+    public RpcMismatchReply(int min, int max) {
         _min = min;
         _max = max;
-    }
-
-    /* (non-Javadoc)
-     * @see org.dcache.xdr.RpcRejectedReply#xdrDecode(org.dcache.xdr.Xdr)
-     */
-    @Override
-    public void xdrDecode(Xdr xdr) {
-        // TODO Auto-generated method stub
-        super.xdrDecode(xdr);
     }
 
     /* (non-Javadoc)
