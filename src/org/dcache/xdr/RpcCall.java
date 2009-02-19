@@ -14,12 +14,31 @@ public class RpcCall implements XdrAble {
 
     private final static Logger _log = Logger.getLogger(RpcCall.class.getName());
     
+    /**
+     * Supported RPC protocol version
+     */
     private final static int RPCVERS = 2;
 
+    /**
+     * RPC program number
+     */
     private int _prog;
+    
+    /**
+     * RPC program version number
+     */
     private int _version;
+    
+    /**
+     * RPC program procedure number
+     */
     private int _proc;
+    
+    /**
+     *  RPC protocol version number
+     */
     private int _rpcvers;
+    
     private RpcAuth _authVerf;
     private RpcAuth _auth;
     
@@ -87,7 +106,9 @@ public class RpcCall implements XdrAble {
 
     
     /**
-     * @return the RPC call program id
+     * Get RPC call program number.
+     * 
+     * @return version number
      */
     public int getProgram() {
         return _prog;
