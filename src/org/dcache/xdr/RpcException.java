@@ -5,14 +5,14 @@ public class RpcException  extends XdrException {
 
 
     private static final long serialVersionUID = 1050375986800628995L;
-    private final RpcReply _reply;
+    private final RpcRejectedReply _reply;
     
-    RpcException(String msg, RpcReply reply) {
+    RpcException(String msg, RpcRejectedReply reply) {
         super(msg);
         _reply = reply;
     }
         
-    public RpcReply getRpcReply() {
+    public RpcRejectedReply getRpcReply() {
         return _reply;
     }
     

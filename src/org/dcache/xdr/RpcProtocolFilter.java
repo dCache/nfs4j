@@ -52,7 +52,8 @@ class RpcProtocolFilter implements ProtocolFilter {
                _log.log(Level.FINE, "New message to process: " + call);
 
             }catch (RpcException e) {
-                call.reply( e.getRpcReply() );
+                call.reject( e.getRpcReply() );
+                _log.log(Level.INFO, "RPC request rejected: " + e.getMessage());
                 return false;
             }catch (XdrException e) {
                 _log.log(Level.INFO, "failed to process RPC request: " + e.getMessage());

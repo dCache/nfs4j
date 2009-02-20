@@ -136,14 +136,19 @@ public class RpcCall implements XdrAble {
         return _authVerf;
     }
     
-    
-    public void reply(RpcReply reply) {
+    /**
+     * Send accepted reply to the client.
+     * 
+     * @param reply
+     */
+    public void reply(RpcAcceptedReply reply) {
         Xdr xdr = new Xdr(1024);
 
         try {
             xdr.startEncode();
             xdr.put_int(_xid);
             xdr.put_int(RpcMessageType.REPLY);
+            xdr.put_int(RpcReplyStats.MSG_ACCEPTED);
             xdr.encode(getAuthVerf());
             xdr.encode(reply);
             xdr.stopEncode();
@@ -159,5 +164,33 @@ public class RpcCall implements XdrAble {
             _log.log(Level.SEVERE, "Failed send reply: ", e);
         }
     }
-    
+
+    /**
+     * Send rejected reply to the client.
+     * 
+     * @param reply
+     */
+    public void reject(RpcRejectedReply reply) {
+        Xdr xdr = new Xdr(1024);
+
+        try {
+            xdr.startEncode();
+            xdr.put_int(_xid);
+            xdr.put_int(RpcMessageType.REPLY);
+            xdr.put_int(RpcReplyStats.MSG_DENIED);
+            xdr.encode(reply);
+            xdr.stopEncode();
+
+            SelectableChannel channel = _context.getSelectionKey().channel();
+            ByteBuffer message = xdr.body();
+
+            OutputWriter.flushChannel(channel, message);
+            
+        } catch (XdrException e) {
+            _log.log(Level.WARNING, "Xdr exception: ", e);
+        } catch (IOException e) {
+            _log.log(Level.SEVERE, "Failed send reply: ", e);
+        }
+    }
+
 }

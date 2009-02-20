@@ -7,8 +7,7 @@ public abstract class RpcAcceptedReply extends RpcReply {
      */
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
-        super.xdrEncode(xdr);
-        xdr.put_int(RpcReplyStats.MSG_ACCEPTED);
+        super.xdrEncode(xdr);        
     }
 
 }
