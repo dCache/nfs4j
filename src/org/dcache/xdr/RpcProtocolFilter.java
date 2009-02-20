@@ -26,7 +26,7 @@ class RpcProtocolFilter implements ProtocolFilter {
             return false;
         }
 
-        xdr.startDecode();
+        xdr.beginDecoding();
 
         int xid = xdr.xdrDecodeInt();
         int type = xdr.xdrDecodeInt();
@@ -55,7 +55,7 @@ class RpcProtocolFilter implements ProtocolFilter {
                 call.reject( e.getRpcReply() );
                 _log.log(Level.INFO, "RPC request rejected: " + e.getMessage());
                 return false;
-            }catch (XdrException e) {
+            }catch (OncRpcException e) {
                 _log.log(Level.INFO, "failed to process RPC request: " + e.getMessage());
                 return false;
             }

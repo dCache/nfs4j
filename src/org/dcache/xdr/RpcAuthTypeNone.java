@@ -9,7 +9,7 @@ public class RpcAuthTypeNone implements RpcAuth, XdrAble {
     private byte[] _data;
     private final static Logger _log = Logger.getLogger(RpcAuthTypeNone.class.getName());
 
-    public void xdrDecode(Xdr xdr) {
+    public void xdrDecode(XdrDecodingStream xdr) {
         int len = xdr.xdrDecodeInt();
         _data = new byte[len];
         xdr.xdrDecodeOpaque(_data, 0, len);
@@ -20,8 +20,9 @@ public class RpcAuthTypeNone implements RpcAuth, XdrAble {
     }
 
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
+    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException {
        xdr.xdrEncodeInt(_type);
        xdr.xdrEncodeOpaque(_data, 0, _data.length);
     }
+
 }

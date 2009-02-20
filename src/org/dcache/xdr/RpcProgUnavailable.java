@@ -6,7 +6,7 @@ public class RpcProgUnavailable extends RpcAcceptedReply {
      * @see org.dcache.xdr.RpcReply#xdrEncode(org.dcache.xdr.Xdr)
      */
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
+    public void xdrEncode(XdrEncodingStream xdr) {
         super.xdrEncode(xdr);
         xdr.xdrEncodeInt(RpcAccepsStatus.PROG_UNAVAIL);
     }

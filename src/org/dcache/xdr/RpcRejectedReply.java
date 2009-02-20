@@ -1,7 +1,9 @@
 package org.dcache.xdr;
 
+import java.io.IOException;
 
-/** 
+
+/**
  *  Reply to an RPC call that was rejected by the server:
  *
  *  The call can be rejected for two reasons: either the server is not
@@ -19,10 +21,10 @@ public abstract class RpcRejectedReply extends RpcReply {
      * @see org.dcache.xdr.RpcReply#xdrEncode(org.dcache.xdr.Xdr)
      */
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
+    public void xdrEncode(XdrEncodingStream xdr) {
         // TODO Auto-generated method stub
         super.xdrEncode(xdr);
-        xdr.xdrEncodeInt(RpcReplyStats.MSG_DENIED); 
+        xdr.xdrEncodeInt(RpcReplyStats.MSG_DENIED);
     }
 
 }

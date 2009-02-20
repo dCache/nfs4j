@@ -8,7 +8,7 @@ public class RpcMismatchReply extends RpcRejectedReply {
 
     private int _min;
     private int _max;
-    
+
     public RpcMismatchReply(int min, int max) {
         _min = min;
         _max = max;
@@ -18,7 +18,7 @@ public class RpcMismatchReply extends RpcRejectedReply {
      * @see org.dcache.xdr.RpcRejectedReply#xdrEncode(org.dcache.xdr.Xdr)
      */
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
+    public void xdrEncode(XdrEncodingStream xdr) {
         super.xdrEncode(xdr);
         xdr.xdrEncodeInt(RpcRejectStatus.RPC_MISMATCH);
         xdr.xdrEncodeInt(_min);

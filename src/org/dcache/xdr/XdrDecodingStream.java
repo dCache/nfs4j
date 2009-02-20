@@ -7,6 +7,19 @@ package org.dcache.xdr;
  * platform-independent XDR format.
  */
 public interface XdrDecodingStream {
+
+
+    void beginDecoding();
+    void endDecoding();
+    int xdrDecodeInt();
+    int[] xdrDecodeIntVector();
+    byte[] xdrDecodeDynamicOpaque();
+    byte[] xdrDecodeOpaque(int size);
+    void xdrDecodeOpaque(byte[] data, int offset, int len);
+    boolean xdrDecodeBoolean();
+    String xdrDecodeString();
+    long xdrDecodeLong();
+
     /*
      * Fake interface for compatibility with Remote Tea RPC library
      *

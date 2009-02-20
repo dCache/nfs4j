@@ -1,7 +1,7 @@
 package org.dcache.xdr;
 
 
-public class RpcException  extends XdrException {
+public class RpcException  extends OncRpcException {
 
 
     private static final long serialVersionUID = 1050375986800628995L;

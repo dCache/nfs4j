@@ -6,8 +6,8 @@ public abstract class RpcAcceptedReply extends RpcReply {
      * @see org.dcache.xdr.RpcReply#xdrEncode(org.dcache.xdr.Xdr)
      */
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
-        super.xdrEncode(xdr);        
+    public void xdrEncode(XdrEncodingStream xdr) {
+        super.xdrEncode(xdr);
     }
 
 }

@@ -1,15 +1,15 @@
 package org.dcache.xdr;
 
 public class RpcReply implements XdrAble {
-    
-    @Override    
-    public void xdrDecode(Xdr xdr) {
+
+    @Override
+    public void xdrDecode(XdrDecodingStream xdr) {
         // NOP
     }
 
-    
+
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
+    public void xdrEncode(XdrEncodingStream xdr) {
         //NOP
     }
 }

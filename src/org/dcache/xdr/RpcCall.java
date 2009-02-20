@@ -55,7 +55,7 @@ public class RpcCall implements XdrAble {
         _xid = xid;
     }
 
-    public void xdrDecode(Xdr xdr) throws XdrException {
+    public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
         _rpcvers = xdr.xdrDecodeInt();
         _prog = xdr.xdrDecodeInt();
         _version = xdr.xdrDecodeInt();
@@ -65,24 +65,35 @@ public class RpcCall implements XdrAble {
         }
         _proc = xdr.xdrDecodeInt();
         int authType = xdr.xdrDecodeInt();
+        _log.log(Level.FINE, "Auth type: " + authType);
         switch(authType) {
             case RpcAuthType.UNIX :
                 _auth = new RpcAuthTypeUnix();
                 break;
             case RpcAuthType.NONE:
                 _auth = new RpcAuthTypeNone();
+                break;
+            default:
+                throw new RpcException("Unsupported Auth type: " + authType,
+                        new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED));
         }
-        xdr.decode(_auth);
+        _auth.xdrDecode(xdr);
 
         authType = xdr.xdrDecodeInt();
+        _log.log(Level.FINE, "Auth type: " + authType);
         switch(authType) {
             case RpcAuthType.UNIX :
                 _authVerf = new RpcAuthTypeUnix();
                 break;
             case RpcAuthType.NONE:
                 _authVerf = new RpcAuthTypeNone();
+                break;
+            default:
+                throw new RpcException("Unsupported Auth type: " + authType,
+                        new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED));
         }
-        xdr.decode(_authVerf);
+
+        _authVerf.xdrDecode(xdr);
     }
 
     @Override
@@ -100,7 +111,7 @@ public class RpcCall implements XdrAble {
     }
 
     @Override
-    public void xdrEncode(Xdr xdr) throws XdrException {
+    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException {
         // TODO Auto-generated method stub
     }
 
@@ -141,11 +152,12 @@ public class RpcCall implements XdrAble {
      *
      * @param xdr Xdr data which contains call argument.
      * @param args the call argument do decode
-     * @throws XdrException
+     * @throws OncRpcException
      */
-    public void retrieveCallArgs(Xdr xdr, XdrAble args) throws XdrException {
+    public void retrieveCallArgs(XdrDecodingStream xdr, XdrAble args)
+        throws OncRpcException, IOException {
        args.xdrDecode(xdr);
-       xdr.stopDecode();
+       xdr.endDecoding();
     }
 
     /**
@@ -154,23 +166,23 @@ public class RpcCall implements XdrAble {
      * @param reply
      */
     public void reply(RpcAcceptedReply reply) {
-        Xdr xdr = new Xdr(1024);
+        XdrEncodingStream xdr = new Xdr(1024);
 
         try {
-            xdr.startEncode();
+            xdr.beginEncoding();
             xdr.xdrEncodeInt(_xid);
             xdr.xdrEncodeInt(RpcMessageType.REPLY);
             xdr.xdrEncodeInt(RpcReplyStats.MSG_ACCEPTED);
-            xdr.encode(getAuthVerf());
-            xdr.encode(reply);
-            xdr.stopEncode();
+            getAuthVerf().xdrEncode(xdr);
+            reply.xdrEncode(xdr);
+            xdr.endEncoding();
 
             SelectableChannel channel = _context.getSelectionKey().channel();
             ByteBuffer message = xdr.body();
 
             OutputWriter.flushChannel(channel, message);
 
-        } catch (XdrException e) {
+        } catch (OncRpcException e) {
             _log.log(Level.WARNING, "Xdr exception: ", e);
         } catch (IOException e) {
             _log.log(Level.SEVERE, "Failed send reply: ", e);
@@ -183,23 +195,21 @@ public class RpcCall implements XdrAble {
      * @param reply
      */
     public void reject(RpcRejectedReply reply) {
-        Xdr xdr = new Xdr(1024);
+        XdrEncodingStream xdr = new Xdr(1024);
 
         try {
-            xdr.startEncode();
+            xdr.beginEncoding();
             xdr.xdrEncodeInt(_xid);
             xdr.xdrEncodeInt(RpcMessageType.REPLY);
             xdr.xdrEncodeInt(RpcReplyStats.MSG_DENIED);
-            xdr.encode(reply);
-            xdr.stopEncode();
+            reply.xdrEncode(xdr);
+            xdr.endEncoding();
 
             SelectableChannel channel = _context.getSelectionKey().channel();
             ByteBuffer message = xdr.body();
 
             OutputWriter.flushChannel(channel, message);
 
-        } catch (XdrException e) {
-            _log.log(Level.WARNING, "Xdr exception: ", e);
         } catch (IOException e) {
             _log.log(Level.SEVERE, "Failed send reply: ", e);
         }

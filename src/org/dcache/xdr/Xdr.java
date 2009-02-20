@@ -1,5 +1,6 @@
 package org.dcache.xdr;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
@@ -25,18 +26,19 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     }
 
 
-    void startDecode() {
+    public void beginDecoding() {
         _body.flip();
     }
 
-    void stopDecode() {
+    public void endDecoding() {
         // NOP
     }
-    void startEncode() {
+
+    public void beginEncoding() {
         _body.clear().position(4);
     }
 
-    void stopEncode() {
+    public void endEncoding() {
         int len = _body.position() -4 ;
         _body.putInt(0, len |= 0x80000000 );
         _body.flip();
@@ -74,7 +76,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     /**
      * Get next array of integers.
      *
-     * @return
+     * @return the array on integers
      */
     public int[] xdrDecodeIntVector() {
 
@@ -98,14 +100,41 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      */
     public void xdrDecodeOpaque(byte[] buf, int offset, int len) {
         int padding = (4 - (len & 3)) & 3;
+        _log.log(Level.FINEST, "padding zeros: " + padding);
         _body.get(buf, offset, len);
         _body.position(_body.position() + padding);
+    }
+
+    public void xdrDecodeOpaque(byte[] buf,  int len) {
+        xdrDecodeOpaque(buf, 0, len);
+    }
+
+    public byte[] xdrDecodeOpaque(int len) {
+        byte[] opaque = new byte[len];
+        xdrDecodeOpaque(opaque, len);
+        return opaque;
+    }
+
+    /**
+     * Decodes (aka "deserializes") a XDR opaque value, which is represented
+     * by a vector of byte values. The length of the opaque value to decode
+     * is pulled off of the XDR stream, so the caller does not need to know
+     * the exact length in advance. The decoded data is always padded to be
+     * a multiple of four (because that's what the sender does).
+     */
+    public byte [] xdrDecodeDynamicOpaque() {
+        int length = xdrDecodeInt();
+        byte [] opaque = new byte[length];
+        if ( length != 0 ) {
+            xdrDecodeOpaque(opaque, 0, length);
+        }
+        return opaque;
     }
 
     /**
      * Get next String.
      *
-     * @return
+     * @return decoded string
      */
     public String xdrDecodeString() {
         String ret;
@@ -124,6 +153,28 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         return ret;
     }
 
+    public boolean xdrDecodeBoolean() {
+        int bool = xdrDecodeInt();
+        return bool != 0;
+    }
+
+    /**
+     * Decodes (aka "deserializes") a long (which is called a "hyper" in XDR
+     * babble and is 64&nbsp;bits wide) read from a XDR stream.
+     *
+     * @return Decoded long value.
+     */
+    public long xdrDecodeLong() {
+        return (((long) xdrDecodeInt()) << 32) +
+        ((xdrDecodeInt()) & 0x00000000FFFFFFFFl);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    //         Encoder
+    //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * Encodes (aka "serializes") a "XDR int" value and writes it down a
      * XDR stream. A XDR int is 32 bits wide -- the same width Java's "int"
@@ -135,15 +186,16 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     }
 
 
-    ByteBuffer body() {
+    @Override
+    public ByteBuffer body() {
         return _body;
     }
 
-    void decode(XdrAble data) throws XdrException {
+    void decode(XdrAble data) throws OncRpcException, IOException {
         data.xdrDecode(this);
     }
 
-    void encode(XdrAble data) throws XdrException {
+    void encode(XdrAble data) throws OncRpcException, IOException {
         data.xdrEncode(this);
     }
 
@@ -154,10 +206,10 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * @param value int vector to be encoded.
      *
      */
-    public void xdrEncodeIntVector(int[] gids) {
-        _body.putInt(gids.length);
-        for (int i = 0; i < gids.length; i++) {
-            _body.putInt( gids[i] );
+    public void xdrEncodeIntVector(int[] value) {
+        _body.putInt(value.length);
+        for (int i = 0; i < value.length; i++) {
+            _body.putInt( value[i] );
         }
     }
 
@@ -185,5 +237,34 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         _body.putInt(len);
         _body.put(bytes, offset, len);
         _body.put(paddingZeros, 0, padding);
+    }
+
+    public void xdrEncodeOpaque(byte[] bytes, int len) {
+        xdrEncodeOpaque(bytes, 0, len);
+    }
+
+    /**
+     * Encodes (aka "serializes") a XDR opaque value, which is represented
+     * by a vector of byte values. The length of the opaque value is written
+     * to the XDR stream, so the receiver does not need to know
+     * the exact length in advance. The encoded data is always padded to be
+     * a multiple of four to maintain XDR alignment.
+     *
+     */
+    public void xdrEncodeDynamicOpaque(byte [] opaque) {
+        xdrEncodeOpaque(opaque, 0, opaque.length);
+    }
+
+    public void xdrEncodeBoolean(boolean bool) {
+        xdrEncodeInt( bool ? 1 : 0);
+    }
+
+    /**
+     * Encodes (aka "serializes") a long (which is called a "hyper" in XDR
+     * babble and is 64&nbsp;bits wide) and write it down this XDR stream.
+     */
+    public void xdrEncodeLong(long value) {
+        xdrEncodeInt((int)(value >>> 32));
+        xdrEncodeInt((int)(value & 0xFFFFFFFF));
     }
 }
