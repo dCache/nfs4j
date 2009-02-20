@@ -8,7 +8,7 @@ public class RpcProgUnavailable extends RpcAcceptedReply {
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
         super.xdrEncode(xdr);
-        xdr.put_int(RpcAccepsStatus.PROG_UNAVAIL);
+        xdr.xdrEncodeInt(RpcAccepsStatus.PROG_UNAVAIL);
     }
 
 }

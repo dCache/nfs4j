@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class RpcCall implements XdrAble {
 
     private final static Logger _log = Logger.getLogger(RpcCall.class.getName());
-    
+
     /**
      * Supported RPC protocol version
      */
@@ -23,25 +23,25 @@ public class RpcCall implements XdrAble {
      * RPC program number
      */
     private int _prog;
-    
+
     /**
      * RPC program version number
      */
     private int _version;
-    
+
     /**
      * RPC program procedure number
      */
     private int _proc;
-    
+
     /**
      *  RPC protocol version number
      */
     private int _rpcvers;
-    
+
     private RpcAuth _authVerf;
     private RpcAuth _auth;
-    
+
     /**
      * Grizzly information context.
      * @see com.sun.grizzly.Context
@@ -49,22 +49,22 @@ public class RpcCall implements XdrAble {
     private final Context _context;
 
     private int _xid;
-    
+
     public RpcCall(int xid, Context context) {
         _context = context;
         _xid = xid;
     }
 
     public void xdrDecode(Xdr xdr) throws XdrException {
-        _rpcvers = xdr.get_int();
-        _prog = xdr.get_int();
-        _version = xdr.get_int();
+        _rpcvers = xdr.xdrDecodeInt();
+        _prog = xdr.xdrDecodeInt();
+        _version = xdr.xdrDecodeInt();
         if( _rpcvers != RPCVERS ) {
             throw new RpcException("RPC version mismatch: " + _rpcvers,
                     new RpcMismatchReply(2, 2));
         }
-        _proc = xdr.get_int();
-        int authType = xdr.get_int();
+        _proc = xdr.xdrDecodeInt();
+        int authType = xdr.xdrDecodeInt();
         switch(authType) {
             case RpcAuthType.UNIX :
                 _auth = new RpcAuthTypeUnix();
@@ -74,7 +74,7 @@ public class RpcCall implements XdrAble {
         }
         xdr.decode(_auth);
 
-        authType = xdr.get_int();
+        authType = xdr.xdrDecodeInt();
         switch(authType) {
             case RpcAuthType.UNIX :
                 _authVerf = new RpcAuthTypeUnix();
@@ -101,13 +101,13 @@ public class RpcCall implements XdrAble {
 
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
-        // TODO Auto-generated method stub        
+        // TODO Auto-generated method stub
     }
 
-    
+
     /**
      * Get RPC call program number.
-     * 
+     *
      * @return version number
      */
     public int getProgram() {
@@ -131,14 +131,26 @@ public class RpcCall implements XdrAble {
     public RpcAuth getAuth() {
         return _auth;
     }
-   
+
     public RpcAuth getAuthVerf() {
         return _authVerf;
     }
-    
+
+    /**
+     * Retrieves the parameters sent within an ONC/RPC call message.
+     *
+     * @param xdr Xdr data which contains call argument.
+     * @param args the call argument do decode
+     * @throws XdrException
+     */
+    public void retrieveCallArgs(Xdr xdr, XdrAble args) throws XdrException {
+       args.xdrDecode(xdr);
+       xdr.stopDecode();
+    }
+
     /**
      * Send accepted reply to the client.
-     * 
+     *
      * @param reply
      */
     public void reply(RpcAcceptedReply reply) {
@@ -146,9 +158,9 @@ public class RpcCall implements XdrAble {
 
         try {
             xdr.startEncode();
-            xdr.put_int(_xid);
-            xdr.put_int(RpcMessageType.REPLY);
-            xdr.put_int(RpcReplyStats.MSG_ACCEPTED);
+            xdr.xdrEncodeInt(_xid);
+            xdr.xdrEncodeInt(RpcMessageType.REPLY);
+            xdr.xdrEncodeInt(RpcReplyStats.MSG_ACCEPTED);
             xdr.encode(getAuthVerf());
             xdr.encode(reply);
             xdr.stopEncode();
@@ -157,7 +169,7 @@ public class RpcCall implements XdrAble {
             ByteBuffer message = xdr.body();
 
             OutputWriter.flushChannel(channel, message);
-            
+
         } catch (XdrException e) {
             _log.log(Level.WARNING, "Xdr exception: ", e);
         } catch (IOException e) {
@@ -167,7 +179,7 @@ public class RpcCall implements XdrAble {
 
     /**
      * Send rejected reply to the client.
-     * 
+     *
      * @param reply
      */
     public void reject(RpcRejectedReply reply) {
@@ -175,9 +187,9 @@ public class RpcCall implements XdrAble {
 
         try {
             xdr.startEncode();
-            xdr.put_int(_xid);
-            xdr.put_int(RpcMessageType.REPLY);
-            xdr.put_int(RpcReplyStats.MSG_DENIED);
+            xdr.xdrEncodeInt(_xid);
+            xdr.xdrEncodeInt(RpcMessageType.REPLY);
+            xdr.xdrEncodeInt(RpcReplyStats.MSG_DENIED);
             xdr.encode(reply);
             xdr.stopEncode();
 
@@ -185,7 +197,7 @@ public class RpcCall implements XdrAble {
             ByteBuffer message = xdr.body();
 
             OutputWriter.flushChannel(channel, message);
-            
+
         } catch (XdrException e) {
             _log.log(Level.WARNING, "Xdr exception: ", e);
         } catch (IOException e) {

@@ -28,8 +28,8 @@ class RpcProtocolFilter implements ProtocolFilter {
 
         xdr.startDecode();
 
-        int xid = xdr.get_int();
-        int type = xdr.get_int();
+        int xid = xdr.xdrDecodeInt();
+        int type = xdr.xdrDecodeInt();
 
         if (type == RpcMessageType.CALL) {
             RpcCall call = new RpcCall(xid, context);

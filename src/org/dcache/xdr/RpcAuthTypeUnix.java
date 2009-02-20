@@ -20,12 +20,12 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     public void xdrDecode(Xdr xdr) {
 
-        _len = xdr.get_int();
-        _stamp = xdr.get_int();
-        _machine = xdr.get_string();
-        _uid = xdr.get_int();
-        _gid = xdr.get_int();
-        _gids = xdr.get_int_array();
+        _len = xdr.xdrDecodeInt();
+        _stamp = xdr.xdrDecodeInt();
+        _machine = xdr.xdrDecodeString();
+        _uid = xdr.xdrDecodeInt();
+        _gid = xdr.xdrDecodeInt();
+        _gids = xdr.xdrDecodeIntVector();
     }
 
     public int type() {
@@ -46,13 +46,13 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
-       xdr.put_int(_type);
-       xdr.put_int(_len);
-       xdr.put_int(_stamp);
-       xdr.put_string(_machine);
-       xdr.put_int(_uid);
-       xdr.put_int(_gid);
-       xdr.put_int_array(_gids);        
+       xdr.xdrEncodeInt(_type);
+       xdr.xdrEncodeInt(_len);
+       xdr.xdrEncodeInt(_stamp);
+       xdr.xdrEncodeString(_machine);
+       xdr.xdrEncodeInt(_uid);
+       xdr.xdrEncodeInt(_gid);
+       xdr.xdrEncodeIntVector(_gids);        
     }
 
 }

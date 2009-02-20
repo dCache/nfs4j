@@ -5,11 +5,10 @@ import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Xdr {
+public class Xdr implements XdrDecodingStream, XdrEncodingStream {
 
     private final static Logger _log = Logger.getLogger(Xdr.class.getName());
     private final ByteBuffer _body;
-    private boolean _inDecode = false;
 
     /**
      * Build a new Xdr object with a buffer of given size.
@@ -25,11 +24,11 @@ public class Xdr {
         _body.order(ByteOrder.BIG_ENDIAN);
     }
 
-    
+
     void startDecode() {
-        _body.flip();        
+        _body.flip();
     }
-    
+
     void stopDecode() {
         // NOP
     }
@@ -58,10 +57,15 @@ public class Xdr {
     }
 
     /**
-     * Get next integer.
-     * @return
+     * Decodes (aka "deserializes") a "XDR int" value received from a
+     * XDR stream. A XDR int is 32 bits wide -- the same width Java's "int"
+     * data type has. This method is one of the basic methods all other
+     * methods can rely on. Because it's so basic, derived classes have to
+     * implement it.
+     *
+     * @return The decoded int value.
      */
-    int get_int() {
+    public int xdrDecodeInt() {
         int val = _body.getInt();
         _log.log(Level.FINEST, "Decoding int " + val);
         return val;
@@ -72,14 +76,14 @@ public class Xdr {
      *
      * @return
      */
-    int[] get_int_array() {
+    public int[] xdrDecodeIntVector() {
 
-        int len = get_int();
+        int len = xdrDecodeInt();
         _log.log(Level.FINEST, "Decoding int array with len = " + len);
 
         int[] ints = new int[len];
         for (int i = 0; i < len; i++) {
-            ints[i] = get_int();
+            ints[i] = xdrDecodeInt();
         }
         return ints;
     }
@@ -92,7 +96,7 @@ public class Xdr {
      * @param offset in the buffer.
      * @param len number of bytes to read.
      */
-    void get_raw_bytes(byte[] buf, int offset, int len) {
+    public void xdrDecodeOpaque(byte[] buf, int offset, int len) {
         int padding = (4 - (len & 3)) & 3;
         _body.get(buf, offset, len);
         _body.position(_body.position() + padding);
@@ -103,26 +107,31 @@ public class Xdr {
      *
      * @return
      */
-    String get_string() {
+    public String xdrDecodeString() {
         String ret;
 
-        int len = get_int();
+        int len = xdrDecodeInt();
         _log.log(Level.FINEST, "Decoding string with len = " + len);
 
         if (len > 0) {
             byte[] bytes = new byte[len];
-            get_raw_bytes(bytes, 0, len);
+            xdrDecodeOpaque(bytes, 0, len);
             ret = new String(bytes);
         } else {
             ret = "";
         }
 
         return ret;
-
     }
 
-    void put_int(int xid) {
-        _body.putInt(xid);
+    /**
+     * Encodes (aka "serializes") a "XDR int" value and writes it down a
+     * XDR stream. A XDR int is 32 bits wide -- the same width Java's "int"
+     * data type has. This method is one of the basic methods all other
+     * methods can rely on.
+     */
+    public void xdrEncodeInt(int value) {
+        _body.putInt(value);
     }
 
 
@@ -138,23 +147,43 @@ public class Xdr {
         data.xdrEncode(this);
     }
 
-    public void put_int_array(int[] gids) {        
+    /**
+     * Encodes (aka "serializes") a vector of ints and writes it down
+     * this XDR stream.
+     *
+     * @param value int vector to be encoded.
+     *
+     */
+    public void xdrEncodeIntVector(int[] gids) {
         _body.putInt(gids.length);
         for (int i = 0; i < gids.length; i++) {
             _body.putInt( gids[i] );
-        }        
+        }
     }
 
-    public void put_string(String string) {
-        if( string == null ) string = ""; 
-        put_raw_bytes(string.getBytes(), 0, string.length());
-    }    
-    
+    /**
+     * Encodes (aka "serializes") a string and writes it down this XDR stream.
+     *
+     */
+    public void xdrEncodeString(String string) {
+        if( string == null ) string = "";
+        xdrEncodeOpaque(string.getBytes(), 0, string.length());
+    }
+
     private static final byte [] paddingZeros = { 0, 0, 0, 0 };
-    public void put_raw_bytes(byte[] bytes, int offset, int len) {
+
+    /**
+     * Encodes (aka "serializes") a XDR opaque value, which is represented
+     * by a vector of byte values. Only the opaque value is encoded, but
+     * no length indication is preceeding the opaque value, so the receiver
+     * has to know how long the opaque value will be. The encoded data is
+     * always padded to be a multiple of four. If the length of the given byte
+     * vector is not a multiple of four, zero bytes will be used for padding.
+     */
+    public void xdrEncodeOpaque(byte[] bytes, int offset, int len) {
         int padding = (4 - (len & 3)) & 3;
         _body.putInt(len);
         _body.put(bytes, offset, len);
-        _body.put(paddingZeros, 0, padding);        
+        _body.put(paddingZeros, 0, padding);
     }
 }

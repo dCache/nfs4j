@@ -20,9 +20,9 @@ public class RpcMismatchReply extends RpcRejectedReply {
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
         super.xdrEncode(xdr);
-        xdr.put_int(RpcRejectStatus.RPC_MISMATCH);
-        xdr.put_int(_min);
-        xdr.put_int(_max);
+        xdr.xdrEncodeInt(RpcRejectStatus.RPC_MISMATCH);
+        xdr.xdrEncodeInt(_min);
+        xdr.xdrEncodeInt(_max);
     }
 
 }

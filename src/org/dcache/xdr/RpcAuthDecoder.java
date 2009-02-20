@@ -9,7 +9,7 @@ public class RpcAuthDecoder {
 
     public static RpcAuth getRpcAuth(Xdr xdr) {
 
-        int type = xdr.get_int();
+        int type = xdr.xdrDecodeInt();
 
         _log.log(Level.FINEST, "decoding auth type: " + type);
 

@@ -13,9 +13,9 @@ public class RpcProgramVersionMismatch extends RpcAcceptedReply {
     @Override
     public void xdrEncode(Xdr xdr) throws XdrException {
         super.xdrEncode(xdr);
-        xdr.put_int(RpcAccepsStatus.PROG_MISMATCH);
-        xdr.put_int(_min);
-        xdr.put_int(_max);
+        xdr.xdrEncodeInt(RpcAccepsStatus.PROG_MISMATCH);
+        xdr.xdrEncodeInt(_min);
+        xdr.xdrEncodeInt(_max);
     }
 
 }

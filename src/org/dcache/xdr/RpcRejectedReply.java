@@ -22,7 +22,7 @@ public abstract class RpcRejectedReply extends RpcReply {
     public void xdrEncode(Xdr xdr) throws XdrException {
         // TODO Auto-generated method stub
         super.xdrEncode(xdr);
-        xdr.put_int(RpcReplyStats.MSG_DENIED); 
+        xdr.xdrEncodeInt(RpcReplyStats.MSG_DENIED); 
     }
 
 }
