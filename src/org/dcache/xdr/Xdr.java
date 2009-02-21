@@ -25,9 +25,8 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         _body.order(ByteOrder.BIG_ENDIAN);
     }
 
-
     public void beginDecoding() {
-        _body.flip();
+        _body.rewind();
     }
 
     public void endDecoding() {
