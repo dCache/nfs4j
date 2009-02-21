@@ -1,8 +1,8 @@
 package org.dcache.xdr;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +20,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         this(ByteBuffer.allocate(size));
     }
 
-    Xdr(ByteBuffer body) {
+    public Xdr(ByteBuffer body) {
         _body = body;
         _body.order(ByteOrder.BIG_ENDIAN);
     }
@@ -182,6 +182,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * methods can rely on.
      */
     public void xdrEncodeInt(int value) {
+		_log.log(Level.FINEST, "Ecoding int " + value);
         _body.putInt(value);
     }
 
@@ -189,14 +190,6 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     @Override
     public ByteBuffer body() {
         return _body;
-    }
-
-    void decode(XdrAble data) throws OncRpcException, IOException {
-        data.xdrDecode(this);
-    }
-
-    void encode(XdrAble data) throws OncRpcException, IOException {
-        data.xdrEncode(this);
     }
 
     /**
@@ -207,6 +200,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      *
      */
     public void xdrEncodeIntVector(int[] value) {
+		_log.log(Level.FINEST, "Ecoding int array " + Arrays.toString(value));
         _body.putInt(value.length);
         for (int i = 0; i < value.length; i++) {
             _body.putInt( value[i] );
@@ -218,6 +212,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      *
      */
     public void xdrEncodeString(String string) {
+		_log.log(Level.FINEST, "Encode String:  " + string);
         if( string == null ) string = "";
         xdrEncodeOpaque(string.getBytes(), 0, string.length());
     }
@@ -233,6 +228,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * vector is not a multiple of four, zero bytes will be used for padding.
      */
     public void xdrEncodeOpaque(byte[] bytes, int offset, int len) {
+		_log.log(Level.FINEST, "Encode Opaque, len = " + len);
         int padding = (4 - (len & 3)) & 3;
         _body.putInt(len);
         _body.put(bytes, offset, len);

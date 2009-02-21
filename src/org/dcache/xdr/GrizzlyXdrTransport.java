@@ -31,6 +31,7 @@ public class GrizzlyXdrTransport implements XdrTransport {
     @Override
     public void send(ByteBuffer data) throws IOException {
 
+        _log.log(Level.FINEST, "reply sent: " + data);
         SelectableChannel channel = _context.getSelectionKey().channel();
         OutputWriter.flushChannel(channel, data);
 

@@ -163,12 +163,27 @@ public class RpcCall implements XdrAble {
        xdr.endDecoding();
     }
 
+
+    public void failProgramMismatch(int min, int max) {
+        _reply(RpcAccepsStatus.PROG_MISMATCH, new MismatchInfo(min, max));
+    }
+
+    public void failProgramUnavailable() {
+        _reply(RpcAccepsStatus.PROG_UNAVAIL,  XdrVoid.XDR_VOID);
+    }
+
+    public void failProcedureUnavailable() {
+        _reply(RpcAccepsStatus.PROC_UNAVAIL,  XdrVoid.XDR_VOID);
+    }
     /**
      * Send accepted reply to the client.
      *
      * @param reply
      */
     public void reply(XdrAble reply) {
+        _reply(RpcAccepsStatus.SUCCESS, reply);
+    }
+    private void _reply(int state, XdrAble reply) {
         XdrEncodingStream xdr = new Xdr(1024);
 
         try {
@@ -177,6 +192,7 @@ public class RpcCall implements XdrAble {
             xdr.xdrEncodeInt(RpcMessageType.REPLY);
             xdr.xdrEncodeInt(RpcReplyStats.MSG_ACCEPTED);
             getAuthVerf().xdrEncode(xdr);
+            xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
             xdr.endEncoding();
 
