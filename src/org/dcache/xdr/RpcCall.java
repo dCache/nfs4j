@@ -142,6 +142,15 @@ public class RpcCall implements XdrAble {
     }
 
     /**
+     * Get RPC transport used by this call.
+     *
+     * @return
+     */
+    public XdrTransport getTransport() {
+        return _transport;
+    }
+
+    /**
      * Retrieves the parameters sent within an ONC/RPC call message.
      *
      * @param xdr Xdr data which contains call argument.
@@ -159,7 +168,7 @@ public class RpcCall implements XdrAble {
      *
      * @param reply
      */
-    public void reply(RpcAcceptedReply reply) {
+    public void reply(XdrAble reply) {
         XdrEncodingStream xdr = new Xdr(1024);
 
         try {
@@ -203,6 +212,11 @@ public class RpcCall implements XdrAble {
         } catch (IOException e) {
             _log.log(Level.SEVERE, "Failed send reply: ", e);
         }
+    }
+
+    public void retrieveCall(XdrAble args, XdrDecodingStream xdr) throws OncRpcException, IOException {
+        args.xdrDecode(xdr);
+        xdr.endDecoding();
     }
 
 }

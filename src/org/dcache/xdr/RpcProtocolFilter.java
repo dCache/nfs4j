@@ -11,7 +11,6 @@ import com.sun.grizzly.ProtocolParser;
 class RpcProtocolFilter implements ProtocolFilter {
 
     public static final String RPC_CALL = "RPC_CALL";
-    public static final String RPC_CALL_INFO = "RPC_CALL_INFO";
     public static final String RPC_XDR = "RPC_XDR";
 
     private final static Logger _log = Logger.getLogger(RpcProtocolFilter.class.getName());

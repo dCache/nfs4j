@@ -53,4 +53,15 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
        xdr.xdrEncodeIntVector(_gids);
     }
 
+    public int uid() {
+        return _uid;
+    }
+
+    public int gid() {
+        return _gid;
+    }
+
+    public int[] gids() {
+        return _gids;
+    }
 }
