@@ -35,11 +35,18 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     }
 
     public void beginEncoding() {
+        /*
+         * reserve space for record mark
+         */
         _body.clear().position(4);
     }
 
     public void endEncoding() {
         int len = _body.position() -4 ;
+        _log.log(Level.FINEST, "Encoded XDR size: " + len);
+        /*
+         * set record marker:
+         */
         _body.putInt(0, len |= 0x80000000 );
         _body.flip();
     }
@@ -214,7 +221,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     public void xdrEncodeString(String string) {
 		_log.log(Level.FINEST, "Encode String:  " + string);
         if( string == null ) string = "";
-        xdrEncodeOpaque(string.getBytes(), 0, string.length());
+        xdrEncodeDynamicOpaque(string.getBytes());
     }
 
     private static final byte [] paddingZeros = { 0, 0, 0, 0 };
@@ -230,7 +237,6 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     public void xdrEncodeOpaque(byte[] bytes, int offset, int len) {
 		_log.log(Level.FINEST, "Encode Opaque, len = " + len);
         int padding = (4 - (len & 3)) & 3;
-        _body.putInt(len);
         _body.put(bytes, offset, len);
         _body.put(paddingZeros, 0, padding);
     }
@@ -248,6 +254,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      *
      */
     public void xdrEncodeDynamicOpaque(byte [] opaque) {
+        xdrEncodeInt(opaque.length);
         xdrEncodeOpaque(opaque, 0, opaque.length);
     }
 
