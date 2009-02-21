@@ -1,8 +1,5 @@
 package org.dcache.xdr;
 
-import com.sun.grizzly.Context;
-
-
 /**
  *
  * Interface for RPC servers
@@ -10,6 +7,6 @@ import com.sun.grizzly.Context;
  */
 public interface RpcDispatchible {
 
-    public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr, RpcCallInfo info);
+    public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr);
 
 }

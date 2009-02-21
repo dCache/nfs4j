@@ -24,7 +24,7 @@ public class RpcDispatcher implements ProtocolFilter {
         _programs.put(100003, new RpcDispatchible() {
 
             @Override
-            public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr, RpcCallInfo info) {
+            public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr) {
 
                 call.reply(new RpcProgramVersionMismatch(2, 3));
             }
@@ -37,7 +37,6 @@ public class RpcDispatcher implements ProtocolFilter {
 
 
         RpcCall call = (RpcCall)context.getAttribute(RpcProtocolFilter.RPC_CALL);
-        RpcCallInfo info = (RpcCallInfo)context.getAttribute(RpcProtocolFilter.RPC_CALL_INFO);
         Xdr xdr = (Xdr)context.getAttribute(RpcProtocolFilter.RPC_XDR);
 
         int prog = call.getProgram();
@@ -52,7 +51,7 @@ public class RpcDispatcher implements ProtocolFilter {
         if( program == null ) {
             call.reply( new RpcProgUnavailable() );
         }else{
-            program.dispatchOncRpcCall(call, xdr, info);
+            program.dispatchOncRpcCall(call, xdr);
         }
 
         return true;

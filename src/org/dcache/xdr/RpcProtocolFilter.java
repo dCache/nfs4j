@@ -1,8 +1,6 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,17 +34,11 @@ class RpcProtocolFilter implements ProtocolFilter {
             try {
                call.xdrDecode(xdr);
 
-               SocketChannel socketChannel = ((SocketChannel)context.getSelectionKey().channel());
-               InetSocketAddress local =(InetSocketAddress) socketChannel.socket().getLocalSocketAddress();
-               InetSocketAddress remote =(InetSocketAddress)socketChannel.socket().getRemoteSocketAddress();
-               RpcCallInfo callInfo = new RpcCallInfo(local, remote);
-
                /*
-                * pass RPC call and info to the next filter in the chain
+                * pass RPC call to the next filter in the chain
                 */
 
                context.setAttribute(RPC_CALL, call);
-               context.setAttribute(RPC_CALL_INFO, callInfo);
                context.setAttribute(RPC_XDR, xdr);
 
                _log.log(Level.FINE, "New message to process: " + call);
@@ -79,7 +71,6 @@ class RpcProtocolFilter implements ProtocolFilter {
          * cleanup
          */
         context.removeAttribute(RPC_CALL);
-        context.removeAttribute(RPC_CALL_INFO);
         context.removeAttribute(RPC_XDR);
 
         return true;
