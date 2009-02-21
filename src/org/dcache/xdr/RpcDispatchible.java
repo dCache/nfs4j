@@ -4,12 +4,12 @@ import com.sun.grizzly.Context;
 
 
 /**
- * 
+ *
  * Interface for RPC servers
  *
  */
 public interface RpcDispatchible {
-    
-    public void dispatch(RpcCall call, Context context, RpcCallInfo info);
-    
+
+    public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr, RpcCallInfo info);
+
 }

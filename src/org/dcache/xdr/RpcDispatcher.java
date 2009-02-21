@@ -24,7 +24,7 @@ public class RpcDispatcher implements ProtocolFilter {
         _programs.put(100003, new RpcDispatchible() {
 
             @Override
-            public void dispatch(RpcCall call, Context context, RpcCallInfo info) {
+            public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr, RpcCallInfo info) {
 
                 call.reply(new RpcProgramVersionMismatch(2, 3));
             }
@@ -34,7 +34,7 @@ public class RpcDispatcher implements ProtocolFilter {
 
     @Override
     public boolean execute(Context context) throws IOException {
-        
+
 
         RpcCall call = (RpcCall)context.getAttribute(RpcProtocolFilter.RPC_CALL);
         RpcCallInfo info = (RpcCallInfo)context.getAttribute(RpcProtocolFilter.RPC_CALL_INFO);
@@ -52,7 +52,7 @@ public class RpcDispatcher implements ProtocolFilter {
         if( program == null ) {
             call.reply( new RpcProgUnavailable() );
         }else{
-            program.dispatch(call, context, info);
+            program.dispatchOncRpcCall(call, xdr, info);
         }
 
         return true;
@@ -63,5 +63,5 @@ public class RpcDispatcher implements ProtocolFilter {
         // TODO Auto-generated method stub
         return false;
     }
-   
+
 }
