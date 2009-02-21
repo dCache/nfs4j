@@ -25,6 +25,10 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
     ByteBuffer _buffer;
     ByteBuffer _tmp = ByteBuffer.allocate(4);
 
+    public RpcProtocolPaser() {
+        _log.log(Level.FINEST, "new instance ceated");
+    }
+
     /**
      *
      * @see com.sun.grizzly.ProtocolParser#isExpectingMoreData()
@@ -55,6 +59,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public Xdr getNextMessage() {
+        _inHeader = false;
+        _inMessage = false;
         return _xdr;
     }
 
@@ -95,7 +101,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             } else {
                 lastFragment = false;
             }
-            _log.log(Level.FINEST, "last = " + lastFragment);
+            _log.log(Level.FINEST, "last segment recieved: " + lastFragment);
 
             _tmp.clear();
             _log.log(Level.FINEST, "expected message size = " + fragmentLength);
@@ -133,7 +139,6 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
         _log.log(Level.FINEST,"releaseBuffer");
         if (_buffer != null) {
             _buffer.compact();
-            _buffer.clear();
             _buffer = null;
         }
 
