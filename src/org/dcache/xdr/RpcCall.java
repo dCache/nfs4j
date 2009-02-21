@@ -2,11 +2,6 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectableChannel;
-
-import com.sun.grizzly.Context;
-import com.sun.grizzly.util.OutputWriter;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
