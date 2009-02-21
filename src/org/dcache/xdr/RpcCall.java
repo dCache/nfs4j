@@ -43,15 +43,14 @@ public class RpcCall implements XdrAble {
     private RpcAuth _auth;
 
     /**
-     * Grizzly information context.
-     * @see com.sun.grizzly.Context
+     * transport to reply messages back
      */
-    private final Context _context;
+    private final XdrTransport _transport;
 
     private int _xid;
 
-    public RpcCall(int xid, Context context) {
-        _context = context;
+    public RpcCall(int xid, XdrTransport transport) {
+        _transport = transport;
         _xid = xid;
     }
 
@@ -177,10 +176,8 @@ public class RpcCall implements XdrAble {
             reply.xdrEncode(xdr);
             xdr.endEncoding();
 
-            SelectableChannel channel = _context.getSelectionKey().channel();
             ByteBuffer message = xdr.body();
-
-            OutputWriter.flushChannel(channel, message);
+            _transport.send(message);
 
         } catch (OncRpcException e) {
             _log.log(Level.WARNING, "Xdr exception: ", e);
@@ -205,10 +202,8 @@ public class RpcCall implements XdrAble {
             reply.xdrEncode(xdr);
             xdr.endEncoding();
 
-            SelectableChannel channel = _context.getSelectionKey().channel();
             ByteBuffer message = xdr.body();
-
-            OutputWriter.flushChannel(channel, message);
+            _transport.send(message);
 
         } catch (IOException e) {
             _log.log(Level.SEVERE, "Failed send reply: ", e);

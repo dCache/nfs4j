@@ -32,7 +32,7 @@ class RpcProtocolFilter implements ProtocolFilter {
         int type = xdr.xdrDecodeInt();
 
         if (type == RpcMessageType.CALL) {
-            RpcCall call = new RpcCall(xid, context);
+            RpcCall call = new RpcCall(xid, new GrizzlyXdrTransport(context));
             try {
                call.xdrDecode(xdr);
 
