@@ -40,8 +40,6 @@ class RpcProtocolFilter implements ProtocolFilter {
                context.setAttribute(RPC_CALL, call);
                context.setAttribute(RPC_XDR, xdr);
 
-               _log.log(Level.FINE, "New message to process: " + call);
-
             }catch (RpcException e) {
                 call.reject( e.getRpcReply() );
                 _log.log(Level.INFO, "RPC request rejected: " + e.getMessage());
