@@ -184,7 +184,7 @@ public class RpcCall implements XdrAble {
         _reply(RpcAccepsStatus.SUCCESS, reply);
     }
     private void _reply(int state, XdrAble reply) {
-        XdrEncodingStream xdr = new Xdr(1024);
+        XdrEncodingStream xdr = new Xdr(8192);
 
         try {
             xdr.beginEncoding();
