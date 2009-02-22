@@ -54,7 +54,6 @@ public class RpcDispatcher implements ProtocolFilter {
             HimeraNFS4Server nfs4 = new HimeraNFS4Server(new DeviceManager(), fs, exports);
 
             _programs.put(100003, nfs4);
-            _log.log(Level.FINEST, " root inode: " + fs.path2inode("/pnfs") );
             _programs.put(100005, ms);
            // _programs.put(100003, nfs);
 
@@ -77,7 +76,7 @@ public class RpcDispatcher implements ProtocolFilter {
 
         String msg = String.format("processing request prog=%d, vers=%d, proc=%d",
                 prog, vers, proc);
-        _log.log(Level.INFO, msg);
+        _log.log(Level.FINE, msg);
 
         RpcDispatchable program = _programs.get(Integer.valueOf(prog));
         if( program == null ) {
