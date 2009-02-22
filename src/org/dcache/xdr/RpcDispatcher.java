@@ -74,9 +74,8 @@ public class RpcDispatcher implements ProtocolFilter {
         int vers = call.getProgramVersion();
         int proc = call.getProcedure();
 
-        String msg = String.format("processing request prog=%d, vers=%d, proc=%d",
-                prog, vers, proc);
-        _log.log(Level.FINE, msg);
+        _log.log(Level.FINE, "processing request prog={0}, vers={1}, proc={2}",
+                new Object[] {prog, vers, proc});
 
         RpcDispatchable program = _programs.get(Integer.valueOf(prog));
         if( program == null ) {
