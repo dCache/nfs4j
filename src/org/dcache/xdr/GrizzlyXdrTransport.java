@@ -24,17 +24,16 @@ public class GrizzlyXdrTransport implements XdrTransport {
         SocketChannel socketChannel = ((SocketChannel)context.getSelectionKey().channel());
         _local =(InetSocketAddress) socketChannel.socket().getLocalSocketAddress();
         _remote =(InetSocketAddress)socketChannel.socket().getRemoteSocketAddress();
-        _log.log(Level.FINE, "RPC call: remote/local: " + _remote + "/" + _local);
+        _log.log(Level.FINE, "RPC call: remote/local: {0}/{1}", new Object[] { _remote,  _local } );
     }
 
 
     @Override
     public void send(ByteBuffer data) throws IOException {
 
-        _log.log(Level.FINEST, "reply sent: " + data);
+        _log.log(Level.FINE, "reply sent: {0}", data);
         SelectableChannel channel = _context.getSelectionKey().channel();
         OutputWriter.flushChannel(channel, data);
-
     }
 
 
