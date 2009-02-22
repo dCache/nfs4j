@@ -59,7 +59,7 @@ public class RpcCall implements XdrAble {
         }
         _proc = xdr.xdrDecodeInt();
         int authType = xdr.xdrDecodeInt();
-        _log.log(Level.FINE, "Auth type: " + authType);
+        _log.log(Level.FINEST, "Auth type: {0}", authType);
         switch(authType) {
             case RpcAuthType.UNIX :
                 _auth = new RpcAuthTypeUnix();
@@ -74,7 +74,7 @@ public class RpcCall implements XdrAble {
         _auth.xdrDecode(xdr);
 
         authType = xdr.xdrDecodeInt();
-        _log.log(Level.FINE, "Auth type: " + authType);
+        _log.log(Level.FINEST, "Auth Verifier type: {0}", authType);
         switch(authType) {
             case RpcAuthType.UNIX :
                 _authVerf = new RpcAuthTypeUnix();
@@ -184,7 +184,7 @@ public class RpcCall implements XdrAble {
         _reply(RpcAccepsStatus.SUCCESS, reply);
     }
     private void _reply(int state, XdrAble reply) {
-        XdrEncodingStream xdr = new Xdr(8192);
+        XdrEncodingStream xdr = new Xdr(64*1024);
 
         try {
             xdr.beginEncoding();
