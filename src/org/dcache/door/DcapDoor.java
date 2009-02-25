@@ -1,10 +1,9 @@
 package org.dcache.door;
 
+import com.sun.grizzly.BaseSelectionKeyHandler;
 import com.sun.grizzly.Controller;
-import com.sun.grizzly.DefaultPipeline;
 import com.sun.grizzly.DefaultProtocolChain;
 import com.sun.grizzly.DefaultProtocolChainInstanceHandler;
-import com.sun.grizzly.Pipeline;
 import com.sun.grizzly.ProtocolChain;
 import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
@@ -27,14 +26,13 @@ public class DcapDoor {
         final ProtocolFilter asciiCommandParser = new AsciiCommandProtocolFilter();
         final ProtocolFilter dcap = new DcapProtocolFilter();
 
+        final Controller controller = new Controller();
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
         tcp_handler.setPort(DEFAULT_PORT);
-        final Controller controller = new Controller();
-        controller.setSelectorHandler(tcp_handler);
+        tcp_handler.setSelectionKeyHandler(new BaseSelectionKeyHandler());
 
-        Pipeline pipeline = new DefaultPipeline();
-        pipeline.setMaxThreads(5);
-        controller.setPipeline(pipeline);
+        controller.addSelectorHandler(tcp_handler);
+        controller.setReadThreadsCount(5);
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
         protocolChain.addFilter(asciiCommandParser);
