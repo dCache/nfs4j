@@ -20,6 +20,7 @@ class RpcProtocolFilter implements ProtocolFilter {
         Xdr  xdr = (Xdr) context.removeAttribute(ProtocolParser.MESSAGE);
 
         if (xdr == null) {
+            _log.log(Level.SEVERE, "Parser returns bad XDR");
             return false;
         }
 
