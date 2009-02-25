@@ -1,10 +1,9 @@
 package org.dcache.xdr;
 
+import com.sun.grizzly.BaseSelectionKeyHandler;
 import com.sun.grizzly.Controller;
-import com.sun.grizzly.DefaultPipeline;
 import com.sun.grizzly.DefaultProtocolChain;
 import com.sun.grizzly.DefaultProtocolChainInstanceHandler;
-import com.sun.grizzly.Pipeline;
 import com.sun.grizzly.ProtocolChain;
 import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
@@ -27,15 +26,14 @@ public class SimpleRpcServer {
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
         final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
         final ProtocolFilter rpcDispatcher = new RpcDispatcher();
-        
+
+        final Controller controller = new Controller();
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
         tcp_handler.setPort(DEFAULT_PORT);
-        final Controller controller = new Controller();
-        controller.setSelectorHandler(tcp_handler);
-
-        Pipeline pipeline = new DefaultPipeline();
-        pipeline.setMaxThreads(5);
-        controller.setPipeline(pipeline);
+        tcp_handler.setSelectionKeyHandler(new BaseSelectionKeyHandler());
+                
+        controller.addSelectorHandler(tcp_handler);
+        controller.setReadThreadsCount(5);
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
         protocolChain.addFilter(rpcFilter);
