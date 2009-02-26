@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.junit.Before;
 import org.junit.Test;
+import org.omg.CORBA._PolicyStub;
 
 import static org.junit.Assert.*;
 
@@ -59,6 +60,12 @@ public class RpcProtocolPaserTest {
         data.position( data.limit() );
         _rpcParser.startBuffer(data);
         assertTrue("Complete message not detected", _rpcParser.hasNextMessage() );
+
+        assertNotNull("Requesting complete message first time should not return NULL",
+                _rpcParser.getNextMessage());
+
+        assertNull("Requesting complete message second time should return NULL",
+                _rpcParser.getNextMessage());
 
     }
 
