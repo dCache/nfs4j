@@ -2,6 +2,7 @@ package org.dcache.xdr;
 
 import com.sun.grizzly.ProtocolParser;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -9,24 +10,18 @@ import java.util.logging.Level;
 public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
     private final static Logger _log = Logger.getLogger(RpcProtocolPaser.class.getName());
-    private final static int MAX_XDR_SIZE = 8192;
-
+    private final static int MAX_XDR_SIZE = 128 * 1024;
     /**
      * Xdr which we try to construct.
      */
     private Xdr _xdr = null;
-    private int _messageLen = 0;
-    private boolean _eom = true;
-    /**
-     * did we start to read message data
-     */
-    private boolean _inMessage = false;
-    private boolean _inHeader = false;
+    private boolean _lastFragment = false;
+    private int _fragmentToRead = 0;
+    private boolean _isMuti = false;
     ByteBuffer _buffer;
-    ByteBuffer _tmp = ByteBuffer.allocate(4);
 
     public RpcProtocolPaser() {
-        _log.log(Level.FINEST, "new instance ceated");
+        _log.log(Level.FINEST, "new instance created");
     }
 
     /**
@@ -36,8 +31,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
     @Override
     public boolean isExpectingMoreData() {
         _log.log(Level.FINEST, "enter: isExpectingMoreData");
-        boolean rc = _inMessage || _inHeader;
-        _log.log(Level.FINEST, "left: isExpectingMoreData " + rc);
+        boolean rc = _xdr != null && !(_fragmentToRead == 0 && _lastFragment);
+        _log.log(Level.FINEST, "left: isExpectingMoreData {0}", rc);
         return rc;
     }
 
@@ -49,7 +44,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
     public boolean hasMoreBytesToParse() {
         _log.log(Level.FINEST, "enter: hasMoreBytesToParse");
         boolean rc = _buffer != null && _buffer.hasRemaining();
-        _log.log(Level.FINEST, "left: hasMoreBytesToParse " + rc);
+        _log.log(Level.FINEST, "left: hasMoreBytesToParse {0}", rc);
         return rc;
     }
 
@@ -59,9 +54,12 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public Xdr getNextMessage() {
-        _inHeader = false;
-        _inMessage = false;
-        return _xdr;
+        _lastFragment = false;
+        _fragmentToRead = 0;
+        _isMuti = false;
+        Xdr xdr = _xdr;
+        _xdr = null;
+        return xdr;
     }
 
     /**
@@ -76,45 +74,57 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             return false;
         }
 
-        // TODO: check for size
-        if (!_inMessage) {
+        /*
+         * It may happent that single buffer will contain multiple fragments.
+         * Loop over buffer contetn till we get complete message or buffer
+         * has no more data.
+         */
+        while ( _buffer.hasRemaining() ) {
 
-            while(_tmp.hasRemaining() && _buffer.hasRemaining() ) {
-                _tmp.put(_buffer.get());
+            if(_fragmentToRead <= 0 ) {
+
+                if(_xdr == null )
+                    _xdr = new Xdr(MAX_XDR_SIZE);
+                
+                _fragmentToRead = _buffer.getInt();
+                if ((_fragmentToRead & 0x80000000) != 0) {
+                    _fragmentToRead &= 0x7FFFFFFF;
+                    _lastFragment = true;
+                    if (_isMuti) {
+                        _log.log(Level.INFO, "Multifragment XDR END");
+                    }
+                } else {
+                    _lastFragment = false;
+                    _isMuti = true;
+                    _log.log(Level.INFO, "Multifragment XDR, expected len {0}, available {1}",
+                        new Object[]{_fragmentToRead, _buffer.remaining()});
+                }
             }
 
-            if( _tmp.remaining() > 0 ) {
-                _log.log(Level.FINEST, "hasNextMessage false (not enough data) " + _tmp.remaining());
-                _inHeader = true;
-                return false;
-            }
+            /*
+             * keep the origial buffer as is
+             */
+            ByteBuffer bytesToFlush = _buffer.duplicate();
+            int n = _fragmentToRead > bytesToFlush.remaining() ? bytesToFlush.remaining() : _fragmentToRead;
 
-            _inHeader = false;
-            _inMessage = true;
-            boolean lastFragment;
-            _tmp.flip();
-            int fragmentLength = _tmp.getInt();
+            bytesToFlush.limit(bytesToFlush.position() + n);
+            _xdr.fill(bytesToFlush);
 
-            if ( (fragmentLength & 0x80000000) != 0 ) {
-                fragmentLength &= 0x7FFFFFFF;
-                lastFragment = true;
-            } else {
-                lastFragment = false;
-            }
-            _log.log(Level.FINEST, "last segment recieved: " + lastFragment);
+            /*
+             * update position in original buffer
+             */
+            _buffer.position(bytesToFlush.position());
 
-            _tmp.clear();
-            _log.log(Level.FINEST, "expected message size = " + fragmentLength);
-            if( fragmentLength > MAX_XDR_SIZE ) {
-                _log.log(Level.INFO, "hasNextMessage false, overflow size=" + fragmentLength );
-                return false;
-            }
-            _xdr = new Xdr(fragmentLength);
+            _fragmentToRead -= n;
+            if(_fragmentToRead == 0 && _lastFragment) break;
+        }
+        
+        if (_isMuti) {
+            _log.log(Level.INFO, "Multifragment XDR, remaining {0} last: {1}",
+                new Object[] {_fragmentToRead, _lastFragment} );
         }
 
-        _xdr.fill(_buffer);
-
-        boolean rc = _xdr.isComplete();
+        boolean rc = _fragmentToRead == 0 && _lastFragment;
         _log.log(Level.FINEST, "hasNextMessage " + rc);
         return rc;
     }
@@ -128,6 +138,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
         _log.log(Level.FINEST, "startBuffer");
         _buffer = buffer;
         _buffer.flip();
+        _buffer.order(ByteOrder.BIG_ENDIAN);
     }
 
     /**
@@ -136,7 +147,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public boolean releaseBuffer() {
-        _log.log(Level.FINEST,"releaseBuffer");
+        _log.log(Level.FINEST, "releaseBuffer");
         if (_buffer != null) {
             _buffer.compact();
             _buffer = null;
