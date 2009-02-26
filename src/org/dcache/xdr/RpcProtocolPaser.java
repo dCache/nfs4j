@@ -85,7 +85,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
                 if(_xdr == null )
                     _xdr = new Xdr(MAX_XDR_SIZE);
-                
+
                 _fragmentToRead = _buffer.getInt();
                 if ((_fragmentToRead & 0x80000000) != 0) {
                     _fragmentToRead &= 0x7FFFFFFF;
@@ -102,7 +102,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             }
 
             /*
-             * keep the origial buffer as is
+             * keep the original buffer as is
              */
             ByteBuffer bytesToFlush = _buffer.duplicate();
             int n = _fragmentToRead > bytesToFlush.remaining() ? bytesToFlush.remaining() : _fragmentToRead;
@@ -118,7 +118,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             _fragmentToRead -= n;
             if(_fragmentToRead == 0 && _lastFragment) break;
         }
-        
+
         if (_isMuti) {
             _log.log(Level.INFO, "Multifragment XDR, remaining {0} last: {1}",
                 new Object[] {_fragmentToRead, _lastFragment} );
