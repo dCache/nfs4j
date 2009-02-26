@@ -1,23 +1,9 @@
 package org.dcache.xdr;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.acplt.oncrpc.OncRpcPortmapClient;
-import org.acplt.oncrpc.apps.jportmap.OncRpcEmbeddedPortmap;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.JdbcFs;
-import org.dcache.chimera.XMLconfig;
-import org.dcache.chimera.nfs.ExportFile;
-import org.dcache.chimera.nfs.v3.HimeraNFSMountServerV2;
-import org.dcache.chimera.nfs.v3.HimeraNFSServerV2;
-import org.dcache.chimera.nfs.v4.DeviceManager;
-import org.dcache.chimera.nfs.v4.HimeraNFS4Server;
 
 import com.sun.grizzly.Context;
 import com.sun.grizzly.ProtocolFilter;
@@ -26,41 +12,28 @@ public class RpcDispatcher implements ProtocolFilter {
 
     private final static Logger _log = Logger.getLogger(RpcDispatcher.class.getName());
 
-    /*
+    /**
      * List of registered RPC services
+     *
      */
-    private final Map<Integer, RpcDispatchable> _programs =
-            new HashMap<Integer, RpcDispatchable>();
+    private final Map<Integer, RpcDispatchable> _programs;
 
+    /**
+     * Create new RPC dispatcher for given program.
+     *
+     * @param programs {@link Map}
+     *     with a mapping between program number and program
+     *     handler.
+     *
+     * @throws NullPointerException if programs is null
+     */
+    public RpcDispatcher(  Map<Integer, RpcDispatchable> programs  )
+        throws NullPointerException{
 
-    public RpcDispatcher() {
+        if( programs == null)
+            throw new NullPointerException("Programs is NULL");
 
-        try {
-            XMLconfig config;
-            new OncRpcEmbeddedPortmap(2000);
-
-            OncRpcPortmapClient portmap =
-                new OncRpcPortmapClient(InetAddress.getByName("127.0.0.1"));
-            portmap.getOncRpcClient().setTimeout(2000);
-            portmap.setPort(100005, 3, 6, 2049);
-            portmap.setPort(100005, 1, 6, 2049);
-            portmap.setPort(100003, 4, 6, 2049);
-            config = new XMLconfig( new File("/home/tigran/eProjects/Chimera-hg/config.xml") );
-            FileSystemProvider fs = new JdbcFs( config );
-            ExportFile exports = new ExportFile( new File("/etc/exports"));
-            HimeraNFSMountServerV2 ms = new HimeraNFSMountServerV2(exports, fs);
-            HimeraNFSServerV2 nfs = new HimeraNFSServerV2(exports, fs);
-
-            HimeraNFS4Server nfs4 = new HimeraNFS4Server(new DeviceManager(), fs, exports);
-
-            _programs.put(100003, nfs4);
-            _programs.put(100005, ms);
-           // _programs.put(100003, nfs);
-
-        } catch (Exception e) {
-           _log.log(Level.SEVERE, "Failed to start Mount server:", e);
-        }
-
+        _programs = programs;
     }
 
     @Override
