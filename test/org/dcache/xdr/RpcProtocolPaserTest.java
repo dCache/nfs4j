@@ -88,7 +88,7 @@ public class RpcProtocolPaserTest {
 
         _rpcParser.startBuffer(data);
         assertFalse("Multiple fragment massege not detected", _rpcParser.hasNextMessage() );
-
+        assertTrue("Partial message do not request the remaing fragments", _rpcParser.isExpectingMoreData() );
     }
 
     @Test
