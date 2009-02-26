@@ -46,7 +46,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         /*
          * set record marker:
          */
-        _body.putInt(0, len |= 0x80000000 );
+        _body.putInt(0, len | 0x80000000 );
         _body.flip();
     }
 
