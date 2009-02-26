@@ -9,9 +9,9 @@ import static org.junit.Assert.*;
 
 public class RpcProtocolPaserTest {
 
-    
+
     private RpcProtocolPaser _rpcParser;
-    
+
     @Before
     public void setUp() {
         _rpcParser = new RpcProtocolPaser();
@@ -22,7 +22,7 @@ public class RpcProtocolPaserTest {
      */
     @Test
     public void testIsExpectingMoreDataNoData() {
-        assertFalse("parser witout data can't have a partial message", _rpcParser.isExpectingMoreData() );
+        assertFalse("parser without data can't have a partial message", _rpcParser.isExpectingMoreData() );
     }
 
     /**
@@ -30,7 +30,7 @@ public class RpcProtocolPaserTest {
      */
     @Test
     public void testHasMoreBytesToParseNoData() {
-        assertFalse("parser witout data can't have a part of a message", _rpcParser.hasMoreBytesToParse());
+        assertFalse("parser without data can't have a part of a message", _rpcParser.hasMoreBytesToParse());
     }
 
 
@@ -39,7 +39,7 @@ public class RpcProtocolPaserTest {
      */
     @Test
     public void testHasNextMessageNoData() {
-        assertFalse("parser witout any date can't have a message", _rpcParser.hasNextMessage());
+        assertFalse("parser without any date can't have a message", _rpcParser.hasNextMessage());
     }
 
 
@@ -57,8 +57,8 @@ public class RpcProtocolPaserTest {
          * jut set current position to the limit;
          */
         data.position( data.limit() );
-        _rpcParser.startBuffer(data);        
-        assertTrue("Complete massege not detected", _rpcParser.hasNextMessage() );
+        _rpcParser.startBuffer(data);
+        assertTrue("Complete message not detected", _rpcParser.hasNextMessage() );
 
     }
 
@@ -72,7 +72,7 @@ public class RpcProtocolPaserTest {
         data.putInt( messageLen | 0x80000000) ;
 
         _rpcParser.startBuffer(data);
-        assertFalse("PArtial massege not detected", _rpcParser.hasNextMessage() );
+        assertFalse("Partial message not detected", _rpcParser.hasNextMessage() );
 
     }
 
@@ -87,8 +87,8 @@ public class RpcProtocolPaserTest {
         data.putInt(1);
 
         _rpcParser.startBuffer(data);
-        assertFalse("Multiple fragment massege not detected", _rpcParser.hasNextMessage() );
-        assertTrue("Partial message do not request the remaing fragments", _rpcParser.isExpectingMoreData() );
+        assertFalse("Multiple fragment message not detected", _rpcParser.hasNextMessage() );
+        assertTrue("Partial message do not request the remaining fragments", _rpcParser.isExpectingMoreData() );
     }
 
     @Test
@@ -105,7 +105,7 @@ public class RpcProtocolPaserTest {
         data.putInt(1);
 
         _rpcParser.startBuffer(data);
-        assertTrue("Multiple fragment massege not detected", _rpcParser.hasNextMessage() );
+        assertTrue("Multiple fragment message not detected", _rpcParser.hasNextMessage() );
 
     }
 
@@ -122,14 +122,14 @@ public class RpcProtocolPaserTest {
         fragment1.putInt(1);
 
         _rpcParser.startBuffer(fragment1);
-        assertFalse("Partial multi fragment massege not detected", _rpcParser.hasNextMessage() );
+        assertFalse("Partial multi fragment message not detected", _rpcParser.hasNextMessage() );
         _rpcParser.releaseBuffer();
 
         fragment2.putInt( messageLen | 0x80000000) ;
         fragment2.putInt(1);
 
         _rpcParser.startBuffer(fragment2);
-        assertTrue("Multiple fragment massege not detected", _rpcParser.hasNextMessage() );
+        assertTrue("Multiple fragment message not detected", _rpcParser.hasNextMessage() );
     }
 
     @Test
@@ -145,9 +145,9 @@ public class RpcProtocolPaserTest {
         data.putInt(1);
 
         _rpcParser.startBuffer(data);
-        assertTrue("First Compelte massege not detected", _rpcParser.hasNextMessage() );
-        assertTrue("ramaing date not detected", _rpcParser.hasMoreBytesToParse() );
-        assertTrue("Second compelte massege not detected", _rpcParser.hasNextMessage() );
+        assertTrue("First complete message not detected", _rpcParser.hasNextMessage() );
+        assertTrue("Remaining data not detected", _rpcParser.hasMoreBytesToParse() );
+        assertTrue("Second complete message not detected", _rpcParser.hasNextMessage() );
 
     }
 
