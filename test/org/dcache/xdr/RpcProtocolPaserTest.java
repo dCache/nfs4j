@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import org.junit.Before;
 import org.junit.Test;
-import org.omg.CORBA._PolicyStub;
 
 import static org.junit.Assert.*;
 
@@ -158,5 +157,28 @@ public class RpcProtocolPaserTest {
 
     }
 
+    @Test
+    public void testFullMultileFragmentInManyBuffer() {
 
+        byte[] data = new byte[8188];
+        ByteBuffer fragment = ByteBuffer.allocate(128*1024);
+        fragment.order(ByteOrder.BIG_ENDIAN);
+        int messageLen = 8188;
+
+        for( int i = 0; i < 7; i++) {
+            fragment.clear();
+            fragment.putInt( messageLen ) ;
+            fragment.put(data);
+            _rpcParser.startBuffer(fragment);
+            assertFalse("Partial multi fragment message not detected",
+                    _rpcParser.hasNextMessage() );
+            _rpcParser.releaseBuffer();
+        }
+
+        fragment.clear();
+        fragment.putInt( messageLen |  0x80000000 ) ;
+        fragment.put(data);
+        _rpcParser.startBuffer(fragment);
+        assertTrue("Last fragment not detected", _rpcParser.hasNextMessage() );
+    }
 }
