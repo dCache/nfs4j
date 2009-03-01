@@ -163,6 +163,78 @@ public class XdrTest {
     }
 
     @Test
+    public void testEncodeDecodeLong() {
+
+        long value = 7 << 32;
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeLong(value);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        long decoded = decoder.xdrDecodeLong();
+
+        assertEquals("encoded/decoded long do not match", value, decoded);
+    }
+
+    @Test
+    public void testEncodeDecodeMaxLong() {
+
+        long value = Long.MAX_VALUE;
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeLong(value);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        long decoded = decoder.xdrDecodeLong();
+
+        assertEquals("encoded/decoded long do not match", value, decoded);
+    }
+
+    @Test
+    public void testEncodeDecodeMinLong() {
+
+        long value = Long.MIN_VALUE;
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeLong(value);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        long decoded = decoder.xdrDecodeLong();
+
+        assertEquals("encoded/decoded long do not match", value, decoded);
+    }
+
+    @Test
+    public void testEncodeDecodeIntVector() {
+
+        int vector[] = { 1, 2, 3, 4 };
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeIntVector(vector);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        int[] decoded = decoder.xdrDecodeIntVector();
+
+        assertArrayEquals("encoded/decoded int array do not match", vector, decoded);
+    }
+
+    @Test
     public void testSizeConstructor() {
 
         Xdr xdr = new Xdr(1024);
