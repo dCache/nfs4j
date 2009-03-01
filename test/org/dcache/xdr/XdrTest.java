@@ -1,4 +1,3 @@
-
 package org.dcache.xdr;
 
 import java.nio.ByteBuffer;
@@ -39,7 +38,7 @@ public class XdrTest {
         encoder.beginEncoding();
         encoder.xdrEncodeDynamicOpaque(data);
         encoder.endEncoding();
-       
+
         XdrDecodingStream decoder = new Xdr(_buffer);
         decoder.beginDecoding();
         // get xdr fragment mark
@@ -58,7 +57,41 @@ public class XdrTest {
 
         Xdr xdr = new Xdr(_buffer);
         xdr.beginDecoding();
-        assertTrue("Decode value incorrect", xdr.xdrDecodeBoolean() );
+        assertTrue("Decoded value incorrect", xdr.xdrDecodeBoolean() );
+    }
+
+    @Test
+    public void testEncodeDecodeBooleanTrue() {
+
+        boolean value = true;
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeBoolean(value);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        boolean decoded = decoder.xdrDecodeBoolean();
+        assertTrue("Decoded boolean value incorrect", value == decoded );
+    }
+
+    @Test
+    public void testEncodeDecodeBooleanFalse() {
+
+        boolean value = false;
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeBoolean(value);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        boolean decoded = decoder.xdrDecodeBoolean();
+        assertTrue("Decoded boolean value incorrect", value == decoded );
     }
 
     @Test
@@ -68,11 +101,11 @@ public class XdrTest {
 
         Xdr xdr = new Xdr(_buffer);
         xdr.beginDecoding();
-        assertFalse("Decode value incorrect", xdr.xdrDecodeBoolean() );
+        assertFalse("Decoded value incorrect", xdr.xdrDecodeBoolean() );
     }
 
 
-        @Test
+    @Test
     public void testEncodeDecodeString() {
 
         String original = "some random data";
@@ -88,6 +121,54 @@ public class XdrTest {
         String decoded = decoder.xdrDecodeString();
 
         assertEquals("encoded/decoded string do not match", original, decoded);
+
+    }
+
+    @Test
+    public void testEncodeDecodeEmptyString() {
+
+        String original = "";
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeString(original);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        String decoded = decoder.xdrDecodeString();
+
+        assertEquals("encoded/decoded string do not match", original, decoded);
+
+    }
+
+    @Test
+    public void testEncodeDecodeNullString() {
+
+        String original = null;
+        XdrEncodingStream encoder = new Xdr(_buffer);
+        encoder.beginEncoding();
+        encoder.xdrEncodeString(original);
+        encoder.endEncoding();
+
+        XdrDecodingStream decoder = new Xdr(_buffer);
+        decoder.beginDecoding();
+        // get xdr fragment mark
+        decoder.xdrDecodeInt();
+        String decoded = decoder.xdrDecodeString();
+
+        assertEquals("encoded/decoded string do not match", "", decoded);
+
+    }
+
+    @Test
+    public void testSizeConstructor() {
+
+        Xdr xdr = new Xdr(1024);
+        _buffer = xdr.body();
+
+        assertEquals("encode/decode buffer size mismatch", 1024, _buffer.capacity());
 
     }
 }
