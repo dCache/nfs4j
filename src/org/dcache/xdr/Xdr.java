@@ -51,17 +51,12 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     }
 
 
+    /**
+     * Add bytes from provided buffer into internal byte buffer.
+     * @param b {@link ByteBuffer} with data to be added
+     */
     void fill(ByteBuffer b) {
         _body.put(b);
-    }
-
-    /**
-     *
-     * @return true if Xdr message is complete.
-     */
-    boolean isComplete() {
-        _log.log(Level.FINEST, "isComplete " + _body.remaining());
-        return !_body.hasRemaining();
     }
 
     /**
