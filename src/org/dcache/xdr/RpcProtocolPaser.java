@@ -11,6 +11,9 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
     private final static Logger _log = Logger.getLogger(RpcProtocolPaser.class.getName());
     private final static int MAX_XDR_SIZE = 128 * 1024;
+    private final static int  RPC_LAST_FRAG = 0x80000000;
+    private final static int  RPC_SIZE_MASK = 0x7fffffff;
+
     /**
      * Xdr which we try to construct.
      */
@@ -75,8 +78,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
         }
 
         /*
-         * It may happent that single buffer will contain multiple fragments.
-         * Loop over buffer contetn till we get complete message or buffer
+         * It may happen that single buffer will contain multiple fragments.
+         * Loop over the buffer content till we get complete message or buffer
          * has no more data.
          */
         while ( _buffer.hasRemaining() ) {
@@ -87,14 +90,13 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
                     _xdr = new Xdr(MAX_XDR_SIZE);
 
                 _fragmentToRead = _buffer.getInt();
-                if ((_fragmentToRead & 0x80000000) != 0) {
-                    _fragmentToRead &= 0x7FFFFFFF;
-                    _lastFragment = true;
+                _lastFragment = (_fragmentToRead & RPC_LAST_FRAG) != 0;
+                _fragmentToRead &= RPC_SIZE_MASK;
+                if (_lastFragment) {
                     if (_isMuti) {
                         _log.log(Level.INFO, "Multifragment XDR END");
                     }
                 } else {
-                    _lastFragment = false;
                     _isMuti = true;
                     _log.log(Level.INFO, "Multifragment XDR, expected len {0}, available {1}",
                         new Object[]{_fragmentToRead, _buffer.remaining()});
@@ -124,6 +126,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
                 new Object[] {_fragmentToRead, _lastFragment} );
         }
 
+        _log.log(Level.INFO, "xdr size: {0}", _xdr.body().position() );
         boolean rc = _fragmentToRead == 0 && _lastFragment;
         _log.log(Level.FINEST, "hasNextMessage " + rc);
         return rc;
