@@ -42,6 +42,15 @@ public class RpcProtocolPaserTest {
         assertFalse("parser without any date can't have a message", _rpcParser.hasNextMessage());
     }
 
+    @Test
+    public void testBufferNoData() {
+
+        ByteBuffer data = ByteBuffer.allocate(128);
+
+        _rpcParser.startBuffer(data);
+        assertFalse("Empty buffer not detected", _rpcParser.hasNextMessage() );
+
+    }
 
     @Test
     public void testFullFragment() {
@@ -138,6 +147,31 @@ public class RpcProtocolPaserTest {
         assertTrue("Multiple fragment message not detected", _rpcParser.hasNextMessage() );
     }
 
+
+    @Test
+    public void testMultipleInTheSameBuffer() {
+
+        ByteBuffer fragment1 = ByteBuffer.allocate(128);
+        fragment1.order(ByteOrder.BIG_ENDIAN);
+
+        int messageLen = 4;
+
+        fragment1.putInt( messageLen | 0x80000000) ;
+        fragment1.putInt(1);
+        fragment1.putInt( messageLen | 0x80000000) ;
+
+        _rpcParser.startBuffer(fragment1);
+        assertTrue("Compete message not detected", _rpcParser.hasNextMessage() );
+        assertTrue("Partial Next message not detected", _rpcParser.hasMoreBytesToParse() );
+
+        _rpcParser.releaseBuffer();
+
+        fragment1.putInt(1);
+
+        _rpcParser.startBuffer(fragment1);
+        assertTrue("Compete second message not detected", _rpcParser.hasNextMessage() );
+    }
+
     @Test
     public void testFullMultileInOneBuffer() {
 
@@ -181,4 +215,5 @@ public class RpcProtocolPaserTest {
         _rpcParser.startBuffer(fragment);
         assertTrue("Last fragment not detected", _rpcParser.hasNextMessage() );
     }
+
 }
