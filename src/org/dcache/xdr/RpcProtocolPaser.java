@@ -7,6 +7,13 @@ import java.nio.ByteOrder;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+/**
+ *
+ * Filter for parsing ONC RPC messages (RFC 1831).
+ *
+ * After parsing is done we got back complete RPC message even in case of
+ * multiple fragment messages.
+ */
 public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
     private final static Logger _log = Logger.getLogger(RpcProtocolPaser.class.getName());
@@ -32,26 +39,29 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      * highest-order bit of the header; the length is the 31 low-order bits.
      *
      */
-    /** RPC fragment recodr marker mask */
+    /** RPC fragment record marker mask */
     private final static int RPC_LAST_FRAG = 0x80000000;
     /** RPC fragment size mask */
     private final static int RPC_SIZE_MASK = 0x7fffffff;
+
     /**
      * Xdr which we try to construct.
      */
     private Xdr _xdr = null;
+
+    /**
+     * are we processing last fragment of RPC message?
+     */
     private boolean _lastFragment = false;
+
+    /** number of bytes which we we still have to read in the current fragment */
     private int _fragmentToRead = 0;
+
     /** position within buffer */
     private int _nextMessageStartPosition = 0;
-    /** */
-    private boolean _isMuti = false;
+
     private ByteBuffer _buffer = null;
     private boolean _expectingMoreData;
-
-    public RpcProtocolPaser() {
-        _log.log(Level.FINEST, "new instance created");
-    }
 
     /**
      *
@@ -69,11 +79,11 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public boolean hasMoreBytesToParse() {
-        
+
         boolean rc = _buffer != null &&
             !_expectingMoreData &&
             _buffer.position() > _nextMessageStartPosition;
-        
+
         _log.log(Level.FINEST, "hasMoreBytesToParse {0}", rc);
         return rc;
     }
@@ -86,7 +96,6 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
     public Xdr getNextMessage() {
         _lastFragment = false;
         _fragmentToRead = 0;
-        _isMuti = false;
         Xdr xdr = _xdr;
         _xdr = null;
         return xdr;
@@ -107,16 +116,16 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             return false;
         }
 
-        /*
-         * It may happen that single buffer will contain multiple fragments.
-         * Loop over the buffer content till we get complete message or buffer
-         * has no more data.
-         */
         _expectingMoreData = true;
         ByteBuffer bytes = _buffer.duplicate();
         bytes.position(_nextMessageStartPosition);
         bytes.order(ByteOrder.BIG_ENDIAN);
 
+        /*
+         * It may happen that single buffer will contain multiple fragments.
+         * Loop over the buffer content till we get complete message or buffer
+         * has no more data.
+         */
         while (_expectingMoreData ) {
 
             /*
@@ -129,8 +138,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             if (_fragmentToRead == 0) {
 
                 /*
-                 * if it's a beginnig of a message, do we have at least 4 bytes
-                 * for message size
+                 * if it's a beginning of a message and  do we have at least 4 bytes
+                 * for message size let's wait
                  */
                 if (_xdr == null && bytes.remaining() < 4) {
                     _log.log(Level.FINEST, "hasNextMessage false");
@@ -145,30 +154,21 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
                 _nextMessageStartPosition += 4;
                 _lastFragment = (_fragmentToRead & RPC_LAST_FRAG) != 0;
                 _fragmentToRead &= RPC_SIZE_MASK;
-                if (_lastFragment) {
-                    if (_isMuti) {
-                        _log.log(Level.INFO, "Multifragment XDR END");
-                    }
-                } else {
-                    _isMuti = true;
-                    _log.log(Level.INFO, "Multifragment XDR, expected len {0}, available {1}",
-                            new Object[]{_fragmentToRead, bytes.remaining()});
-                }
             }
 
             int n = Math.min(_fragmentToRead, bytes.remaining());
             _nextMessageStartPosition += n;
-            
+
             bytes.limit(bytes.position() + n);
             _xdr.fill(bytes);
 
             _fragmentToRead -= n;
-            _expectingMoreData = !(_fragmentToRead == 0 && _lastFragment);
-        }
 
-        if (_isMuti) {
-            _log.log(Level.INFO, "Multifragment XDR, remaining {0} last: {1}",
-                    new Object[]{_fragmentToRead, _lastFragment});
+            /*
+             * we are done with current XDR if all bytes of last fragment are
+             * received
+             */
+            _expectingMoreData = !(_fragmentToRead == 0 && _lastFragment);
         }
 
         _log.log(Level.FINEST, "hasNextMessage {0}", !_expectingMoreData);
@@ -182,7 +182,6 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public void startBuffer(ByteBuffer buffer) {
-        _log.log(Level.FINEST, "startBuffer");
         _buffer = buffer;
         _buffer.order(ByteOrder.BIG_ENDIAN);
     }
@@ -193,12 +192,19 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public boolean releaseBuffer() {
-        _log.log(Level.FINEST, "releaseBuffer");
+
+        /*
+         * if there is no more data in the current buffer
+         * return it back.
+         *
+         * the next buffer will be a fresh one and we will start
+         * to process it from the beginning
+         */
         if ( !hasMoreBytesToParse() ) {
             _nextMessageStartPosition = 0;
             _buffer.clear();
             _buffer = null;
-        }        
+        }
         return _expectingMoreData;
     }
 
