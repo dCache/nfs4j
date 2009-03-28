@@ -49,7 +49,7 @@ class RpcProtocolFilter implements ProtocolFilter {
         if (type == RpcMessageType.CALL) {
             RpcCall call = new RpcCall(xid, new GrizzlyXdrTransport(context));
             try {
-               call.xdrDecode(xdr);
+               call.setXdr(xdr);
 
                /*
                 * pass RPC call to the next filter in the chain

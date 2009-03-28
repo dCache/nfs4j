@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RpcCall implements XdrAble {
+public class RpcCall {
 
     private final static Logger _log = Logger.getLogger(RpcCall.class.getName());
 
@@ -59,14 +59,22 @@ public class RpcCall implements XdrAble {
      */
     private final XdrTransport _transport;
 
+    /**
+     * RPC request id
+     */
     private int _xid;
+
+    /**
+     * xdr engine
+     */
+    private Xdr _xdr;
 
     public RpcCall(int xid, XdrTransport transport) {
         _transport = transport;
         _xid = xid;
     }
 
-    public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
+    public void setXdr(Xdr xdr) throws OncRpcException, IOException {
         _rpcvers = xdr.xdrDecodeInt();
         _prog = xdr.xdrDecodeInt();
         _version = xdr.xdrDecodeInt();
@@ -105,6 +113,7 @@ public class RpcCall implements XdrAble {
         }
 
         _authVerf.xdrDecode(xdr);
+        _xdr = xdr;
     }
 
     @Override
@@ -120,12 +129,6 @@ public class RpcCall implements XdrAble {
 
         return sb.toString();
     }
-
-    @Override
-    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException {
-        // TODO Auto-generated method stub
-    }
-
 
     /**
      * Get RPC call program number.
@@ -180,7 +183,6 @@ public class RpcCall implements XdrAble {
        xdr.endDecoding();
     }
 
-
     public void failProgramMismatch(int min, int max) {
         _reply(RpcAccepsStatus.PROG_MISMATCH, new MismatchInfo(min, max));
     }
@@ -201,8 +203,8 @@ public class RpcCall implements XdrAble {
         _reply(RpcAccepsStatus.SUCCESS, reply);
     }
     private void _reply(int state, XdrAble reply) {
-        XdrEncodingStream xdr = new Xdr(64*1024);
 
+        XdrEncodingStream xdr = _xdr;
         try {
             xdr.beginEncoding();
             xdr.xdrEncodeInt(_xid);
@@ -229,7 +231,7 @@ public class RpcCall implements XdrAble {
      * @param reply
      */
     public void reject(RpcRejectedReply reply) {
-        XdrEncodingStream xdr = new Xdr(1024);
+        XdrEncodingStream xdr = _xdr;
 
         try {
             xdr.beginEncoding();
@@ -247,9 +249,8 @@ public class RpcCall implements XdrAble {
         }
     }
 
-    public void retrieveCall(XdrAble args, XdrDecodingStream xdr) throws OncRpcException, IOException {
-        args.xdrDecode(xdr);
-        xdr.endDecoding();
+    public void retrieveCall(XdrAble args) throws OncRpcException, IOException {
+        args.xdrDecode(_xdr);
+        _xdr.endDecoding();
     }
-
 }

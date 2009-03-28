@@ -26,7 +26,7 @@ import java.io.IOException;
  */
 public interface RpcDispatchable {
 
-    public void dispatchOncRpcCall(RpcCall call, XdrDecodingStream xdr)
+    public void dispatchOncRpcCall(RpcCall call)
             throws OncRpcException, IOException;
 
 }
