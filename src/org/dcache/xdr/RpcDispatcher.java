@@ -56,9 +56,7 @@ public class RpcDispatcher implements ProtocolFilter {
     @Override
     public boolean execute(Context context) throws IOException {
 
-
         RpcCall call = (RpcCall)context.getAttribute(RpcProtocolFilter.RPC_CALL);
-        Xdr xdr = (Xdr)context.getAttribute(RpcProtocolFilter.RPC_XDR);
 
         int prog = call.getProgram();
         int vers = call.getProgramVersion();

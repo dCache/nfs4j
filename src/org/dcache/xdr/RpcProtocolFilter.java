@@ -28,7 +28,6 @@ import com.sun.grizzly.ProtocolParser;
 class RpcProtocolFilter implements ProtocolFilter {
 
     public static final String RPC_CALL = "RPC_CALL";
-    public static final String RPC_XDR = "RPC_XDR";
 
     private final static Logger _log = Logger.getLogger(RpcProtocolFilter.class.getName());
 
@@ -56,7 +55,6 @@ class RpcProtocolFilter implements ProtocolFilter {
                 */
 
                context.setAttribute(RPC_CALL, call);
-               context.setAttribute(RPC_XDR, xdr);
 
             }catch (RpcException e) {
                 call.reject( e.getRpcReply() );
@@ -86,7 +84,6 @@ class RpcProtocolFilter implements ProtocolFilter {
          * cleanup
          */
         context.removeAttribute(RPC_CALL);
-        context.removeAttribute(RPC_XDR);
 
         return true;
     }
