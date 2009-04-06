@@ -26,10 +26,20 @@ import java.util.logging.Logger;
 public class Xdr implements XdrDecodingStream, XdrEncodingStream {
 
     private final static Logger _log = Logger.getLogger(Xdr.class.getName());
+
+    /**
+     * Byte buffer used by XDR record.
+     */
     private final ByteBuffer _body;
 
     /**
-     * Build a new Xdr object with a buffer of given size.
+     * First position in <code>_body</code> which is used by this
+     * XDR. This is used for record sharing single {@link ByteBuffer}.
+     */
+    private final int _position;
+
+    /**
+     * Create a new Xdr object with a buffer of given size.
      *
      * @param size of the buffer in bytes
      */
@@ -37,13 +47,33 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         this(ByteBuffer.allocate(size));
     }
 
+    /**
+     * Create a new XDR back ended with given {@link ByteBuffer}.
+     * @param body buffer to use
+     */
     public Xdr(ByteBuffer body) {
+        this(body, 0);
+    }
+
+    /**
+     * Create a new XDR back ended with given {@link ByteBuffer}.
+     * The new XDR will use buffer from the offset specified by
+     * <code>position</code>.
+     *
+     * @param body buffer to use.
+     * @param position position within buffer which indicates beginning of this XDR.
+     */
+    public Xdr(ByteBuffer body, int position) {
         _body = body;
         _body.order(ByteOrder.BIG_ENDIAN);
+        _position = position;
     }
 
     public void beginDecoding() {
-        _body.rewind();
+        /*
+         * Set potision to the begginnig of this XDR in back end buffer.
+         */
+        _body.position(_position);
     }
 
     public void endDecoding() {
@@ -52,19 +82,21 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
 
     public void beginEncoding() {
         /*
-         * reserve space for record mark
+         * Set potision to the begginnig of this XDR in back end buffer and
+         * reserve space for record mark.
          */
-        _body.clear().position(4);
+        _body.clear().position(_position + 4);
     }
 
     public void endEncoding() {
-        int len = _body.position() -4 ;
+        int len = _body.position() - _position -4 ;
         _log.log(Level.FINEST, "Encoded XDR size: " + len);
         /*
          * set record marker:
          */
-        _body.putInt(0, len | 0x80000000 );
-        _body.flip();
+        _body.putInt(_position, len | 0x80000000 );
+        _body.limit(_body.position());
+        _body.position(_position);
     }
 
 

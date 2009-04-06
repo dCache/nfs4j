@@ -163,10 +163,6 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
                     return false;
                 }
 
-                if (_xdr == null) {
-                    _xdr = new Xdr(MAX_XDR_SIZE);
-                }
-
                 _fragmentToRead = bytes.getInt();
                 _nextMessageStartPosition += 4;
                 _lastFragment = (_fragmentToRead & RPC_LAST_FRAG) != 0;
@@ -177,6 +173,20 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             _nextMessageStartPosition += n;
 
             bytes.limit(bytes.position() + n);
+            if (_xdr == null) {
+
+                /*
+                 * to avoid extra copy, if we have complete single fragment message
+                 * share current thread buffer with Xdr
+                 */
+                if(n == _fragmentToRead && _lastFragment) {
+                    _xdr = new Xdr(bytes, bytes.position());
+                    _fragmentToRead = 0;
+                    _expectingMoreData = false;
+                    return true;
+                }
+                _xdr = new Xdr(MAX_XDR_SIZE);
+            }
             _xdr.fill(bytes);
 
             _fragmentToRead -= n;
