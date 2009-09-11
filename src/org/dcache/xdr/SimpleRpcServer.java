@@ -26,10 +26,12 @@ import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.TCPSelectorHandler;
 
+import com.sun.grizzly.util.DefaultThreadPool;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -91,7 +93,7 @@ public class SimpleRpcServer {
 
         }else{
             port = DEFAULT_PORT_DS;
-            _log.log(Level.CONFIG, "starting DS on: {0}", port );
+            _log.log(Level.INFO, "starting DS on: {0}", port );
             NFSProtocol_4 ds = new NFSProtocol_4(fs, new File("/tmp/pNFS"));
             programs.put(100003, ds);
         }
@@ -106,6 +108,16 @@ public class SimpleRpcServer {
         tcp_handler.setSelectionKeyHandler(new BaseSelectionKeyHandler());
 
         controller.addSelectorHandler(tcp_handler);
+
+        DefaultThreadPool defp;
+        ExecutorService executorService = controller.getThreadPool();
+        if( executorService instanceof DefaultThreadPool ) {
+            defp = (DefaultThreadPool)executorService;
+        } else {
+            defp = new DefaultThreadPool();
+            controller.setThreadPool( defp );
+        }
+        defp.setInitialByteBufferSize( Xdr.MAX_XDR_SIZE );
         controller.setReadThreadsCount(5);
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();

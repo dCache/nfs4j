@@ -34,7 +34,7 @@ import java.util.logging.Level;
 public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
     private final static Logger _log = Logger.getLogger(RpcProtocolPaser.class.getName());
-    private final static int MAX_XDR_SIZE = 128 * 1024;
+
     /*
      * RPC: 1831
      *     Remote Procedure Call Protocol Specification Version 2
@@ -101,7 +101,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             !_expectingMoreData &&
             _buffer.position() > _nextMessageStartPosition;
 
-        _log.log(Level.FINEST, "hasMoreBytesToParse {0}", rc);
+        _log.log(Level.FINEST, "hasMoreBytesToParse {0}, buffer : {1}, next read at: {2}",
+                new Object[]{rc, _buffer, _nextMessageStartPosition});
         return rc;
     }
 
@@ -111,6 +112,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public Xdr getNextMessage() {
+        _log.log(Level.FINEST, "messate retrieved");
         _lastFragment = false;
         _fragmentToRead = 0;
         Xdr xdr = _xdr;
@@ -159,7 +161,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
                  * for message size let's wait
                  */
                 if (_xdr == null && bytes.remaining() < 4) {
-                    _log.log(Level.FINEST, "hasNextMessage false");
+                    _log.log(Level.FINEST, "hasNextMessage false (short read)");
                     return false;
                 }
 
@@ -167,6 +169,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
                 _nextMessageStartPosition += 4;
                 _lastFragment = (_fragmentToRead & RPC_LAST_FRAG) != 0;
                 _fragmentToRead &= RPC_SIZE_MASK;
+                _log.log(Level.FINEST, "Fragment : lenght = {0}, last = {1}",
+                        new Object[] {_fragmentToRead, _lastFragment});
             }
 
             int n = Math.min(_fragmentToRead, bytes.remaining());
@@ -174,18 +178,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
 
             bytes.limit(bytes.position() + n);
             if (_xdr == null) {
-
-                /*
-                 * to avoid extra copy, if we have complete single fragment message
-                 * share current thread buffer with Xdr
-                 */
-                if(n == _fragmentToRead && _lastFragment) {
-                    _xdr = new Xdr(bytes, bytes.position());
-                    _fragmentToRead = 0;
-                    _expectingMoreData = false;
-                    return true;
-                }
-                _xdr = new Xdr(MAX_XDR_SIZE);
+                _log.log(Level.FINEST, "allocating a new buffer for XDR message");
+                _xdr = new Xdr(Xdr.MAX_XDR_SIZE);
             }
             _xdr.fill(bytes);
 
@@ -209,6 +203,8 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
      */
     @Override
     public void startBuffer(ByteBuffer buffer) {
+        _log.log(Level.FINEST, "new buffer: {0}. Next message position {1}",
+            new Object[] {buffer, _nextMessageStartPosition});
         _buffer = buffer;
         _buffer.order(ByteOrder.BIG_ENDIAN);
     }
@@ -230,8 +226,11 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
         if ( !hasMoreBytesToParse() ) {
             _nextMessageStartPosition = 0;
             _buffer.clear();
+            _log.log(Level.FINEST,  "reseting buffer prior release: {0}", _buffer );
             _buffer = null;
         }
+        _log.log(Level.FINEST, "releaseBuffer: usesame = {0}, current position = {1}",
+                new Object[] {_expectingMoreData, _nextMessageStartPosition});
         return _expectingMoreData;
     }
 
