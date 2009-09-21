@@ -27,7 +27,7 @@ import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.TCPSelectorHandler;
 
 import com.sun.grizzly.util.DefaultThreadPool;
-import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,66 +37,42 @@ import java.util.logging.Level;
 
 import org.acplt.oncrpc.OncRpcPortmapClient;
 import org.acplt.oncrpc.apps.jportmap.OncRpcEmbeddedPortmap;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.JdbcFs;
-import org.dcache.chimera.XMLconfig;
-import org.dcache.chimera.nfs.ExportFile;
-import org.dcache.chimera.nfs.v3.HimeraNFSMountServerV2;
-import org.dcache.chimera.nfs.v4.DeviceManager;
-import org.dcache.chimera.nfs.v4.HimeraNFS4Server;
-import org.dcache.chimera.nfs.v4.mover.NFSProtocol_4;
-
 
 public class SimpleRpcServer {
 
     private final static Logger _log = Logger.getLogger(SimpleRpcServer.class.getName());
 
-    static final int DEFAULT_PORT_MDS = 2049;
-    static final int DEFAULT_PORT_DS = 2052;
+    static final int DEFAULT_PORT = 1717;
 
     public static void main(String[] args) throws Exception {
 
-        if( args.length != 1) {
-            System.err.println("Usage: SimpleRpcServer <mds|ds>");
+        if( args.length > 1) {
+            System.err.println("Usage: SimpleRpcServer <port>");
             System.exit(1);
         }
 
-        boolean mds = args[0].equals("mds");
+        int port = DEFAULT_PORT;
+        if( args.length == 1) {
+            port = Integer.parseInt(args[0]);
+        }
 
         Map<Integer, RpcDispatchable> programs = new HashMap<Integer, RpcDispatchable>();
-        XMLconfig config = new XMLconfig(new File("/home/tigran/eProjects/Chimera-hg/config.xml"));
-        FileSystemProvider fs = new JdbcFs(config);
 
-        int port;
-        if( mds ) {
-            port  = DEFAULT_PORT_MDS;
-            _log.log(Level.CONFIG, "starting MDS on: {0}", port);
+        new OncRpcEmbeddedPortmap(2000);
 
-            new OncRpcEmbeddedPortmap(2000);
-
-            OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress
+        OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress
                     .getByName("127.0.0.1"));
-            portmap.getOncRpcClient().setTimeout(2000);
-            portmap.setPort(100005, 3, 6, 2049);
-            portmap.setPort(100005, 1, 6, 2049);
-            portmap.setPort(100003, 4, 6, 2049);
+        portmap.getOncRpcClient().setTimeout(2000);
+        portmap.setPort(100017, 1, 6, port);
 
+        RpcDispatchable dummy = new RpcDispatchable() {
 
-            ExportFile exports = new ExportFile(new File("/etc/exports"));
-            HimeraNFSMountServerV2 ms = new HimeraNFSMountServerV2(exports, fs);
+            public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
+                call.reply(XdrVoid.XDR_VOID);
+            }
 
-            HimeraNFS4Server nfs4 = new HimeraNFS4Server(new DeviceManager(),
-                    fs, exports);
-
-            programs.put(100003, nfs4);
-            programs.put(100005, ms);
-
-        }else{
-            port = DEFAULT_PORT_DS;
-            _log.log(Level.INFO, "starting DS on: {0}", port );
-            NFSProtocol_4 ds = new NFSProtocol_4(fs, new File("/tmp/pNFS"));
-            programs.put(100003, ds);
-        }
+        };
+        programs.put(100003, dummy);
 
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
         final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
