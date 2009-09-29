@@ -26,6 +26,9 @@ public class XdrBoolean implements XdrAble {
 
     private boolean _value;
 
+    public XdrBoolean() {
+    }
+
     public XdrBoolean(boolean value) {
         _value = value;
     }
