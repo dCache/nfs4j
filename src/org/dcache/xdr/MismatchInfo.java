@@ -27,6 +27,8 @@ public class MismatchInfo implements XdrAble {
         _max = max;
     }
 
+    public MismatchInfo() {}
+
     @Override
     public void xdrEncode(XdrEncodingStream xdr) {
         xdr.xdrEncodeInt(_min);
@@ -37,6 +39,11 @@ public class MismatchInfo implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr) {
         _min = xdr.xdrDecodeInt();
         _max = xdr.xdrDecodeInt();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("mismatch info: [%d, %d]", _min, _max);
     }
 
 }

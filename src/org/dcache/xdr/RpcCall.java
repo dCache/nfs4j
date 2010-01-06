@@ -19,12 +19,20 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RpcCall {
 
     private final static Logger _log = Logger.getLogger(RpcCall.class.getName());
+
+    /**
+     * XID number generator
+     */
+    private final static AtomicInteger NEXT_XID = new AtomicInteger(0);
+
+    private int _xid;
 
     /**
      * Supported RPC protocol version
@@ -51,83 +59,75 @@ public class RpcCall {
      */
     private int _rpcvers;
 
-    private RpcAuth _authVerf;
-    private RpcAuth _auth;
+    /**
+     * Authentication credential.
+     */
+    private RpcAuth _cred;
 
     /**
-     * transport to reply messages back
+     * Authentication verifier.
+     */
+    private RpcAuth _verf;
+
+    /**
+     * RPC call transport.
      */
     private final XdrTransport _transport;
 
     /**
-     * RPC request id
+     * Call body.
      */
-    private int _xid;
+    private final Xdr _xdr;
 
-    /**
-     * xdr engine
-     */
-    private Xdr _xdr;
-
-    public RpcCall(int xid, XdrTransport transport) {
+    public RpcCall(int prog, int ver, RpcAuth auth, RpcAuth verif, XdrTransport transport) {
+        _prog = prog;
+        _version = ver;
+        _cred = auth;
+        _verf = verif;
         _transport = transport;
-        _xid = xid;
+        _xdr = new Xdr(Xdr.MAX_XDR_SIZE);
     }
 
-    public void setXdr(Xdr xdr) throws OncRpcException, IOException {
-        _rpcvers = xdr.xdrDecodeInt();
+    public RpcCall(int xid, Xdr xdr, XdrTransport transport) throws OncRpcException, IOException {
+        _xid = xid;
+        _xdr = xdr;
+        _transport = transport;
+        _rpcvers = _xdr.xdrDecodeInt();
+        if (_rpcvers != RPCVERS) {
+            throw new RpcMismatchReply(2, 2);
+        }
         _prog = xdr.xdrDecodeInt();
         _version = xdr.xdrDecodeInt();
-        if( _rpcvers != RPCVERS ) {
-            throw new RpcException("RPC version mismatch: " + _rpcvers,
-                    new RpcMismatchReply(2, 2));
-        }
         _proc = xdr.xdrDecodeInt();
+
         int authType = xdr.xdrDecodeInt();
         _log.log(Level.FINEST, "Auth type: {0}", authType);
-        switch(authType) {
-            case RpcAuthType.UNIX :
-                _auth = new RpcAuthTypeUnix();
+        switch (authType) {
+            case RpcAuthType.UNIX:
+                _cred = new RpcAuthTypeUnix();
                 break;
             case RpcAuthType.NONE:
-                _auth = new RpcAuthTypeNone();
+                _cred = new RpcAuthTypeNone();
                 break;
             default:
-                throw new RpcException("Unsupported Auth type: " + authType,
-                        new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED));
+                throw new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED);
         }
-        _auth.xdrDecode(xdr);
+        _cred.xdrDecode(xdr);
 
         authType = xdr.xdrDecodeInt();
         _log.log(Level.FINEST, "Auth Verifier type: {0}", authType);
-        switch(authType) {
-            case RpcAuthType.UNIX :
-                _authVerf = new RpcAuthTypeUnix();
+        switch (authType) {
+            case RpcAuthType.UNIX:
+                _verf = new RpcAuthTypeUnix();
                 break;
             case RpcAuthType.NONE:
-                _authVerf = new RpcAuthTypeNone();
+                _verf = new RpcAuthTypeNone();
                 break;
             default:
-                throw new RpcException("Unsupported Auth type: " + authType,
-                        new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED));
+                throw new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED);
         }
 
-        _authVerf.xdrDecode(xdr);
-        _xdr = xdr;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(_auth);
-
-        sb.append("RPC vers.: ").append(_rpcvers).append("\n");
-        sb.append("Program  : ").append(_prog).append("\n");
-        sb.append("Version  : ").append(_version).append("\n");
-        sb.append("Procedure: ").append(_proc).append("\n");
-
-        return sb.toString();
+        _verf.xdrDecode(xdr);
     }
 
     /**
@@ -154,62 +154,44 @@ public class RpcCall {
     }
 
     public RpcAuth getAuth() {
-        return _auth;
+        return _cred;
     }
 
     public RpcAuth getAuthVerf() {
-        return _authVerf;
+        return _verf;
     }
 
-    /**
-     * Get RPC transport used by this call.
-     *
-     * @return
-     */
-    public XdrTransport getTransport() {
-        return _transport;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("RPC vers.: ").append(_rpcvers).append("\n");
+        sb.append("Program  : ").append(_prog).append("\n");
+        sb.append("Version  : ").append(_version).append("\n");
+        sb.append("Procedure: ").append(_proc).append("\n");
+        sb.append("cred     : ").append(_cred).append("\n");
+        sb.append("verf     : ").append(_verf).append("\n");
+
+        return sb.toString();
     }
 
-    /**
-     * Retrieves the parameters sent within an ONC/RPC call message.
-     *
-     * @param xdr Xdr data which contains call argument.
-     * @param args the call argument do decode
-     * @throws OncRpcException
-     */
-    public void retrieveCallArgs(XdrDecodingStream xdr, XdrAble args)
-        throws OncRpcException, IOException {
-       args.xdrDecode(xdr);
-       xdr.endDecoding();
-    }
-
-    public void failProgramMismatch(int min, int max) {
-        _reply(RpcAccepsStatus.PROG_MISMATCH, new MismatchInfo(min, max));
-    }
-
-    public void failProgramUnavailable() {
-        _reply(RpcAccepsStatus.PROG_UNAVAIL,  XdrVoid.XDR_VOID);
-    }
-
-    public void failProcedureUnavailable() {
-        _reply(RpcAccepsStatus.PROC_UNAVAIL,  XdrVoid.XDR_VOID);
-    }
     /**
      * Send accepted reply to the client.
      *
      * @param reply
      */
     public void reply(XdrAble reply) {
-        _reply(RpcAccepsStatus.SUCCESS, reply);
+        acceptedReply(RpcAccepsStatus.SUCCESS, reply);
     }
-    private void _reply(int state, XdrAble reply) {
+
+    private void acceptedReply(int state, XdrAble reply) {
 
         XdrEncodingStream xdr = _xdr;
         try {
+            RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
             xdr.beginEncoding();
-            xdr.xdrEncodeInt(_xid);
-            xdr.xdrEncodeInt(RpcMessageType.REPLY);
-            xdr.xdrEncodeInt(RpcReplyStats.MSG_ACCEPTED);
+            replyMessage.xdrEncode(_xdr);
+            xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
             getAuthVerf().xdrEncode(xdr);
             xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
@@ -226,31 +208,106 @@ public class RpcCall {
     }
 
     /**
-     * Send rejected reply to the client.
+     * Retrieves the parameters sent within an ONC/RPC call message.
      *
-     * @param reply
+     * @param args the call argument do decode
+     * @throws OncRpcException
      */
-    public void reject(RpcRejectedReply reply) {
-        XdrEncodingStream xdr = _xdr;
-
-        try {
-            xdr.beginEncoding();
-            xdr.xdrEncodeInt(_xid);
-            xdr.xdrEncodeInt(RpcMessageType.REPLY);
-            xdr.xdrEncodeInt(RpcReplyStats.MSG_DENIED);
-            reply.xdrEncode(xdr);
-            xdr.endEncoding();
-
-            ByteBuffer message = xdr.body();
-            _transport.send(message);
-
-        } catch (IOException e) {
-            _log.log(Level.SEVERE, "Failed send reply: ", e);
-        }
-    }
-
     public void retrieveCall(XdrAble args) throws OncRpcException, IOException {
         args.xdrDecode(_xdr);
         _xdr.endDecoding();
+    }
+
+    /**
+     * Reply to client with error program version mismatch.
+     * Accepted message sent.
+     *
+     * @param min minimal supported version
+     * @param max maximal supported version
+     */
+    public void failProgramMismatch(int min, int max) {
+        acceptedReply(RpcAccepsStatus.PROG_MISMATCH, new MismatchInfo(min, max));
+    }
+
+    /**
+     * Reply to client with error program unavailable.
+     * Accepted message sent.
+     */
+    public void failProgramUnavailable() {
+        acceptedReply(RpcAccepsStatus.PROG_UNAVAIL, XdrVoid.XDR_VOID);
+    }
+
+    /**
+     * Reply to client with error procedure unavailable.
+     */
+    public void failProcedureUnavailable() {
+        acceptedReply(RpcAccepsStatus.PROC_UNAVAIL, XdrVoid.XDR_VOID);
+    }
+
+    /**
+     * Send call to remove RPC server.
+     *
+     * @param procedure the number of the procedure.
+     * @param args the argument of the procedure.
+     * @param result the result of the procedure
+     * @throws OncRpcException
+     * @throws IOException
+     */
+    public void call(int procedure, XdrAble args, XdrAble result)
+            throws OncRpcException, IOException {
+
+        this.call(procedure, args, result, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Send call to remove RPC server.
+     *
+     * @param procedure the number of the procedure.
+     * @param args the argument of the procedure.
+     * @param result the result of the procedure
+     * @param timeout
+     * @throws OncRpcException
+     * @throws IOException
+     */
+    public void call(int procedure, XdrAble args, XdrAble result, int timeout)
+            throws OncRpcException, IOException {
+
+        int xid = NEXT_XID.incrementAndGet();
+
+        _xdr.beginEncoding();
+        RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
+        rpcMessage.xdrEncode(_xdr);
+        _xdr.xdrEncodeInt(RPCVERS);
+        _xdr.xdrEncodeInt(_prog);
+        _xdr.xdrEncodeInt(_version);
+        _xdr.xdrEncodeInt(procedure);
+        _cred.xdrEncode(_xdr);
+        _verf.xdrEncode(_xdr);
+        args.xdrEncode(_xdr);
+        _xdr.endEncoding();
+
+        _transport.getReplyQueue().registerKey(xid);
+        ByteBuffer data = _xdr.body();
+        _transport.send(data);
+
+        RpcReply reply;
+        try {
+            reply = _transport.getReplyQueue().get(xid, timeout);
+        } catch (InterruptedException e) {
+            _log.log(Level.SEVERE, "call processing interrupted");
+            throw new IOException(e.getMessage());
+        }
+
+        if(reply.isAccepted() && reply.getAcceptStatus() == RpcAccepsStatus.SUCCESS ) {
+            reply.getReplyResult(result);
+        } else {
+            _log.log(Level.INFO, "reply not succeeded {0}", reply);
+            // FIXME: error handling here
+
+            if( reply.isAccepted() ) {
+                throw new OncRpcAcceptedException(reply.getAcceptStatus());
+            }
+            throw new OncRpcRejectedException(reply.getRejectStatus());
+        }
     }
 }

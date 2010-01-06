@@ -21,25 +21,20 @@ package org.dcache.xdr;
  * The server is not running a compatible version
  * of the RPC protocol (RPC_MISMATCH).
  */
-public class RpcMismatchReply extends RpcRejectedReply {
+public class RpcMismatchReply extends OncRpcException {
 
-    private int _min;
-    private int _max;
+    private final MismatchInfo _mismatchInfo;
 
     public RpcMismatchReply(int min, int max) {
-        _min = min;
-        _max = max;
+        this(new MismatchInfo(min, max));
     }
 
-    /* (non-Javadoc)
-     * @see org.dcache.xdr.RpcRejectedReply#xdrEncode(org.dcache.xdr.Xdr)
-     */
-    @Override
-    public void xdrEncode(XdrEncodingStream xdr) {
-        super.xdrEncode(xdr);
-        xdr.xdrEncodeInt(RpcRejectStatus.RPC_MISMATCH);
-        xdr.xdrEncodeInt(_min);
-        xdr.xdrEncodeInt(_max);
+    public RpcMismatchReply(MismatchInfo mismatchInfo) {
+        super( mismatchInfo.toString() );
+        _mismatchInfo = mismatchInfo;
     }
 
+    public MismatchInfo getMismatchInfo() {
+        return _mismatchInfo;
+    }
 }

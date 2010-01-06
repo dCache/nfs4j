@@ -17,39 +17,36 @@
 
 package org.dcache.xdr;
 
+import com.sun.grizzly.ConnectorHandler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
-/**
- *
- * Abstraction for sending reply to clients
- *
- */
-public interface XdrTransport {
+public class ClientTransport implements XdrTransport {
 
-    /**
-     * Send data to remote end point.
-     *
-     * @param data
-     * @throws IOException
-     */
-    public void send(ByteBuffer data) throws IOException;
+    private final ConnectorHandler _connectorHandler;
+    private final ReplyQueue<Integer, RpcReply> _replyQueue;
 
-    public ReplyQueue<Integer, RpcReply> getReplyQueue();
+    public ClientTransport(ConnectorHandler connectorHandler ,
+            ReplyQueue<Integer, RpcReply> replyQueue ) {
+        _replyQueue = replyQueue;
+        _connectorHandler = connectorHandler;
+    }
 
-    /**
-     * Get local end point.
-     *
-     * @return InetSocketAddress of local socket end point
-     */
-    public InetSocketAddress getLocalSocketAddress();
+    public void send(ByteBuffer data) throws IOException {
+        _connectorHandler.write(data, true);
+    }
 
-    /**
-     * Get remote end point.
-     *
-     * @return InetSocketAddress of remote socket end point.
-     */
-    public InetSocketAddress getRemoteSocketAddress();
+    public InetSocketAddress getLocalSocketAddress() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public InetSocketAddress getRemoteSocketAddress() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ReplyQueue<Integer, RpcReply> getReplyQueue() {
+        return _replyQueue;
+    }
 
 }

@@ -17,18 +17,16 @@
 
 package org.dcache.xdr;
 
-public class RpcAuthMissmatch extends RpcRejectedReply {
+public class RpcAuthMissmatch extends OncRpcException {
 
     private final int _status;
 
     public RpcAuthMissmatch(int status) {
+        super(RpcAuthStat.toString(status));
         _status = status;
     }
 
-    @Override
-    public void xdrEncode(XdrEncodingStream xdr) {
-        xdr.xdrEncodeInt(RpcRejectStatus.AUTH_ERROR);
-        xdr.xdrEncodeInt(_status);
+    public int getAuthError() {
+        return _status;
     }
-
 }

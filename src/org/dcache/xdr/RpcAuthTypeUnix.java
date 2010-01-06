@@ -33,6 +33,16 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     private final static Logger _log = Logger.getLogger(RpcAuthTypeUnix.class.getName());
 
+    public RpcAuthTypeUnix() {}
+
+    public RpcAuthTypeUnix(int uid, int gid, int[] gids, int stamp, String machine) {
+        _uid = uid;
+        _gid = gid;
+        _gids = gids;
+        _stamp = stamp;
+        _machine = machine;
+    }
+
     public void xdrDecode(XdrDecodingStream xdr) {
 
         _len = xdr.xdrDecodeInt();

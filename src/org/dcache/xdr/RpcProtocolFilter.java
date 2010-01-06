@@ -30,6 +30,15 @@ class RpcProtocolFilter implements ProtocolFilter {
     public static final String RPC_CALL = "RPC_CALL";
 
     private final static Logger _log = Logger.getLogger(RpcProtocolFilter.class.getName());
+    private final ReplyQueue<Integer, RpcReply> _replyQueue;
+
+    public RpcProtocolFilter() {
+        this(null);
+    }
+
+    public RpcProtocolFilter(ReplyQueue<Integer, RpcReply> replyQueue) {
+        _replyQueue = replyQueue;
+    }
 
     @Override
     public boolean execute(Context context) throws IOException {
@@ -42,13 +51,12 @@ class RpcProtocolFilter implements ProtocolFilter {
 
         xdr.beginDecoding();
 
-        int xid = xdr.xdrDecodeInt();
-        int type = xdr.xdrDecodeInt();
+        RpcMessage message = new RpcMessage(xdr);
+        XdrTransport transport = new GrizzlyXdrTransport(context);
 
-        if (type == RpcMessageType.CALL) {
-            RpcCall call = new RpcCall(xid, new GrizzlyXdrTransport(context));
+        if (message.type() == RpcMessageType.CALL) {
             try {
-               call.setXdr(xdr);
+                RpcCall call = new RpcCall(message.xid(), xdr, transport);
 
                /*
                 * pass RPC call to the next filter in the chain
@@ -57,7 +65,12 @@ class RpcProtocolFilter implements ProtocolFilter {
                context.setAttribute(RPC_CALL, call);
 
             }catch (RpcException e) {
-                call.reject( e.getRpcReply() );
+                RpcReply reply = e.getRpcReply();
+                try {
+                    reply.reply(XdrVoid.XDR_VOID);
+                } catch (OncRpcException ex) {
+                    Logger.getLogger(RpcProtocolFilter.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 _log.log(Level.INFO, "RPC request rejected: " + e.getMessage());
                 return false;
             }catch (OncRpcException e) {
@@ -70,8 +83,14 @@ class RpcProtocolFilter implements ProtocolFilter {
              * the client connection. But it's definitely part of
              * bidirectional RPC calls.
              */
-            RpcReply msg = new RpcReply();
-            _log.log(Level.INFO, "Reply received: " + msg);
+            try {
+                RpcReply reply = new RpcReply(message.xid(), xdr, transport);
+                if(_replyQueue != null ) {
+                    _replyQueue.put(message.xid(), reply);
+                }
+            }catch(OncRpcException e) {
+                _log.log(Level.WARNING, "failed to decode reply:", e);
+            }
         }
 
         return true;

@@ -18,7 +18,18 @@
 package org.dcache.xdr;
 
 
-public interface RpcMessageType {
+public final class  RpcMessageType {
+
+    private RpcMessageType() {}
+
     public static final int CALL = 0;
     public static final int REPLY = 1;
+
+    public static String toString(int i) {
+        switch(i) {
+            case CALL: return "CALL";
+            case REPLY: return "REPLY";
+        }
+        return "Unfalid value: " +i;
+    }
 }

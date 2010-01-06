@@ -17,26 +17,18 @@
 
 package org.dcache.xdr;
 
-/**
- * Reasons why a call message was rejected.
- */
-public final class RpcRejectStatus {
+public final class IpProtocolType {
 
-    private RpcRejectStatus() {}
-    /**
-     * RPC version number != 2.
-     */
-    public static final int RPC_MISMATCH = 0;
-    /**
-     * Remote can't authenticate caller.
-     */
-    public static final int AUTH_ERROR = 1;
+    private IpProtocolType() {}
+
+    public final static int TCP = 6;
+    public final static int UDP = 17;
 
     public static String toString(int i) {
         switch(i) {
-            case RPC_MISMATCH: return "RPC_MISMATCH";
-            case AUTH_ERROR: return "AUTH_ERROR";
+            case TCP: return "tcp";
+            case UDP: return "udp";
         }
-        return "Unknown: " +i;
+        return "Unknown";
     }
 }

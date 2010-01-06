@@ -22,14 +22,14 @@ public class RpcException  extends OncRpcException {
 
 
     private static final long serialVersionUID = 1050375986800628995L;
-    private final RpcRejectedReply _reply;
+    private final RpcReply _reply;
     
-    RpcException(String msg, RpcRejectedReply reply) {
+    RpcException(String msg, RpcReply reply) {
         super(msg);
         _reply = reply;
     }
         
-    public RpcRejectedReply getRpcReply() {
+    public RpcReply getRpcReply() {
         return _reply;
     }
     

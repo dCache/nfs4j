@@ -17,26 +17,35 @@
 
 package org.dcache.xdr;
 
-/**
- * Reasons why a call message was rejected.
- */
-public final class RpcRejectStatus {
+public class RpcMessage implements XdrAble {
 
-    private RpcRejectStatus() {}
-    /**
-     * RPC version number != 2.
-     */
-    public static final int RPC_MISMATCH = 0;
-    /**
-     * Remote can't authenticate caller.
-     */
-    public static final int AUTH_ERROR = 1;
+    private int _xid;
+    private int _type;
 
-    public static String toString(int i) {
-        switch(i) {
-            case RPC_MISMATCH: return "RPC_MISMATCH";
-            case AUTH_ERROR: return "AUTH_ERROR";
-        }
-        return "Unknown: " +i;
+    RpcMessage(XdrDecodingStream xdr) {
+        this.xdrDecode(xdr);
+    }
+
+    RpcMessage(int xid, int type) {
+        _xid = xid;
+        _type = type;
+    }
+
+    public void xdrDecode(XdrDecodingStream xdr) {
+        _xid = xdr.xdrDecodeInt();
+        _type = xdr.xdrDecodeInt();
+    }
+
+    public void xdrEncode(XdrEncodingStream xdr) {
+        xdr.xdrEncodeInt(_xid);
+        xdr.xdrEncodeInt(_type);
+    }
+
+    public int xid() {
+        return _xid;
+    }
+
+    public int type() {
+        return _type;
     }
 }

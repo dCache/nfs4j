@@ -17,14 +17,11 @@
 
 package org.dcache.xdr;
 
-public abstract class RpcAcceptedReply extends RpcReply {
+public class OncRpcRejectedException extends OncRpcException {
+    private final int _status;
 
-    /* (non-Javadoc)
-     * @see org.dcache.xdr.RpcReply#xdrEncode(org.dcache.xdr.Xdr)
-     */
-    @Override
-    public void xdrEncode(XdrEncodingStream xdr) {
-        super.xdrEncode(xdr);
+    public OncRpcRejectedException(int status) {
+        super(RpcRejectStatus.toString(status));
+        _status = status;
     }
-
 }

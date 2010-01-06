@@ -18,25 +18,27 @@
 package org.dcache.xdr;
 
 /**
- * Reasons why a call message was rejected.
+ * A reply to a call message can take on two forms:
+ * The message was either accepted or rejected.
  */
-public final class RpcRejectStatus {
+public final class RpcReplyStatus {
 
-    private RpcRejectStatus() {}
+    private RpcReplyStatus() {}
     /**
-     * RPC version number != 2.
+     * The message was accepted.
      */
-    public static final int RPC_MISMATCH = 0;
+    public static final int MSG_ACCEPTED = 0;
+
     /**
-     * Remote can't authenticate caller.
+     * The message was rejected.
      */
-    public static final int AUTH_ERROR = 1;
+    public static final int MSG_DENIED = 1;
 
     public static String toString(int i) {
         switch(i) {
-            case RPC_MISMATCH: return "RPC_MISMATCH";
-            case AUTH_ERROR: return "AUTH_ERROR";
+            case MSG_ACCEPTED: return "MSG_ACCEPTED";
+            case MSG_DENIED: return "MSG_DENIED";
         }
-        return "Unknown: " +i;
+        return "Unknown " + i;
     }
 }

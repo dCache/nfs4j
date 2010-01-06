@@ -17,26 +17,30 @@
 
 package org.dcache.xdr;
 
-/**
- * Reasons why a call message was rejected.
- */
-public final class RpcRejectStatus {
+import java.net.InetAddress;
 
-    private RpcRejectStatus() {}
-    /**
-     * RPC version number != 2.
-     */
-    public static final int RPC_MISMATCH = 0;
-    /**
-     * Remote can't authenticate caller.
-     */
-    public static final int AUTH_ERROR = 1;
+public class SimpleRpcClient {
 
-    public static String toString(int i) {
-        switch(i) {
-            case RPC_MISMATCH: return "RPC_MISMATCH";
-            case AUTH_ERROR: return "AUTH_ERROR";
+    public static void main(String[] args) throws Exception {
+
+        if (args.length != 2) {
+            System.err.println("usage: SimpleRpcClient host port");
+            System.exit(1);
         }
-        return "Unknown: " +i;
+
+        InetAddress address = InetAddress.getByName(args[0]);
+        int port = Integer.parseInt(args[1]);
+
+        OncRpcClient rpcClient = new OncRpcClient(address, port, port);
+        XdrTransport transport = rpcClient.connect();
+        RpcAuth auth = new RpcAuthTypeNone();
+
+        RpcCall call = new RpcCall(100017, 1, auth, auth, transport);
+
+        /*
+         * call PROC_NULL (ping)
+         */
+        call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID);
+        rpcClient.close();
     }
 }

@@ -21,7 +21,9 @@ package org.dcache.xdr;
  * Given that a call message was accepted, the following is the
  * status of an attempt to call a remote procedure.
  */
-public interface  RpcAccepsStatus {
+public final class  RpcAccepsStatus {
+
+    private RpcAccepsStatus(){}
 
     /**
      * RPC executed successfully
@@ -43,4 +45,20 @@ public interface  RpcAccepsStatus {
      * Procedure can't decode params.
      */
     public static final int GARBAGE_ARGS = 4;
+    /**
+     * Undefined system error
+     */
+    public static final int SYSTEM = 5;
+
+    public static String toString(int status) {
+        switch(status) {
+            case SUCCESS: return "SUCCESS";
+            case PROG_UNAVAIL: return "PROG_UNAVIAL";
+            case PROG_MISMATCH: return "PROG_MISMATCH";
+            case PROC_UNAVAIL: return "PROC_UNAVAIL";
+            case GARBAGE_ARGS: return "GARBAGE_ARGS";
+            case SYSTEM: return "SYSTEM";
+        }
+        return "UNKNOWN";
+    }
 }

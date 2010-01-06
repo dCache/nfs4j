@@ -61,4 +61,8 @@ public class GrizzlyXdrTransport implements XdrTransport {
     public InetSocketAddress getRemoteSocketAddress() {
         return _remote;
     }
+
+    public ReplyQueue getReplyQueue() {
+        return null;
+    }
 }
