@@ -169,4 +169,19 @@ public class OncRpcSvc {
         _programs.remove(prog);
     }
 
+    /**
+     * Get number of maximal concurrent threads.
+     * @return thread number
+     */
+    public int getThreadCount() {
+        return _controller.getReadThreadsCount();
+    }
+
+    /**
+     * Set the maximal number of concurrent threads.
+     * @param count
+     */
+    public void setThreadCount(int count) {
+        _controller.setReadThreadsCount(count);
+    }
 }
