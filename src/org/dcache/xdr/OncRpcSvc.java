@@ -20,6 +20,7 @@ import com.sun.grizzly.Controller;
 import com.sun.grizzly.ControllerStateListenerAdapter;
 import com.sun.grizzly.DefaultProtocolChain;
 import com.sun.grizzly.DefaultProtocolChainInstanceHandler;
+import com.sun.grizzly.PortRange;
 import com.sun.grizzly.ProtocolChain;
 import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
@@ -50,9 +51,18 @@ public class OncRpcSvc {
     /**
      * Create a new server.
      *
-     * @param port TCP port to which service will he bound.
+     * @param port TCP/UDP port to which service will he bound.
      */
     public OncRpcSvc(int port) {
+        this(new PortRange(port));
+    }
+
+    /**
+     * Create a new server.
+     *
+     * @param {@link PortRange} of TCP/UDP ports to which service will he bound.
+     */
+    public OncRpcSvc(PortRange portRange) {
 
         final ProtocolFilter protocolKeeper = new ProtocolKeeperFilter();
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
@@ -60,11 +70,11 @@ public class OncRpcSvc {
         final ProtocolFilter rpcDispatcher = new RpcDispatcher(_programs);
 
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
-        tcp_handler.setPort(port);
+        tcp_handler.setPortRange(portRange);
         _controller.addSelectorHandler(tcp_handler);
 
         final UDPSelectorHandler udp_handler = new UDPSelectorHandler();
-        udp_handler.setPort(port);
+        udp_handler.setPortRange(portRange);
         _controller.addSelectorHandler(udp_handler);
 
         _controller.addStateListener(
