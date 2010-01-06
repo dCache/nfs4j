@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import org.acplt.oncrpc.OncRpcPortmapClient;
-import org.acplt.oncrpc.apps.jportmap.OncRpcEmbeddedPortmap;
+import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 public class SimpleRpcServer {
 
@@ -40,7 +40,7 @@ public class SimpleRpcServer {
             port = Integer.parseInt(args[0]);
         }
 
-        new OncRpcEmbeddedPortmap(2000);
+        new OncRpcEmbeddedPortmap();
 
         OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress
                     .getByName("127.0.0.1"));

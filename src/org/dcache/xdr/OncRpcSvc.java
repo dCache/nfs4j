@@ -18,6 +18,7 @@ package org.dcache.xdr;
 
 import com.sun.grizzly.BaseSelectionKeyHandler;
 import com.sun.grizzly.Controller;
+import com.sun.grizzly.ControllerStateListenerAdapter;
 import com.sun.grizzly.DefaultProtocolChain;
 import com.sun.grizzly.DefaultProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolChain;
@@ -28,6 +29,7 @@ import com.sun.grizzly.util.DefaultThreadPool;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +39,7 @@ public class OncRpcSvc {
     private final static Logger _log = Logger.getLogger(OncRpcSvc.class.getName());
 
     private final Controller _controller = new Controller();
+    private final CountDownLatch _serverReady = new CountDownLatch(1);
 
     /**
      * mapping of registered programs.
@@ -60,6 +63,14 @@ public class OncRpcSvc {
 
         tcp_handler.setSelectionKeyHandler(new BaseSelectionKeyHandler());
         _controller.addSelectorHandler(tcp_handler);
+        _controller.addStateListener(
+                new ControllerStateListenerAdapter() {
+
+                    @Override
+                    public void onReady() {
+                        _serverReady.countDown();
+                    }
+                });
 
         DefaultThreadPool defp;
         ExecutorService executorService = _controller.getThreadPool();
@@ -100,8 +111,14 @@ public class OncRpcSvc {
     /**
      * Start service.
      */
-    public void start() {
+    public void start() throws IOException  {
         new Thread(_controller).start();
+        try {
+            _serverReady.await();
+        } catch (InterruptedException ex) {
+            _log.log(Level.SEVERE, "failed to start Controller", ex);
+            throw new IOException(ex.getMessage());
+        }
     }
 
     /**

@@ -25,7 +25,7 @@ import com.sun.grizzly.Context;
 import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.ProtocolParser;
 
-class RpcProtocolFilter implements ProtocolFilter {
+public class RpcProtocolFilter implements ProtocolFilter {
 
     public static final String RPC_CALL = "RPC_CALL";
 

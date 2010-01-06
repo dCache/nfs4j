@@ -133,6 +133,11 @@ public class OncRpcClient {
         connector_handler = (TCPConnectorHandler) controller.acquireConnectorHandler(Controller.Protocol.TCP);
 
         connector_handler.connect(new InetSocketAddress(_address, _port), (CallbackHandler<Context>) null);
+
+        if( !connector_handler.isConnected()  ) {
+            throw new IOException("Failed to connect");
+        }
+
          return new ClientTransport(connector_handler, _replyQueue);
     }
 
