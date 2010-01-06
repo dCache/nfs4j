@@ -21,7 +21,19 @@ public class IPMatcher {
         }else{
             // ip
             try {
-                return match(InetAddress.getByName(pattern), ip, 32);
+
+                int mask = 32;
+                String ipMask[] = pattern.split("/");
+                if(ipMask.length > 2 ) {
+                    // invalid record - deny
+                    return false;
+                }
+
+                if(ipMask.length == 2) {
+                    mask = Integer.parseInt(ipMask[1]);
+                }
+
+                return match(InetAddress.getByName(ipMask[0]), ip, mask);
             }catch(UnknownHostException uhe) {
                 return false;
             }
