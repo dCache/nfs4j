@@ -20,6 +20,7 @@ package org.dcache.xdr.portmap;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcSvc;
@@ -45,7 +46,7 @@ public class OncRpcEmbeddedPortmap {
         OncRpcClient rpcClient = null;
         boolean localPortmapperRunning = false;
         try {
-            rpcClient = new OncRpcClient(InetAddress.getLocalHost(), 0, OncRpcPortmap.PORTMAP_PORT);
+            rpcClient = new OncRpcClient(InetAddress.getLocalHost(), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
             XdrTransport transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 2; i < 5; i++) {

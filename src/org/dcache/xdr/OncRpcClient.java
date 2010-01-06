@@ -18,8 +18,7 @@
 package org.dcache.xdr;
 
 import com.sun.grizzly.BaseSelectionKeyHandler;
-import com.sun.grizzly.CallbackHandler;
-import com.sun.grizzly.Context;
+import com.sun.grizzly.ConnectorHandler;
 import com.sun.grizzly.Controller;
 import com.sun.grizzly.ControllerStateListenerAdapter;
 import com.sun.grizzly.DefaultProtocolChain;
@@ -27,8 +26,8 @@ import com.sun.grizzly.DefaultProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolChain;
 import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
-import com.sun.grizzly.TCPConnectorHandler;
 import com.sun.grizzly.TCPSelectorHandler;
+import com.sun.grizzly.UDPSelectorHandler;
 import com.sun.grizzly.util.ConnectionCloseHandler;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,25 +43,23 @@ public class OncRpcClient {
 
     private final CountDownLatch clientReady = new CountDownLatch(1);
     private final Controller controller = new Controller();
-    private int _port;
+    private final int _port;
     private final InetAddress _address;
+    private Controller.Protocol _prorocol;
     private final ReplyQueue<Integer, RpcReply> _replyQueue =
             new ReplyQueue<Integer, RpcReply>();
 
-    public OncRpcClient(InetAddress address, int protocol) {
-        _address = address;
-        init(address, protocol);
-    }
-
     public OncRpcClient(InetAddress address, int protocol, int port) {
+
         _address = address;
         _port = port;
-        init(address, protocol);
-    }
-
-    private void init(InetAddress address, int protocol) {
-
-        TCPSelectorHandler tcp_handler = new TCPSelectorHandler(true);
+        if( protocol == IpProtocolType.TCP ) {
+            _prorocol = Controller.Protocol.TCP;
+        } else if ( protocol == IpProtocolType.UDP ) {
+            _prorocol = Controller.Protocol.UDP;
+        }else {
+            throw new IllegalArgumentException("Unsupported protocol type: " + protocol);
+        }
 
         BaseSelectionKeyHandler selectionKeyHandler = new BaseSelectionKeyHandler();
         selectionKeyHandler.setConnectionCloseHandler(new ConnectionCloseHandler() {
@@ -75,9 +72,15 @@ public class OncRpcClient {
                  _log.log(Level.FINE, "Remote peer closed connection");
             }
         });
-        tcp_handler.setSelectionKeyHandler(selectionKeyHandler);
 
+        final TCPSelectorHandler tcp_handler = new TCPSelectorHandler(true);
+        tcp_handler.setSelectionKeyHandler(selectionKeyHandler);
         controller.addSelectorHandler(tcp_handler);
+
+        final UDPSelectorHandler udp_handler = new UDPSelectorHandler(true);
+        udp_handler.setSelectionKeyHandler(selectionKeyHandler);
+        controller.addSelectorHandler(udp_handler);
+
 
         controller.addStateListener(
                 new ControllerStateListenerAdapter() {
@@ -93,11 +96,12 @@ public class OncRpcClient {
                         _log.log(Level.SEVERE, "Grizzly controller exception:" + e.getMessage());
                     }
                 });
-
+        final ProtocolFilter protocolKeeper = new ProtocolKeeperFilter();
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
         final ProtocolFilter rpcProcessor = new RpcProtocolFilter(_replyQueue);
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
+        protocolChain.addFilter(protocolKeeper);
         protocolChain.addFilter(rpcFilter);
         protocolChain.addFilter(rpcProcessor);
 
@@ -129,10 +133,10 @@ public class OncRpcClient {
             throw new IOException(e.getMessage());
         }
 
-        final TCPConnectorHandler connector_handler;
-        connector_handler = (TCPConnectorHandler) controller.acquireConnectorHandler(Controller.Protocol.TCP);
 
-        connector_handler.connect(new InetSocketAddress(_address, _port), (CallbackHandler<Context>) null);
+        final ConnectorHandler connector_handler;
+        connector_handler =  controller.acquireConnectorHandler(_prorocol);
+        connector_handler.connect(new InetSocketAddress(_address, _port));
 
         if( !connector_handler.isConnected()  ) {
             throw new IOException("Failed to connect");

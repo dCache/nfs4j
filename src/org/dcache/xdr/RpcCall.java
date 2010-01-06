@@ -293,6 +293,10 @@ public class RpcCall {
         RpcReply reply;
         try {
             reply = _transport.getReplyQueue().get(xid, timeout);
+            if( reply == null ) {
+                _log.log(Level.INFO, "Did not get reply in time");
+                throw new IOException("Did not get reply in time");
+            }
         } catch (InterruptedException e) {
             _log.log(Level.SEVERE, "call processing interrupted");
             throw new IOException(e.getMessage());

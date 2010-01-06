@@ -18,11 +18,16 @@
 package org.dcache.xdr;
 
 import com.sun.grizzly.ConnectorHandler;
+import com.sun.grizzly.Controller;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ClientTransport implements XdrTransport {
+
+    private final static Logger _log = Logger.getLogger(ClientTransport.class.getName());
 
     private final ConnectorHandler _connectorHandler;
     private final ReplyQueue<Integer, RpcReply> _replyQueue;
@@ -34,7 +39,12 @@ public class ClientTransport implements XdrTransport {
     }
 
     public void send(ByteBuffer data) throws IOException {
-        _connectorHandler.write(data, true);
+        if( _connectorHandler.protocol() == Controller.Protocol.UDP ) {
+            // skip fragment marker
+            data.getInt();
+        }
+            long n = _connectorHandler.write(data, true);
+            _log.log(Level.FINEST, "Send {0} bytes", n);
     }
 
     public InetSocketAddress getLocalSocketAddress() {

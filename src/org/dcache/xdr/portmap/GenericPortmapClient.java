@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuthTypeNone;
@@ -62,7 +63,7 @@ public class GenericPortmapClient implements OncPortmapClient {
 
     public static void main(String[] args) throws UnknownHostException, InterruptedException, IOException, OncRpcException {
 
-        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName("127.0.0.1"), 0, 111);
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName("127.0.0.1"), IpProtocolType.UDP, 111);
         XdrTransport transport = rpcClient.connect();
 
         OncPortmapClient portmapClient = new GenericPortmapClient(transport);
