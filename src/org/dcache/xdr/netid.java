@@ -64,4 +64,14 @@ public class netid {
         return (p1 << 8) + p2;
     }
 
+    public static int idOf(String id) {
+        if("tcp".equals(id)) {
+            return IpProtocolType.TCP;
+        }else if ("udp".equals(id)) {
+            return IpProtocolType.UDP;
+        }else{
+            return -1;
+        }
+    }
+
 }

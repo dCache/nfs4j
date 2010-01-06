@@ -99,7 +99,8 @@ public class rpcb implements XdrAble {
     }
 
     public mapping toMapping() {
-        return new mapping(_prog, _vers, 6 , netid.getPort(_addr) );
+
+        return new mapping(_prog, _vers, netid.idOf(_netid) , netid.getPort(_addr) );
     }
 
     boolean match(rpcb query) {

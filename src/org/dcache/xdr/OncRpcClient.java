@@ -68,11 +68,11 @@ public class OncRpcClient {
         selectionKeyHandler.setConnectionCloseHandler(new ConnectionCloseHandler() {
 
             public void locallyClosed(SelectionKey sk) {
-                System.out.println("Connection closed (locally)");
+                _log.log(Level.FINE, "Connection closed (locally)");
             }
 
             public void remotlyClosed(SelectionKey sk) {
-                System.out.println("Remote peer closed connection");
+                 _log.log(Level.FINE, "Remote peer closed connection");
             }
         });
         tcp_handler.setSelectionKeyHandler(selectionKeyHandler);

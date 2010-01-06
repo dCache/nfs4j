@@ -17,7 +17,9 @@
 
 package org.dcache.xdr;
 
+import com.sun.grizzly.Controller;
 import com.sun.grizzly.ProtocolParser;
+import com.sun.grizzly.util.WorkerThread;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -101,7 +103,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             !_expectingMoreData &&
             _buffer.position() > _nextMessageStartPosition;
 
-        _log.log(Level.FINEST, "hasMoreBytesToParse {0}, buffer : {1}, next read at: {2}",
+        _log.log(Level.ALL, "hasMoreBytesToParse {0}, buffer : {1}, next read at: {2}",
                 new Object[]{rc, _buffer, _nextMessageStartPosition});
         return rc;
     }
@@ -135,6 +137,26 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             return false;
         }
 
+        if( Thread.currentThread() instanceof WorkerThread ) {
+            /*
+             * we are runnig inside grizzly
+             */
+            Controller.Protocol protocol = (Controller.Protocol)((WorkerThread)Thread.currentThread()).getAttachment().getAttribute(ProtocolKeeperFilter.CONNECTION_PROTOCOL);
+            if( protocol != null && protocol == Controller.Protocol.UDP ) {
+                _log.log(Level.FINEST, "UDP XDR packet");
+                /*
+                 * UDP packets arriving in one go.
+                 */
+                ByteBuffer b = _buffer.duplicate();
+                b.limit(_buffer.position());
+                b.position(0);
+                _nextMessageStartPosition = b.remaining();
+                _xdr = new XdrBuffer(Xdr.MAX_XDR_SIZE);
+                _xdr.fill(b);
+                _expectingMoreData = false;
+                return true;
+            }
+        }
         _expectingMoreData = true;
         ByteBuffer bytes = _buffer.duplicate();
         bytes.position(_nextMessageStartPosition);

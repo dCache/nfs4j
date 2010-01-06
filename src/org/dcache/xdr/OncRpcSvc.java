@@ -16,7 +16,6 @@
  */
 package org.dcache.xdr;
 
-import com.sun.grizzly.BaseSelectionKeyHandler;
 import com.sun.grizzly.Controller;
 import com.sun.grizzly.ControllerStateListenerAdapter;
 import com.sun.grizzly.DefaultProtocolChain;
@@ -25,6 +24,7 @@ import com.sun.grizzly.ProtocolChain;
 import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.TCPSelectorHandler;
+import com.sun.grizzly.UDPSelectorHandler;
 import com.sun.grizzly.util.DefaultThreadPool;
 import java.io.IOException;
 import java.util.Map;
@@ -54,15 +54,19 @@ public class OncRpcSvc {
      */
     public OncRpcSvc(int port) {
 
+        final ProtocolFilter protocolKeeper = new ProtocolKeeperFilter();
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
         final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
         final ProtocolFilter rpcDispatcher = new RpcDispatcher(_programs);
+
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
-
         tcp_handler.setPort(port);
-
-        tcp_handler.setSelectionKeyHandler(new BaseSelectionKeyHandler());
         _controller.addSelectorHandler(tcp_handler);
+
+        final UDPSelectorHandler udp_handler = new UDPSelectorHandler();
+        udp_handler.setPort(port);
+        _controller.addSelectorHandler(udp_handler);
+
         _controller.addStateListener(
                 new ControllerStateListenerAdapter() {
 
@@ -86,6 +90,7 @@ public class OncRpcSvc {
                 5);
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
+        protocolChain.addFilter(protocolKeeper);
         protocolChain.addFilter(rpcFilter);
         protocolChain.addFilter(rpcProcessor);
         protocolChain.addFilter(rpcDispatcher);

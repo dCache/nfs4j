@@ -26,7 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.grizzly.Context;
+import com.sun.grizzly.filter.ReadFilter;
 import com.sun.grizzly.util.OutputWriter;
+import java.net.SocketAddress;
+import java.nio.channels.DatagramChannel;
 
 public class GrizzlyXdrTransport implements XdrTransport {
 
@@ -38,9 +41,22 @@ public class GrizzlyXdrTransport implements XdrTransport {
 
     public GrizzlyXdrTransport(Context context) {
         _context = context;
-        SocketChannel socketChannel = ((SocketChannel)context.getSelectionKey().channel());
-        _local =(InetSocketAddress) socketChannel.socket().getLocalSocketAddress();
-        _remote =(InetSocketAddress)socketChannel.socket().getRemoteSocketAddress();
+        switch(_context.getProtocol()) {
+            case TCP:
+                SocketChannel socketChannel = ((SocketChannel)context.getSelectionKey().channel());
+                _local = (InetSocketAddress) socketChannel.socket().getLocalSocketAddress();
+                _remote =(InetSocketAddress) socketChannel.socket().getRemoteSocketAddress();
+                break;
+            case UDP:
+                _remote = (InetSocketAddress) _context.getAttribute(ReadFilter.UDP_SOCKETADDRESS);
+                _local = null;
+                break;
+            default:
+                _local = null;
+                _remote = null;
+                _log.log(Level.SEVERE, "Unsupported ptotocol: {0}", _context.getProtocol());
+
+        }
         _log.log(Level.FINE, "RPC call: remote/local: {0}/{1}", new Object[] { _remote,  _local } );
     }
 
@@ -50,7 +66,18 @@ public class GrizzlyXdrTransport implements XdrTransport {
 
         _log.log(Level.FINE, "reply sent: {0}", data);
         SelectableChannel channel = _context.getSelectionKey().channel();
-        OutputWriter.flushChannel(channel, data);
+        switch(_context.getProtocol()) {
+            case TCP:
+                OutputWriter.flushChannel(channel, data);
+                break;
+            case UDP:
+                DatagramChannel datagramChannel = (DatagramChannel) channel;
+                SocketAddress address = (SocketAddress) _context.getAttribute(ReadFilter.UDP_SOCKETADDRESS);
+                OutputWriter.flushChannel(datagramChannel, address, data);
+                break;
+            default:
+                _log.log(Level.SEVERE, "Unsupported ptotocol: {0}", _context.getProtocol());
+        }
     }
 
 

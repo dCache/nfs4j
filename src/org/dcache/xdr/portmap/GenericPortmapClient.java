@@ -20,6 +20,7 @@ package org.dcache.xdr.portmap;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
@@ -42,6 +43,7 @@ public class GenericPortmapClient implements OncPortmapClient {
                 // FIXME: return correct exception
                 throw new IllegalStateException("portmap service not available");
             }
+            _log.log(Level.INFO, "Using portmap V2");
         }
         _portmapClient = portmapClient;
     }

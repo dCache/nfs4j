@@ -42,6 +42,7 @@ public class XdrBuffer extends Xdr {
 
     @Override
     public void beginDecoding() {
+        _body.rewind();
     }
 
     @Override
@@ -51,11 +52,12 @@ public class XdrBuffer extends Xdr {
 
     @Override
     public void beginEncoding() {
+        _body.clear();
     }
 
     @Override
     public void endEncoding() {
-        super.body().flip();
+        _body.flip();
     }
 
 

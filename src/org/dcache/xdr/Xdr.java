@@ -35,7 +35,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     /**
      * Byte buffer used by XDR record.
      */
-    private final ByteBuffer _body;
+    protected final ByteBuffer _body;
 
     /**
      * First position in <code>_body</code> which is used by this

@@ -20,6 +20,7 @@ package org.dcache.xdr.portmap;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
@@ -40,6 +41,7 @@ public class OncRpcbindServer implements RpcDispatchable {
 
     public OncRpcbindServer() {
         _services.add(new rpcb(100000, 2, "tcp", "0.0.0.0.0.111", "superuser"));
+        _services.add(new rpcb(100000, 2, "udp", "0.0.0.0.0.111", "superuser"));
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
     public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
@@ -63,6 +65,7 @@ public class OncRpcbindServer implements RpcDispatchable {
                 call.reply(XdrVoid.XDR_VOID);
                 break;
             case OncRpcPortmap.PMAPPROC_SET:
+                _log.log(Level.ALL, "Got PMAPPROC_SET");
                 mapping newMapping = new mapping();
                 call.retrieveCall(newMapping);
                 // we sore every thing in v4 format
