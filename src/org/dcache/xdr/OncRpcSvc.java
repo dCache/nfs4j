@@ -50,20 +50,35 @@ public class OncRpcSvc {
             new ConcurrentHashMap<Integer, RpcDispatchable>();
 
     /**
-     * Create a new server.
+     * Create a new server. Bind to all supported protocols.
      *
      * @param port TCP/UDP port to which service will he bound.
      */
     public OncRpcSvc(int port) {
-        this(new PortRange(port));
+        this(port, IpProtocolType.TCP | IpProtocolType.UDP);
+    }
+
+     /**
+      * Create a new server.
+      *
+     * @param port TCP/UDP port to which service will he bound.
+     * @param protocol to bind (tcp or udp)
+     */
+    public OncRpcSvc(int port, int protocol) {
+        this(new PortRange(port), protocol);
     }
 
     /**
      * Create a new server.
      *
      * @param {@link PortRange} of TCP/UDP ports to which service will he bound.
+     * @param protocol to bind (tcp or udp).
      */
-    public OncRpcSvc(PortRange portRange) {
+    public OncRpcSvc(PortRange portRange, int protocol) {
+
+        if( (protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0 ) {
+            throw new IllegalArgumentException("TCP or UDP protocol have to be defined");
+        }
 
         final ProtocolFilter protocolKeeper = new ProtocolKeeperFilter();
         final ProtocolFilter rpcFilter = new RpcParserProtocolFilter();
@@ -81,15 +96,19 @@ public class OncRpcSvc {
         DefaultSelectionKeyHandler keyHandler = new DefaultSelectionKeyHandler();
         keyHandler.setTimeout(-1);
 
-        final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
-        tcp_handler.setPortRange(portRange);
-        tcp_handler.setSelectionKeyHandler(keyHandler);
-        _controller.addSelectorHandler(tcp_handler);
+        if((protocol & IpProtocolType.TCP) != 0) {
+            final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
+            tcp_handler.setPortRange(portRange);
+            tcp_handler.setSelectionKeyHandler(keyHandler);
+            _controller.addSelectorHandler(tcp_handler);
+        }
 
-        final UDPSelectorHandler udp_handler = new UDPSelectorHandler();
-        udp_handler.setPortRange(portRange);
-        udp_handler.setSelectionKeyHandler(keyHandler);
-        _controller.addSelectorHandler(udp_handler);
+        if((protocol & IpProtocolType.UDP) != 0) {
+            final UDPSelectorHandler udp_handler = new UDPSelectorHandler();
+            udp_handler.setPortRange(portRange);
+            udp_handler.setSelectionKeyHandler(keyHandler);
+            _controller.addSelectorHandler(udp_handler);
+        }
 
         _controller.addStateListener(
                 new ControllerStateListenerAdapter() {
