@@ -20,6 +20,7 @@ import com.sun.grizzly.Controller;
 import com.sun.grizzly.ControllerStateListenerAdapter;
 import com.sun.grizzly.DefaultProtocolChain;
 import com.sun.grizzly.DefaultProtocolChainInstanceHandler;
+import com.sun.grizzly.DefaultSelectionKeyHandler;
 import com.sun.grizzly.PortRange;
 import com.sun.grizzly.ProtocolChain;
 import com.sun.grizzly.ProtocolChainInstanceHandler;
@@ -69,12 +70,25 @@ public class OncRpcSvc {
         final ProtocolFilter rpcProcessor = new RpcProtocolFilter();
         final ProtocolFilter rpcDispatcher = new RpcDispatcher(_programs);
 
+        /*
+         * By default, a SelectionKey will be active for 30 seconds.
+         * If during that 30 seconds the client isn't pushing bytes
+         * (or closing the connection), the SelectionKey will expire
+         * and its channel closed.
+         *
+         * We set expire timeout to -1, which equal to 'never'.
+         */
+        DefaultSelectionKeyHandler keyHandler = new DefaultSelectionKeyHandler();
+        keyHandler.setTimeout(-1);
+
         final TCPSelectorHandler tcp_handler = new TCPSelectorHandler();
         tcp_handler.setPortRange(portRange);
+        tcp_handler.setSelectionKeyHandler(keyHandler);
         _controller.addSelectorHandler(tcp_handler);
 
         final UDPSelectorHandler udp_handler = new UDPSelectorHandler();
         udp_handler.setPortRange(portRange);
+        udp_handler.setSelectionKeyHandler(keyHandler);
         _controller.addSelectorHandler(udp_handler);
 
         _controller.addStateListener(
