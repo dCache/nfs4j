@@ -28,9 +28,6 @@ import java.util.jar.Manifest;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
 import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
@@ -73,14 +70,13 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
     }
 
-    public OperationEXCHANGE_ID(FileSystemProvider fs, RpcCall call$,
-            CompoundArgs fh, nfs_argop4 args, int flag, ExportFile exports) {
-        super(fs, exports, call$, fh, args, nfs_opnum4.OP_EXCHANGE_ID);
+    public OperationEXCHANGE_ID(nfs_argop4 args, int flag) {
+        super(args, nfs_opnum4.OP_EXCHANGE_ID);
         _flag = flag;
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
 
 
         EXCHANGE_ID4res res = new EXCHANGE_ID4res();
@@ -163,7 +159,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             //decision variable for case selection
 
             NFS4Client client = NFSv4StateHandler.getInstace().clientByOwner(clientOwner);
-            String principal = Integer.toString(_user.getUID() );
+            String principal = Integer.toString(context.getUser().getUID() );
             byte[] verifier = _args.opexchange_id.eia_clientowner.co_verifier.value;
 
             boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
@@ -262,7 +258,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
 
        _result.opexchange_id = res;
-        return new NFSv4OperationResult(_result, res.eir_status);
+        context.processedOperations().add(_result);
+        return res.eir_status == nfsstat4.NFS4_OK;
     }
 
 }

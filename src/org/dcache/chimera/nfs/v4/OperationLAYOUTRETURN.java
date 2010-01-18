@@ -10,20 +10,17 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTRETURN4res;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationLAYOUTRETURN.class.getName());
 
-	OperationLAYOUTRETURN(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_LAYOUTRETURN);
+	OperationLAYOUTRETURN(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_LAYOUTRETURN);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 	    LAYOUTRETURN4res res = new LAYOUTRETURN4res();
 
@@ -54,7 +51,8 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 		}
       _result.oplayoutreturn = res;
 
-        return new NFSv4OperationResult(_result, res.lorr_status);
+            context.processedOperations().add(_result);
+            return res.lorr_status == nfsstat4.NFS4_OK;
 	}
 
 }

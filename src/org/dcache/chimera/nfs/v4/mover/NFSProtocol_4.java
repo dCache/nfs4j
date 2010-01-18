@@ -13,10 +13,9 @@ import java.util.logging.Logger;
 import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4res;
-import org.dcache.chimera.nfs.v4.CompoundArgs;
+import org.dcache.chimera.nfs.v4.CompoundContext;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.NFSv4Call;
-import org.dcache.chimera.nfs.v4.NFSv4OperationResult;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
@@ -100,46 +99,39 @@ public class NFSProtocol_4 implements RpcDispatchable {
 	        	if( arg1.minorversion.value > 1 ) {
 	        	    res.status = nfsstat4.NFS4ERR_MINOR_VERS_MISMATCH;
                     _log.log(Level.FINE,"      : NFS4ERR_MINOR_VERS_MISMATCH");
-	        	}else{
+                    }else{
 
-	        	    nfs_argop4[] op = arg1.argarray;
 
-	        	    for(int i = 0; i < op.length; i++) {
-	                	int nfsOp = op[i].argop;
-                        _log.log(Level.FINE,"      : {0} #{1}",
-                             new Object[]{ NFSv4Call.toString(nfsOp), i});
+                CompoundContext context = new CompoundContext(v, arg1.minorversion.value,
+                        _fs, call$, null);
 
-	        	    }	           
 
-	        	    CompoundArgs fh = new CompoundArgs(arg1.minorversion.value);
+                for (nfs_argop4 op : arg1.argarray) {
 
-	        	    for(int i = 0; i < op.length; i++) {
+                    if (!DSNFSv4OperationFactory.getOperation(op).process(context)) {
+                        break;
+                    }
+                }
 
-				NFSv4OperationResult opRes = DSNFSv4OperationFactory.getOperation(_fs, call$, fh, op[i], null).process();
-	                	v.add(opRes.getResult());
-	                	// result  status must be equivalent
-	                	// to the status of the last operation that
-	                	// was executed within the COMPOUND procedure
-	                	res.status = opRes.getStatus();
-	                	if( opRes.getStatus() != nfsstat4.NFS4_OK ) {
-                            _log.log(Level.FINE, "OP: {1} status: {1}",
-                                    new Object[] { NFSv4Call.toString(op[i].argop), res.status }
-                            );
-                        	break;
-                	    }
-	                	fh.nexPosition();
-	        	    }	            
+                try {
+                    _log.log(Level.FINE, "CURFH: {0}", context.currentInode().toFullString());
+                } catch (ChimeraNFSException he) {
+                    _log.fine("CURFH: NULL");
+                }
+                v = context.processedOperations();
+            }
 
-	        	    try {
-                        _log.log(Level.FINE, "CURFH: {0}", fh.currentInode().toFullString() );
-                    }catch(ChimeraNFSException he) {
-	                	_log.fine("CURFH: NULL" );
-	        	    }
+            res.tag = arg1.tag;
 
-	        	}
+            res.resarray = v.toArray(new nfs_resop4[v.size()]);
+            // result  status must be equivalent
+            // to the status of the last operation that
+            // was executed within the COMPOUND procedure
 
-	        	res.tag = arg1.tag;
-        	    res.resarray = v.toArray(new nfs_resop4[v.size()]);
+            res.status = res.resarray[res.resarray.length - 1].getStatus();
+
+            _log.log(Level.FINE, "OP: {1} status: {1}",
+                    new Object[]{NFSv4Call.toString(res.resarray[res.resarray.length - 1].resop), res.status});
     		}catch(Exception e) {
     			_log.log(Level.SEVERE,"Unhandled exception:", e);
     		}

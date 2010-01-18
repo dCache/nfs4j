@@ -9,20 +9,16 @@ import java.nio.channels.FileChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.IOHimeraFsException;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
-import org.dcache.chimera.nfs.v4.CompoundArgs;
+import org.dcache.chimera.nfs.v4.CompoundContext;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.nfs.v4.NFSv4OperationResult;
 import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.v4.xdr.READ4resok;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.posix.Stat;
-import org.dcache.xdr.RpcCall;
 
 public class DSOperationREAD extends AbstractNFSv4Operation {
 
@@ -30,17 +26,17 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
 	private final File _poolRoot = new File("/tmp/pNFS");
 
-	public DSOperationREAD(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_READ);
+	public DSOperationREAD(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_READ);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
         READ4res res = new READ4res();
 
         try {
 
-            Stat inodeStat = _fh.currentInode().statCache();
+            Stat inodeStat = context.currentInode().statCache();
             boolean eof = false;
 
             long offset = _args.opread.offset.value.value;
@@ -48,7 +44,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
             byte[] buf = new byte[count];
 
-	    	IOReadFile in = new IOReadFile(_poolRoot, _fh.currentInode().toString(), _fh.currentInode().stat().getSize());
+	    	IOReadFile in = new IOReadFile(_poolRoot, context.currentInode().toString(), context.currentInode().stat().getSize());
 
 	    	int bytesReaded = in.read(buf, offset, count);
 	    	if( bytesReaded < 0 ) {
@@ -88,7 +84,8 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
        _result.opread = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 	}
 
 

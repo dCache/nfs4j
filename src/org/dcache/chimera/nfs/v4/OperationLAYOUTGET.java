@@ -26,11 +26,8 @@ import java.util.Arrays;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrEncodingStream;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInodeType;
-import org.dcache.chimera.nfs.ExportFile;
 
 import org.dcache.xdr.XdrBuffer;
 
@@ -40,12 +37,12 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
     static final byte[] MSD_ID = DeviceManager.id2deviceid(0);
 
-    OperationLAYOUTGET(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-    super(fs, exports, call$, fh, args, nfs_opnum4.OP_LAYOUTGET);
+    OperationLAYOUTGET(nfs_argop4 args) {
+    super(args, nfs_opnum4.OP_LAYOUTGET);
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
 
     LAYOUTGET4res res = new LAYOUTGET4res();
 
@@ -96,16 +93,16 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         res.logr_resok4 = new LAYOUTGET4resok();
 
         NFS4IoDevice ioDevice = null;
-        if (_fh.currentInode().type() == FsInodeType.INODE ) {
+        if (context.currentInode().type() == FsInodeType.INODE ) {
             ioDevice = NFSv41DeviceManagerFactory.getDeviceManager().getIoDevice(
-                    _fh.currentInode(),
+                    context.currentInode(),
                     _args.oplayoutget.loga_iomode,
-                    _callInfo.getTransport().getRemoteSocketAddress().getAddress(),
+                    context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress(),
                     _args.oplayoutget.loga_stateid);
         }else{
 
             InetSocketAddress[] addresses = new InetSocketAddress[1];
-            addresses[0] = _callInfo.getTransport().getLocalSocketAddress();
+            addresses[0] = context.getRpcCall().getTransport().getLocalSocketAddress();
 
             device_addr4 deviceAddr = DeviceManager.deviceAddrOf( addresses );
             ioDevice = new NFS4IoDevice(MSD_ID, deviceAddr);
@@ -115,7 +112,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         }
 
         _log.log(Level.FINER, "LAYOUT for {0} sd# {1}",
-                new Object[] { _fh.currentInode().toFullString(),
+                new Object[] { context.currentInode().toFullString(),
                     Arrays.toString(ioDevice.getDeviceId())}
         );
 
@@ -148,7 +145,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         layout.nfl_deviceid = new deviceid4(ioDevice.getDeviceId());
         layout.nfl_fh_list = new nfs_fh4[1];
         layout.nfl_fh_list[0] = new nfs_fh4();
-        layout.nfl_fh_list[0].value = _fh.currentInode().toFullString().getBytes();
+        layout.nfl_fh_list[0].value = context.currentInode().toFullString().getBytes();
         layout.nfl_first_stripe_index = new uint32_t(0);
 
         layout.nfl_util = new nfl_util4(new uint32_t( NFSv4Defaults.NFS4_STRIPE_SIZE &
@@ -181,11 +178,11 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         layout4[] layoutArray;
 
-        //if( _fh.currentInode().statCache().getSize() > 2 ) {  // disabled for now. wait for Austing-08 Bakeathon
+        //if( context.currentInode().statCache().getSize() > 2 ) {  // disabled for now. wait for Austing-08 Bakeathon
         if( false ) {  // disabled for now. wait for Austing-08 Bakeathon
             _log.log(Level.FINER, "Using mutlisegment layout");
             layoutArray = new layout4[2];
-            long halfLen = _fh.currentInode().statCache().getSize() / 2;
+            long halfLen = context.currentInode().statCache().getSize() / 2;
             if ( halfLen == 0) halfLen = 1024;
             /*
              * first half
@@ -238,7 +235,8 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
     _result.oplayoutget = res;
 
-    return new NFSv4OperationResult(_result, res.logr_status);
+        context.processedOperations().add(_result);
+        return res.logr_status == nfsstat4.NFS4_OK;
 
     }
 

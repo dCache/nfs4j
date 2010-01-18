@@ -5,21 +5,18 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID_CONFIRM4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationPUTFH.class.getName());
 
-	OperationSETCLIENTID_CONFIRM(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_SETCLIENTID_CONFIRM);
+	OperationSETCLIENTID_CONFIRM(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_SETCLIENTID_CONFIRM);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
     	SETCLIENTID_CONFIRM4res res = new SETCLIENTID_CONFIRM4res();
 
@@ -45,7 +42,8 @@ public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
 
         _result.opsetclientid_confirm = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 	}
 
 }

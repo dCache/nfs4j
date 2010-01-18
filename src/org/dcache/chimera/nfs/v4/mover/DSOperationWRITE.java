@@ -8,13 +8,10 @@ import java.nio.channels.FileChannel;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.IOHimeraFsException;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
-import org.dcache.chimera.nfs.v4.CompoundArgs;
+import org.dcache.chimera.nfs.v4.CompoundContext;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.nfs.v4.NFSv4OperationResult;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4resok;
 import org.dcache.chimera.nfs.v4.xdr.count4;
@@ -25,7 +22,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.stable_how4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
-import org.dcache.xdr.RpcCall;
 
 public class DSOperationWRITE extends AbstractNFSv4Operation {
 
@@ -34,12 +30,12 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
     private final File _poolRoot = new File("/tmp/pNFS");
 
 
-    public DSOperationWRITE(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-        super(fs, exports, call$, fh, args, nfs_opnum4.OP_WRITE);
+    public DSOperationWRITE(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_WRITE);
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
 
         WRITE4res res = new WRITE4res();
 
@@ -48,7 +44,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             long offset = _args.opwrite.offset.value.value;
             int count = _args.opwrite.data.length;
 
-            IOWriteFile out = new IOWriteFile(_poolRoot, _fh.currentInode().toString(), _fh.currentInode().stat().getSize() == 0);
+            IOWriteFile out = new IOWriteFile(_poolRoot, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
 
             int bytesWritten = out.write(_args.opwrite.data, offset, count);
 
@@ -63,7 +59,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             res.resok4.writeverf = new verifier4();
             res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-            _fh.currentInode().setSize(out.size());
+            context.currentInode().setSize(out.size());
             _log.log( Level.FINER,
                     "MOVER: {0}@{1} written, {2} requested. New File size {3}",
                     new Object[] { bytesWritten, offset, _args.opwrite.data, out.size() });
@@ -83,7 +79,8 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
        _result.opwrite = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+        context.processedOperations().add(_result);
+        return res.status == nfsstat4.NFS4_OK;
 
     }
 

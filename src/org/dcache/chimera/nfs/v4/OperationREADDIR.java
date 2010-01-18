@@ -21,11 +21,8 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.chimera.DirectoryStreamHelper;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -81,8 +78,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      */
     private final static Random _random = new Random();
 
-	OperationREADDIR(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_READDIR);
+	OperationREADDIR(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_READDIR);
 	}
 
 
@@ -96,18 +93,18 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      */
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 
         READDIR4res res = new READDIR4res();
 
         try {
 
-            FsInode dir = _fh.currentInode();
+            FsInode dir = context.currentInode();
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(),dirStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(acl, _user, AclHandler.ACL_LOOKUP) ) {
+            if ( ! _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP) ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
@@ -139,7 +136,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 dirList = _dlCache.get(verifier);
                 if( dirList == null ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOT_SAME, "invalid verifier");
-                    //dirList = _fs.listDirFull(dir) ;
+                    //dirList = context.getFs().listDirFull(dir) ;
                 }
 
             }else{
@@ -261,7 +258,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         _result.opreaddir = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 
 	}
 

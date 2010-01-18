@@ -11,12 +11,9 @@ import org.dcache.chimera.nfs.v4.xdr.count4;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4resok;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.IOHimeraFsException;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -25,12 +22,12 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationWRITE.class.getName());
 
-	public OperationWRITE(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_WRITE);
+	public OperationWRITE(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_WRITE);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 		WRITE4res res = new WRITE4res();
 
@@ -42,31 +39,31 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 			 }
 
 
-            if( _fh.currentInode().isDirectory() ) {
+            if( context.currentInode().isDirectory() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
     		}
 
-            if( _fh.currentInode().isLink() ) {
+            if( context.currentInode().isLink() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "path is a symlink");
             }
 
-    		Stat inodeStat = _fh.currentInode().statCache();
+    		Stat inodeStat = context.currentInode().statCache();
 
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(fileAcl, _user, AclHandler.ACL_WRITE)  ) {
+            if ( ! _permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)  ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
 
-            if( _fh.getSession() == null ) {
+            if( context.getSession() == null ) {
                 NFSv4StateHandler.getInstace().updateClientLeaseTime(_args.opwrite.stateid);
             }else{
-                _fh.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+                context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }
 
 	    	long offset = _args.opwrite.offset.value.value;
 	    	int count = _args.opwrite.data.length;
-	        int bytesWritten = _fh.currentInode().write(offset, _args.opwrite.data, 0, count);
+	        int bytesWritten = context.currentInode().write(offset, _args.opwrite.data, 0, count);
 
 	        if( bytesWritten < 0 ) {
 	            throw new IOHimeraFsException("IO not allowed");
@@ -93,7 +90,8 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
        _result.opwrite = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 
 	}
 

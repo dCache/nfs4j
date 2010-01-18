@@ -1,7 +1,6 @@
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.slotid4;
@@ -12,9 +11,7 @@ import org.dcache.chimera.nfs.v4.xdr.SEQUENCE4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
+import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
 
 
 public class OperationSEQUENCE extends AbstractNFSv4Operation {
@@ -22,13 +19,13 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
     private static final Logger _log = Logger.getLogger(OperationSEQUENCE.class.getName());
     private final boolean _trackSession;
 
-    public OperationSEQUENCE(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, boolean trackSession , ExportFile exports) {
-        super(fs, exports, call$, fh, args, nfs_opnum4.OP_SEQUENCE);
+    public OperationSEQUENCE(nfs_argop4 args, boolean trackSession ) {
+        super(args, nfs_opnum4.OP_SEQUENCE);
         _trackSession = trackSession;
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
        SEQUENCE4res res = new SEQUENCE4res();
 
         try {
@@ -48,7 +45,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
              */
 
 
-            if(_fh.position() != 0 ) {
+            if(context.processedOperations().size() != 0 ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQUENCE_POS, "SEQUENCE not a first operation");
             }
 
@@ -82,10 +79,10 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
                 session.setSlot(_args.opsequence.sa_slotid.value.value,_args.opsequence.sa_sequenceid.value.value );
                 session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }
-            _fh.setSession(session);
+            context.setSession(session);
 
             //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
-            res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t(_args.opsequence.sa_sequenceid.value.value ) );
+            res.sr_resok4.sr_sequenceid = _args.opsequence.sa_sequenceid;
             res.sr_resok4.sr_status_flags = new uint32_t(0);
 
 
@@ -99,8 +96,8 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         }
 
        _result.opsequence = res;
-
-        return new NFSv4OperationResult(_result, res.sr_status);
+        context.processedOperations().add(_result);
+        return res.sr_status == nfsstat4.NFS4_OK;
     }
 
 }

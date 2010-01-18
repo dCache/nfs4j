@@ -11,23 +11,19 @@ import org.dcache.chimera.nfs.v4.xdr.GETDEVICEINFO4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.Arrays;
 
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
     private static final Logger _log = Logger
             .getLogger(OperationGETDEVICEINFO.class.getName());
 
-    OperationGETDEVICEINFO(FileSystemProvider fs, RpcCall call$,
-            CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-        super(fs, exports, call$, fh, args, nfs_opnum4.OP_GETDEVICEINFO);
+    OperationGETDEVICEINFO(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_GETDEVICEINFO);
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
 
         /*
          * GETDEVICEINFO.
@@ -73,7 +69,8 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         _result.opgetdeviceinfo = res;
 
-        return new NFSv4OperationResult(_result, res.gdir_status);
+        context.processedOperations().add(_result);
+        return res.gdir_status == nfsstat4.NFS4_OK;
 
     }
 

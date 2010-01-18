@@ -23,10 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.xdr.XdrDecodingStream;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.acl.AclStore;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
@@ -38,27 +35,27 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationSETATTR.class.getName());
 
-	OperationSETATTR(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_SETATTR);
+	OperationSETATTR(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_SETATTR);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 
     	SETATTR4res res = new SETATTR4res();
 
     	try {
 
-    		Stat inodeStat = _fh.currentInode().statCache();
+    		Stat inodeStat = context.currentInode().statCache();
 
             UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(acl, _user, AclHandler.ACL_ADMINISTER) ) {
+            if ( ! _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER) ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
            res.status = nfsstat4.NFS4_OK;
-           res.attrsset = setAttributes(_args.opsetattr.obj_attributes, _fh.currentInode());
+           res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode());
 
         }catch(ChimeraNFSException hfe) {
     		res.status = hfe.getStatus();
@@ -74,7 +71,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         _result.opsetattr = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 
 	}
 

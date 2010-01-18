@@ -8,29 +8,26 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4resok;
 import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationOPEN_CONFIRM.class.getName());
 
-	OperationOPEN_CONFIRM(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_OPEN_CONFIRM);
+	OperationOPEN_CONFIRM(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_OPEN_CONFIRM);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 
         OPEN_CONFIRM4res res = new OPEN_CONFIRM4res();
 
         try {
 
-        	FsInode inode = _fh.currentInode();
+        	FsInode inode = context.currentInode();
 
             if( inode.isDirectory() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
@@ -84,7 +81,8 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
         _result.opopen_confirm = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 
 	}
 

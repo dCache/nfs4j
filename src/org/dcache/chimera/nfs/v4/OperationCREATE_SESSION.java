@@ -13,21 +13,17 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
-
 public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
 
 	private static final Logger _log = Logger.getLogger(OperationCREATE_SESSION.class.getName());
 
-	public OperationCREATE_SESSION(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_CREATE_SESSION);
+	public OperationCREATE_SESSION(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_CREATE_SESSION);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
     	CREATE_SESSION4res res = new CREATE_SESSION4res();
 
 
@@ -94,8 +90,8 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + client.currentSeqID() + " / " + _args.opcreate_session.csa_sequence.value.value);
     		}
 
-    		if( !client.principal().equals(Integer.toString(_user.getUID())) && !client.isConfirmed() ) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "client already in use: " + client.principal()+ " " + _user.getUID());
+    		if( !client.principal().equals(Integer.toString(context.getUser().getUID())) && !client.isConfirmed() ) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "client already in use: " + client.principal()+ " " + context.getUser().getUID());
     		}
 
    			if(client.sessions().isEmpty() ) {
@@ -124,7 +120,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 	    		client.confirmed();
 	    		client.nextSeqID();
 
-	            client.inetAddress( _callInfo.getTransport().getRemoteSocketAddress().getAddress() );
+	            client.inetAddress( context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress() );
 
     		}
 
@@ -163,7 +159,8 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
        _result.opcreate_session = res;
 
-        return new NFSv4OperationResult(_result, res.csr_status);
+            context.processedOperations().add(_result);
+            return res.csr_status == nfsstat4.NFS4_OK;
 	}
 
 }

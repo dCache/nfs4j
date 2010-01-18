@@ -5,22 +5,19 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.DESTROY_SESSION4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
 
 
 	private static final Logger _log = Logger.getLogger(OperationDESTROY_SESSION.class.getName());
 
-	public OperationDESTROY_SESSION(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_DESTROY_SESSION);
+	public OperationDESTROY_SESSION(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_DESTROY_SESSION);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 		DESTROY_SESSION4res  res = new DESTROY_SESSION4res();
 
@@ -52,7 +49,8 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
 		}
 
 		_result.opdestroy_session = res;
-    	return  new NFSv4OperationResult(_result, res.dsr_status);
+                context.processedOperations().add(_result);
+                return res.dsr_status == nfsstat4.NFS4_OK;
     }
 
 }

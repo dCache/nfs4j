@@ -11,21 +11,18 @@ import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
 
 	private static final Logger _log = Logger.getLogger(OperationSETCLIENTID.class.getName());
 
-	OperationSETCLIENTID(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_SETCLIENTID);
+	OperationSETCLIENTID(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_SETCLIENTID);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 		 SETCLIENTID4res res = new SETCLIENTID4res();
 
@@ -43,16 +40,16 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 		        int program = _args.opsetclientid.callback.cb_program.value;
 
 		        NFS4Client client = new NFS4Client(new String(_args.opsetclientid.client.id),_args.opsetclientid.client.verifier.value, null );
-	            client.inetAddress( _callInfo.getTransport().getRemoteSocketAddress().getAddress() );
+	            client.inetAddress( context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress() );
 
 		        try {
 	    	        ClientCB cb = new ClientCB(r_addr, r_netid, program);
 	    	        //	TODO: work around. client should send correct IP
-	    	        cb = new ClientCB(  HimeraNFS4Utils.inetAddress2rAddr(_callInfo.getTransport().getRemoteSocketAddress() ), r_netid, program);
+	    	        cb = new ClientCB(  HimeraNFS4Utils.inetAddress2rAddr(context.getRpcCall().getTransport().getRemoteSocketAddress() ), r_netid, program);
                     _log.log(Level.FINEST, "Client callback: {0}", cb);
 	                client.setCB(cb);
 		        }catch(Exception ignode_call_back) {
-                    _log.log(Level.FINEST, "no callback defined for: {0}", _callInfo.getTransport().getRemoteSocketAddress().getAddress());
+                    _log.log(Level.FINEST, "no callback defined for: {0}", context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress());
 		        }
 
 		        NFSv4StateHandler.getInstace().addClient(client);
@@ -75,7 +72,9 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
         _result.opsetclientid = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
+
 	}
 
 }

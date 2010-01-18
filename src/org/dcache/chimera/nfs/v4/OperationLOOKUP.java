@@ -7,34 +7,31 @@ import org.dcache.chimera.nfs.v4.xdr.LOOKUP4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationLOOKUP extends AbstractNFSv4Operation {
 
 
 	private static final Logger _log = Logger.getLogger(OperationLOOKUP.class.getName());
 
-	OperationLOOKUP(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_LOOKUP);
+	OperationLOOKUP(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_LOOKUP);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
         LOOKUP4res res = new LOOKUP4res();
 
         try {
 
             String name = NameFilter.convert(_args.oplookup.objname.value.value.value);
 
-            if( _fh.currentInode().isLink() ) {
+            if( context.currentInode().isLink() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_SYMLINK, "parent not a symbolic link");
             }
 
-        	if( !_fh.currentInode().isDirectory() ) {
+        	if( !context.currentInode().isDirectory() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "parent not a directory");
         	}
 
@@ -50,12 +47,12 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADNAME, "bad name '.' or '..'");
             }
 
-            FsInode newInode = _fh.currentInode().inodeOf(name);
+            FsInode newInode = context.currentInode().inodeOf(name);
 	        if( !newInode.exists() ) {
 	          	res.status = nfsstat4.NFS4ERR_NOENT;
 	         }
 
-             _fh.currentInode( newInode );
+             context.currentInode( newInode );
 	         res.status = nfsstat4.NFS4_OK;
 
         }catch(FileNotFoundHimeraFsException he) {
@@ -69,7 +66,8 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
        _result.oplookup = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 	}
 
 }

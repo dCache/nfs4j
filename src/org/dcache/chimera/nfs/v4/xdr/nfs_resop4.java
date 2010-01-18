@@ -4,63 +4,6 @@
  * See http://remotetea.sourceforge.net for details
  */
 package org.dcache.chimera.nfs.v4.xdr;
-import org.dcache.chimera.nfs.v4.xdr.TEST_STATEID4res;
-import org.dcache.chimera.nfs.v4.xdr.VERIFY4res;
-import org.dcache.chimera.nfs.v4.xdr.RENAME4res;
-import org.dcache.chimera.nfs.v4.xdr.RECLAIM_COMPLETE4res;
-import org.dcache.chimera.nfs.v4.xdr.REMOVE4res;
-import org.dcache.chimera.nfs.v4.xdr.SET_SSV4res;
-import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID_CONFIRM4res;
-import org.dcache.chimera.nfs.v4.xdr.SECINFO4res;
-import org.dcache.chimera.nfs.v4.xdr.READDIR4res;
-import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID4res;
-import org.dcache.chimera.nfs.v4.xdr.PUTPUBFH4res;
-import org.dcache.chimera.nfs.v4.xdr.RESTOREFH4res;
-import org.dcache.chimera.nfs.v4.xdr.WANT_DELEGATION4res;
-import org.dcache.chimera.nfs.v4.xdr.RELEASE_LOCKOWNER4res;
-import org.dcache.chimera.nfs.v4.xdr.SEQUENCE4res;
-import org.dcache.chimera.nfs.v4.xdr.SAVEFH4res;
-import org.dcache.chimera.nfs.v4.xdr.PUTROOTFH4res;
-import org.dcache.chimera.nfs.v4.xdr.SECINFO_NO_NAME4res;
-import org.dcache.chimera.nfs.v4.xdr.SETATTR4res;
-import org.dcache.chimera.nfs.v4.xdr.RENEW4res;
-import org.dcache.chimera.nfs.v4.xdr.PUTFH4res;
-import org.dcache.chimera.nfs.v4.xdr.READ4res;
-import org.dcache.chimera.nfs.v4.xdr.READLINK4res;
-import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
-import org.dcache.chimera.nfs.v4.xdr.OPEN_DOWNGRADE4res;
-import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4res;
-import org.dcache.chimera.nfs.v4.xdr.OPEN4res;
-import org.dcache.chimera.nfs.v4.xdr.OPENATTR4res;
-import org.dcache.chimera.nfs.v4.xdr.NVERIFY4res;
-import org.dcache.chimera.nfs.v4.xdr.LOOKUPP4res;
-import org.dcache.chimera.nfs.v4.xdr.LOCKU4res;
-import org.dcache.chimera.nfs.v4.xdr.LOOKUP4res;
-import org.dcache.chimera.nfs.v4.xdr.LOCKT4res;
-import org.dcache.chimera.nfs.v4.xdr.ILLEGAL4res;
-import org.dcache.chimera.nfs.v4.xdr.LOCK4res;
-import org.dcache.chimera.nfs.v4.xdr.LAYOUTGET4res;
-import org.dcache.chimera.nfs.v4.xdr.LINK4res;
-import org.dcache.chimera.nfs.v4.xdr.LAYOUTCOMMIT4res;
-import org.dcache.chimera.nfs.v4.xdr.LAYOUTRETURN4res;
-import org.dcache.chimera.nfs.v4.xdr.GETDEVICEINFO4res;
-import org.dcache.chimera.nfs.v4.xdr.GETATTR4res;
-import org.dcache.chimera.nfs.v4.xdr.FREE_STATEID4res;
-import org.dcache.chimera.nfs.v4.xdr.GETFH4res;
-import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4res;
-import org.dcache.chimera.nfs.v4.xdr.GET_DIR_DELEGATION4res;
-import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4res;
-import org.dcache.chimera.nfs.v4.xdr.DESTROY_SESSION4res;
-import org.dcache.chimera.nfs.v4.xdr.DESTROY_CLIENTID4res;
-import org.dcache.chimera.nfs.v4.xdr.DELEGPURGE4res;
-import org.dcache.chimera.nfs.v4.xdr.DELEGRETURN4res;
-import org.dcache.chimera.nfs.v4.xdr.CREATE4res;
-import org.dcache.chimera.nfs.v4.xdr.CLOSE4res;
-import org.dcache.chimera.nfs.v4.xdr.COMMIT4res;
-import org.dcache.chimera.nfs.v4.xdr.CREATE_SESSION4res;
-import org.dcache.chimera.nfs.v4.xdr.ACCESS4res;
-import org.dcache.chimera.nfs.v4.xdr.BACKCHANNEL_CTL4res;
-import org.dcache.chimera.nfs.v4.xdr.BIND_CONN_TO_SESSION4res;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
@@ -488,5 +431,184 @@ public class nfs_resop4 implements XdrAble {
         }
     }
 
+    public int getStatus() {
+
+        int status = nfsstat4.NFS4ERR_SERVERFAULT;
+
+        switch (resop) {
+            case nfs_opnum4.OP_ACCESS:
+                status = opaccess.status;
+                break;
+            case nfs_opnum4.OP_CLOSE:
+                status = opclose.status;
+                break;
+            case nfs_opnum4.OP_COMMIT:
+                status = opcommit.status;
+                break;
+            case nfs_opnum4.OP_CREATE:
+                status = opcreate.status;
+                break;
+            case nfs_opnum4.OP_DELEGPURGE:
+                status = opdelegpurge.status;
+                break;
+            case nfs_opnum4.OP_DELEGRETURN:
+                status = opdelegreturn.status;
+                break;
+            case nfs_opnum4.OP_GETATTR:
+                status = opgetattr.status;
+                break;
+            case nfs_opnum4.OP_GETFH:
+                status = opgetfh.status;
+                break;
+            case nfs_opnum4.OP_LINK:
+                status = oplink.status;
+                break;
+            case nfs_opnum4.OP_LOCK:
+                status = oplock.status;
+                break;
+            case nfs_opnum4.OP_LOCKT:
+                status = oplockt.status;
+                break;
+            case nfs_opnum4.OP_LOCKU:
+                status = oplocku.status;
+                break;
+            case nfs_opnum4.OP_LOOKUP:
+                status = oplookup.status;
+                break;
+            case nfs_opnum4.OP_LOOKUPP:
+                status = oplookupp.status;
+                break;
+            case nfs_opnum4.OP_NVERIFY:
+                status = opnverify.status;
+                break;
+            case nfs_opnum4.OP_OPEN:
+                status = opopen.status;
+                break;
+            case nfs_opnum4.OP_OPENATTR:
+                status = opopenattr.status;
+                break;
+            case nfs_opnum4.OP_OPEN_CONFIRM:
+                status = opopen_confirm.status;
+                break;
+            case nfs_opnum4.OP_OPEN_DOWNGRADE:
+                status = opopen_downgrade.status;
+                break;
+            case nfs_opnum4.OP_PUTFH:
+                status = opputfh.status;
+                break;
+            case nfs_opnum4.OP_PUTPUBFH:
+                status = opputpubfh.status;
+                break;
+            case nfs_opnum4.OP_PUTROOTFH:
+                status = opputrootfh.status;
+                break;
+            case nfs_opnum4.OP_READ:
+                status = opread.status;
+                break;
+            case nfs_opnum4.OP_READDIR:
+                status = opreaddir.status;
+                break;
+            case nfs_opnum4.OP_READLINK:
+                status = opreadlink.status;
+                break;
+            case nfs_opnum4.OP_REMOVE:
+                status = opremove.status;
+                break;
+            case nfs_opnum4.OP_RENAME:
+                status = oprename.status;
+                break;
+            case nfs_opnum4.OP_RENEW:
+                status = oprenew.status;
+                break;
+            case nfs_opnum4.OP_RESTOREFH:
+                status = oprestorefh.status;
+                break;
+            case nfs_opnum4.OP_SAVEFH:
+                status = opsavefh.status;
+                break;
+            case nfs_opnum4.OP_SECINFO:
+                status = opsecinfo.status;
+                break;
+            case nfs_opnum4.OP_SETATTR:
+                status = opsetattr.status;
+                break;
+            case nfs_opnum4.OP_SETCLIENTID:
+                status = opsetclientid.status;
+                break;
+            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
+                status = opsetclientid_confirm.status;
+                break;
+            case nfs_opnum4.OP_VERIFY:
+                status = opverify.status;
+                break;
+            case nfs_opnum4.OP_WRITE:
+                status = opwrite.status;
+                break;
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
+                status = oprelease_lockowner.status;
+                break;
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                status = opbackchannel_ctl.bcr_status;
+                break;
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                status = opbind_conn_to_session.bctsr_status;
+                break;
+            case nfs_opnum4.OP_EXCHANGE_ID:
+                status = opexchange_id.eir_status;
+                break;
+            case nfs_opnum4.OP_CREATE_SESSION:
+                status = opcreate_session.csr_status;
+                break;
+            case nfs_opnum4.OP_DESTROY_SESSION:
+                status = opdestroy_session.dsr_status;
+                break;
+            case nfs_opnum4.OP_FREE_STATEID:
+                status = opfree_stateid.fsr_status;
+                break;
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
+                status = opget_dir_delegation.gddr_status;
+                break;
+            case nfs_opnum4.OP_GETDEVICEINFO:
+                status = opgetdeviceinfo.gdir_status;
+                break;
+            case nfs_opnum4.OP_GETDEVICELIST:
+                status = opgetdevicelist.gdlr_status;
+                break;
+            case nfs_opnum4.OP_LAYOUTCOMMIT:
+                status = oplayoutcommit.locr_status;
+                break;
+            case nfs_opnum4.OP_LAYOUTGET:
+                status = oplayoutget.logr_status;
+                break;
+            case nfs_opnum4.OP_LAYOUTRETURN:
+                status = oplayoutreturn.lorr_status;
+                break;
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                status = opsecinfo_no_name.value.status;
+                break;
+            case nfs_opnum4.OP_SEQUENCE:
+                status = opsequence.sr_status;
+                break;
+            case nfs_opnum4.OP_SET_SSV:
+                status = opset_ssv.ssr_status;
+                break;
+            case nfs_opnum4.OP_TEST_STATEID:
+                status = optest_stateid.tsr_status;
+                break;
+            case nfs_opnum4.OP_WANT_DELEGATION:
+                status = opwant_delegation.wdr_status;
+                break;
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                status = opdestroy_clientid.dcr_status;
+                break;
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                status = opreclaim_complete.rcr_status;
+                break;
+            case nfs_opnum4.OP_ILLEGAL:
+                status = opillegal.status;
+                break;
+        }
+        return status;
+    }
 }
 // End of nfs_resop4.java

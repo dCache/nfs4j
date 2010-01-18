@@ -3,9 +3,6 @@ package org.dcache.chimera.nfs.v4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class NFSv4OperationFactory {
 
@@ -16,82 +13,80 @@ public class NFSv4OperationFactory {
 
 
 
-	public static AbstractNFSv4Operation getOperation(FileSystemProvider fs,
-	        RpcCall call$, CompoundArgs fh, nfs_argop4 op,
-	                                                   ExportFile exports) {
+	public static AbstractNFSv4Operation getOperation(nfs_argop4 op) {
 
 	        switch ( op.argop ) {
 	            case nfs_opnum4.OP_ACCESS:
-	            	return new OperationACCESS(fs, call$, fh, op, exports);
+	            	return new OperationACCESS(op);
 	            case nfs_opnum4.OP_CLOSE:
-	            	return new OperationCLOSE(fs, call$, fh, op, exports);
+	            	return new OperationCLOSE(op);
 	            case nfs_opnum4.OP_COMMIT:
-	            	return new OperationCOMMIT(fs, call$, fh, op, exports);
+	            	return new OperationCOMMIT(op);
 	            case nfs_opnum4.OP_CREATE:
-	            	return new OperationCREATE(fs, call$, fh, op, exports);
+	            	return new OperationCREATE(op);
 	            case nfs_opnum4.OP_DELEGPURGE:
-	            	return new OperationDELEGPURGE(fs, call$, fh, op, exports);
+	            	return new OperationDELEGPURGE(op);
 	            case nfs_opnum4.OP_DELEGRETURN:
-	            	return new OperationDELEGRETURN(fs, call$, fh, op, exports);
+	            	return new OperationDELEGRETURN(op);
 	            case nfs_opnum4.OP_GETATTR:
-	            	return new OperationGETATTR(fs, call$, fh, op, exports);
+	            	return new OperationGETATTR(op);
 	            case nfs_opnum4.OP_GETFH:
-	            	return new OperationGETFH(fs, call$, fh, op, exports);
+	            	return new OperationGETFH(op);
 	            case nfs_opnum4.OP_LINK:
-	            	return new OperationLINK(fs, call$, fh, op, exports);
+	            	return new OperationLINK(op);
 	            case nfs_opnum4.OP_LOCK:
-	            	return new OperationLOCK(fs, call$, fh, op, exports);
+	            	return new OperationLOCK(op);
 	            case nfs_opnum4.OP_LOCKT:
-	            	return new OperationLOCKT(fs, call$, fh, op, exports);
+	            	return new OperationLOCKT(op);
 	            case nfs_opnum4.OP_LOCKU:
-	            	return new OperationLOCKU(fs, call$, fh, op, exports);
+	            	return new OperationLOCKU(op);
 	            case nfs_opnum4.OP_LOOKUP:
-	            	return new OperationLOOKUP(fs, call$, fh, op, exports);
+	            	return new OperationLOOKUP(op);
 	            case nfs_opnum4.OP_LOOKUPP:
-	            	return new OperationLOOKUPP(fs, call$, fh, op, exports);
+	            	return new OperationLOOKUPP(op);
 	            case nfs_opnum4.OP_NVERIFY:
-	            	return new OperationNVERIFY(fs, call$, fh, op, exports);
+	            	return new OperationNVERIFY(op);
 	            case nfs_opnum4.OP_OPEN:
-	            	return new OperationOPEN(fs, call$, fh, op, exports);
+	            	return new OperationOPEN(op);
 	            case nfs_opnum4.OP_OPENATTR:
-	            	return new OperationOPENATTR(fs, call$, fh, op, exports);
+	            	return new OperationOPENATTR(op);
 	            case nfs_opnum4.OP_OPEN_CONFIRM:
-	            	return new OperationOPEN_CONFIRM(fs, call$, fh, op, exports);
+	            	return new OperationOPEN_CONFIRM(op);
 	            case nfs_opnum4.OP_OPEN_DOWNGRADE:break;
 	            case nfs_opnum4.OP_PUTFH:
-	            	return new OperationPUTFH(fs, call$, fh, op, exports);
+	            	return new OperationPUTFH(op);
 	            case nfs_opnum4.OP_PUTPUBFH:
-	            	return new OperationPUTPUBFH(fs, call$, fh, op, exports);
+	            	return new OperationPUTPUBFH(op);
 	            case nfs_opnum4.OP_PUTROOTFH:
-	            	return new OperationPUTROOTFH(fs, call$, fh, op, exports);
+	            	return new OperationPUTROOTFH(op);
 	            case nfs_opnum4.OP_READ:
-	            	return new OperationREAD(fs, call$, fh, op, exports);
+	            	return new OperationREAD(op);
 	            case nfs_opnum4.OP_READDIR:
-	            	return new OperationREADDIR(fs, call$, fh, op, exports);
+	            	return new OperationREADDIR(op);
 	            case nfs_opnum4.OP_READLINK:
-	            	return new OperationREADLINK(fs, call$, fh, op, exports);
+	            	return new OperationREADLINK(op);
 	            case nfs_opnum4.OP_REMOVE:
-	            	return new OperationREMOVE(fs, call$, fh, op, exports);
+	            	return new OperationREMOVE(op);
 	            case nfs_opnum4.OP_RENAME:
-	            	return new OperationRENAME(fs, call$, fh, op, exports);
+	            	return new OperationRENAME(op);
 	            case nfs_opnum4.OP_RENEW:
-	            	return new OperationRENEW(fs, call$, fh, op, exports);
+	            	return new OperationRENEW(op);
 	            case nfs_opnum4.OP_RESTOREFH:
-	            	return new OperationRESTOREFH(fs, call$, fh, op, exports);
+	            	return new OperationRESTOREFH(op);
 	            case nfs_opnum4.OP_SAVEFH:
-	            	return new OperationSAVEFH(fs, call$, fh, op, exports);
+	            	return new OperationSAVEFH(op);
 	            case nfs_opnum4.OP_SECINFO:
-	            	return new OperationSECINFO(fs, call$, fh, op, exports);
+	            	return new OperationSECINFO(op);
 	            case nfs_opnum4.OP_SETATTR:
-	            	return new OperationSETATTR(fs, call$, fh, op, exports);
+	            	return new OperationSETATTR(op);
 	            case nfs_opnum4.OP_SETCLIENTID:
-	            	return new OperationSETCLIENTID(fs, call$, fh, op, exports);
+	            	return new OperationSETCLIENTID(op);
 	            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
-	            	return new OperationSETCLIENTID_CONFIRM(fs, call$, fh, op, exports);
+	            	return new OperationSETCLIENTID_CONFIRM(op);
 	            case nfs_opnum4.OP_VERIFY:
-	            	return new OperationVERIFY(fs, call$, fh, op, exports);
+	            	return new OperationVERIFY(op);
 	            case nfs_opnum4.OP_WRITE:
-	            	return new OperationWRITE(fs, call$, fh, op, exports);
+	            	return new OperationWRITE(op);
 	/*            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
 	            	nRes.oprelease_lockowner = new RELEASE_LOCKOWNER4res();
 	            	res = new NFSv4OperationResult(nRes, nfsstat4.NFS4ERR_NOTSUPP);
@@ -102,29 +97,28 @@ public class NFSv4OperationFactory {
 	             */
 
 	            case nfs_opnum4.OP_GETDEVICELIST:
-	            	return new OperationGETDEVICELIST(fs, call$, fh, op, exports);
+	            	return new OperationGETDEVICELIST(op);
 	            case nfs_opnum4.OP_LAYOUTGET:
-	            	return new OperationLAYOUTGET(fs, call$, fh, op, exports);
+	            	return new OperationLAYOUTGET(op);
 	            case nfs_opnum4.OP_LAYOUTCOMMIT:
-	            	return new OperationLAYOUTCOMMIT(fs, call$, fh, op, exports);
+	            	return new OperationLAYOUTCOMMIT(op);
 	            case nfs_opnum4.OP_LAYOUTRETURN:
-	            	return new OperationLAYOUTRETURN(fs, call$, fh, op, exports);
+	            	return new OperationLAYOUTRETURN(op);
 	            case nfs_opnum4.OP_GETDEVICEINFO:
-	            	return new OperationGETDEVICEINFO(fs, call$, fh, op, exports);
+	            	return new OperationGETDEVICEINFO(op);
 	            case nfs_opnum4.OP_EXCHANGE_ID:
-	            	return new OperationEXCHANGE_ID(fs, call$, fh, op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS, exports);
+	            	return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS);
 	            case nfs_opnum4.OP_CREATE_SESSION:
-	            	return new OperationCREATE_SESSION(fs, call$, fh, op, exports);
+	            	return new OperationCREATE_SESSION(op);
 	            case nfs_opnum4.OP_DESTROY_SESSION:
-	            	return new OperationDESTROY_SESSION(fs, call$, fh, op, exports);
+	            	return new OperationDESTROY_SESSION(op);
 	            case nfs_opnum4.OP_SEQUENCE:
-	            	return new OperationSEQUENCE(fs, call$, fh, op, true, exports);
+	            	return new OperationSEQUENCE(op, true);
 	            case nfs_opnum4.OP_ILLEGAL:
 
 	            }
 
-
-	        return new OperationILLEGAL(fs, call$, fh, op, exports);
+	        return new OperationILLEGAL(op);
 	    }
 
 

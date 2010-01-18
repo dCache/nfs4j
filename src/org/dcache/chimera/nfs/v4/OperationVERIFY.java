@@ -10,21 +10,18 @@ import org.dcache.chimera.nfs.v4.xdr.VERIFY4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.Arrays;
 
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationVERIFY extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationVERIFY.class.getName());
 
-	OperationVERIFY(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_VERIFY);
+	OperationVERIFY(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_VERIFY);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
         VERIFY4res res = new VERIFY4res();
 
@@ -40,7 +37,7 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
              */
 
             if( bitSet (_args.opverify.obj_attributes.attrmask ) ) {
-                fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opverify.obj_attributes.attrmask, _fh.currentInode());
+                fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opverify.obj_attributes.attrmask, context.currentInode());
 
                 if( Arrays.equals(_args.opverify.obj_attributes.attr_vals.value, currentAttr.attr_vals.value) ) {
                     res.status = nfsstat4.NFS4_OK;
@@ -51,7 +48,7 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
             }
 
             if(_log.isDebugEnabled() ) {
-            	_log.debug(_fh.currentInode().toFullString() + " is same? = " + res.status );
+            	_log.debug(context.currentInode().toFullString() + " is same? = " + res.status );
             }
 
         }catch(ChimeraNFSException he) {
@@ -63,7 +60,8 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
 
        _result.opverify = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 	}
 
 

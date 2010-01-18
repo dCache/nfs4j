@@ -11,12 +11,9 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.CREATE4res;
 import org.dcache.chimera.nfs.v4.xdr.CREATE4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -27,12 +24,12 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 	private static final Logger _log = Logger.getLogger(OperationCREATE.class.getName());
 
 
-	OperationCREATE(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_CREATE);
+	OperationCREATE(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_CREATE);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
     	CREATE4res res = new CREATE4res();
 
@@ -46,13 +43,13 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
     	try {
 
-    		Stat parentStat = _fh.currentInode().statCache();
+    		Stat parentStat = context.currentInode().statCache();
 
 
     		UnixAcl fileAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(),parentStat.getMode() & 0777 );
 
 
-            if ( ! _permissionHandler.isAllowed(fileAcl, _user, AclHandler.ACL_INSERT)  ) {
+            if ( ! _permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)  ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
@@ -64,7 +61,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NAMETOOLONG, "name too long");
             }
 
-    		if(!_fh.currentInode().isDirectory() ) {
+    		if(!context.currentInode().isDirectory() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
     		}
 
@@ -75,18 +72,18 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
     		// TODO: this check have to be moved into JdbcFs
     		try {
-    			inode = _fh.currentInode().inodeOf(name);
+    			inode = context.currentInode().inodeOf(name);
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_EXIST, "path already exist");
     		}catch(ChimeraFsException hfe) {	}
 
     		switch(type) {
 
     			case nfs_ftype4.NF4DIR:
-	    			inode = _fh.currentInode().mkdir(name);
+	    			inode = context.currentInode().mkdir(name);
 	    			break;
     			case nfs_ftype4.NF4LNK:
     				byte[] linkDest = _args.opcreate.objtype.linkdata.value.value.value;
-    				inode = _fs.createLink(_fh.currentInode(), name, _user.getUID(), _user.getGID(), 777, linkDest);
+    				inode = context.getFs().createLink(context.currentInode(), name, context.getUser().getUID(), context.getUser().getGID(), 777, linkDest);
     				break;
 
     			// we do not support other file types
@@ -104,18 +101,18 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADTYPE, "bad file type");
     		}
 
-			inode.setGID(_user.getGID());
-			inode.setUID(_user.getUID());
+			inode.setGID(context.getUser().getGID());
+			inode.setUID(context.getUser().getUID());
 
     		res.status = nfsstat4.NFS4_OK;
     		res.resok4 = new CREATE4resok();
     		res.resok4.attrset = OperationSETATTR.setAttributes(objAttr, inode);
             res.resok4.cinfo = new change_info4();
             res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4( new uint64_t(_fh.currentInode().statCache().getMTime()));
+            res.resok4.cinfo.before = new changeid4( new uint64_t(context.currentInode().statCache().getMTime()));
             res.resok4.cinfo.after = new changeid4( new uint64_t( System.currentTimeMillis()) );
 
-    		_fh.currentInode(inode);
+    		context.currentInode(inode);
 
         }catch(ChimeraNFSException he) {
     		if(_log.isDebugEnabled() ) {
@@ -129,7 +126,8 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
        _result.opcreate = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 
 	}
 

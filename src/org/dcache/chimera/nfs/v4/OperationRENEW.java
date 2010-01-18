@@ -5,22 +5,19 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.RENEW4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationRENEW extends AbstractNFSv4Operation {
 
 
 	private static final Logger _log = Logger.getLogger(OperationRENEW.class.getName());
 
-	OperationRENEW(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_RENEW);
+	OperationRENEW(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_RENEW);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
         RENEW4res res = new RENEW4res();
 
@@ -45,7 +42,8 @@ public class OperationRENEW extends AbstractNFSv4Operation {
 
        _result.oprenew = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 	}
 
 }

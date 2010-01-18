@@ -8,26 +8,23 @@ import org.dcache.chimera.nfs.v4.xdr.NVERIFY4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationNVERIFY extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationNVERIFY.class.getName());
 
-	OperationNVERIFY(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_NVERIFY);
+	OperationNVERIFY(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_NVERIFY);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
 	       NVERIFY4res res = new NVERIFY4res();
 
 	        try {
 
-	            fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opnverify.obj_attributes.attrmask, _fh.currentInode());
+	            fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opnverify.obj_attributes.attrmask, context.currentInode());
 
 	            res.status = nfsstat4.NFS4ERR_SAME;
 
@@ -40,7 +37,7 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
 	            }
 
                 _log.log(Level.FINEST, "{0} is !same = {1}",
-                        new Object[] {_fh.currentInode().toFullString(), res.status}
+                        new Object[] {context.currentInode().toFullString(), res.status}
                 );
             }catch(ChimeraNFSException he) {
 	        	res.status = he.getStatus();
@@ -51,6 +48,8 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
 
 	        _result.opnverify = res;
 
-	        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
+
 	}
 }

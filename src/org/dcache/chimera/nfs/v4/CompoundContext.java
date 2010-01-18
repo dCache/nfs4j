@@ -1,33 +1,67 @@
-/*
- * $Id:CompoundArgs.java 140 2007-06-07 13:44:55Z tigran $
- */
 package org.dcache.chimera.nfs.v4;
 
+import java.util.List;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.ExportFile;
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.chimera.posix.UnixUser;
+import org.dcache.xdr.RpcCall;
 
 
-public class CompoundArgs {
+public class CompoundContext {
 
     
-	private static final Logger _log = Logger.getLogger(CompoundArgs.class.getName());
+    private static final Logger _log = Logger.getLogger(CompoundContext.class.getName());
     
     private FsInode _rootInode = null;
     private FsInode _currentInode = null;
     private FsInode _savedInode = null;
 
     private final int _minorversion;
-    private int _position = 0;
     
     private NFSv41Session _session = null;
-    
-    public CompoundArgs(int minorversion) {
+    private final List<nfs_resop4> _processedOps;
+
+    private final FileSystemProvider _fs;
+    private final RpcCall _callInfo;
+    private final UnixUser _user;
+    private final ExportFile _exportFile;    
+
+    /**
+     * Create context of COUMPOUND request.
+     *
+     * @param processedOps @{link List} wnere results of processed operations are stored.
+     * @param minorversion NFSv4 minor version number.
+     * @param fs backend file-system interface
+     * @param call RPC call
+     * @param exportFile list of servers exports.
+     */
+    public CompoundContext(List<nfs_resop4> processedOps, int minorversion, FileSystemProvider fs,
+            RpcCall call, ExportFile exportFile) {
+        _processedOps = processedOps;
     	_minorversion = minorversion;
+        _fs = fs;
+        _callInfo = call;
+        _exportFile = exportFile;
+        _user = HimeraNFS4Utils.remoteUser(_callInfo, _exportFile);
     }
-    
+
+    public RpcCall getRpcCall() {
+        return _callInfo;
+    }
+    public UnixUser getUser() {
+        return _user;
+    }
+
+    public FileSystemProvider getFs() {
+        return _fs;
+    }
+
     public int getMinorversion() {
     	return _minorversion;
     }
@@ -75,24 +109,28 @@ public class CompoundArgs {
         _savedInode = _currentInode;
         _log.log(Level.FINEST, "saved Inode: {0}", _savedInode.toString() );
     }
-    
+
+    /**
+     * Set NFSv4.1 session of current request.
+     * @param session
+     */
     public void setSession(NFSv41Session session) {
     	_session = session;
     }
-    
+
+    /**
+     * Get {@link NFSv41Session} used by current request.
+     * @return current session
+     */
     public NFSv41Session getSession() {
     	return _session;
     }
-    
+
     /**
-     * the position in compound operation starting from zero
-     * @return position
+     * Get list of currently processed operations.
+     * @return list of operations.
      */
-    public int position() {
-    	return _position;
-    }
-    
-    public void nexPosition() {
-    	_position ++ ;
+    public List<nfs_resop4> processedOperations() {
+        return _processedOps;
     }
 }

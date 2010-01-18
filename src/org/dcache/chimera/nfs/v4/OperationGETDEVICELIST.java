@@ -13,25 +13,21 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4res;
 import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
     private static final Logger _log = Logger.getLogger(OperationGETDEVICELIST.class.getName());
 
-    OperationGETDEVICELIST(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-    super(fs, exports, call$, fh, args, nfs_opnum4.OP_GETDEVICELIST);
+    OperationGETDEVICELIST(nfs_argop4 args) {
+    super(args, nfs_opnum4.OP_GETDEVICELIST);
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
 
     GETDEVICELIST4res res = new GETDEVICELIST4res();
 
@@ -70,7 +66,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         byte[] mdsID = id2deviceid(0);
 
         InetSocketAddress[] addresses = new InetSocketAddress[1];
-        addresses[0] = _callInfo.getTransport().getLocalSocketAddress();
+        addresses[0] = context.getRpcCall().getTransport().getLocalSocketAddress();
 
         device_addr4 deviceAddr = DeviceManager.deviceAddrOf( addresses );
 
@@ -116,7 +112,8 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
     _result.opgetdevicelist = res;
 
-    return new NFSv4OperationResult(_result, res.gdlr_status);
+        context.processedOperations().add(_result);
+        return res.gdlr_status == nfsstat4.NFS4_OK;
 
     }
 

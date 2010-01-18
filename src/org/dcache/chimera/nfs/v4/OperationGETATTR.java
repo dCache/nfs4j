@@ -76,14 +76,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsStat;
 import org.dcache.chimera.UnixPermission;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.acl.Ace;
 import org.dcache.chimera.nfs.v4.acl.AclStore;
 
@@ -91,19 +88,19 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationGETATTR.class.getName());
 
-	public OperationGETATTR(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_GETATTR);
+	public OperationGETATTR(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_GETATTR);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
 
         GETATTR4res res = new GETATTR4res();
 
         try {
 
 	        res.resok4 = new GETATTR4resok();
-	        res.resok4.obj_attributes = getAttributes(_args.opgetattr.attr_request, _fh.currentInode());
+	        res.resok4.obj_attributes = getAttributes(_args.opgetattr.attr_request, context.currentInode());
 
 	        res.status = nfsstat4.NFS4_OK;
         }catch(ChimeraNFSException he) {
@@ -116,7 +113,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
         _result.opgetattr = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 
 	}
 

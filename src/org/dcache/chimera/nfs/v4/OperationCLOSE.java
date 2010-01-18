@@ -8,10 +8,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.CLOSE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationCLOSE extends AbstractNFSv4Operation {
 
@@ -23,22 +20,22 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
      */
     private final boolean _isPNFS = false;
 
-    OperationCLOSE(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-        super(fs, exports, call$, fh, args, nfs_opnum4.OP_CLOSE);
+    OperationCLOSE(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_CLOSE);
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
         CLOSE4res res = new CLOSE4res();
 
         try {
 
-            FsInode inode = _fh.currentInode();
+            FsInode inode = context.currentInode();
 
-            if( _fh.getSession() == null ) {
+            if( context.getSession() == null ) {
                 NFSv4StateHandler.getInstace().updateClientLeaseTime(_args.opclose.open_stateid);
             }else{
-                _fh.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+                context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }
 
             res.status = nfsstat4.NFS4_OK;
@@ -54,7 +51,8 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         _result.opclose = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+        context.processedOperations().add(_result);
+        return res.status == nfsstat4.NFS4_OK;
     }
 
 }

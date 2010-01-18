@@ -22,12 +22,9 @@ import org.dcache.chimera.nfs.v4.xdr.OPEN4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.xdr.RpcCall;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -37,12 +34,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
     private static final Logger _log = Logger.getLogger(OperationOPEN.class.getName());
 
 
-    OperationOPEN(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-        super(fs, exports, call$, fh, args, nfs_opnum4.OP_OPEN);
+    OperationOPEN(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_OPEN);
     }
 
     @Override
-    public NFSv4OperationResult process() {
+    public boolean process(CompoundContext context) {
         OPEN4res res = null;
 
         try {
@@ -51,7 +48,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             Long clientid = Long.valueOf(_args.opopen.owner.value.clientid.value.value);
             NFS4Client client = null;
 
-            if(_fh.getSession() == null ) {
+            if(context.getSession() == null ) {
                 client = NFSv4StateHandler.getInstace().getClientByID(clientid);
 
                 if (client == null || !client.isConfirmed() ) {
@@ -63,7 +60,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         new Object[] {client, new String(_args.opopen.owner.value.owner)}
                 );
             }else{
-                client = _fh.getSession().getClient();
+                client = context.getSession().getClient();
             }
 
             if (_args.opopen.claim.file.value.value.value.length > NFSv4Defaults.NFS4_MAXFILENAME) {
@@ -72,9 +69,9 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             } else {
 
                 if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
-                    res = OPEN4_CREATE(_callInfo, _fh, _args.opopen);
+                    res = OPEN4_CREATE(context, _args.opopen);
                 } else {
-                    res = OPEN4_NOCREATE(_callInfo, _fh, _args.opopen);
+                    res = OPEN4_NOCREATE(context, _args.opopen);
                 }
 
             }
@@ -83,7 +80,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             /*
              * if it's not session-based  request, then client have to confirm
              */
-            if(_fh.getSession() == null ){
+            if(context.getSession() == null ){
                 res.resok4.rflags = new uint32_t( nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX | nfs4_prot.OPEN4_RESULT_CONFIRM);
                 nfs4state = new NFS4State( _args.opopen.seqid.value.value);
 
@@ -93,12 +90,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             }else {
 
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
-                nfs4state = new NFS4State(_fh.getSession().getClient().currentSeqID());
+                nfs4state = new NFS4State(context.getSession().getClient().currentSeqID());
 
                 res.resok4.stateid = new stateid4();
                 res.resok4.stateid.seqid = new uint32_t(nfs4state.seqid());
                 res.resok4.stateid.other = nfs4state.other();
-                _fh.getSession().getClient().nextSeqID();
+                context.getSession().getClient().nextSeqID();
 
             }
 
@@ -130,12 +127,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
            _result.opopen = res;
 
-            return new NFSv4OperationResult(_result, res.status);
+        context.processedOperations().add(_result);
+        return res.status == nfsstat4.NFS4_OK;
 
     }
 
 
-    private OPEN4res OPEN4_CREATE(RpcCall call$, CompoundArgs fh, OPEN4args args)
+    private OPEN4res OPEN4_CREATE(CompoundContext context, OPEN4args args)
     throws Exception {
 
     OPEN4res res = new OPEN4res();
@@ -171,12 +169,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 _log.log(Level.FINEST, "regular open for : {0}", name);
 
-                if( !fh.currentInode().isDirectory() ) {
+                if( !context.currentInode().isDirectory() ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
                 }
 
                 try {
-                    inode = fh.currentInode().inodeOf(name);
+                    inode = context.currentInode().inodeOf(name);
 
                 }catch(ChimeraFsException he) {
                     exist = false;
@@ -197,7 +195,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     _log.log(Level.FINEST, "GID  : {0}", fileStat.getGid());
                     _log.log(Level.FINEST, "Mode : 0{0}", Integer.toOctalString(fileStat.getMode() & 0777) );
                     UnixAcl fileAcl = new UnixAcl(fileStat.getUid(), fileStat.getGid(),fileStat.getMode() & 0777 );
-                    if ( ! _permissionHandler.isAllowed(fileAcl, _user, AclHandler.ACL_WRITE) ) {
+                    if ( ! _permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE) ) {
                         throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
                     }
                     res.resok4.attrset = new bitmap4();
@@ -208,9 +206,9 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 }else{
                     // check parent permissions
-                    Stat parentStat = fh.currentInode().statCache();
+                    Stat parentStat = context.currentInode().statCache();
                     UnixAcl parentAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(),parentStat.getMode() & 0777 );
-                    if ( ! _permissionHandler.isAllowed(parentAcl, _user, AclHandler.ACL_INSERT) ) {
+                    if ( ! _permissionHandler.isAllowed(parentAcl, context.getUser(), AclHandler.ACL_INSERT) ) {
                         throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
                     }
                     res.resok4.attrset = new bitmap4();
@@ -222,7 +220,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 _log.log(Level.FINEST, "Does the file already exists: {0}", exist);
                 if( ! exist ) {
-                    inode = fh.currentInode().create(name, _user.getUID(), _user.getGID(), 0600);
+                    inode = context.currentInode().create(name, context.getUser().getUID(), context.getUser().getGID(), 0600);
 
                     if( ! exclusive ){
                         fattr4 createAttr = args.openhow.how.createattrs;
@@ -239,7 +237,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 res.resok4.cinfo = new change_info4();
                 res.resok4.cinfo.atomic = true;
-                res.resok4.cinfo.before = new changeid4( new uint64_t(fh.currentInode().statCache().getMTime()));
+                res.resok4.cinfo.before = new changeid4( new uint64_t(context.currentInode().statCache().getMTime()));
                 res.resok4.cinfo.after = new changeid4( new uint64_t( System.currentTimeMillis()) );
 
                 res.resok4.delegation = new open_delegation4();
@@ -247,11 +245,11 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 res.status = nfsstat4.NFS4_OK;
 
-                fh.currentInode(inode);
+                context.currentInode(inode);
 
                 break;
             case open_claim_type4.CLAIM_PREVIOUS:
-                _log.log(Level.FINEST, "open by Inode for : {0}", fh.currentInode().toFullString() );
+                _log.log(Level.FINEST, "open by Inode for : {0}", context.currentInode().toFullString() );
                 break;
             case open_claim_type4.CLAIM_DELEGATE_CUR:
                 break;
@@ -263,7 +261,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
     return res;
 }
 
-private OPEN4res OPEN4_NOCREATE(RpcCall call$, CompoundArgs fh, OPEN4args args)
+private OPEN4res OPEN4_NOCREATE(CompoundContext context, OPEN4args args)
     throws Exception {
 
     OPEN4res res = new OPEN4res();
@@ -293,11 +291,11 @@ private OPEN4res OPEN4_NOCREATE(RpcCall call$, CompoundArgs fh, OPEN4args args)
 
                 _log.log(Level.FINEST, "regular open for : {0}", name);
 
-                if( !fh.currentInode().isDirectory() ) {
+                if( !context.currentInode().isDirectory() ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
                 }
 
-                inode = fh.currentInode().inodeOf(name);
+                inode = context.currentInode().inodeOf(name);
 
                 if( inode.isDirectory() ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
@@ -315,18 +313,18 @@ private OPEN4res OPEN4_NOCREATE(RpcCall call$, CompoundArgs fh, OPEN4args args)
 
                 res.resok4.cinfo = new change_info4();
                 res.resok4.cinfo.atomic = true;
-                res.resok4.cinfo.before = new changeid4( new uint64_t(fh.currentInode().statCache().getMTime()));
+                res.resok4.cinfo.before = new changeid4( new uint64_t(context.currentInode().statCache().getMTime()));
                 res.resok4.cinfo.after = new changeid4( new uint64_t( System.currentTimeMillis()) );
 
                 res.resok4.delegation = new open_delegation4();
                 res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_NONE;
                 res.resok4.rflags = new uint32_t( nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX );
 
-                fh.currentInode(inode);
+                context.currentInode(inode);
 
                 break;
             case open_claim_type4.CLAIM_PREVIOUS:
-                _log.log(Level.FINEST, "open by Inode for : {0}", fh.currentInode().toFullString() );
+                _log.log(Level.FINEST, "open by Inode for : {0}", context.currentInode().toFullString() );
                 break;
             case open_claim_type4.CLAIM_DELEGATE_CUR:
                 break;

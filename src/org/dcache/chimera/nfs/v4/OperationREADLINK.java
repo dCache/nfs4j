@@ -9,30 +9,27 @@ import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4res;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.xdr.RpcCall;
 import org.apache.log4j.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.nfs.ExportFile;
 
 public class OperationREADLINK extends AbstractNFSv4Operation {
 
 	private static final Logger _log = Logger.getLogger(OperationREADLINK.class.getName());
 
-	OperationREADLINK(FileSystemProvider fs, RpcCall call$, CompoundArgs fh, nfs_argop4 args, ExportFile exports) {
-		super(fs, exports, call$, fh, args, nfs_opnum4.OP_READLINK);
+	OperationREADLINK(nfs_argop4 args) {
+		super(args, nfs_opnum4.OP_READLINK);
 	}
 
 	@Override
-	public NFSv4OperationResult process() {
+	public boolean process(CompoundContext context) {
         READLINK4res res = new READLINK4res();
 
         try {
 
-        	if( !_fh.currentInode().isLink()  ) {
+        	if( !context.currentInode().isLink()  ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "not a symlink");
         	}
 
-            byte[] link = _fh.currentInode().readlink();
+            byte[] link = context.currentInode().readlink();
             _log.debug("NFS Request  READLINK4 link: " + new String(link) );
             res.resok4 = new READLINK4resok();
             res.resok4.link = new linktext4();
@@ -53,7 +50,8 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
 
       _result.opreadlink = res;
 
-        return new NFSv4OperationResult(_result, res.status);
+            context.processedOperations().add(_result);
+            return res.status == nfsstat4.NFS4_OK;
 	}
 
 }
