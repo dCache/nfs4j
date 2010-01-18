@@ -60,7 +60,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         byte[] data = id2deviceid(id);
 
         _log.log(Level.FINEST, "generating new device: {0} ({1}) for stateid {2}",
-                new Object[] {Arrays.toString(data), id, Arrays.toString(stateid.other)}
+                new Object[] {Arrays.toString(data), id, stateid}
         );
 
         InetAddress addr = null;
@@ -143,8 +143,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     public void releaseDevice(stateid4 stateid) {
         // I'am fine
-        _log.log(Level.FINEST, "release device for stateid {1}",
-                Arrays.toString(stateid.other) );
+        _log.log(Level.FINEST, "release device for stateid {0}", stateid );
     }
 
     public static byte[] id2deviceid(int id) {

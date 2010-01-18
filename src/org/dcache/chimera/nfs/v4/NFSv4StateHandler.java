@@ -29,7 +29,7 @@ public class NFSv4StateHandler {
 
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
     private static Map<Long, NFS4Client> _clientsByServerId = new HashMap<Long, NFS4Client>();
-    private static Map<String, Long> _clientsByStateId = new HashMap<String, Long>();
+    private static Map<stateid4, Long> _clientsByStateId = new HashMap<stateid4, Long>();
 
     private final Cache<sessionid4, NFSv41Session> _sessionById =
             new Cache<sessionid4, NFSv41Session>("NFSv41 sessions", 5000, Long.MAX_VALUE, TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME*2));
@@ -68,7 +68,7 @@ public class NFSv4StateHandler {
     }
 
 
-    public Long getClientIdByStateId(String stateId) {
+    public Long getClientIdByStateId(stateid4 stateId) {
         return _clientsByStateId.get(stateId);
     }
 
@@ -78,7 +78,7 @@ public class NFSv4StateHandler {
     }
 
 
-    public void addClinetByStateID(String stateId, Long clientId) {
+    public void addClinetByStateID(stateid4 stateId, Long clientId) {
         _clientsByStateId.put(stateId, clientId);
     }
 
@@ -106,9 +106,7 @@ public class NFSv4StateHandler {
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
 
-        String stateID = new String(stateid.other);
-
-        Long clientId = _clientsByStateId.get(stateID);
+        Long clientId = _clientsByStateId.get(stateid);
         if(clientId == null ) {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "No client ID associated with sate."  );
         }
@@ -118,7 +116,7 @@ public class NFSv4StateHandler {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "No client associated with client id."  );
         }
 
-        NFS4State state = client.state(stateID);
+        NFS4State state = client.state(stateid);
         if( state == null) {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "State not know to the client."  );
         }
@@ -127,10 +125,9 @@ public class NFSv4StateHandler {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "State is not confirmed"  );
         }
 
-        if( state.seqid() != stateid.seqid.value ) {
+        if( state.stateid().seqid.value != stateid.seqid.value ) {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "Sequence id miss match."  );
         }
-
 
         client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
 

@@ -3,6 +3,9 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import org.dcache.chimera.nfs.v4.xdr.stateid4;
+import org.dcache.chimera.nfs.v4.xdr.uint32_t;
+
 class NFS4State {            
     
     
@@ -22,33 +25,28 @@ class NFS4State {
    
      */
 		        	
-    private int _seqid = 0;
-    private byte[] _other = new byte[12];
+    private final stateid4 _stateid;
     private boolean _isConfimed = false;
     
     public NFS4State(int seqid) {
-        
+
+        _stateid = new stateid4();
+        _stateid.other = new byte[12];
+        _stateid.seqid = new uint32_t(seqid);
         byte[] other_local = Integer.toString( this.hashCode()).getBytes();
         
         int len = other_local.length > 12 ? 12 : other_local.length;        
-        System.arraycopy(other_local, 0, _other, 0, len);
+        System.arraycopy(other_local, 0, _stateid.other, 0, len);
         for( int i = 0; i  < 12 - len; i++ ) {
-        	_other[len + i] = '0';        	
+            _stateid.other[len + i] = '0';
         }
-      
-        _seqid = seqid;
-        
-    }            
-    
-    public int seqid() { return _seqid; }
-    public void bumpSeqid() { ++ _seqid; }
-    
-   
-    
-    public byte []  other() {
-        return _other;
     }
+
+    public void bumpSeqid() { ++ _stateid.seqid.value; }
     
+    public stateid4 stateid() {
+        return _stateid;
+    }
     
     public void confirm() {
     	_isConfimed = true;

@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import org.dcache.chimera.nfs.v4.xdr.stateid4;
 
 public class NFS4Client {
 
@@ -77,7 +78,7 @@ public class NFS4Client {
 
     private static final Logger _log = Logger.getLogger(NFS4Client.class.getName());
 
-    private Map<String, NFS4State> _clinetStates = new HashMap<String, NFS4State>();
+    private Map<stateid4, NFS4State> _clinetStates = new HashMap<stateid4, NFS4State>();
 
     /**
      * sessions associated with the client
@@ -234,12 +235,12 @@ public class NFS4Client {
 
 
     public void addState(NFS4State state) {
-        _clinetStates.put(new String(state.other()), state);
+        _clinetStates.put(state.stateid(), state);
     }
 
 
-    public NFS4State state( String state) {
-        return _clinetStates.get(state);
+    public NFS4State state( stateid4 stateid) {
+        return _clinetStates.get(stateid);
     }
 
     @Override

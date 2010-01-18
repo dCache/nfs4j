@@ -1,7 +1,6 @@
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -37,11 +36,11 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "path is a symlink");
             }
 
-        	String stateID = new String( _args.opopen_confirm.open_stateid.other);
+                stateid4 stateid = _args.opopen_confirm.open_stateid;
         	if(_log.isDebugEnabled() ) {
-        		_log.debug("confirmed stateID: " + stateID + " seqid: "  + _args.opopen_confirm.seqid.value.value );
+                    _log.debug("confirmed stateID: " + stateid );
         	}
-            Long clientId = NFSv4StateHandler.getInstace().getClientIdByStateId(stateID);
+            Long clientId = NFSv4StateHandler.getInstace().getClientIdByStateId(stateid);
             if(clientId == null ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
             }
@@ -51,23 +50,21 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
             }
 
-            NFS4State state = client.state(stateID);
+            NFS4State state = client.state(stateid);
             if( state == null) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
             }
 
             state.bumpSeqid();
 
-            if( state.seqid() != _args.opopen_confirm.seqid.value.value ) {
+            if( state.stateid().seqid.value != _args.opopen_confirm.seqid.value.value ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_SEQID, "bad seqid."  );
             }
 
             state.confirm();
 
             res.resok4 = new OPEN_CONFIRM4resok();
-            res.resok4.open_stateid = new  stateid4();
-            res.resok4.open_stateid.seqid = new uint32_t( state.seqid() );
-            res.resok4.open_stateid.other = state.other();
+            res.resok4.open_stateid = state.stateid();
 
             res.status = nfsstat4.NFS4_OK;
 

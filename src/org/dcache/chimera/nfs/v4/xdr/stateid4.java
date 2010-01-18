@@ -53,5 +53,20 @@ public class stateid4 implements XdrAble, Serializable {
         return seqid == null? 17 :  seqid.value;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("[");
+        for(byte b : other) {
+            if(b < 0x10)
+                sb.append("0");
+            sb.append(Integer.toHexString(b));
+        }
+
+        sb.append(", seq: ").append(seqid.value).append("]");
+        return sb.toString();
+    }
+
 }
 // End of stateid4.java

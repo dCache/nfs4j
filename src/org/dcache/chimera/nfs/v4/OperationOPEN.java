@@ -11,7 +11,6 @@ import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.opentype4;
 import org.dcache.chimera.nfs.v4.xdr.open_claim_type4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4;
-import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.open_delegation4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.createmode4;
@@ -83,28 +82,16 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             if(context.getSession() == null ){
                 res.resok4.rflags = new uint32_t( nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX | nfs4_prot.OPEN4_RESULT_CONFIRM);
                 nfs4state = new NFS4State( _args.opopen.seqid.value.value);
-
-                res.resok4.stateid = new stateid4();
-                res.resok4.stateid.seqid = new uint32_t(nfs4state.seqid());
-                res.resok4.stateid.other = nfs4state.other();
             }else {
-
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
                 nfs4state = new NFS4State(context.getSession().getClient().currentSeqID());
-
-                res.resok4.stateid = new stateid4();
-                res.resok4.stateid.seqid = new uint32_t(nfs4state.seqid());
-                res.resok4.stateid.other = nfs4state.other();
                 context.getSession().getClient().nextSeqID();
-
             }
 
+            res.resok4.stateid = nfs4state.stateid();
             client.addState(nfs4state);
-            String stateID = new String( nfs4state.other() );
-            NFSv4StateHandler.getInstace().addClinetByStateID(stateID, clientid);
-            _log.log(Level.FINEST, "New stateID: {0} seqid: {1}",
-                    new Object[] {stateID, nfs4state.seqid()}
-            );
+            NFSv4StateHandler.getInstace().addClinetByStateID(nfs4state.stateid(), clientid);
+            _log.log(Level.FINEST, "New stateID: {0}", nfs4state.stateid());
 
         } catch (ChimeraNFSException he) {
             _log.log(Level.FINE, "OPEN: ", he.getMessage());
