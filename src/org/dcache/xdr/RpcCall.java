@@ -161,6 +161,14 @@ public class RpcCall {
         return _verf;
     }
 
+    /**
+     * Get RPC {@XdrTransport} used by this call.
+     * @return transport
+     */
+    public XdrTransport getTransport() {
+        return _transport;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -1,0 +1,268 @@
+package org.dcache.chimera.nfs.v4;
+
+import org.dcache.chimera.nfs.v4.xdr.state_protect4_r;
+import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
+import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
+import org.dcache.chimera.nfs.v4.xdr.clientid4;
+import org.dcache.chimera.nfs.v4.xdr.state_protect_how4;
+import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
+import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.v4.xdr.uint32_t;
+import org.dcache.chimera.nfs.v4.xdr.nfstime4;
+import org.dcache.chimera.nfs.v4.xdr.server_owner4;
+import org.dcache.chimera.nfs.v4.xdr.uint64_t;
+import org.dcache.chimera.nfs.v4.xdr.int64_t;
+import org.dcache.chimera.nfs.v4.xdr.nfs_impl_id4;
+import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4res;
+import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4resok;
+import org.dcache.chimera.nfs.ChimeraNFSException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.dcache.xdr.RpcCall;
+import org.dcache.chimera.FileSystemProvider;
+import org.dcache.chimera.nfs.ExportFile;
+
+import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
+import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
+import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cis;
+import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cs;
+
+public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
+
+    private static final Logger _log = Logger.getLogger(OperationEXCHANGE_ID.class.getName());
+    private final int _flag;
+
+    /**
+     * compile time
+     */
+    private static String COMPILTE_TIME = "<UNKNOWN>";
+    static {
+        /*
+         * get 'Build-Time' attribute from jar file manifest ( if available )
+         */
+        try {
+
+            ProtectionDomain pd = OperationEXCHANGE_ID.class.getProtectionDomain();
+            CodeSource cs = pd.getCodeSource();
+            URL u = cs.getLocation();
+
+            InputStream is = u.openStream();
+            JarInputStream jis = new JarInputStream(is);
+            Manifest m = jis.getManifest();
+
+            if (m != null) {
+                Attributes as = m.getMainAttributes();
+                String buildTime = as.getValue("Build-Time");
+                if( buildTime != null ) {
+                    COMPILTE_TIME = buildTime;
+                }
+            }
+
+        }catch(IOException ioe) {
+            // bad luck
+        }
+    }
+
+    public OperationEXCHANGE_ID(FileSystemProvider fs, RpcCall call$,
+            CompoundArgs fh, nfs_argop4 args, int flag, ExportFile exports) {
+        super(fs, exports, call$, fh, args, nfs_opnum4.OP_EXCHANGE_ID);
+        _flag = flag;
+    }
+
+    @Override
+    public NFSv4OperationResult process() {
+
+
+        EXCHANGE_ID4res res = new EXCHANGE_ID4res();
+
+
+        try {
+
+            res.eir_resok4 = new EXCHANGE_ID4resok();
+
+            /*
+            * Servers MUST accept a zero length eia_client_impl_id array so this information is not always present!!!
+            *
+            for( nfs_impl_id4 impelemtation : _args.opexchange_id.eia_client_impl_id ) {
+                _log.info("EXCHANGE_ID4:  " + new String(impelemtation.nii_name.value.value) );
+            }*/
+
+            String clientOwner = new String( _args.opexchange_id.eia_clientowner.co_ownerid );
+
+            /*
+             * check the state
+             */
+
+            if(_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV)
+            {
+                _log.log(Level.FINEST, "EXCHANGE_ID4: state protection : {0}", _args.opexchange_id.eia_state_protect.spa_how);
+                throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "invalid state protection");
+            }
+
+            /*
+             * check valid flag
+             * TODO: make it more elegant
+             */
+
+            if(_args.opexchange_id.eia_flags.value != 0 &&  (_args.opexchange_id.eia_flags.value | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS |
+                    nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS |
+                    nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS |
+                    nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_MIGR |
+                    nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_REFER |
+                    nfs4_prot.EXCHGID4_FLAG_MASK_PNFS |
+                    nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
+                    nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R |
+                    nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID |
+                    nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
+                    nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R     ) !=
+                        (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS |
+                        nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS |
+                        nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS |
+                        nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_MIGR |
+                        nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_REFER |
+                        nfs4_prot.EXCHGID4_FLAG_MASK_PNFS |
+                        nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
+                        nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R |
+                        nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID |
+                        nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
+                        nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R )
+                        ) {
+                throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "invalid flag");
+            }
+
+            /*
+             * spec. requires <1>
+             */
+            if( _args.opexchange_id.eia_client_impl_id.length > 1 ) {
+                throw new ChimeraNFSException( nfsstat4.NFS4ERR_BADXDR, "invalid array size of client implementaion");
+            }
+
+            /*if(_args.opexchange_id.eia_flags.value != 0 && nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R != 0){
+                        throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "Client used server-only flag");
+            }*/
+
+
+
+
+            //Check if there is another ssv use -> TODO: Implement SSV
+            if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE){
+                _log.log(Level.FINEST, "Tried the wrong security Option! {0}:", _args.opexchange_id.eia_state_protect.spa_how);
+                throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "SSV other than SP4NONE to use");
+            }
+
+            //decision variable for case selection
+
+            NFS4Client client = NFSv4StateHandler.getInstace().clientByOwner(clientOwner);
+            String principal = Integer.toString(_user.getUID() );
+            byte[] verifier = _args.opexchange_id.eia_clientowner.co_verifier.value;
+
+            boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
+
+
+            if(client == null){
+
+                if (update){
+                    _log.log(Level.FINEST, "Case 7a: Update but No Confirmed Record");
+                    throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOENT, "no such client");
+                }
+
+                // create a new client: case 1
+                _log.log(Level.FINEST, "Case 1: New Owner ID");
+                client = new NFS4Client(clientOwner, _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                NFSv4StateHandler.getInstace().addClient(client);
+
+            }else{
+
+
+                if( update ) {
+
+                    if( client.isConfirmed() ) {
+                        if( client.verify_verifier(verifier) && principal.equals(client.principal() ) ) {
+                            _log.log(Level.FINEST, "Case 6: Update");
+                        }else if( !client.verify_verifier(verifier) ) {
+                          _log.log(Level.FINEST, "case 8: Update but Wrong Verifier");
+                          throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOT_SAME,"Update but Wrong Verifier");
+                        }else {
+                          _log.log(Level.FINEST, "case 9: Update but Wrong Principal");
+                          throw new ChimeraNFSException(nfsstat4.NFS4ERR_PERM,"Principal Mismatch");
+                        }
+                    }else{
+                        _log.log(Level.FINEST, "Case 7b: Update but No Confirmed Record");
+                        throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOENT, "no such client");
+                    }
+
+                }else{
+
+                    if( client.isConfirmed() ) {
+                        if( client.verify_verifier(verifier) && principal.equals(client.principal() ) ) {
+                            _log.log(Level.FINEST, "Case 2: Non-Update on Existing Client ID");
+                        }else if ( principal.equals(client.principal() ) ) {
+
+                            _log.log(Level.FINEST, "case 5: Client Restart");
+                            NFSv4StateHandler.getInstace().removeClient(client);
+                            client = new NFS4Client(new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                            NFSv4StateHandler.getInstace().addClient(client);
+                        }else {
+                            _log.log(Level.FINEST, "Case 3: Client Collision");
+                            throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE,"Principal Missmatch");
+                        }
+                    }else{
+                      _log.log(Level.FINEST, "case 4: Replacement of Unconfirmed Record");
+                      NFSv4StateHandler.getInstace().removeClient(client);
+                      client = new NFS4Client(new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                      NFSv4StateHandler.getInstace().addClient(client);
+                    }
+
+                }
+
+            }
+
+            client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+
+            res.eir_resok4.eir_clientid = new clientid4( new uint64_t(client.id_srv()) );
+            res.eir_resok4.eir_sequenceid = new sequenceid4( new uint32_t(client.currentSeqID() ));
+            res.eir_resok4.eir_flags = new uint32_t(_flag);
+
+            res.eir_resok4.eir_server_owner = new server_owner4();
+            res.eir_resok4.eir_server_owner.so_minor_id = new uint64_t(17);
+            res.eir_resok4.eir_server_owner.so_major_id = "Chimera".getBytes();
+            res.eir_resok4.eir_server_scope = "Chimera".getBytes();
+
+            res.eir_resok4.eir_server_impl_id = new nfs_impl_id4[1];
+            res.eir_resok4.eir_server_impl_id[0] = new nfs_impl_id4();
+            res.eir_resok4.eir_server_impl_id[0].nii_domain = string2utf8str_cis( NFS4_IMPLEMENTATION_DOMAIN );
+            res.eir_resok4.eir_server_impl_id[0].nii_name = string2utf8str_cs( NFS4_IMPLEMENTATION_ID + " build-time " + COMPILTE_TIME );
+            nfstime4 releaseDate = new nfstime4();
+            releaseDate.nseconds = new uint32_t(0);
+            releaseDate.seconds = new int64_t (System.currentTimeMillis() / 1000 );
+            res.eir_resok4.eir_server_impl_id[0].nii_date = releaseDate;
+
+            res.eir_resok4.eir_state_protect = new state_protect4_r();
+            res.eir_resok4.eir_state_protect.spr_how = state_protect_how4.SP4_NONE;
+
+            if (client.isConfirmed())
+                res.eir_resok4.eir_flags = new uint32_t(res.eir_resok4.eir_flags.value | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
+
+        }catch(ChimeraNFSException hne) {
+            res.eir_status = hne.getStatus();
+            _log.info(hne.getMessage());
+        }catch(Exception e) {
+            _log.log(Level.SEVERE, "EXCHANGE_ID:", e);
+            res.eir_status = nfsstat4.NFS4ERR_SERVERFAULT;
+        }
+
+       _result.opexchange_id = res;
+        return new NFSv4OperationResult(_result, res.eir_status);
+    }
+
+}
