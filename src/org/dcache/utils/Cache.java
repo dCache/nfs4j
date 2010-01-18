@@ -130,6 +130,11 @@ public class Cache<K, V> extends  TimerTask {
     private final CacheEventListener<K, V> _eventListener;
 
     /**
+     * The JMX interfate to this cache
+     */
+    private final CacheMXBean<V> _mxBean;
+
+    /**
      * Create new cache instance with default {@link CacheEventListener} and
      * default cleanup period.
      *
@@ -164,6 +169,7 @@ public class Cache<K, V> extends  TimerTask {
         _defaultEntryIdleTime = entryIdleTime;
         _storage = new HashMap<K, CacheElement<V>>(_size);
         _eventListener = eventListener;
+        _mxBean = new CacheMXBeanImpl<K, V>(this);
         _cleaner.schedule(this, 0, timeUnit.toMillis(timeValue));
     }
 
@@ -341,14 +347,14 @@ public class Cache<K, V> extends  TimerTask {
      * Get  {@link  List<V>} of entries.
      * @return list of entries.
      */
-    public List<V> entries() {
-        List<V> entries;
+    public List<CacheElement<V>> entries() {
+        List<CacheElement<V>> entries;
 
         _accessLock.lock();
         try {
-            entries = new ArrayList<V>(_storage.size());
+            entries = new ArrayList<CacheElement<V>>(_storage.size());
             for(CacheElement<V> e: _storage.values()) {
-                entries.add(e.getObject());
+                entries.add(e);
             }
         } finally {
             _accessLock.unlock();
