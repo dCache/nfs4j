@@ -149,7 +149,9 @@ public class MountServer extends mount_protServerStub {
     public void MOUNTPROC3_UMNT_3(RpcCall call$, dirpath arg1) {
 
         Set<String> s = _mounts.get(arg1.value);
-        s.remove(call$.getTransport().getRemoteSocketAddress().getHostName());
+        if( s != null ) {
+            s.remove(call$.getTransport().getRemoteSocketAddress().getHostName());
+        }
     }
 
     @Override
