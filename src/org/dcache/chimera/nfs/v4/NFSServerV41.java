@@ -54,6 +54,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             List<nfs_resop4> v = new ArrayList<nfs_resop4>(arg1.argarray.length);
             if (arg1.minorversion.value > 1) {
                 res.status = nfsstat4.NFS4ERR_MINOR_VERS_MISMATCH;
+                res.resarray = new nfs_resop4[0];
                 _log.log(Level.FINE, "      : NFS4ERR_MINOR_VERS_MISMATCH");
             } else {
 
@@ -72,18 +73,20 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 } catch (ChimeraNFSException he) {
                     _log.fine("CURFH: NULL");
                 }
+
                 v = context.processedOperations();
+                res.resarray = v.toArray(new nfs_resop4[v.size()]);
+                // result  status must be equivalent
+                // to the status of the last operation that
+                // was executed within the COMPOUND procedure
+                if(!v.isEmpty()) {
+                    res.status = res.resarray[res.resarray.length - 1].getStatus();
+                }else{
+                    res.status = nfsstat4.NFS4_OK;
+                }
             }
 
             res.tag = arg1.tag;
-
-            res.resarray = v.toArray(new nfs_resop4[v.size()]);
-            // result  status must be equivalent
-            // to the status of the last operation that
-            // was executed within the COMPOUND procedure
-
-            res.status = res.resarray[res.resarray.length-1].getStatus();
-
             _log.log(Level.FINE, "OP: {1} status: {1}", new Object[]{res.tag, res.status});
 
         } catch (Exception e) {

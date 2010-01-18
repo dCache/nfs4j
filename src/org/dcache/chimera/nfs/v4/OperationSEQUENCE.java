@@ -1,5 +1,6 @@
 package org.dcache.chimera.nfs.v4;
 
+import java.util.List;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
@@ -11,7 +12,7 @@ import org.dcache.chimera.nfs.v4.xdr.SEQUENCE4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 
 
 public class OperationSEQUENCE extends AbstractNFSv4Operation {
@@ -76,7 +77,19 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
              *
              */
             if( _trackSession ) {
-                session.setSlot(_args.opsequence.sa_slotid.value.value,_args.opsequence.sa_sequenceid.value.value );
+                List<nfs_resop4> reply;
+                if(_args.opsequence.sa_cachethis) {
+                    reply = context.processedOperations();
+                }else{
+                    reply = null;
+                }
+                if(session.updateSlot(_args.opsequence.sa_slotid.value.value,_args.opsequence.sa_sequenceid.value.value , reply) ) {
+                    /*
+                     * retransmit + cached reply available.
+                     * Stop processing.
+                     */
+                    return false;
+                }
                 session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }
             context.setSession(session);

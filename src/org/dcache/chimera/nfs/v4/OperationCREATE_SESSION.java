@@ -113,7 +113,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + client.currentSeqID() + " / " + seqId);
 	    		}
 
-	            session = new NFSv41Session(client);
+                    session = new NFSv41Session(client,_args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value );
 	            client.addSession( session);
 	    		_log.log(Level.FINE, "adding new session [{0}]",  new String(session.id()) );
 	            NFSv4StateHandler.getInstace().sessionById(session.id(), session);
@@ -131,7 +131,14 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
 	    	res.csr_resok4.csr_sessionid = new sessionid4(  session.id() );
 	    	res.csr_resok4.csr_sequence = _args.opcreate_session.csa_sequence;
-	    	res.csr_resok4.csr_sequence = new sequenceid4( new uint32_t( session.sequenceID() ) );
+            /**
+             * from spec:
+             *
+             * Once the session is created, the first SEQUENCE or CB_SEQUENCE
+             * received on a slot MUST have a sequence ID equal to 1;
+             * if not the server MUST return NFS4ERR_SEQ_MISORDERED.
+             */
+            res.csr_resok4.csr_sequence = new sequenceid4( new uint32_t( 1 ) );
 
 	    	/* we do not support callback connections on the same line*/
 	    	res.csr_resok4.csr_flags = new uint32_t( _args.opcreate_session.csa_flags.value ^ nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN);
