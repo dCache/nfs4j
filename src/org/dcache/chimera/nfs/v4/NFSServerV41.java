@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.xdr.OncRpcException;
@@ -31,7 +30,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, FileSystemProvider fs,
-            ExportFile exportFile) throws OncRpcException, IOException, ChimeraFsException {
+            ExportFile exportFile) throws OncRpcException, IOException {
 
         NFSv41DeviceManagerFactory.setDeviceManager(deviceManager);
         _fs = fs;
@@ -57,42 +56,44 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
             List<nfs_resop4> v = new ArrayList<nfs_resop4>(arg1.argarray.length);
             if (arg1.minorversion.value > 1) {
-                res.status = nfsstat4.NFS4ERR_MINOR_VERS_MISMATCH;
-                res.resarray = new nfs_resop4[0];
-                _log.log(Level.FINE, "      : NFS4ERR_MINOR_VERS_MISMATCH");
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_MINOR_VERS_MISMATCH,
+                    String.format("Unsuported minor version [%d]",arg1.minorversion.value) );
+            }
+
+            CompoundContext context = new CompoundContext(v, arg1.minorversion.value,
+                _fs, call$, _exportFile);
+
+            for (nfs_argop4 op : arg1.argarray) {
+
+                if (!_operationFactory.getOperation(op).process(context)) {
+                    break;
+                }
+            }
+
+            try {
+                _log.log(Level.FINE, "CURFH: {0}", context.currentInode().toFullString());
+            } catch (ChimeraNFSException he) {
+                _log.fine("CURFH: NULL");
+            }
+
+            v = context.processedOperations();
+            res.resarray = v.toArray(new nfs_resop4[v.size()]);
+            // result  status must be equivalent
+            // to the status of the last operation that
+            // was executed within the COMPOUND procedure
+            if (!v.isEmpty()) {
+                res.status = res.resarray[res.resarray.length - 1].getStatus();
             } else {
-
-                CompoundContext context = new CompoundContext(v, arg1.minorversion.value,
-                        _fs, call$, _exportFile);
-
-                for (nfs_argop4 op:  arg1.argarray) {
-
-                    if( ! _operationFactory.getOperation(op).process(context) ) {
-                        break;
-                    }
-                }
-
-                try {
-                    _log.log(Level.FINE, "CURFH: {0}", context.currentInode().toFullString());
-                } catch (ChimeraNFSException he) {
-                    _log.fine("CURFH: NULL");
-                }
-
-                v = context.processedOperations();
-                res.resarray = v.toArray(new nfs_resop4[v.size()]);
-                // result  status must be equivalent
-                // to the status of the last operation that
-                // was executed within the COMPOUND procedure
-                if(!v.isEmpty()) {
-                    res.status = res.resarray[res.resarray.length - 1].getStatus();
-                }else{
-                    res.status = nfsstat4.NFS4_OK;
-                }
+                res.status = nfsstat4.NFS4_OK;
             }
 
             res.tag = arg1.tag;
             _log.log(Level.FINE, "OP: {1} status: {1}", new Object[]{res.tag, res.status});
-
+        } catch (ChimeraNFSException e) {
+            _log.log(Level.INFO, "NFS operation failed: {0}", e.getMessage());
+            res.resarray = new nfs_resop4[0];
+            res.status = e.getStatus();
+            res.tag = arg1.tag;
         } catch (Exception e) {
             _log.log(Level.SEVERE, "Unhandled exception:", e);
             res.resarray = new nfs_resop4[0];
