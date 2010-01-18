@@ -126,6 +126,11 @@ import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.NFSHandle;
+import org.dcache.chimera.nfs.v3.xdr.COMMIT3resfail;
+import org.dcache.chimera.nfs.v3.xdr.FSSTAT3resfail;
+import org.dcache.chimera.nfs.v3.xdr.MKNOD3resfail;
+import org.dcache.chimera.nfs.v3.xdr.READLINK3resfail;
+import org.dcache.chimera.nfs.v3.xdr.RENAME3resfail;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -133,6 +138,9 @@ import org.dcache.chimera.posix.UnixPermissionHandler;
 import org.dcache.chimera.util.DirectoryListCache;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
+
+import static org.dcache.chimera.nfs.v3.HimeraNfsUtils.defaultPostOpAttr;
+import static org.dcache.chimera.nfs.v3.HimeraNfsUtils.defaultWccData;
 
 public class NfsServerV3 extends nfs3_protServerStub {
 
@@ -230,13 +238,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new ACCESS3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new ACCESS3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
             _log.log(Level.SEVERE, "ACCESS", e);
         } catch (Exception e) {
             _log.log(Level.SEVERE, "ACCESS", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new ACCESS3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
@@ -250,6 +262,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public COMMIT3res NFSPROC3_COMMIT_3(RpcCall call$, COMMIT3args arg1) {
         COMMIT3res res = new COMMIT3res();
         res.status = nfsstat3.NFS3ERR_NOTSUPP;
+        res.resfail = new COMMIT3resfail();
+        res.resfail.file_wcc = defaultWccData();
         return res;
 
     }
@@ -351,19 +365,19 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             _log.log(Level.FINE, hne.getMessage());
             res.resfail = new CREATE3resfail();
-            res.resfail.dir_wcc = new wcc_data();
-            res.resfail.dir_wcc.after = new post_op_attr();
-            res.resfail.dir_wcc.after.attributes_follow = false;
-            res.resfail.dir_wcc.before = new pre_op_attr();
-            res.resfail.dir_wcc.before.attributes_follow = false;
+            res.resfail.dir_wcc = defaultWccData();
 
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "Create {0}", path);
             res.status = nfsstat3.NFS3ERR_IO;
+            res.resfail = new CREATE3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "create", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new CREATE3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
@@ -423,11 +437,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraFsException e) {
             res.resfail = new FSINFO3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
             res.status = nfsstat3.NFS3ERR_IO;
             _log.log(Level.SEVERE, "FSINFO", e);
         } catch (Exception e) {
             _log.log(Level.SEVERE, "FSINFO", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new FSINFO3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
@@ -472,9 +489,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "FSSTAT", e);
             res.status = nfsstat3.NFS3ERR_IO;
+            res.resfail = new FSSTAT3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "FSSTAT", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new FSSTAT3resfail();
+            res.resfail.obj_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
@@ -584,12 +605,18 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new LINK3resfail();
+            res.resfail.file_attributes = defaultPostOpAttr();
+            res.resfail.linkdir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "LINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail.file_attributes = defaultPostOpAttr();
+            res.resfail.linkdir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "LINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail.file_attributes = defaultPostOpAttr();
+            res.resfail.linkdir_wcc = defaultWccData();
         }
 
         return res;
@@ -635,14 +662,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new LOOKUP3resfail();
-            res.resfail.dir_attributes = new post_op_attr();
-            res.resfail.dir_attributes.attributes_follow = false;
+            res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "LOOKUP", e);
             res.status = nfsstat3.NFS3ERR_IO;
+            res.resfail = new LOOKUP3resfail();
+            res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "LOOKUP", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new LOOKUP3resfail();
+            res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
         _log.log(Level.FINEST, "LOOKUP for {0} in {1}: {2}",
@@ -725,19 +755,18 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new MKDIR3resfail();
-            res.resfail.dir_wcc = new wcc_data();
-            res.resfail.dir_wcc.after = new post_op_attr();
-            res.resfail.dir_wcc.after.attributes_follow = false;
-            res.resfail.dir_wcc.before = new pre_op_attr();
-            res.resfail.dir_wcc.before.attributes_follow = false;
-
+            res.resfail.dir_wcc = defaultWccData();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "MKDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new MKDIR3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "MKDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new MKDIR3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         }
 
         return res;
@@ -748,6 +777,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         MKNOD3res res = new MKNOD3res();
         res.status = nfsstat3.NFS3ERR_NOTSUPP;
+        res.resfail = new MKNOD3resfail();
+        res.resfail.dir_wcc = defaultWccData();
         return res;
 
     }
@@ -923,15 +954,18 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new READDIRPLUS3resfail();
-            res.resfail.dir_attributes = new post_op_attr();
-            res.resfail.dir_attributes.attributes_follow = false;
+            res.resfail.dir_attributes = defaultPostOpAttr();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "READDIRPLUS3", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READDIRPLUS3resfail();
+            res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "READDIRPLUS3", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READDIRPLUS3resfail();
+            res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
@@ -1055,15 +1089,18 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new READDIR3resfail();
-            res.resfail.dir_attributes = new post_op_attr();
-            res.resfail.dir_attributes.attributes_follow = false;
+            res.resfail.dir_attributes = defaultPostOpAttr();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "READDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READDIR3resfail();
+            res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "READDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READDIR3resfail();
+            res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
@@ -1094,9 +1131,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraFsException e) {
             _log.log(Level.SEVERE, "READLINK", e);
+            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READLINK3resfail();
+            res.resfail.symlink_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "READLINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READLINK3resfail();
+            res.resfail.symlink_attributes = defaultPostOpAttr();
         }
 
         return res;
@@ -1149,20 +1191,21 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new READ3resfail();
+            res.resfail.file_attributes = defaultPostOpAttr();
         } catch (IOHimeraFsException hfe) {
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new READ3resfail();
-            res.resfail.file_attributes = new post_op_attr();
-            res.resfail.file_attributes.attributes_follow = false;
+            res.resfail.file_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new READ3resfail();
-            res.resfail.file_attributes = new post_op_attr();
-            res.resfail.file_attributes.attributes_follow = false;
+            res.resfail.file_attributes = defaultPostOpAttr();
             _log.log(Level.SEVERE, "READ", e);
         } catch (Exception e) {
             _log.log(Level.SEVERE, "READ", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new READ3resfail();
+            res.resfail.file_attributes = defaultPostOpAttr();
         }
 
         return res;
@@ -1226,18 +1269,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new REMOVE3resfail();
-            res.resfail.dir_wcc = new wcc_data();
-            res.resfail.dir_wcc.after = new post_op_attr();
-            res.resfail.dir_wcc.after.attributes_follow = false;
-            res.resfail.dir_wcc.before = new pre_op_attr();
-            res.resfail.dir_wcc.before.attributes_follow = false;
-
+            res.resfail.dir_wcc = defaultWccData();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new REMOVE3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "REMOVE", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new REMOVE3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         }
 
         return res;
@@ -1286,9 +1328,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = nfsstat3.NFS3_OK;
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new RENAME3resfail();
+            res.resfail.fromdir_wcc = defaultWccData();
+            res.resfail.todir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "RENAME", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new RENAME3resfail();
+            res.resfail.fromdir_wcc = defaultWccData();
+            res.resfail.todir_wcc = defaultWccData();
         }
 
         return res;
@@ -1346,17 +1394,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new RMDIR3resfail();
-            res.resfail.dir_wcc = new wcc_data();
-            res.resfail.dir_wcc.after = new post_op_attr();
-            res.resfail.dir_wcc.after.attributes_follow = false;
-            res.resfail.dir_wcc.before = new pre_op_attr();
-            res.resfail.dir_wcc.before.attributes_follow = false;
+            res.resfail.dir_wcc = defaultWccData();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new RMDIR3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "RMDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new RMDIR3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         }
 
         return res;
@@ -1403,17 +1451,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new SETATTR3resfail();
-            res.resfail.obj_wcc = new wcc_data();
-            res.resfail.obj_wcc.after = new post_op_attr();
-            res.resfail.obj_wcc.after.attributes_follow = false;
-            res.resfail.obj_wcc.before = new pre_op_attr();
-            res.resfail.obj_wcc.before.attributes_follow = false;
-
+            res.resfail.obj_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new SETATTR3resfail();
+            res.resfail.obj_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "SETATTR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new SETATTR3resfail();
+            res.resfail.obj_wcc = defaultWccData();
         }
 
         return res;
@@ -1490,11 +1537,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new SYMLINK3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new SYMLINK3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "SYMLINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new SYMLINK3resfail();
+            res.resfail.dir_wcc = defaultWccData();
         }
 
         return res;
@@ -1543,24 +1595,20 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new WRITE3resfail();
-            res.resfail.file_wcc = new wcc_data();
-            res.resfail.file_wcc.after = new post_op_attr();
-            res.resfail.file_wcc.after.attributes_follow = false;
-            res.resfail.file_wcc.before = new pre_op_attr();
-            res.resfail.file_wcc.before.attributes_follow = false;
+            res.resfail.file_wcc = defaultWccData();
         } catch (IOHimeraFsException hfe) {
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new WRITE3resfail();
-            res.resfail.file_wcc = new wcc_data();
-            res.resfail.file_wcc.after = new post_op_attr();
-            res.resfail.file_wcc.after.attributes_follow = false;
-            res.resfail.file_wcc.before = new pre_op_attr();
-            res.resfail.file_wcc.before.attributes_follow = false;
+            res.resfail.file_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_IO;
+            res.resfail = new WRITE3resfail();
+            res.resfail.file_wcc = defaultWccData();
         } catch (Exception e) {
             _log.log(Level.SEVERE, "WRITE", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.resfail = new WRITE3resfail();
+            res.resfail.file_wcc = defaultWccData();
         }
 
         return res;

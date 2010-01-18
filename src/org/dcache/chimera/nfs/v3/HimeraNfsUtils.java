@@ -26,6 +26,9 @@ import org.apache.log4j.Logger;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.chimera.nfs.v3.xdr.post_op_attr;
+import org.dcache.chimera.nfs.v3.xdr.pre_op_attr;
+import org.dcache.chimera.nfs.v3.xdr.wcc_data;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthTypeUnix;
 import org.dcache.xdr.RpcCall;
@@ -312,4 +315,34 @@ public class HimeraNfsUtils {
 
     }
 
+    /**
+     * Create empty post operational attributes.
+     * @return attrs
+     */
+    public static post_op_attr defaultPostOpAttr() {
+        post_op_attr postOpAttr = new post_op_attr();
+        postOpAttr.attributes_follow = false;
+        return postOpAttr;
+    }
+
+    /**
+     * Create empty pre operational attributes;
+     * @return attrs
+     */
+    public static pre_op_attr defaultPreOpAttr() {
+        pre_op_attr preOpAttr = new pre_op_attr();
+        preOpAttr.attributes_follow = false;
+        return preOpAttr;
+    }
+
+    /**
+     * Create empty weak cache consistency information.
+     * @return cache entry
+     */
+    public static wcc_data defaultWccData() {
+        wcc_data wccData = new wcc_data();
+        wccData.after = defaultPostOpAttr();
+        wccData.before = defaultPreOpAttr();
+        return wccData;
+    }
 }
