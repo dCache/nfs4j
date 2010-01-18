@@ -31,7 +31,7 @@ import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.XMLconfig;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v3.MountServer;
-import org.dcache.chimera.nfs.v4.mover.NFSProtocol_4;
+import org.dcache.chimera.nfs.v4.mover.DSOperationFactory;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 
@@ -86,7 +86,7 @@ public class Main {
             ExportFile exports = new ExportFile(new File("/etc/exports"));
             MountServer ms = new MountServer(exports, fs);
 
-            NFSServerV41 nfs4 = new NFSServerV41(new DeviceManager(),
+            NFSServerV41 nfs4 = new NFSServerV41(new MDSOperationFactory(), new DeviceManager(),
                     fs, exports);
 
             service.register(100003, nfs4);
@@ -96,7 +96,8 @@ public class Main {
             port = DEFAULT_PORT_DS;
             service = new OncRpcSvc(port);
             _log.log(Level.INFO, "starting DS on: {0}", port );
-            NFSProtocol_4 ds = new NFSProtocol_4(fs, new File("/tmp/pNFS"));
+            NFSServerV41 ds = new NFSServerV41(new DSOperationFactory(), new DeviceManager(),
+                    fs, null);
             service.register(100003, ds);
         }
 

@@ -27,12 +27,16 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final FileSystemProvider _fs;
     private final ExportFile _exportFile;
     private static final Logger _log = Logger.getLogger(NFSServerV41.class.getName());
+    private final NFSv4OperationFactory _operationFactory;
 
-    public NFSServerV41(NFSv41DeviceManager deviceManager, FileSystemProvider fs, ExportFile exportFile) throws OncRpcException, IOException {
+    public NFSServerV41(NFSv4OperationFactory operationFactory,
+            NFSv41DeviceManager deviceManager, FileSystemProvider fs,
+            ExportFile exportFile) throws OncRpcException, IOException, ChimeraFsException {
 
         NFSv41DeviceManagerFactory.setDeviceManager(deviceManager);
         _fs = fs;
         _exportFile = exportFile;
+        _operationFactory = operationFactory;
     }
 
     @Override
@@ -63,7 +67,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
                 for (nfs_argop4 op:  arg1.argarray) {
 
-                    if( ! NFSv4OperationFactory.getOperation(op).process(context) ) {
+                    if( ! _operationFactory.getOperation(op).process(context) ) {
                         break;
                     }
                 }
