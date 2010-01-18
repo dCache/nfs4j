@@ -224,6 +224,14 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         ((xdrDecodeInt()) & 0x00000000FFFFFFFFl);
     }
 
+    public ByteBuffer xdrDecodeByteBuffer() {
+        int len = this.xdrDecodeInt();
+        int padding = (4 - (len & 3)) & 3;
+        ByteBuffer slice = _body.slice();
+        slice.limit(len);
+        _body.position(_body.position() + len + padding);
+        return slice;
+    }
     ////////////////////////////////////////////////////////////////////////////
     //
     //         Encoder
@@ -317,5 +325,11 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     public void xdrEncodeLong(long value) {
         xdrEncodeInt((int)(value >>> 32));
         xdrEncodeInt((int)(value & 0xFFFFFFFF));
+    }
+
+    public void xdrEncodeByteBuffer(ByteBuffer buf) {
+        buf.limit(buf.position());
+        buf.rewind();
+        _body.put(buf);
     }
 }

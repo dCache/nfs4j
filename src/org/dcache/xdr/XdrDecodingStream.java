@@ -17,6 +17,8 @@
 
 package org.dcache.xdr;
 
+import java.nio.ByteBuffer;
+
 /**
  * Defines interface for decoding XDR stream. A decoding
  * XDR stream returns data in the form of Java data types which it reads
@@ -36,6 +38,7 @@ public interface XdrDecodingStream {
     boolean xdrDecodeBoolean();
     String xdrDecodeString();
     long xdrDecodeLong();
+    ByteBuffer xdrDecodeByteBuffer();
 
     /*
      * Fake interface for compatibility with Remote Tea RPC library
