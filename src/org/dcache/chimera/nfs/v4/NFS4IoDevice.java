@@ -8,16 +8,16 @@ import org.dcache.chimera.nfs.v4.xdr.device_addr4;
 /** Immutable */
 public class NFS4IoDevice {
 
-	private final byte[] _deviceId;
+	private final DeviceID _deviceId;
 	private final device_addr4 _addr;
 
 
-	public NFS4IoDevice(byte[] id, device_addr4 addr) {
+	public NFS4IoDevice(DeviceID id, device_addr4 addr) {
 		_deviceId = id;
 		_addr = addr;
 	}
 
-	public byte[] getDeviceId() {
+	public DeviceID getDeviceId() {
 		return _deviceId;
 	}
 

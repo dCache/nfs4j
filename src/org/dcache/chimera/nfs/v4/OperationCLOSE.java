@@ -14,12 +14,6 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
     private static final Logger _log = Logger.getLogger(OperationCLOSE.class.getName());
 
-
-    /*
-     * reflects nfsv4.1
-     */
-    private final boolean _isPNFS = false;
-
     OperationCLOSE(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_CLOSE);
     }

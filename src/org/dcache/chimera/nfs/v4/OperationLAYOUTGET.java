@@ -15,14 +15,12 @@ import org.dcache.chimera.nfs.v4.xdr.layout4;
 import org.dcache.chimera.nfs.v4.xdr.layoutiomode4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.length4;
-import org.dcache.chimera.nfs.v4.xdr.deviceid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTGET4res;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTGET4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +33,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
     private static final Logger _log = Logger.getLogger(OperationLAYOUTGET.class.getName());
 
-    static final byte[] MSD_ID = DeviceManager.id2deviceid(0);
+    static final DeviceID MSD_ID = DeviceID.valueOf(0);
 
     OperationLAYOUTGET(nfs_argop4 args) {
     super(args, nfs_opnum4.OP_LAYOUTGET);
@@ -113,7 +111,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         _log.log(Level.FINER, "LAYOUT for {0} sd# {1}",
                 new Object[] { context.currentInode().toFullString(),
-                    Arrays.toString(ioDevice.getDeviceId())}
+                    ioDevice.getDeviceId()}
         );
 
         /*
@@ -142,7 +140,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         nfsv4_1_file_layout4 layout = new nfsv4_1_file_layout4();
 
-        layout.nfl_deviceid = new deviceid4(ioDevice.getDeviceId());
+        layout.nfl_deviceid = ioDevice.getDeviceId().toDeviceid4();
         layout.nfl_fh_list = new nfs_fh4[1];
         layout.nfl_fh_list[0] = new nfs_fh4();
         layout.nfl_fh_list[0].value = context.currentInode().toFullString().getBytes();

@@ -40,7 +40,7 @@ public interface NFSv41DeviceManager {
      * @param deviceId
      * @return NFS io device address
      */
-    public NFS4IoDevice getIoDevice(byte[] deviceId);
+    public NFS4IoDevice getIoDevice(DeviceID deviceId);
 
     /**
      * Get list of all registered devices.

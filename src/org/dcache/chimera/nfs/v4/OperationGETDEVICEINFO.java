@@ -9,7 +9,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.GETDEVICEINFO4res;
 import org.dcache.chimera.nfs.v4.xdr.GETDEVICEINFO4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
@@ -31,10 +30,10 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
          */
         GETDEVICEINFO4res res = new GETDEVICEINFO4res();
 
-        byte[] deviceId = _args.opgetdeviceinfo.gdia_device_id.value;
+        DeviceID deviceId = DeviceID.valueOf(_args.opgetdeviceinfo.gdia_device_id);
 
         if (_log.isDebugEnabled()) {
-            _log.debug("             Info for #" + Arrays.toString(deviceId));
+            _log.debug("             Info for #" + deviceId);
             _log.debug("             type for #"
                     + _args.opgetdeviceinfo.gdia_layout_type);
         }

@@ -1,6 +1,8 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.util.Arrays;
+import org.dcache.chimera.nfs.v4.xdr.deviceid4;
+import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 
 /**
  * Helper ( wrapper ) class for byte[] based deviceid4.
@@ -28,11 +30,10 @@ public class DeviceID {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if( !(obj instanceof DeviceID)) return false;
+        
         final DeviceID other = (DeviceID) obj;
-        if (!Arrays.equals(_id, other._id)) return false;
-        return true;
+        return Arrays.equals(_id, other._id);
     }
 
     public byte[] getId() {
@@ -41,6 +42,32 @@ public class DeviceID {
         return id;
     }
 
+    public static DeviceID valueOf(deviceid4 id) {
+        return new DeviceID(id.value);
+    }
 
+    public static DeviceID valueOf(int id) {
+        return new DeviceID(id2deviceid(id));
+    }
+
+    private static byte[] id2deviceid(int id) {
+
+        byte[] buf = Integer.toString(id).getBytes();
+        byte[] devData = new byte[nfs4_prot.NFS4_DEVICEID4_SIZE];
+
+        int len = Math.min(buf.length, nfs4_prot.NFS4_DEVICEID4_SIZE);
+        System.arraycopy(buf, 0, devData, 0, len);
+
+        return devData;
+    }
+
+    public deviceid4 toDeviceid4() {
+        return new deviceid4(_id);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(_id);
+    }
 
 }

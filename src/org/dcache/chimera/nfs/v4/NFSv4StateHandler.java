@@ -125,12 +125,7 @@ public class NFSv4StateHandler {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "State is not confirmed"  );
         }
 
-        if( state.stateid().seqid.value != stateid.seqid.value ) {
-            throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "Sequence id miss match."  );
-        }
-
         client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-
     }
 
     public int acquire_state(stateid4  stateid, boolean allow) throws ChimeraNFSException{

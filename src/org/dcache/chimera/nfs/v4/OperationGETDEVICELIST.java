@@ -63,7 +63,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
          * all non regular inode IO done by MDS
          */
 
-        byte[] mdsID = id2deviceid(0);
+        DeviceID mdsID = DeviceID.valueOf(0);
 
         InetSocketAddress[] addresses = new InetSocketAddress[1];
         addresses[0] = context.getRpcCall().getTransport().getLocalSocketAddress();
@@ -84,11 +84,11 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
          * FIXME: protect against empty list
          */
         res.gdlr_resok4.gdlr_deviceid_list = new deviceid4[deviceListSize];
-        res.gdlr_resok4.gdlr_deviceid_list[0] = new deviceid4( mdsID );
+        res.gdlr_resok4.gdlr_deviceid_list[0] = mdsID.toDeviceid4();
 
         for (int i = 0; i < deviceListSize; i++) {
             NFS4IoDevice device = deviceList.get(i);
-            res.gdlr_resok4.gdlr_deviceid_list[i] = new deviceid4(device.getDeviceId());
+            res.gdlr_resok4.gdlr_deviceid_list[i] = device.getDeviceId().toDeviceid4();
         }
 
         if (_log.isDebugEnabled()) {
@@ -116,18 +116,4 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         return res.gdlr_status == nfsstat4.NFS4_OK;
 
     }
-
-
-    private static byte[] id2deviceid(int id) {
-
-
-        byte[] puffer = Integer.toString(id).getBytes();
-        byte[] devData = new byte[nfs4_prot.NFS4_DEVICEID4_SIZE];
-
-        System.arraycopy(puffer, 0, devData, 0, puffer.length);
-
-        return devData;
-
-    }
-
 }

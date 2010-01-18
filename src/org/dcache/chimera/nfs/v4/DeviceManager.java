@@ -9,7 +9,6 @@ import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.netaddr4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.chimera.nfs.v4.xdr.device_addr4;
-import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.multipath_list4;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,12 +16,12 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.xdr.OncRpcException;
@@ -45,7 +44,8 @@ public class DeviceManager implements NFSv41DeviceManager {
     /* hack for multiple pools */
     Random _poolManager = new Random();
 
-    private final Map<DeviceID, NFS4IoDevice> _deviceMap = new HashMap<DeviceID, NFS4IoDevice>();
+    private final Map<DeviceID, NFS4IoDevice> _deviceMap =
+            new ConcurrentHashMap<DeviceID, NFS4IoDevice>();
 
     /*
      * (non-Javadoc)
@@ -57,10 +57,10 @@ public class DeviceManager implements NFSv41DeviceManager {
 
         int id = _poolManager.nextInt(256);
         ++id; /* 0 is reserved */
-        byte[] data = id2deviceid(id);
+        DeviceID deviceId = DeviceID.valueOf(id);
 
         _log.log(Level.FINEST, "generating new device: {0} ({1}) for stateid {2}",
-                new Object[] {Arrays.toString(data), id, stateid}
+                new Object[] {deviceId, id, stateid}
         );
 
         InetAddress addr = null;
@@ -76,7 +76,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         addresses[0] = new InetSocketAddress(addr, 2052);
         device_addr4 deviceAddr = deviceAddrOf( addresses );
 
-        NFS4IoDevice newDevice = new NFS4IoDevice(id2deviceid(id) , deviceAddr);
+        NFS4IoDevice newDevice = new NFS4IoDevice(deviceId , deviceAddr);
 
         addIoDevice(newDevice, ioMode);
 
@@ -93,15 +93,8 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     public void addIoDevice(NFS4IoDevice device, int ioMode ) {
 
-        _log.log(Level.FINEST, "add device: {0}", Arrays.toString(device.getDeviceId()) );
-
-        synchronized (_deviceMap) {
-
-            DeviceID deviceId = new DeviceID(device.getDeviceId());
-            if (!_deviceMap.containsKey(deviceId) ) {
-                _deviceMap.put(deviceId, device);
-            }
-        }
+        _log.log(Level.FINEST, "add device: {0}", device.getDeviceId());
+        _deviceMap.put(device.getDeviceId(), device);
     }
 
     /*
@@ -109,15 +102,11 @@ public class DeviceManager implements NFSv41DeviceManager {
      *
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#getIoDevice(int)
      */
-    public NFS4IoDevice getIoDevice(byte[] deviceId) {
+    public NFS4IoDevice getIoDevice(DeviceID deviceId) {
+        
+        _log.log(Level.FINEST, "lookup for device: {0}", deviceId );
 
-        _log.log(Level.FINEST, "lookup for device: {0}", Arrays.toString(deviceId) );
-
-        NFS4IoDevice device = null;
-        synchronized (_deviceMap) {
-            device = _deviceMap.get(new DeviceID(deviceId));
-        }
-        return device;
+        return  _deviceMap.get(deviceId);
     }
 
     /*
@@ -127,11 +116,11 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     public List<NFS4IoDevice> getIoDeviceList() {
         List<NFS4IoDevice> deviceList = new ArrayList<NFS4IoDevice>();
-        synchronized (_deviceMap) {
-            deviceList.addAll(_deviceMap.values());
-        }
+
+        deviceList.addAll(_deviceMap.values());
+
         for(NFS4IoDevice device : deviceList ) {
-            _log.log(Level.FINEST, "known device: {0}", Arrays.toString(device.getDeviceId()) );
+            _log.log(Level.FINEST, "known device: {0}", device.getDeviceId() );
         }
         return deviceList;
     }
@@ -145,20 +134,6 @@ public class DeviceManager implements NFSv41DeviceManager {
         // I'am fine
         _log.log(Level.FINEST, "release device for stateid {0}", stateid );
     }
-
-    public static byte[] id2deviceid(int id) {
-
-
-        byte[] puffer = Integer.toString(id).getBytes();
-        byte[] devData = new byte[nfs4_prot.NFS4_DEVICEID4_SIZE];
-
-        int len = puffer.length >  nfs4_prot.NFS4_DEVICEID4_SIZE? nfs4_prot.NFS4_DEVICEID4_SIZE : puffer.length;
-        System.arraycopy(puffer, 0, devData, 0, len);
-
-        return devData;
-
-    }
-
 
     /**
      * Create a mulipath based NFSv4.1 file layout address.
