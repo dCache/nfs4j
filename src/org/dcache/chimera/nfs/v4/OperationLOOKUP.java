@@ -38,6 +38,10 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "parent not a directory");
         	}
 
+            if (name.length() < 1 ) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid path");
+            }
+
             if( name.length() > NFSv4Defaults.NFS4_MAXFILENAME ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NAMETOOLONG, "path too long");
             }
