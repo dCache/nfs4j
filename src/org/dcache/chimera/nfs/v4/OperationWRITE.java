@@ -34,7 +34,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
     	try {
 
 
-			if (_args.opwrite.offset.value.value + _args.opwrite.data.length > 0x3ffffffe){
+            if (_args.opwrite.offset.value.value + _args.opwrite.data.remaining() > 0x3ffffffe){
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "Arbitrary value");
 			 }
 
@@ -62,8 +62,8 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             }
 
 	    	long offset = _args.opwrite.offset.value.value;
-	    	int count = _args.opwrite.data.length;
-	        int bytesWritten = context.currentInode().write(offset, _args.opwrite.data, 0, count);
+	    	int count = _args.opwrite.data.remaining();
+	        int bytesWritten = context.currentInode().write(offset, _args.opwrite.data.array(), 0, count);
 
 	        if( bytesWritten < 0 ) {
 	            throw new IOHimeraFsException("IO not allowed");

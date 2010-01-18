@@ -6,10 +6,11 @@
 package org.dcache.chimera.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class READ4resok implements XdrAble {
     public boolean eof;
-    public byte [] data;
+    public ByteBuffer data;
 
     public READ4resok() {
     }
@@ -22,13 +23,13 @@ public class READ4resok implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(eof);
-        xdr.xdrEncodeDynamicOpaque(data);
+        xdr.xdrEncodeByteBuffer(data);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         eof = xdr.xdrDecodeBoolean();
-        data = xdr.xdrDecodeDynamicOpaque();
+        data = xdr.xdrDecodeByteBuffer();
     }
 
 }

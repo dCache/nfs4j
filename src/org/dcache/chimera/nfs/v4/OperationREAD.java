@@ -1,5 +1,6 @@
 package org.dcache.chimera.nfs.v4;
 
+import java.nio.ByteBuffer;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -50,9 +51,9 @@ public class OperationREAD extends AbstractNFSv4Operation {
             long offset = _args.opread.offset.value.value;
             int count = _args.opread.count.value.value;
 
-            byte[] buf = new byte[count];
+            ByteBuffer buf = ByteBuffer.allocate(count);
 
-            int bytesReaded = context.currentInode().read(offset, buf, 0, count);
+            int bytesReaded = context.currentInode().read(offset, buf.array(), 0, count);
             if( bytesReaded < 0 ) {
                 throw new IOHimeraFsException("IO not allowd");
             }
@@ -60,12 +61,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
             res.status = nfsstat4.NFS4_OK;
             res.resok4 = new READ4resok();
 
-            if (bytesReaded != count) {
-                res.resok4.data = new byte[bytesReaded];
-                System.arraycopy(buf, 0, res.resok4.data, 0, bytesReaded);
-            } else {
-                res.resok4.data = buf;
-            }
+            res.resok4.data = buf;
 
             if( offset + bytesReaded >= inodeStat.getSize() ) {
                 res.resok4.eof = true;

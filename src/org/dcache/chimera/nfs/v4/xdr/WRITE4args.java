@@ -6,12 +6,13 @@
 package org.dcache.chimera.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class WRITE4args implements XdrAble {
     public stateid4 stateid;
     public offset4 offset;
     public int stable;
-    public byte[] data;
+    public ByteBuffer data;
 
     public WRITE4args() {
     }
@@ -26,7 +27,7 @@ public class WRITE4args implements XdrAble {
         stateid.xdrEncode(xdr);
         offset.xdrEncode(xdr);
         xdr.xdrEncodeInt(stable);
-        xdr.xdrEncodeDynamicOpaque(data);
+        xdr.xdrEncodeByteBuffer(data);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
@@ -34,7 +35,7 @@ public class WRITE4args implements XdrAble {
         stateid = new stateid4(xdr);
         offset = new offset4(xdr);
         stable = xdr.xdrDecodeInt();
-        data = xdr.xdrDecodeDynamicOpaque();
+        data = xdr.xdrDecodeByteBuffer();
     }
 
 }

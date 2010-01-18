@@ -42,11 +42,11 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
             long offset = _args.opread.offset.value.value;
             int count = _args.opread.count.value.value;
 
-            byte[] buf = new byte[count];
+           ByteBuffer bb = ByteBuffer.allocateDirect(count);
 
 	    	IOReadFile in = new IOReadFile(_poolRoot, context.currentInode().toString(), context.currentInode().stat().getSize());
 
-	    	int bytesReaded = in.read(buf, offset, count);
+	    	int bytesReaded = in.read(bb, offset, count);
 	    	if( bytesReaded < 0 ) {
 	    	    eof = true;
 	    	    bytesReaded = 0;
@@ -54,8 +54,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
             res.status = nfsstat4.NFS4_OK;
             res.resok4 = new READ4resok();
-            res.resok4.data = new byte[bytesReaded];
-            System.arraycopy(buf, 0, res.resok4.data, 0, bytesReaded);
+            res.resok4.data = bb;
 
             if( offset + bytesReaded == inodeStat.getSize() ) {
                 eof = true;
@@ -113,14 +112,9 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 	    	_fc = _in.getChannel();
     	}
 
-
-	    public int read(byte[] b, long off, long len) throws IOException {
-
-	    	ByteBuffer bb = ByteBuffer.wrap(b, 0, (int)len);
+        public int read(ByteBuffer bb, long off, long len) throws IOException {
 	    	bb.rewind();
-
 	    	return _fc.read(bb, off);
-
 	    }
 
 	    public void close() throws IOException {

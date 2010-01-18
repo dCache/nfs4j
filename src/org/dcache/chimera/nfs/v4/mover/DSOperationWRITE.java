@@ -42,7 +42,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         try {
 
             long offset = _args.opwrite.offset.value.value;
-            int count = _args.opwrite.data.length;
+            int count = _args.opwrite.data.remaining();
 
             IOWriteFile out = new IOWriteFile(_poolRoot, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
 
@@ -101,10 +101,9 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             }
         }
 
-        public int write(byte[] data, long off, long len) throws IOException {
-            ByteBuffer bb = ByteBuffer.wrap(data, 0, (int)len);
-            bb.rewind();
-            return _fc.write(bb, off);
+        public int write(ByteBuffer data, long off, long len) throws IOException {
+            data.rewind();
+            return _fc.write(data, off);
         }
 
 
