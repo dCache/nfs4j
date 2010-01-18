@@ -37,7 +37,7 @@ public class verifier4 implements XdrAble {
 
     @Override
     public int hashCode() {
-        return value.length;
+        return Arrays.hashCode(value);
     }
 
     @Override

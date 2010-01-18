@@ -9,7 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
+import org.dcache.chimera.nfs.v4.xdr.sessionid4;
+import org.dcache.utils.Cache;
 
 public class NFSv4StateHandler {
 
@@ -27,7 +30,10 @@ public class NFSv4StateHandler {
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
     private static Map<Long, NFS4Client> _clientsByServerId = new HashMap<Long, NFS4Client>();
     private static Map<String, Long> _clientsByStateId = new HashMap<String, Long>();
-    private static Map<String, NFSv41Session> _sessionById = new HashMap<String, NFSv41Session>();
+
+    private final Cache<sessionid4, NFSv41Session> _sessionById =
+            new Cache<sessionid4, NFSv41Session>("NFSv41 sessions", 5000, Long.MAX_VALUE, TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME*2));
+
     private static Map<String, NFS4Client> _clientByOwner = new HashMap<String, NFS4Client>();
 
     private NFSv4StateHandler() {}
@@ -40,7 +46,7 @@ public class NFSv4StateHandler {
     public void removeClient(NFS4Client client) {
 
         for(NFSv41Session session: client.sessions() ) {
-            _sessionById.remove( new String( session.id() ) );
+            _sessionById.remove( session.id() );
         }
         _clientsByServerId.remove(client.id_srv());
         _clientsByServerId.remove(client.id_srv());
@@ -86,13 +92,12 @@ public class NFSv4StateHandler {
     }
 
 
-    public NFSv41Session sessionById( byte[] id ) {
-        NFSv41Session session =  _sessionById.get(new String(id));
-        return session;
+    public NFSv41Session sessionById( sessionid4 id) {
+       return _sessionById.get(id);
     }
 
-    public void sessionById( byte[] id, NFSv41Session session) {
-        _sessionById.put(new String(id), session);
+    public void sessionById( sessionid4 id, NFSv41Session session) {
+        _sessionById.put(id, session);
     }
 
     public NFS4Client clientByOwner( String ownerid) {

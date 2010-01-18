@@ -3,6 +3,7 @@ package org.dcache.chimera.nfs.v4;
 import java.util.List;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.concurrent.atomic.AtomicLong;
+import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 
@@ -11,7 +12,8 @@ public class NFSv41Session {
 
 	private static final AtomicLong SESSIONS = new AtomicLong(0);
 
-	private final byte[] _session = (Long.toString(SESSIONS.incrementAndGet()) + "###############").getBytes();
+        private final sessionid4 _session =
+                new sessionid4((Long.toString(SESSIONS.incrementAndGet()) + "###############").getBytes());
     /**
      * Session reply slots.
      */
@@ -24,11 +26,8 @@ public class NFSv41Session {
                 _slots = new SessionSlot[replyCacheSize];
 	}
 
-	public byte[] id() {
-		byte[] id = new byte[16];
-		System.arraycopy(_session, 0, id, 0, 16);
-
-		return id;
+        public sessionid4 id() {
+            return _session;
 	}
 
 	public NFS4Client getClient() {
@@ -69,7 +68,7 @@ public class NFSv41Session {
 
     @Override
     public String toString() {
-        String s = String.format("Session: [%s]", new String(_session));
+        String s = String.format("Session: [%s]", _session);
         return s;
     }
 }

@@ -4,6 +4,7 @@
  * See http://remotetea.sourceforge.net for details
  */
 package org.dcache.chimera.nfs.v4.xdr;
+import java.util.Arrays;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
@@ -33,5 +34,26 @@ public class sessionid4 implements XdrAble {
         value = xdr.xdrDecodeOpaque(nfs4_prot.NFS4_SESSIONID_SIZE);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)  return true;
+        if ( !(obj instanceof sessionid4 )) return false;
+
+        final sessionid4 other = (sessionid4) obj;
+
+        return Arrays.equals(this.value, other.value);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + Arrays.hashCode(this.value);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return new String(value);
+    }
 }
 // End of sessionid4.java

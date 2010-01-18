@@ -2,7 +2,6 @@ package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
-import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
@@ -115,7 +114,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
                     session = new NFSv41Session(client,_args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value );
 	            client.addSession( session);
-	    		_log.log(Level.FINE, "adding new session [{0}]",  new String(session.id()) );
+                    _log.log(Level.FINE, "adding new session [{0}]",  session.id() );
 	            NFSv4StateHandler.getInstace().sessionById(session.id(), session);
 	    		client.confirmed();
 	    		client.nextSeqID();
@@ -129,7 +128,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
 	    	res.csr_resok4 = new CREATE_SESSION4resok();
 
-	    	res.csr_resok4.csr_sessionid = new sessionid4(  session.id() );
+                res.csr_resok4.csr_sessionid = session.id();
 	    	res.csr_resok4.csr_sequence = _args.opcreate_session.csa_sequence;
             /**
              * from spec:
