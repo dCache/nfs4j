@@ -60,13 +60,14 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             NFSv41Session session = NFSv4StateHandler.getInstace().sessionById(_args.opsequence.sa_sessionid);
 
             if(session == null ) {
+                _log.log(Level.FINEST, "no session for id [{0}]",  _args.opsequence.sa_sessionid );
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADSESSION, "client not found");
             }
 
             NFS4Client client = session.getClient();
 
             if( client.sessionsEmpty(session)) {
-                _log.log(Level.FINEST, "no session for id [{0}]",  _args.opsequence.sa_sessionid );
+                _log.log(Level.FINEST, "no client for session for id [{0}]",  _args.opsequence.sa_sessionid );
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADSESSION, "client not found");
             }
 

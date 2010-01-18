@@ -94,6 +94,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
     		}
 
    			if(client.sessions().isEmpty() ) {
+                            _log.log(Level.FINE, "set client {0} confirmed", client);
    			    client.confirmed(true);
    			}
 
