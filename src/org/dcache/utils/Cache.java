@@ -26,6 +26,7 @@ import java.util.MissingResourceException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -77,10 +78,10 @@ public class Cache<K, V> extends  TimerTask {
                     expiredEntries.add(cacheElement.getObject());
                 }
             }
+            _lastClean.set(now);
         } finally {
             _accessLock.unlock();
         }
-
         for (V v : expiredEntries) {
             _eventListener.notifyExpired(this, v);
         }
@@ -133,6 +134,11 @@ public class Cache<K, V> extends  TimerTask {
      * The JMX interfate to this cache
      */
     private final CacheMXBean<V> _mxBean;
+
+    /**
+     * Last cleanup time
+     */
+    private final AtomicLong _lastClean = new AtomicLong(System.currentTimeMillis());
 
     /**
      * Create new cache instance with default {@link CacheEventListener} and
@@ -360,5 +366,9 @@ public class Cache<K, V> extends  TimerTask {
             _accessLock.unlock();
         }
         return entries;
+    }
+
+    public long lastClean() {
+        return _lastClean.get();
     }
 }

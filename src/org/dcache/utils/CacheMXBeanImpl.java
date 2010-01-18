@@ -84,6 +84,11 @@ public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
     public long getEntryLiveTime() {
         return _cache.getEntryLiveTime();
     }
+
+    @Override
+    public long getLastClean() {
+        return System.currentTimeMillis() - _cache.lastClean();
+    }
 }
 
 

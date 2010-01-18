@@ -29,6 +29,7 @@ public interface CacheMXBean<V> {
     long getEntryLiveTime();
     int getSize();
     String[] getEntries();
+    long getLastClean();
 }
 
 
