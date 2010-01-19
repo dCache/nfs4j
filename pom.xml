@@ -179,6 +179,11 @@
             <version>4.7</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>8.4-701.jdbc3</version>
+        </dependency>
 
         <!--
             LOCAL JARS
@@ -187,15 +192,11 @@
             <groupId>org.acpt</groupId>
             <artifactId>jportmap</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/portmap.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.dcache.chimera</groupId>
             <artifactId>chimera-core</artifactId>
             <version>1.9.5</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/chimera-core.jar</systemPath>
         </dependency>
     </dependencies>
 
