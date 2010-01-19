@@ -18,7 +18,9 @@
 package org.dcache.xdr;
 
 import com.sun.grizzly.BaseSelectionKeyHandler;
+import com.sun.grizzly.CallbackHandler;
 import com.sun.grizzly.ConnectorHandler;
+import com.sun.grizzly.Context;
 import com.sun.grizzly.Controller;
 import com.sun.grizzly.ControllerStateListenerAdapter;
 import com.sun.grizzly.DefaultProtocolChain;
@@ -136,13 +138,14 @@ public class OncRpcClient {
 
         final ConnectorHandler connector_handler;
         connector_handler =  controller.acquireConnectorHandler(_prorocol);
-        connector_handler.connect(new InetSocketAddress(_address, _port));
+        InetSocketAddress remote = new InetSocketAddress(_address, _port);
+        connector_handler.connect(remote, (CallbackHandler<Context>) null);
 
         if( !connector_handler.isConnected()  ) {
             throw new IOException("Failed to connect");
         }
 
-         return new ClientTransport(connector_handler, _replyQueue);
+         return new ClientTransport(remote, connector_handler, _replyQueue);
     }
 
     public void close() throws IOException {

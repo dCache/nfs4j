@@ -31,11 +31,13 @@ public class ClientTransport implements XdrTransport {
 
     private final ConnectorHandler _connectorHandler;
     private final ReplyQueue<Integer, RpcReply> _replyQueue;
+    private final InetSocketAddress _remote;
 
-    public ClientTransport(ConnectorHandler connectorHandler ,
+    public ClientTransport(InetSocketAddress remote, ConnectorHandler connectorHandler ,
             ReplyQueue<Integer, RpcReply> replyQueue ) {
         _replyQueue = replyQueue;
         _connectorHandler = connectorHandler;
+        _remote = remote;
     }
 
     public void send(ByteBuffer data) throws IOException {
@@ -52,7 +54,7 @@ public class ClientTransport implements XdrTransport {
     }
 
     public InetSocketAddress getRemoteSocketAddress() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return _remote;
     }
 
     public ReplyQueue<Integer, RpcReply> getReplyQueue() {
