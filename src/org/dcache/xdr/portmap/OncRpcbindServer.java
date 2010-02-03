@@ -26,6 +26,7 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrVoid;
 
@@ -40,8 +41,8 @@ public class OncRpcbindServer implements RpcDispatchable {
     private final Set<rpcb> _services = new HashSet<rpcb>();
 
     public OncRpcbindServer() {
-        _services.add(new rpcb(100000, 2, "tcp", "0.0.0.0.0.111", "superuser"));
-        _services.add(new rpcb(100000, 2, "udp", "0.0.0.0.0.111", "superuser"));
+        _services.add(new rpcb(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "tcp", "0.0.0.0.0.111", "superuser"));
+        _services.add(new rpcb(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "udp", "0.0.0.0.0.111", "superuser"));
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
     public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
@@ -130,7 +131,8 @@ public class OncRpcbindServer implements RpcDispatchable {
         RpcDispatchable rpcbind = new OncRpcbindServer();
 
         OncRpcSvc server  = new OncRpcSvc(port);
-        server.register(OncRpcPortmap.PORTMAP_PROGRAMM, rpcbind);
+        server.register(new OncRpcProgram( OncRpcPortmap.PORTMAP_PROGRAMM,
+                OncRpcPortmap.PORTMAP_V2), rpcbind);
 
         server.start();
 

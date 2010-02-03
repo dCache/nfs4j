@@ -33,7 +33,7 @@ public class RpcDispatcher implements ProtocolFilter {
      * List of registered RPC services
      *
      */
-    private final Map<Integer, RpcDispatchable> _programs;
+    private final Map<OncRpcProgram, RpcDispatchable> _programs;
 
     /**
      * Create new RPC dispatcher for given program.
@@ -44,7 +44,7 @@ public class RpcDispatcher implements ProtocolFilter {
      *
      * @throws NullPointerException if programs is null
      */
-    public RpcDispatcher(  Map<Integer, RpcDispatchable> programs  )
+    public RpcDispatcher(  Map<OncRpcProgram, RpcDispatchable> programs  )
         throws NullPointerException{
 
         if( programs == null)
@@ -65,7 +65,7 @@ public class RpcDispatcher implements ProtocolFilter {
         _log.log(Level.FINE, "processing request prog={0}, vers={1}, proc={2}",
                 new Object[] {prog, vers, proc});
 
-        RpcDispatchable program = _programs.get(Integer.valueOf(prog));
+        RpcDispatchable program = _programs.get( new OncRpcProgram(prog, vers));
         if( program == null ) {
             call.failProgramUnavailable();
         }else{

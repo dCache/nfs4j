@@ -46,8 +46,8 @@ public class OncRpcSvc {
     /**
      * mapping of registered programs.
      */
-    private final Map<Integer, RpcDispatchable> _programs =
-            new ConcurrentHashMap<Integer, RpcDispatchable>();
+    private final Map<OncRpcProgram, RpcDispatchable> _programs =
+            new ConcurrentHashMap<OncRpcProgram, RpcDispatchable>();
 
     /**
      * Create a new server. Bind to all supported protocols.
@@ -186,7 +186,7 @@ public class OncRpcSvc {
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(Integer prog, RpcDispatchable handler) {
+    public void register(OncRpcProgram prog, RpcDispatchable handler) {
         _log.log(Level.INFO, "Registering new program {0} : {1}",
                 new Object[] {prog, handler});
         _programs.put(prog, handler);
@@ -197,7 +197,7 @@ public class OncRpcSvc {
      *
      * @param prog
      */
-    public void unregister(Integer prog) {
+    public void unregister(OncRpcProgram prog) {
         _log.log(Level.INFO, "Inregistering program {0}", prog);
         _programs.remove(prog);
     }

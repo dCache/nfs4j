@@ -32,6 +32,7 @@ public class OncRpcPortmap {
     /*
      * V2
      */
+    public static final int PORTMAP_V2 = 2;
     public static final int PMAPPROC_NULL = 0;
     public static final int PMAPPROC_SET = 1;
     public static final int PMAPPROC_UNSET = 2;
@@ -42,6 +43,7 @@ public class OncRpcPortmap {
     /*
      * V4
      */
+    public static final int PORTMAP_V4 = 4;
     public static final int RPCBPROC_SET = 1;
     public static final int RPCBPROC_UNSET = 2;
     public static final int RPCBPROC_GETADDR = 3;

@@ -29,7 +29,10 @@ import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.XMLconfig;
 import org.dcache.chimera.nfs.ExportFile;
+import org.dcache.chimera.nfs.v3.xdr.mount_prot;
+import org.dcache.chimera.nfs.v3.xdr.nfs3_prot;
 import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 public class Main {
@@ -55,27 +58,27 @@ public class Main {
         OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress.getByName("127.0.0.1"));
         portmap.getOncRpcClient().setTimeout(2000);
 
-        if (!portmap.setPort(100005, 3, OncRpcProtocols.ONCRPC_TCP, 2049)) {
+        if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3, OncRpcProtocols.ONCRPC_TCP, 2049)) {
             _log.log(Level.SEVERE, "Failed to register mountv1 service within portmap.");
         }
 
-        if (!portmap.setPort(100005, 3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
+        if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
             _log.log(Level.SEVERE, "Failed to register mountv1 service within portmap.");
         }
 
-        if (!portmap.setPort(100005, 1, OncRpcProtocols.ONCRPC_TCP, 2049)) {
+        if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V1, OncRpcProtocols.ONCRPC_TCP, 2049)) {
             _log.log(Level.SEVERE, "Failed to register mountv3 service within portmap.");
         }
 
-        if (!portmap.setPort(100005, 1, OncRpcProtocols.ONCRPC_UDP, 2049)) {
+        if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V1, OncRpcProtocols.ONCRPC_UDP, 2049)) {
             _log.log(Level.SEVERE, "Failed to register mountv3 service within portmap.");
         }
 
-        if (!portmap.setPort(100003, 3, OncRpcProtocols.ONCRPC_TCP, 2049)) {
+        if (!portmap.setPort(nfs3_prot.NFS_PROGRAM, nfs3_prot.NFS_V3, OncRpcProtocols.ONCRPC_TCP, 2049)) {
             _log.log(Level.SEVERE, "Failed to register NFSv3 service within portmap.");
         }
 
-        if (!portmap.setPort(100003, 3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
+        if (!portmap.setPort(nfs3_prot.NFS_PROGRAM, nfs3_prot.NFS_V3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
             _log.log(Level.SEVERE, "Failed to register NFSv3 service within portmap.");
         }
 
@@ -85,8 +88,8 @@ public class Main {
         NfsServerV3 nfs3 = new NfsServerV3(exports, fs);
 
         OncRpcSvc service = new OncRpcSvc(DEFAULT_PORT);
-        service.register(100003, nfs3);
-        service.register(100005, ms);
+        service.register(new OncRpcProgram(nfs3_prot.NFS_PROGRAM, nfs3_prot.NFS_V3), nfs3);
+        service.register(new OncRpcProgram(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3), ms);
         service.start();
     }
 

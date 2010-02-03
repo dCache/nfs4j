@@ -27,6 +27,7 @@ public class SimpleRpcServer {
 
     static final int DEFAULT_PORT = 1717;
     private static final int PROG_NUMBER = 100017;
+    private static final int PROG_VERS = 1;
 
     public static void main(String[] args) throws Exception {
 
@@ -45,7 +46,7 @@ public class SimpleRpcServer {
         OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress
                     .getByName("127.0.0.1"));
         portmap.getOncRpcClient().setTimeout(2000);
-        portmap.setPort(PROG_NUMBER, 1, 6, port);
+        portmap.setPort(PROG_NUMBER, PROG_VERS, IpProtocolType.TCP, port);
 
         RpcDispatchable dummy = new RpcDispatchable() {
 
@@ -56,7 +57,7 @@ public class SimpleRpcServer {
         };        
 
         OncRpcSvc service = new OncRpcSvc(port);
-        service.register(PROG_NUMBER, dummy);
+        service.register(new OncRpcProgram(PROG_NUMBER, PROG_VERS), dummy);
         service.start();
     }
 

@@ -31,7 +31,9 @@ import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.XMLconfig;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v3.MountServer;
+import org.dcache.chimera.nfs.v3.xdr.mount_prot;
 import org.dcache.chimera.nfs.v4.mover.DSOperationFactory;
+import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 
@@ -66,20 +68,20 @@ public class Main {
             OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress
                     .getByName("127.0.0.1"));
             portmap.getOncRpcClient().setTimeout(2000);
-            if ( !portmap.setPort(100005, 3, OncRpcProtocols.ONCRPC_TCP, 2049) ) {
+            if ( !portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3, OncRpcProtocols.ONCRPC_TCP, 2049) ) {
                 _log.log(Level.SEVERE, "Failed to register mountv1 service within portmap.");
             }
-            if (!portmap.setPort(100005, 3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
+            if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
                 _log.log(Level.SEVERE, "Failed to register mountv1 service within portmap.");
             }
-            if(!portmap.setPort(100005, 1, OncRpcProtocols.ONCRPC_TCP, 2049)) {
+            if(!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V1, OncRpcProtocols.ONCRPC_TCP, 2049)) {
                 _log.log(Level.SEVERE, "Failed to register mountv3 service within portmap.");
             }
-            if(!portmap.setPort(100005, 1, OncRpcProtocols.ONCRPC_UDP, 2049)) {
+            if(!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V1, OncRpcProtocols.ONCRPC_UDP, 2049)) {
                 _log.log(Level.SEVERE, "Failed to register mountv3 service within portmap.");
             }
 
-            if( !portmap.setPort(100003, 4, OncRpcProtocols.ONCRPC_TCP, 2049) ) {
+            if( !portmap.setPort(nfs4_prot.NFS4_PROGRAM, nfs4_prot.NFS_V4, OncRpcProtocols.ONCRPC_TCP, 2049) ) {
                 _log.log(Level.SEVERE, "Failed to register NFSv4 service within portmap.");
             }
 
@@ -89,8 +91,8 @@ public class Main {
             NFSServerV41 nfs4 = new NFSServerV41(new MDSOperationFactory(), new DeviceManager(),
                     fs, exports);
 
-            service.register(100003, nfs4);
-            service.register(100005, ms);
+            service.register( new OncRpcProgram(nfs4_prot.NFS4_PROGRAM, nfs4_prot.NFS_V4), nfs4);
+            service.register( new OncRpcProgram(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3), ms);
 
         }else{
             port = DEFAULT_PORT_DS;
@@ -98,7 +100,7 @@ public class Main {
             _log.log(Level.INFO, "starting DS on: {0}", port );
             NFSServerV41 ds = new NFSServerV41(new DSOperationFactory(), new DeviceManager(),
                     fs, null);
-            service.register(100003, ds);
+            service.register( new OncRpcProgram(nfs4_prot.NFS4_PROGRAM, nfs4_prot.NFS_V4), ds);
         }
 
         service.start();
