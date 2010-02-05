@@ -101,7 +101,15 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_GETDEVICEINFO:
                 return new OperationGETDEVICEINFO(op);
             case nfs_opnum4.OP_EXCHANGE_ID:
-                return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS);
+                /*
+                 * By having chimera as a backend file system we need to support
+                 * legacy .(xx)(xx)... commands. To allow read of those files,
+                 * MDS ( nfsv41 door ) have to declare itself as a data server (DS).
+                 *
+                 * indicate that we are a MDS and DS at the same time.
+                 */
+                return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS|
+                        nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS);
             case nfs_opnum4.OP_CREATE_SESSION:
                 return new OperationCREATE_SESSION(op);
             case nfs_opnum4.OP_DESTROY_SESSION:

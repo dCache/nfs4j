@@ -44,8 +44,15 @@ public class OperationREAD extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
-
-            NFSv4StateHandler.getInstace().updateClientLeaseTime(_args.opread.stateid);
+            if(context.getMinorversion() == 0) {
+                /*
+                 * The NFSv4.0 spec requires to update lease time as long as
+                 * client needs the file. This is done through  READ, WRITE
+                 * and RENEW opertations. With introduction of sessions in
+                 * v4.1 update of the lease time done through SEQUENCE operation.
+                 */
+                NFSv4StateHandler.getInstace().updateClientLeaseTime(_args.opread.stateid);
+            }
 
 
             long offset = _args.opread.offset.value.value;
@@ -57,6 +64,12 @@ public class OperationREAD extends AbstractNFSv4Operation {
             if( bytesReaded < 0 ) {
                 throw new IOHimeraFsException("IO not allowd");
             }
+
+            /*
+             * While we have written directly into back-end byte array
+             * tell the byte buffer the actual position.
+             */
+            buf.position(bytesReaded);
 
             res.status = nfsstat4.NFS4_OK;
             res.resok4 = new READ4resok();
