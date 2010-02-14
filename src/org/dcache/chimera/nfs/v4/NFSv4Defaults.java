@@ -16,7 +16,7 @@ public interface NFSv4Defaults {
     public final static int NFS4_MAXLINK = 255;
 
     // setting the stripe size
-    public static final int NFS4_STRIPE_SIZE = 8192;
+    public static final int NFS4_STRIPE_SIZE = (int)NFS4_MAXIOBUFFERSIZE;
 
 
     /**
