@@ -5,7 +5,7 @@ public interface NFSv4Defaults {
     public static final int NFS4_LEASE_TIME = 90;
     public final static int NFS4_MAXFILENAME = 255;
     // maximal read/write buffer size
-    public static final long NFS4_MAXIOBUFFERSIZE = 4096;
+    public static final long NFS4_MAXIOBUFFERSIZE = 32768;
 
     // max file size 28Gb
     public final static long NFS4_MAXFILESIZE = 28L*1024L*1024L*1024L;
