@@ -1,7 +1,6 @@
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
@@ -131,14 +130,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
                 res.csr_resok4.csr_sessionid = session.id();
 	    	res.csr_resok4.csr_sequence = _args.opcreate_session.csa_sequence;
-            /**
-             * from spec:
-             *
-             * Once the session is created, the first SEQUENCE or CB_SEQUENCE
-             * received on a slot MUST have a sequence ID equal to 1;
-             * if not the server MUST return NFS4ERR_SEQ_MISORDERED.
-             */
-            res.csr_resok4.csr_sequence = new sequenceid4( new uint32_t( 1 ) );
 
 	    	/* we do not support callback connections on the same line*/
 	    	res.csr_resok4.csr_flags = new uint32_t( _args.opcreate_session.csa_flags.value ^ nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN);
