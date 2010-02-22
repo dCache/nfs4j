@@ -69,6 +69,7 @@
                             <mode>development</mode>
                             <Implementation-Build>${buildNumber}</Implementation-Build>
                             <url>${pom.url}</url>
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -92,6 +93,7 @@
                                     <mode>development</mode>
                                     <Implementation-Build>${buildNumber}</Implementation-Build>
                                     <url>${pom.url}</url>
+                                    <Build-Time>${maven.build.timestamp}</Build-Time>
                                 </manifestEntries>
                             </archive>
                         </configuration>
