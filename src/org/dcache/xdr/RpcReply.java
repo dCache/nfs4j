@@ -51,7 +51,7 @@ public class RpcReply {
         switch (_replyStatus) {
             case RpcReplyStatus.MSG_ACCEPTED:
                 int authType = xdr.xdrDecodeInt();
-                _log.log(Level.INFO, "Auth type: {0}", authType);
+                _log.log(Level.FINEST, "Auth type: {0}", authType);
                 switch (authType) {
                     case RpcAuthType.UNIX:
                         _verf = new RpcAuthTypeUnix();
