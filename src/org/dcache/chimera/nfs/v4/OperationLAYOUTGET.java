@@ -92,7 +92,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         NFS4IoDevice ioDevice = null;
         if (context.currentInode().type() == FsInodeType.INODE ) {
-            ioDevice = NFSv41DeviceManagerFactory.getDeviceManager().getIoDevice(
+            ioDevice = context.getDeviceManager().getIoDevice(
                     context.currentInode(),
                     _args.oplayoutget.loga_iomode,
                     context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress(),
@@ -105,7 +105,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
             device_addr4 deviceAddr = DeviceManager.deviceAddrOf( addresses );
             ioDevice = new NFS4IoDevice(MSD_ID, deviceAddr);
 
-            NFSv41DeviceManagerFactory.getDeviceManager().
+            context.getDeviceManager().
                     addIoDevice(ioDevice, layoutiomode4.LAYOUTIOMODE4_ANY);
         }
 

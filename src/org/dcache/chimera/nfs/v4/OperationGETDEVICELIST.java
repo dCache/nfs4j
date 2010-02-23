@@ -71,9 +71,9 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         device_addr4 deviceAddr = DeviceManager.deviceAddrOf( addresses );
 
         NFS4IoDevice newDevice = new NFS4IoDevice(mdsID , deviceAddr);
-        NFSv41DeviceManagerFactory.getDeviceManager().addIoDevice(newDevice, layoutiomode4.LAYOUTIOMODE4_ANY);
+        context.getDeviceManager().addIoDevice(newDevice, layoutiomode4.LAYOUTIOMODE4_ANY);
 
-        List<NFS4IoDevice> deviceList = NFSv41DeviceManagerFactory.getDeviceManager().getIoDeviceList();
+        List<NFS4IoDevice> deviceList = context.getDeviceManager().getIoDeviceList();
 
         int deviceListSize = deviceList.size();
         if (deviceListSize > _args.opgetdevicelist.gdla_maxdevices.value.value) {

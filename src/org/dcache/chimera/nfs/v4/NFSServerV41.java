@@ -27,12 +27,13 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final ExportFile _exportFile;
     private static final Logger _log = Logger.getLogger(NFSServerV41.class.getName());
     private final NFSv4OperationFactory _operationFactory;
+    private final NFSv41DeviceManager _deviceManager;
 
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, FileSystemProvider fs,
             ExportFile exportFile) throws OncRpcException, IOException {
 
-        NFSv41DeviceManagerFactory.setDeviceManager(deviceManager);
+        _deviceManager = deviceManager;
         _fs = fs;
         _exportFile = exportFile;
         _operationFactory = operationFactory;
@@ -61,7 +62,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             }
 
             CompoundContext context = new CompoundContext(v, arg1.minorversion.value,
-                _fs, call$, _exportFile);
+                _fs, _deviceManager, call$, _exportFile);
 
             for (nfs_argop4 op : arg1.argarray) {
 

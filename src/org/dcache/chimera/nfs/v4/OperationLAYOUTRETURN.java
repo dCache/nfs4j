@@ -33,7 +33,7 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
     		if( _args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
 
-                NFSv41DeviceManagerFactory.getDeviceManager().
+                context.getDeviceManager().
                         releaseDevice(_args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid);
     		}
 

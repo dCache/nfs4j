@@ -41,7 +41,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
             res.gdir_resok4 = new GETDEVICEINFO4resok();
 
-            NFS4IoDevice device = NFSv41DeviceManagerFactory.getDeviceManager()
+            NFS4IoDevice device = context.getDeviceManager()
                     .getIoDevice(deviceId);
 
             if (device == null) {
