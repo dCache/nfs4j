@@ -71,10 +71,10 @@ public class RpcProtocolFilter implements ProtocolFilter {
                 } catch (OncRpcException ex) {
                     Logger.getLogger(RpcProtocolFilter.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                _log.log(Level.INFO, "RPC request rejected: " + e.getMessage());
+                _log.log(Level.INFO, "RPC request rejected: {1}", e.getMessage());
                 return false;
             }catch (OncRpcException e) {
-                _log.log(Level.INFO, "failed to process RPC request: " + e.getMessage());
+                _log.log(Level.INFO, "failed to process RPC request: {1}", e.getMessage());
                 return false;
             }
         } else {
