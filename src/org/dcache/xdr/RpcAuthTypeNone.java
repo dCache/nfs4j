@@ -22,11 +22,16 @@ import java.util.logging.Logger;
 public class RpcAuthTypeNone implements RpcAuth, XdrAble {
 
     private final int _type =  RpcAuthType.NONE;
+    private byte[] body;
 
     private final static Logger _log = Logger.getLogger(RpcAuthTypeNone.class.getName());
 
-    public void xdrDecode(XdrDecodingStream xdr) {
-        int len = xdr.xdrDecodeInt();
+    public RpcAuthTypeNone() {
+        this(new byte[0]);
+    }
+
+    public RpcAuthTypeNone(byte[] body) {
+        this.body = body;
     }
 
     public int type() {
@@ -34,9 +39,14 @@ public class RpcAuthTypeNone implements RpcAuth, XdrAble {
     }
 
     @Override
+    public void xdrDecode(XdrDecodingStream xdr) {
+        body = xdr.xdrDecodeDynamicOpaque();
+    }
+
+    @Override
     public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException {
        xdr.xdrEncodeInt(_type);
-       xdr.xdrEncodeInt(0);
+       xdr.xdrEncodeDynamicOpaque(body);
     }
 
 }
