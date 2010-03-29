@@ -99,7 +99,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             _log.log(Level.FINEST, "GID  : {0}", fileStat.getGid());
                             _log.log(Level.FINEST, "Mode : 0{0}", Integer.toOctalString(fileStat.getMode() & 0777));
                             UnixAcl fileAcl = new UnixAcl(fileStat.getUid(), fileStat.getGid(), fileStat.getMode() & 0777);
-                            if (!_permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
+                            if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
                             }
 
@@ -109,7 +109,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             // check parent permissions
                             Stat parentStat = context.currentInode().statCache();
                             UnixAcl parentAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-                            if (!_permissionHandler.isAllowed(parentAcl, context.getUser(), AclHandler.ACL_INSERT)) {
+                            if (!context.getAclHandler().isAllowed(parentAcl, context.getUser(), AclHandler.ACL_INSERT)) {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
                             }
 
@@ -128,7 +128,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         Stat inodeStat = inode.statCache();
                         UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-                        if (!_permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
+                        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
                             throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
                         }
 

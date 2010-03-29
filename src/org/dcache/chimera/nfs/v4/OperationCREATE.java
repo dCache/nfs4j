@@ -49,7 +49,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
     		UnixAcl fileAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(),parentStat.getMode() & 0777 );
 
 
-            if ( ! _permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)  ) {
+            if ( ! context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)  ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 

@@ -61,11 +61,11 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
 	    Stat parentStat = parentInode.statCache();
 
 	    UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-//	    if (!_permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
+//	    if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
 //      throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
 //	    }
 	    acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-	    if (!_permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
+            if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
 	    }
 

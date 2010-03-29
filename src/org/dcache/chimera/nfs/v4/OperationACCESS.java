@@ -39,37 +39,37 @@ public class OperationACCESS extends AbstractNFSv4Operation {
 
 
             if( (reqAccess & nfs4_prot.ACCESS4_EXECUTE) == nfs4_prot.ACCESS4_EXECUTE ) {
-                if (  _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_EXECUTE ) ) {
+                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_EXECUTE ) ) {
                     realAccess |= nfs4_prot.ACCESS4_EXECUTE;
                 }
             }
 
             if( (reqAccess & nfs4_prot.ACCESS4_EXTEND) == nfs4_prot.ACCESS4_EXTEND ) {
-                if (  _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT ) ) {
+                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT ) ) {
                     realAccess |= nfs4_prot.ACCESS4_EXTEND;
                 }
             }
 
             if( (reqAccess & nfs4_prot.ACCESS4_LOOKUP) == nfs4_prot.ACCESS4_LOOKUP ) {
-                if (  _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP ) ) {
+                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP ) ) {
                     realAccess |= nfs4_prot.ACCESS4_LOOKUP;
                 }
             }
 
             if( (reqAccess & nfs4_prot.ACCESS4_DELETE) == nfs4_prot.ACCESS4_DELETE ) {
-                if (  _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE ) ) {
+                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE ) ) {
                     realAccess |= nfs4_prot.ACCESS4_DELETE;
                 }
             }
 
             if( (reqAccess & nfs4_prot.ACCESS4_MODIFY) == nfs4_prot.ACCESS4_MODIFY ) {
-                if (  _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_WRITE ) ){
+                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_WRITE ) ){
                     realAccess |= nfs4_prot.ACCESS4_MODIFY;
                 }
             }
 
             if( (reqAccess & nfs4_prot.ACCESS4_READ) == nfs4_prot.ACCESS4_READ ) {
-                if (  _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_READ ) ) {
+                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_READ ) ) {
                     realAccess |= nfs4_prot.ACCESS4_READ;
                 }
             }

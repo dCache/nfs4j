@@ -34,6 +34,7 @@ import org.dcache.chimera.nfs.v3.MountServer;
 import org.dcache.chimera.nfs.v3.xdr.mount_prot;
 import org.dcache.chimera.nfs.v4.mover.DSOperationFactory;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
+import org.dcache.chimera.posix.UnixPermissionHandler;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 
@@ -89,7 +90,7 @@ public class Main {
             MountServer ms = new MountServer(exports, fs);
 
             NFSServerV41 nfs4 = new NFSServerV41(new MDSOperationFactory(), new DeviceManager(),
-                    fs, exports);
+                    UnixPermissionHandler.getInstance(), fs, exports);
 
             service.register( new OncRpcProgram(nfs4_prot.NFS4_PROGRAM, nfs4_prot.NFS_V4), nfs4);
             service.register( new OncRpcProgram(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3), ms);
@@ -99,7 +100,7 @@ public class Main {
             service = new OncRpcSvc(port);
             _log.log(Level.INFO, "starting DS on: {0}", port );
             NFSServerV41 ds = new NFSServerV41(new DSOperationFactory(), new DeviceManager(),
-                    fs, null);
+                    UnixPermissionHandler.getInstance(), fs, null);
             service.register( new OncRpcProgram(nfs4_prot.NFS4_PROGRAM, nfs4_prot.NFS_V4), ds);
         }
 

@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.nfs.ExportFile;
+import org.dcache.chimera.posix.AclHandler;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
 
@@ -28,15 +29,17 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private static final Logger _log = Logger.getLogger(NFSServerV41.class.getName());
     private final NFSv4OperationFactory _operationFactory;
     private final NFSv41DeviceManager _deviceManager;
+    private final AclHandler _aclHandler;
 
     public NFSServerV41(NFSv4OperationFactory operationFactory,
-            NFSv41DeviceManager deviceManager, FileSystemProvider fs,
+            NFSv41DeviceManager deviceManager, AclHandler aclHandler, FileSystemProvider fs,
             ExportFile exportFile) throws OncRpcException, IOException {
 
         _deviceManager = deviceManager;
         _fs = fs;
         _exportFile = exportFile;
         _operationFactory = operationFactory;
+        _aclHandler = aclHandler;
     }
 
     @Override
@@ -62,7 +65,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             }
 
             CompoundContext context = new CompoundContext(v, arg1.minorversion.value,
-                _fs, _deviceManager, call$, _exportFile);
+                _fs, _deviceManager, _aclHandler, call$, _exportFile);
 
             for (nfs_argop4 op : arg1.argarray) {
 

@@ -9,6 +9,7 @@ import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.UnixUser;
 import org.dcache.xdr.RpcCall;
 
@@ -31,6 +32,7 @@ public class CompoundContext {
     private final UnixUser _user;
     private final ExportFile _exportFile;
     private final NFSv41DeviceManager _deviceManager;
+    private final AclHandler _aclHandler;
 
     /**
      * Create context of COUMPOUND request.
@@ -42,11 +44,12 @@ public class CompoundContext {
      * @param exportFile list of servers exports.
      */
     public CompoundContext(List<nfs_resop4> processedOps, int minorversion, FileSystemProvider fs,
-            NFSv41DeviceManager deviceManager, RpcCall call, ExportFile exportFile) {
+            NFSv41DeviceManager deviceManager, AclHandler aclHandler, RpcCall call, ExportFile exportFile) {
         _processedOps = processedOps;
         _minorversion = minorversion;
         _fs = fs;
         _deviceManager = deviceManager;
+        _aclHandler = aclHandler;
         _callInfo = call;
         _exportFile = exportFile;
         _user = HimeraNFS4Utils.remoteUser(_callInfo, _exportFile);
@@ -67,6 +70,9 @@ public class CompoundContext {
         return _deviceManager;
     }
 
+    public AclHandler getAclHandler() {
+        return _aclHandler;
+    }
     /**
      * Get NFSv4 minor version number. The version number os provided by client
      * for each coumpound.

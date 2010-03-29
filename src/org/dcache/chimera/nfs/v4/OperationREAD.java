@@ -40,7 +40,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
             Stat inodeStat = context.currentInode().statCache();
 
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)  ) {
+            if ( ! context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)  ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 

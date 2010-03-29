@@ -50,7 +50,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
     		Stat inodeStat = context.currentInode().statCache();
 
             UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER) ) {
+            if ( ! context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER) ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 

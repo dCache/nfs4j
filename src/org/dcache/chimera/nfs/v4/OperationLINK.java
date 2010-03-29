@@ -33,7 +33,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
             Stat parentStat = context.currentInode().statCache();
             UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(),parentStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT ) ) {
+            if ( ! context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT ) ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 

@@ -104,7 +104,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(),dirStat.getMode() & 0777 );
-            if ( ! _permissionHandler.isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP) ) {
+            if ( ! context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP) ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
