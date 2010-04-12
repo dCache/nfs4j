@@ -14,49 +14,39 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.xdr;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
-public class RpcAuthTypeNone implements RpcAuth, XdrAble {
+/**
+ * Authentication verifier. Depending of status of credentials the content may
+ * change ( for example, in case of RPCGSS_SEC contains the checksum of RPC header).
+ */
+public class RpcAuthVerifier implements XdrAble {
 
-    private final int _type =  RpcAuthType.NONE;
-    private byte[] body;
-    private RpcAuthVerifier _verifier = new RpcAuthVerifier(RpcAuthType.NONE, new byte[0]);
+    private int _type;
+    private byte[] _body;
 
-    private final static Logger _log = Logger.getLogger(RpcAuthTypeNone.class.getName());
-
-    public RpcAuthTypeNone() {
-        this(new byte[0]);
+    public RpcAuthVerifier(int type, byte[] body) {
+        _type = type;
+        _body = body;
     }
 
-    public RpcAuthTypeNone(byte[] body) {
-        this.body = body;
+    public RpcAuthVerifier(XdrDecodingStream xdr) throws OncRpcException, IOException {
+        xdrDecode(xdr);
     }
 
-    @Override
-    public int type() {
+    public int getType() {
         return _type;
     }
 
-    @Override
-    public RpcAuthVerifier getVerifier() {
-        return _verifier;
-    }
-
-    @Override
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
-        body = xdr.xdrDecodeDynamicOpaque();
-        _verifier = new RpcAuthVerifier(xdr);
+        _type = xdr.xdrDecodeInt();
+        _body = xdr.xdrDecodeDynamicOpaque();
     }
 
-    @Override
     public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
-       xdr.xdrEncodeInt(_type);
-       xdr.xdrEncodeDynamicOpaque(body);
-       _verifier.xdrEncode(xdr);
+        xdr.xdrEncodeInt(_type);
+        xdr.xdrEncodeDynamicOpaque(_body);
     }
-
 }

@@ -17,12 +17,14 @@
 
 package org.dcache.xdr;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.Arrays;
 
 public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
     private final int _type =  RpcAuthType.UNIX;
+    private RpcAuthVerifier _verifier = new RpcAuthVerifier(RpcAuthType.NONE, new byte[0]);
 
     private int _len;
     private int _uid;
@@ -43,7 +45,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
         _machine = machine;
     }
 
-    public void xdrDecode(XdrDecodingStream xdr) {
+    public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
 
         _len = xdr.xdrDecodeInt();
         _stamp = xdr.xdrDecodeInt();
@@ -51,10 +53,17 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
         _uid = xdr.xdrDecodeInt();
         _gid = xdr.xdrDecodeInt();
         _gids = xdr.xdrDecodeIntVector();
+        _verifier.xdrDecode(xdr);
     }
 
+    @Override
     public int type() {
         return _type;
+    }
+
+    @Override
+    public RpcAuthVerifier getVerifier() {
+        return _verifier;
     }
 
     @Override
@@ -70,7 +79,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
     }
 
     @Override
-    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException {
+    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
        xdr.xdrEncodeInt(_type);
        xdr.xdrEncodeInt(_len);
        xdr.xdrEncodeInt(_stamp);
@@ -78,6 +87,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
        xdr.xdrEncodeInt(_uid);
        xdr.xdrEncodeInt(_gid);
        xdr.xdrEncodeIntVector(_gids);
+       _verifier.xdrEncode(xdr);
     }
 
     public int uid() {

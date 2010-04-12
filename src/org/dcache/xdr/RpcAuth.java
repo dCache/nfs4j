@@ -19,5 +19,25 @@ package org.dcache.xdr;
 
 public interface RpcAuth extends XdrAble {
 
+    /**
+     * Get the authentication flavor. The rfc 1831 defines the following flavors:
+     * <pre>
+     *   AUTH_NONE  = 0
+     *   AUTH_SYS   = 1
+     *   AUTH_SHORT = 2
+     * </pre>
+     *
+     * @return auth flavor.
+     */
     int type();
+
+    /**
+     * Get authentication verified corresponding to this credentials.
+     * In case of AUTH_NONE or AUTH_SYS the verifier is empty. Some other
+     * auth flavors may have non empty verifies ( RPCGSS_SEC contains the CRC
+     * of RPC header ).
+     *
+     * @return verifier.
+     */
+    RpcAuthVerifier getVerifier();
 }

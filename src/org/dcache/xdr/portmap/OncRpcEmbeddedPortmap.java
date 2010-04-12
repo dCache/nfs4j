@@ -52,7 +52,7 @@ public class OncRpcEmbeddedPortmap {
             /* check for version 2, 3 and 4 */
             for (int i = 2; i < 5; i++) {
                 RpcCall call = new RpcCall(OncRpcPortmap.PORTMAP_PROGRAMM,
-                        i, _auth, _auth, transport);
+                        i, _auth, transport);
                 try {
                     call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 2000);
                 } catch (OncRpcException ex) {}

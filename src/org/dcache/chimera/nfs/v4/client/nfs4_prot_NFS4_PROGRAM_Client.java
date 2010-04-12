@@ -59,8 +59,8 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
         XdrTransport transport;
         transport = rpcClient.connect();
 
-        RpcAuth auth = new RpcAuthTypeUnix(3750, 1000, new int[]{1000}, (int) (System.currentTimeMillis() / 1000), "nairi");
-        client = new RpcCall(100003, 4, auth, auth, transport);
+        RpcAuth credential = new RpcAuthTypeUnix(3750, 1000, new int[]{1000}, (int) (System.currentTimeMillis() / 1000), "nairi");
+        client = new RpcCall(100003, 4, credential, transport);
     }
 
     /**

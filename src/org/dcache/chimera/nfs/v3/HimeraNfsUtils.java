@@ -195,11 +195,11 @@ public class HimeraNfsUtils {
         int gid = -1;
         int[] gids = null;
 
-        if( call.getAuth().type() == RpcAuthType.UNIX) {
+        if( call.getCredential().type() == RpcAuthType.UNIX) {
 
-            uid = ((RpcAuthTypeUnix)call.getAuth()).uid();
-            gid = ((RpcAuthTypeUnix)call.getAuth()).gid();
-            gids = ((RpcAuthTypeUnix)call.getAuth()).gids();
+            uid = ((RpcAuthTypeUnix)call.getCredential()).uid();
+            gid = ((RpcAuthTypeUnix)call.getCredential()).gid();
+            gids = ((RpcAuthTypeUnix)call.getCredential()).gids();
         }
 
 

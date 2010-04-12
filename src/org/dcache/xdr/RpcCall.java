@@ -65,11 +65,6 @@ public class RpcCall {
     private RpcAuth _cred;
 
     /**
-     * Authentication verifier.
-     */
-    private RpcAuth _verf;
-
-    /**
      * RPC call transport.
      */
     private final XdrTransport _transport;
@@ -79,11 +74,10 @@ public class RpcCall {
      */
     private final Xdr _xdr;
 
-    public RpcCall(int prog, int ver, RpcAuth auth, RpcAuth verif, XdrTransport transport) {
+    public RpcCall(int prog, int ver, RpcAuth cred, XdrTransport transport) {
         _prog = prog;
         _version = ver;
-        _cred = auth;
-        _verf = verif;
+        _cred = cred;
         _transport = transport;
         _xdr = new Xdr(Xdr.MAX_XDR_SIZE);
     }
@@ -100,34 +94,7 @@ public class RpcCall {
         _version = xdr.xdrDecodeInt();
         _proc = xdr.xdrDecodeInt();
 
-        int authType = xdr.xdrDecodeInt();
-        _log.log(Level.FINEST, "Auth type: {0}", authType);
-        switch (authType) {
-            case RpcAuthType.UNIX:
-                _cred = new RpcAuthTypeUnix();
-                break;
-            case RpcAuthType.NONE:
-                _cred = new RpcAuthTypeNone();
-                break;
-            default:
-                throw new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED);
-        }
-        _cred.xdrDecode(xdr);
-
-        authType = xdr.xdrDecodeInt();
-        _log.log(Level.FINEST, "Auth Verifier type: {0}", authType);
-        switch (authType) {
-            case RpcAuthType.UNIX:
-                _verf = new RpcAuthTypeUnix();
-                break;
-            case RpcAuthType.NONE:
-                _verf = new RpcAuthTypeNone();
-                break;
-            default:
-                throw new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED);
-        }
-
-        _verf.xdrDecode(xdr);
+        _cred = RpcCredential.decode(xdr);
     }
 
     /**
@@ -153,12 +120,8 @@ public class RpcCall {
         return _proc;
     }
 
-    public RpcAuth getAuth() {
+    public RpcAuth getCredential() {
         return _cred;
-    }
-
-    public RpcAuth getAuthVerf() {
-        return _verf;
     }
 
     /**
@@ -178,7 +141,6 @@ public class RpcCall {
         sb.append("Version  : ").append(_version).append("\n");
         sb.append("Procedure: ").append(_proc).append("\n");
         sb.append("cred     : ").append(_cred).append("\n");
-        sb.append("verf     : ").append(_verf).append("\n");
 
         return sb.toString();
     }
@@ -200,7 +162,7 @@ public class RpcCall {
             xdr.beginEncoding();
             replyMessage.xdrEncode(_xdr);
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
-            getAuthVerf().xdrEncode(xdr);
+            _cred.getVerifier().xdrEncode(xdr);
             xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
             xdr.endEncoding();
@@ -290,7 +252,6 @@ public class RpcCall {
         _xdr.xdrEncodeInt(_version);
         _xdr.xdrEncodeInt(procedure);
         _cred.xdrEncode(_xdr);
-        _verf.xdrEncode(_xdr);
         args.xdrEncode(_xdr);
         _xdr.endEncoding();
 

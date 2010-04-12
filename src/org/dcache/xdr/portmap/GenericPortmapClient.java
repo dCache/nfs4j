@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrTransport;
@@ -32,14 +33,16 @@ import org.dcache.xdr.XdrTransport;
 public class GenericPortmapClient implements OncPortmapClient {
 
     private final static Logger _log = Logger.getLogger(GenericPortmapClient.class.getName());
-    private final RpcAuthTypeNone _auth = new RpcAuthTypeNone();
+    private final RpcAuth _auth = new RpcAuthTypeNone();
     private final OncPortmapClient _portmapClient;
 
     public GenericPortmapClient(XdrTransport transport) {
 
-       OncPortmapClient portmapClient = new RpcbindV4Client(new RpcCall(100000, 4, _auth, _auth, transport));
+       OncPortmapClient portmapClient = new RpcbindV4Client(new RpcCall(100000, 4,
+               _auth, transport));
         if( !portmapClient.ping() ) {
-            portmapClient = new PortmapV2Client( new RpcCall(100000, 2, _auth, _auth, transport) );
+            portmapClient = new PortmapV2Client( new RpcCall(100000, 2,
+                    _auth, transport) );
             if(!portmapClient.ping()) {
                 // FIXME: return correct exception
                 throw new IllegalStateException("portmap service not available");
