@@ -38,7 +38,7 @@ public class RpcReply {
     private MismatchInfo _mismatchInfo;
     private int _authStatus;
 
-    private RpcAuth _verf;
+    private RpcAuthVerifier _verf;
     private final XdrTransport _transport;
 
     public RpcReply(int xid, Xdr xdr, XdrTransport transport) throws RpcException, OncRpcException, IOException {
@@ -50,19 +50,7 @@ public class RpcReply {
         _replyStatus = xdr.xdrDecodeInt();
         switch (_replyStatus) {
             case RpcReplyStatus.MSG_ACCEPTED:
-                int authType = xdr.xdrDecodeInt();
-                _log.log(Level.FINEST, "Auth type: {0}", authType);
-                switch (authType) {
-                    case RpcAuthType.UNIX:
-                        _verf = new RpcAuthTypeUnix();
-                        break;
-                    case RpcAuthType.NONE:
-                        _verf = new RpcAuthTypeNone();
-                        break;
-                    default:
-                        throw new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED);
-                }
-                _verf.xdrDecode(xdr);
+                _verf = new RpcAuthVerifier(xdr);
                 _acceptedStatus = xdr.xdrDecodeInt();
                 switch (_acceptedStatus) {
                     case RpcAccepsStatus.PROG_MISMATCH:

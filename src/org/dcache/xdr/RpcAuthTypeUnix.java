@@ -43,6 +43,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
         _gids = gids;
         _stamp = stamp;
         _machine = machine;
+        _len = 4 + 4 + _machine.length() + 4 + 4 + 4 + 4*_gids.length;
     }
 
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
