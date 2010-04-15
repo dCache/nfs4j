@@ -13,7 +13,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4res;
 import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -65,10 +64,8 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
         DeviceID mdsID = DeviceID.valueOf(0);
 
-        InetSocketAddress[] addresses = new InetSocketAddress[1];
-        addresses[0] = context.getRpcCall().getTransport().getLocalSocketAddress();
-
-        device_addr4 deviceAddr = DeviceManager.deviceAddrOf( addresses );
+        device_addr4 deviceAddr =
+                DeviceManager.deviceAddrOf( context.getRpcCall().getTransport().getLocalSocketAddress() );
 
         NFS4IoDevice newDevice = new NFS4IoDevice(mdsID , deviceAddr);
         context.getDeviceManager().addIoDevice(newDevice, layoutiomode4.LAYOUTIOMODE4_ANY);

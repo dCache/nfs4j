@@ -72,9 +72,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         }
 
         //hard coded for now
-        InetSocketAddress[] addresses = new InetSocketAddress[1];
-        addresses[0] = new InetSocketAddress(addr, 2052);
-        device_addr4 deviceAddr = deviceAddrOf( addresses );
+        device_addr4 deviceAddr = deviceAddrOf( new InetSocketAddress(addr, 2052) );
 
         NFS4IoDevice newDevice = new NFS4IoDevice(deviceId , deviceAddr);
 
@@ -136,12 +134,12 @@ public class DeviceManager implements NFSv41DeviceManager {
     }
 
     /**
-     * Create a mulipath based NFSv4.1 file layout address.
+     * Create a multipath based NFSv4.1 file layout address.
      *
      * @param deviceAddress
      * @return device address
      */
-    public static device_addr4 deviceAddrOf(InetSocketAddress[] deviceAddress) {
+    public static device_addr4 deviceAddrOf(InetSocketAddress ... deviceAddress) {
 
         nfsv4_1_file_layout_ds_addr4 file_type = new nfsv4_1_file_layout_ds_addr4();
 
