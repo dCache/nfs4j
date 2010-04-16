@@ -118,9 +118,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 	            NFSv4StateHandler.getInstace().sessionById(session.id(), session);
 	    		client.confirmed();
 	    		client.nextSeqID();
-
-	            client.inetAddress( context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress() );
-
     		}
 
     		client.refreshLeaseTime();

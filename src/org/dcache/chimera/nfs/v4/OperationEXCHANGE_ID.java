@@ -19,6 +19,7 @@ import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -43,6 +44,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
      * compile time
      */
     private static String COMPILTE_TIME = "<UNKNOWN>";
+
     static {
         /*
          * get 'Build-Time' attribute from jar file manifest ( if available )
@@ -164,6 +166,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
             boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
 
+            InetSocketAddress remoteSocketAddress = context.getRpcCall().getTransport().getRemoteSocketAddress();
+            InetSocketAddress localSocketAddress = context.getRpcCall().getTransport().getLocalSocketAddress();
 
             if(client == null){
 
@@ -174,7 +178,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
                 // create a new client: case 1
                 _log.log(Level.FINEST, "Case 1: New Owner ID");
-                client = new NFS4Client(clientOwner, _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                client = new NFS4Client(remoteSocketAddress, localSocketAddress,
+                        clientOwner, _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                 NFSv4StateHandler.getInstace().addClient(client);
 
             }else{
@@ -206,7 +211,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
                             _log.log(Level.FINEST, "case 5: Client Restart");
                             NFSv4StateHandler.getInstace().removeClient(client);
-                            client = new NFS4Client(new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                            client = new NFS4Client(remoteSocketAddress,  localSocketAddress,
+                                    new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                             NFSv4StateHandler.getInstace().addClient(client);
                         }else {
                             _log.log(Level.FINEST, "Case 3: Client Collision");
@@ -215,7 +221,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                     }else{
                       _log.log(Level.FINEST, "case 4: Replacement of Unconfirmed Record");
                       NFSv4StateHandler.getInstace().removeClient(client);
-                      client = new NFS4Client(new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                      client = new NFS4Client(remoteSocketAddress, localSocketAddress,
+                              new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                       NFSv4StateHandler.getInstace().addClient(client);
                     }
 
