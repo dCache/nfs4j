@@ -179,6 +179,11 @@ public class DeviceManager implements NFSv41DeviceManager {
     private static byte[] id2deviceid(int id) {
 
         byte[] buf = Integer.toString(id).getBytes();
-        return buf;
+        byte[] devData = new byte[nfs4_prot.NFS4_DEVICEID4_SIZE];
+
+        int len = Math.min(buf.length, nfs4_prot.NFS4_DEVICEID4_SIZE);
+        System.arraycopy(buf, 0, devData, 0, len);
+
+        return devData;
     }
 }
