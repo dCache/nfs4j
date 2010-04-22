@@ -6,6 +6,7 @@
 package org.dcache.chimera.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class deviceid4 implements XdrAble {
 
@@ -15,6 +16,10 @@ public class deviceid4 implements XdrAble {
     }
 
     public deviceid4(byte [] value) {
+        if(value.length > nfs4_prot.NFS4_DEVICEID4_SIZE) {
+            throw new IllegalArgumentException("device id size is bigger than " +
+                   nfs4_prot.NFS4_DEVICEID4_SIZE );
+        }
         this.value = value;
     }
 
@@ -25,13 +30,31 @@ public class deviceid4 implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        xdr.xdrEncodeOpaque(value, nfs4_prot.NFS4_DEVICEID4_SIZE);
+        xdr.xdrEncodeDynamicOpaque(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        value = xdr.xdrDecodeOpaque(nfs4_prot.NFS4_DEVICEID4_SIZE);
+        value = xdr.xdrDecodeDynamicOpaque();
     }
 
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if( !(obj instanceof deviceid4)) return false;
+
+        final deviceid4 other = (deviceid4) obj;
+        return Arrays.equals(value, other.value);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(value);
+    }
 }
 // End of deviceid4.java

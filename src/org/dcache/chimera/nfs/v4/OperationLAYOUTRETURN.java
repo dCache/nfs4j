@@ -29,12 +29,13 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
         _log.log(Level.FINEST, "LAYOUTRETURN4args : return type: {0}", _args.oplayoutreturn.lora_layoutreturn.lr_returntype);
         _log.log(Level.FINEST, "LAYOUTRETURN4args :     reclaim: {0}", _args.oplayoutreturn.lora_reclaim);
 
-		try {
+        try {
 
-    		if( _args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
+                if( _args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
 
                 context.getDeviceManager().
-                        releaseDevice(_args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid);
+                        layoutReturn(context.getSession().getClient(),
+                                _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid);
     		}
 
         	res.lorr_stateid = new layoutreturn_stateid();
@@ -45,10 +46,10 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
         	res.lorr_status = nfsstat4.NFS4_OK;
 
-		}catch(Exception e) {
-		    res.lorr_status = nfsstat4.NFS4ERR_SERVERFAULT;
+        }catch(Exception e) {
+            res.lorr_status = nfsstat4.NFS4ERR_SERVERFAULT;
             _log.log(Level.SEVERE, "LAYOUTRETURN: ", e);
-		}
+        }
       _result.oplayoutreturn = res;
 
             context.processedOperations().add(_result);

@@ -1,6 +1,6 @@
 package org.dcache.chimera.nfs.v4.client;
 
-import org.dcache.chimera.nfs.v4.DeviceID;
+import org.dcache.chimera.nfs.v4.xdr.deviceid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 
 public class Stripe {
@@ -8,27 +8,27 @@ public class Stripe {
 
     private final long _offset;
     private final long _len;
-    private final DeviceID _deviceId;
+    private final deviceid4 _deviceId;
     private final nfs_fh4 _fh;
 
 
     /**
      * Construct new stripe unit.
      *
-     * @param deviceID
+     * @param deviceId
      * @param fh
      * @param len
      * @param offset
      * @throws IllegalArgumentException if device id or fh is null
      */
-    public Stripe(DeviceID deviceID, nfs_fh4 fh, long len, long offset)
+    public Stripe(deviceid4 deviceId, nfs_fh4 fh, long len, long offset)
             throws IllegalArgumentException {
 
-        if( deviceID == null ) {
+        if( deviceId == null ) {
             throw new IllegalArgumentException("device id is null");
         }
 
-        _deviceId = deviceID;
+        _deviceId = deviceId;
 
         if( fh == null ) {
             throw new IllegalArgumentException("NFS file hadle is null");
@@ -58,7 +58,7 @@ public class Stripe {
     /**
      * @return the deviceId
      */
-    public DeviceID getDeviceId() {
+    public deviceid4 getDeviceId() {
         return _deviceId;
     }
     /**

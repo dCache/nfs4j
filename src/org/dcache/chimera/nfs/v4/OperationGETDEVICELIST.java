@@ -1,21 +1,10 @@
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.v4.xdr.verifier4;
-import org.dcache.chimera.nfs.v4.xdr.layoutiomode4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.chimera.nfs.v4.xdr.uint64_t;
-import org.dcache.chimera.nfs.v4.xdr.device_addr4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
-import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
-import org.dcache.chimera.nfs.v4.xdr.deviceid4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4res;
-import org.dcache.chimera.nfs.v4.xdr.GETDEVICELIST4resok;
-import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.List;
-
 import org.apache.log4j.Logger;
+import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.v4.xdr.*;
+
+import java.util.List;
 
 public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
@@ -31,10 +20,6 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
     GETDEVICELIST4res res = new GETDEVICELIST4res();
 
     try {
-
-        /*
-         * TODO: currently we redirect to ourself
-         */
 
         /*
          * GETDEVICELIST This operation returns an array of items
@@ -57,35 +42,15 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         res.gdlr_resok4.gdlr_cookieverf = new verifier4();
         res.gdlr_resok4.gdlr_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        /*
-         * only deviceid==0 returned, which is the MDS ( current server )
-         * all non regular inode IO done by MDS
-         */
+        List<deviceid4> deviceIDs = context.getDeviceManager().getDeviceList(context.getSession().getClient());
 
-        DeviceID mdsID = DeviceID.valueOf(0);
+        int deviceListSize = Math.min(deviceIDs.size(), _args.opgetdevicelist.gdla_maxdevices.value.value);
 
-        device_addr4 deviceAddr =
-                DeviceManager.deviceAddrOf( context.getRpcCall().getTransport().getLocalSocketAddress() );
-
-        NFS4IoDevice newDevice = new NFS4IoDevice(mdsID , deviceAddr);
-        context.getDeviceManager().addIoDevice(newDevice, layoutiomode4.LAYOUTIOMODE4_ANY);
-
-        List<NFS4IoDevice> deviceList = context.getDeviceManager().getIoDeviceList();
-
-        int deviceListSize = deviceList.size();
-        if (deviceListSize > _args.opgetdevicelist.gdla_maxdevices.value.value) {
-            deviceListSize = _args.opgetdevicelist.gdla_maxdevices.value.value;
-        }
-
-        /*
-         * FIXME: protect against empty list
-         */
         res.gdlr_resok4.gdlr_deviceid_list = new deviceid4[deviceListSize];
-        res.gdlr_resok4.gdlr_deviceid_list[0] = mdsID.toDeviceid4();
 
         for (int i = 0; i < deviceListSize; i++) {
-            NFS4IoDevice device = deviceList.get(i);
-            res.gdlr_resok4.gdlr_deviceid_list[i] = device.getDeviceId().toDeviceid4();
+            deviceid4 deviceId = deviceIDs.get(i);
+            res.gdlr_resok4.gdlr_deviceid_list[i] = deviceId;
         }
 
         if (_log.isDebugEnabled()) {

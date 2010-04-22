@@ -23,7 +23,6 @@ import jline.SimpleCompletor;
 
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4res;
-import org.dcache.chimera.nfs.v4.DeviceID;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.NFSv41Error;
 import org.dcache.chimera.nfs.v4.xdr.clientid4;
@@ -56,7 +55,7 @@ import org.dcache.xdr.OncRpcException;
 public class Main {
 
     private final nfs4_prot_NFS4_PROGRAM_Client _nfsClient;
-    private final Map<DeviceID, InetSocketAddress> _knowDevices = new HashMap<DeviceID, InetSocketAddress>();
+    private final Map<deviceid4, InetSocketAddress> _knowDevices = new HashMap<deviceid4, InetSocketAddress>();
     private nfs_fh4 _cwd = null;
     private nfs_fh4 _rootFh = null;
     // FIXME:
@@ -728,7 +727,7 @@ public class Main {
 
             List<Stripe> stripes = stripeMap.getStripe(0, 4096);
             Stripe stripe = stripes.get(0);
-            DeviceID device = stripe.getDeviceId();
+            deviceid4 device = stripe.getDeviceId();
             InetSocketAddress deviceAddr = _knowDevices.get(device);
             Main dsClient = getNfsClient(deviceAddr);
 
@@ -777,7 +776,7 @@ public class Main {
 
                     List<Stripe> stripes = stripeMap.getStripe(offset, 4096);
                     Stripe stripe = stripes.get(0);
-                    DeviceID device = stripe.getDeviceId();
+                    deviceid4 device = stripe.getDeviceId();
                     InetSocketAddress deviceAddr = _knowDevices.get(device);
                     Main dsClient = getNfsClient(deviceAddr);
 
@@ -958,7 +957,7 @@ public class Main {
                 System.out.println("    type  : " + l.lo_content.loc_type);
                 System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
 
-                DeviceID deviceID = new DeviceID(fileDevice.nfl_deviceid.value);
+                deviceid4 deviceID = fileDevice.nfl_deviceid;
                 Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0], l.lo_length.value.value, l.lo_offset.value.value);
                 stripeMap.addStripe(stripe);
 
@@ -1028,14 +1027,14 @@ public class Main {
         return compound4res;
     }
 
-    private void get_deviceinfo(DeviceID deviceID) throws OncRpcException,
+    private void get_deviceinfo(deviceid4 deviceId) throws OncRpcException,
             IOException {
 
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
-        ops.add(GetdeviceinfoStub.generateRequest(new deviceid4(deviceID.getId())));
+        ops.add(GetdeviceinfoStub.generateRequest(deviceId));
 
         COMPOUND4res compound4res = sendCompound(ops, "get_deviceinfo");
 
@@ -1045,7 +1044,7 @@ public class Main {
 
             InetSocketAddress inetAddr = device2Address(addr.nflda_multipath_ds_list[0].value[0].na_r_addr);
 
-            _knowDevices.put(deviceID, inetAddr);
+            _knowDevices.put(deviceId, inetAddr);
 
         } else {
             System.out.println("getdeviceinfo failed. Error = "

@@ -1,16 +1,8 @@
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.v4.xdr.layouttype4;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
-import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
-import org.dcache.chimera.nfs.v4.xdr.bitmap4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.GETDEVICEINFO4res;
-import org.dcache.chimera.nfs.v4.xdr.GETDEVICEINFO4resok;
-import org.dcache.chimera.nfs.ChimeraNFSException;
-
 import org.apache.log4j.Logger;
+import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.v4.xdr.*;
 
 public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
@@ -30,7 +22,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
          */
         GETDEVICEINFO4res res = new GETDEVICEINFO4res();
 
-        DeviceID deviceId = DeviceID.valueOf(_args.opgetdeviceinfo.gdia_device_id);
+        deviceid4 deviceId = _args.opgetdeviceinfo.gdia_device_id;
 
         if (_log.isDebugEnabled()) {
             _log.debug("             Info for #" + deviceId);
@@ -41,14 +33,14 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
             res.gdir_resok4 = new GETDEVICEINFO4resok();
 
-            NFS4IoDevice device = context.getDeviceManager()
-                    .getIoDevice(deviceId);
+            device_addr4 deviceInfo = context.getDeviceManager()
+                    .getDeviceInfo(context.getSession().getClient(), deviceId);
 
-            if (device == null) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid device id");
+            if (deviceInfo == null) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid deviceInfo id");
             }
 
-            res.gdir_resok4.gdir_device_addr = device.getDeviceAddr();
+            res.gdir_resok4.gdir_device_addr = deviceInfo;
             res.gdir_resok4.gdir_device_addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
             res.gdir_resok4.gdir_notification = new bitmap4();
             res.gdir_resok4.gdir_notification.value = new uint32_t[1];
