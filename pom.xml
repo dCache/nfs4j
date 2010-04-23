@@ -12,7 +12,7 @@
 
     <groupId>org.dcache.chimera</groupId>
     <artifactId>grizzly-rpc</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>Grizzly Based ONC RPC implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
