@@ -17,8 +17,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.OPEN4resok;
 import org.dcache.chimera.nfs.v4.xdr.OPEN4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
@@ -26,10 +24,12 @@ import org.dcache.chimera.FsInode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationOPEN extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationOPEN.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationOPEN.class);
 
     OperationOPEN(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_OPEN);
@@ -52,7 +52,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 }
 
                 client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-                _log.log(Level.FINEST, "open request form clientid: {0}, owner: {1}",
+                _log.debug("open request form clientid: {}, owner: {}",
                         new Object[]{client, new String(_args.opopen.owner.value.owner)});
             } else {
                 client = context.getSession().getClient();
@@ -75,7 +75,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     }
 
                     String name = NameFilter.convert(_args.opopen.claim.file.value.value.value);
-                    _log.log(Level.FINEST, "regular open for : {0}", name);
+                    _log.debug("regular open for : {}", name);
 
                     FsInode inode;
                     if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
@@ -90,14 +90,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_EXIST, "file already exist");
                             }
 
-                            _log.log(Level.FINEST, "Opening existing file: {0}", name);
+                            _log.debug("Opening existing file: {}", name);
 
-                            _log.finest("Check permission");
+                            _log.trace("Check permission");
                             // check file permissions
                             Stat fileStat = inode.statCache();
-                            _log.log(Level.FINEST, "UID  : {0}", fileStat.getUid());
-                            _log.log(Level.FINEST, "GID  : {0}", fileStat.getGid());
-                            _log.log(Level.FINEST, "Mode : 0{0}", Integer.toOctalString(fileStat.getMode() & 0777));
+                            _log.debug("UID  : {}", fileStat.getUid());
+                            _log.debug("GID  : {}", fileStat.getGid());
+                            _log.debug("Mode : 0{}", Integer.toOctalString(fileStat.getMode() & 0777));
                             UnixAcl fileAcl = new UnixAcl(fileStat.getUid(), fileStat.getGid(), fileStat.getMode() & 0777);
                             if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
@@ -113,7 +113,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
                             }
 
-                            _log.log(Level.FINEST, "Creating a new file: {0}", name);
+                            _log.debug("Creating a new file: {}", name);
                             inode = context.currentInode().create(name, context.getUser().getUID(),
                                     context.getUser().getGID(), 0600);
 
@@ -145,7 +145,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                     break;
                 case open_claim_type4.CLAIM_PREVIOUS:
-                    _log.log(Level.FINEST, "open by Inode for : {0}", context.currentInode().toFullString());
+                    _log.debug("open by Inode for : {}", context.currentInode().toFullString());
                     break;
                 case open_claim_type4.CLAIM_DELEGATE_CUR:
                     break;
@@ -175,24 +175,24 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             res.resok4.stateid = nfs4state.stateid();
             client.addState(nfs4state);
             NFSv4StateHandler.getInstace().addClinetByStateID(nfs4state.stateid(), clientid);
-            _log.log(Level.FINEST, "New stateID: {0}", nfs4state.stateid());
+            _log.debug("New stateID: {}", nfs4state.stateid());
 
             res.status = nfsstat4.NFS4_OK;
 
         } catch (ChimeraNFSException he) {
-            _log.log(Level.FINE, "OPEN: ", he.getMessage());
+            _log.debug("OPEN:", he.getMessage());
             res.status = he.getStatus();
         } catch (FileExistsChimeraFsException e) {
-            _log.log(Level.FINE, "OPEN: " + e.getMessage());
+            _log.debug("OPEN: {}", e.getMessage());
             res.status = nfsstat4.NFS4ERR_EXIST;
         } catch (FileNotFoundHimeraFsException fnf) {
-            _log.log(Level.FINE, "OPEN: " + fnf.getMessage());
+            _log.debug("OPEN: {}", fnf.getMessage());
             res.status = nfsstat4.NFS4ERR_NOENT;
         } catch (ChimeraFsException hfe) {
-            _log.log(Level.WARNING, "OPEN:", hfe);
+            _log.error("OPEN:", hfe);
             res.status = nfsstat4.NFS4ERR_SERVERFAULT;
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "OPEN:", e);
+            _log.error("OPEN:", e);
             res.status = nfsstat4.NFS4ERR_SERVERFAULT;
         }
 

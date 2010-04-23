@@ -18,18 +18,18 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class SessionSlot {
 
-    private static final Logger _log = Logger.getLogger(SessionSlot.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(SessionSlot.class);
 
     private int _sequence;
     private List<nfs_resop4> _reply;
@@ -52,9 +52,9 @@ public class SessionSlot {
     boolean update(int sequence, List<nfs_resop4> reply) throws ChimeraNFSException {
 
         if( sequence == _sequence ) {
-            _log.log(Level.INFO, "retransmit detected");
+            _log.info("retransmit detected");
             if( _reply != null ) {
-                _log.log(Level.INFO, "using cached reply");
+                _log.info("using cached reply");
                 reply.clear();
                 reply.addAll(_reply);
                 return true;

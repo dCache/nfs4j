@@ -7,12 +7,13 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4resok;
 import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.FsInode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationOPEN_CONFIRM.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_CONFIRM.class);
 
 	OperationOPEN_CONFIRM(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_OPEN_CONFIRM);
@@ -37,9 +38,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
             }
 
                 stateid4 stateid = _args.opopen_confirm.open_stateid;
-        	if(_log.isDebugEnabled() ) {
-                    _log.debug("confirmed stateID: " + stateid );
-        	}
+                _log.debug("confirmed stateID: {}", stateid );
             Long clientId = NFSv4StateHandler.getInstace().getClientIdByStateId(stateid);
             if(clientId == null ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
@@ -69,7 +68,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
             res.status = nfsstat4.NFS4_OK;
 
         }catch(ChimeraNFSException he) {
-        	_log.error("open_confirm failed:", he);
+            _log.debug("open_confirm failed: {}", he.getMessage());
             res.status = he.getStatus();
         }catch(Exception e) {
         	_log.error("open_confirm failed:", e);

@@ -20,8 +20,6 @@ package org.dcache.chimera.nfs.v3;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 import org.acplt.oncrpc.OncRpcPortmapClient;
 import org.acplt.oncrpc.OncRpcProtocols;
@@ -34,24 +32,26 @@ import org.dcache.chimera.nfs.v3.xdr.nfs3_prot;
 import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
 
-    private final static Logger _log = Logger.getLogger(Main.class.getName());
+    private final static Logger _log = LoggerFactory.getLogger(Main.class);
 
     static final int DEFAULT_PORT = 2049;
 
     public static void main(String[] args) throws Exception {
 
         if (args.length != 1) {
-            _log.severe("Usage: Main <config>");
+            _log.error("Usage: Main <config>");
             System.exit(1);
         }
 
         XMLconfig config = new XMLconfig(new File(args[0]));
         FileSystemProvider fs = new JdbcFs(config);
 
-        _log.log(Level.CONFIG, "starting NFSv3 on: {0}", DEFAULT_PORT);
+        _log.info("starting NFSv3 on: {}", DEFAULT_PORT);
 
         new OncRpcEmbeddedPortmap(2000);
 
@@ -59,27 +59,27 @@ public class Main {
         portmap.getOncRpcClient().setTimeout(2000);
 
         if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3, OncRpcProtocols.ONCRPC_TCP, 2049)) {
-            _log.log(Level.SEVERE, "Failed to register mountv1 service within portmap.");
+            _log.error("Failed to register mountv1 service within portmap.");
         }
 
         if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
-            _log.log(Level.SEVERE, "Failed to register mountv1 service within portmap.");
+            _log.error( "Failed to register mountv1 service within portmap.");
         }
 
         if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V1, OncRpcProtocols.ONCRPC_TCP, 2049)) {
-            _log.log(Level.SEVERE, "Failed to register mountv3 service within portmap.");
+            _log.error("Failed to register mountv3 service within portmap.");
         }
 
         if (!portmap.setPort(mount_prot.MOUNT_PROGRAM, mount_prot.MOUNT_V1, OncRpcProtocols.ONCRPC_UDP, 2049)) {
-            _log.log(Level.SEVERE, "Failed to register mountv3 service within portmap.");
+            _log.error("Failed to register mountv3 service within portmap.");
         }
 
         if (!portmap.setPort(nfs3_prot.NFS_PROGRAM, nfs3_prot.NFS_V3, OncRpcProtocols.ONCRPC_TCP, 2049)) {
-            _log.log(Level.SEVERE, "Failed to register NFSv3 service within portmap.");
+            _log.error("Failed to register NFSv3 service within portmap.");
         }
 
         if (!portmap.setPort(nfs3_prot.NFS_PROGRAM, nfs3_prot.NFS_V3, OncRpcProtocols.ONCRPC_UDP, 2049)) {
-            _log.log(Level.SEVERE, "Failed to register NFSv3 service within portmap.");
+            _log.error("Failed to register NFSv3 service within portmap.");
         }
 
         ExportFile exports = new ExportFile(new File("/etc/exports"));

@@ -5,12 +5,13 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.RENEW4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationRENEW extends AbstractNFSv4Operation {
 
 
-	private static final Logger _log = Logger.getLogger(OperationRENEW.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationRENEW.class);
 
 	OperationRENEW(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_RENEW);
@@ -33,9 +34,7 @@ public class OperationRENEW extends AbstractNFSv4Operation {
             res.status = nfsstat4.NFS4_OK;
 
         }catch(ChimeraNFSException he) {
-        	if(_log.isDebugEnabled() ) {
-        		_log.debug("RENEW: " + he.getMessage() );
-        	}
+            _log.debug("RENEW: {}", he.getMessage() );
             res.status = he.getStatus();
         }
 

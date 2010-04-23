@@ -9,13 +9,13 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID4resok;
 import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
 
-	private static final Logger _log = Logger.getLogger(OperationSETCLIENTID.class.getName());
+	private static final Logger _log = LoggerFactory.getLogger(OperationSETCLIENTID.class);
 
 	OperationSETCLIENTID(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_SETCLIENTID);
@@ -47,10 +47,10 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 	    	        ClientCB cb = new ClientCB(r_addr, r_netid, program);
 	    	        //	TODO: work around. client should send correct IP
 	    	        cb = new ClientCB(  HimeraNFS4Utils.inetAddress2rAddr(context.getRpcCall().getTransport().getRemoteSocketAddress() ), r_netid, program);
-                    _log.log(Level.FINEST, "Client callback: {0}", cb);
+                    _log.debug("Client callback: {}", cb);
 	                client.setCB(cb);
 		        }catch(Exception ignode_call_back) {
-                    _log.log(Level.FINEST, "no callback defined for: {0}", context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress());
+                    _log.debug("no callback defined for: {}", context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress());
 		        }
 
 		        NFSv4StateHandler.getInstace().addClient(client);
@@ -64,10 +64,10 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
 
         }catch(ChimeraNFSException he) {
-            _log.log(Level.FINEST, "SETCLIENTID: ", he.getMessage() );
+            _log.debug("SETCLIENTID: ", he.getMessage() );
 	        res.status = he.getStatus();
 	    }catch(Exception e) {
-            _log.log(Level.SEVERE, "SETCLIENTID: " , e);
+            _log.error("SETCLIENTID: " , e);
 	        res.status = nfsstat4.NFS4ERR_SERVERFAULT;
 	    }
 

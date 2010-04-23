@@ -9,14 +9,15 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.RENAME4res;
 import org.dcache.chimera.nfs.v4.xdr.RENAME4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationRENAME extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationRENAME.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationRENAME.class);
 
 	OperationRENAME(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_RENAME);
@@ -64,10 +65,12 @@ public class OperationRENAME extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_XDEV, "cross filesystem request");
             }
 
-
-            if(_log.isDebugEnabled() ) {
-                _log.debug("Rename: src=" +  sourceDir + " name=" + oldName + " dest=" + destDir + " name=" + newName);
-            }
+            _log.debug("Rename: src={} name={} dest={} name={}", new Object[] {
+                    sourceDir,
+                    oldName,
+                    destDir,
+                    newName
+                });
 
             context.getFs().move(sourceDir, oldName, destDir, newName);
 
@@ -90,7 +93,9 @@ public class OperationRENAME extends AbstractNFSv4Operation {
     		res.status = nfsstat4.NFS4ERR_NOENT;
     	}catch(ChimeraFsException hfe) {
     		res.status = nfsstat4.NFS4ERR_SERVERFAULT;
+                _log.error("RENAME: {}", hfe.getMessage());
         }catch(ChimeraNFSException he) {
+            _log.error("RENAME: {}", he.getMessage());
             res.status = he.getStatus();
         }
 

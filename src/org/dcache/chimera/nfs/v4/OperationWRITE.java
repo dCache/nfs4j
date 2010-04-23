@@ -11,16 +11,18 @@ import org.dcache.chimera.nfs.v4.xdr.count4;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4resok;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
+
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationWRITE extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationWRITE.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationWRITE.class);
 
 	public OperationWRITE(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_WRITE);
@@ -77,13 +79,11 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 	        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
     	}catch(IOHimeraFsException hioe) {
-    		if(_log.isDebugEnabled() ) {
-    			_log.debug("WRITE: " + hioe.getMessage() );
-    		}
-    		res.status = nfsstat4.NFS4ERR_IO;
+            _log.debug("WRITE: {}", hioe.getMessage() );
+            res.status = nfsstat4.NFS4ERR_IO;
         }catch(ChimeraNFSException he) {
-    		_log.debug("WRITE: " + he.getMessage() );
-    		res.status = he.getStatus();
+            _log.debug("WRITE: {}", he.getMessage() );
+            res.status = he.getStatus();
     	}catch(ChimeraFsException hfe) {
     		res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;
     	}

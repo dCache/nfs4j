@@ -9,6 +9,8 @@ import org.dcache.chimera.nfs.v4.xdr.*;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -19,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -36,7 +36,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     private static final deviceid4 MDS_ID = deviceidOf(0);
 
-    private static final Logger _log = Logger.getLogger(DeviceManager.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(DeviceManager.class);
 
     /* hack for multiple pools */
     private final Random _deviceIdGenerator = new Random();
@@ -64,7 +64,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             ++id; /* 0 is reserved */
             deviceId = deviceidOf(id);
 
-            _log.log(Level.FINEST, "generating new device: {0} ({1}) for stateid {2}",
+            _log.debug("generating new device: {} ({}) for stateid {}",
                     new Object[]{deviceId, id, stateid});
 
             //hard coded for now
@@ -90,7 +90,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     public device_addr4 getDeviceInfo(NFS4Client client, deviceid4 deviceId) {
 
-        _log.log(Level.FINEST, "lookup for device: {0}", deviceId );
+        _log.debug("lookup for device: {}", deviceId );
         /* in case of MDS access we return the same interface which client already connected to */
         if(deviceId.equals(MDS_ID)) {
             return deviceAddrOf(client.getLocalAddress());
@@ -115,7 +115,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     public void layoutReturn(NFS4Client client, stateid4 stateid) {
         // I'am fine
-        _log.log(Level.FINEST, "release device for stateid {0}", stateid );
+        _log.debug( "release device for stateid {}", stateid );
     }
 
     /**

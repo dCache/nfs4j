@@ -7,10 +7,11 @@ package org.dcache.chimera.nfs.v4;
  *  with great help of William A.(Andy) Adamson
  */
 
-import org.apache.log4j.Logger;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public class NFS4Client {
     private int _seqid = 0;
 
 
-    private static final Logger _log = Logger.getLogger(NFS4Client.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(NFS4Client.class);
 
     private Map<stateid4, NFS4State> _clinetStates = new HashMap<stateid4, NFS4State>();
 
@@ -132,7 +133,7 @@ public class NFS4Client {
 
     	_srv_id = (BOOTID);
     	_srv_id =  (_srv_id << 32) + CLIENTID.incrementAndGet();
-        _log.debug("New client id: " + Long.toHexString(_srv_id));
+        _log.debug("New client id: {}", Long.toHexString(_srv_id));
 
     }
 

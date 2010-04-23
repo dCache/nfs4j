@@ -4,20 +4,21 @@ import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.ILLEGAL4res;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationILLEGAL extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationILLEGAL.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationILLEGAL.class);
 
-	public OperationILLEGAL(nfs_argop4 op) {
-		super(op, nfs_opnum4.OP_ILLEGAL);
-	}
+    public OperationILLEGAL(nfs_argop4 op) {
+        super(op, nfs_opnum4.OP_ILLEGAL);
+    }
 
     @Override
     public boolean process(CompoundContext context) {
 
-        _log.info("ILLEGAL OPCODE:" + _args.argop);
+        _log.info("ILLEGAL OPCODE: {}", _args.argop);
 
         ILLEGAL4res opResILLEGAL = new ILLEGAL4res();
         opResILLEGAL.status = nfsstat4.NFS4ERR_OP_ILLEGAL;
@@ -25,5 +26,4 @@ public class OperationILLEGAL extends AbstractNFSv4Operation {
         context.processedOperations().add(_result);
         return false;
     }
-
 }

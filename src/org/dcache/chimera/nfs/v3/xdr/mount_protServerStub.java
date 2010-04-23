@@ -5,16 +5,16 @@
  */
 package org.dcache.chimera.nfs.v3.xdr;
 import org.dcache.xdr.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  */
 public abstract class mount_protServerStub implements RpcDispatchable {
 
-    private final static Logger _log = Logger.getLogger(mount_protServerStub.class.getName());
+    private final static Logger _log = LoggerFactory.getLogger(mount_protServerStub.class);
 
     public void dispatchOncRpcCall(RpcCall call)
            throws OncRpcException, IOException {
@@ -25,14 +25,14 @@ public abstract class mount_protServerStub implements RpcDispatchable {
         if ( version == 3 ) {
             switch ( procedure ) {
             case 0: {
-                _log.log(Level.FINEST, "MOUNTPROC3_NULL_3");
+                _log.debug("MOUNTPROC3_NULL_3");
                 call.retrieveCall(XdrVoid.XDR_VOID);
                 MOUNTPROC3_NULL_3(call);
                 call.reply( XdrVoid.XDR_VOID);
                 break;
             }
             case 1: {
-                _log.log(Level.FINEST, "MOUNTPROC3_MNT_3");
+                _log.debug("MOUNTPROC3_MNT_3");
                 dirpath args$ = new dirpath();
                 call.retrieveCall(args$);
                 mountres3 result$ = MOUNTPROC3_MNT_3(call, args$);
@@ -102,7 +102,7 @@ public abstract class mount_protServerStub implements RpcDispatchable {
                 break;
             }
             case 5: {
-                _log.log(Level.INFO, "processing message MOUNTPROC_EXPORT_1");
+                _log.debug("processing message MOUNTPROC_EXPORT_1");
                 call.retrieveCall(XdrVoid.XDR_VOID);
                 exports result$ = MOUNTPROC_EXPORT_1(call);
                 call.reply( result$);

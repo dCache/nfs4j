@@ -13,8 +13,10 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.nfs.ExportFile;
@@ -26,7 +28,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
     private final FileSystemProvider _fs;
     private final ExportFile _exportFile;
-    private static final Logger _log = Logger.getLogger(NFSServerV41.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(NFSServerV41.class);
     private final NFSv4OperationFactory _operationFactory;
     private final NFSv41DeviceManager _deviceManager;
     private final AclHandler _aclHandler;
@@ -44,6 +46,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
     @Override
     public void NFSPROC4_NULL_4(RpcCall call$) {
+        _log.debug("NFS PING client: {}", call$.getTransport().getRemoteSocketAddress());
     }
 
     @Override
@@ -54,9 +57,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
         try {
 
-            _log.log(Level.FINE, "NFS COMPOUND client: {0}, tag: {1}",
-                    new Object[]{call$.getTransport().getRemoteSocketAddress(),
-                        new String(arg1.tag.value.value)});
+            _log.debug("NFS COMPOUND client: {}, tag: [{}]",
+                    call$.getTransport().getRemoteSocketAddress(),
+                    new String(arg1.tag.value.value));
+
+            MDC.put(NfsMdc.TAG, new String(arg1.tag.value.value) );
+            MDC.put(NfsMdc.CLIENT, call$.getTransport().getRemoteSocketAddress().getHostName());
 
             List<nfs_resop4> v = new ArrayList<nfs_resop4>(arg1.argarray.length);
             if (arg1.minorversion.value > 1) {
@@ -75,9 +81,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             }
 
             try {
-                _log.log(Level.FINE, "CURFH: {0}", context.currentInode().toFullString());
+               _log.debug("CURFH: {}", context.currentInode().toFullString());
             } catch (ChimeraNFSException he) {
-                _log.fine("CURFH: NULL");
+                _log.debug("CURFH: NULL");
             }
 
             v = context.processedOperations();
@@ -92,17 +98,22 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             }
 
             res.tag = arg1.tag;
-            _log.log(Level.FINE, "OP: {1} status: {1}", new Object[]{res.tag, res.status});
+            _log.debug( "OP: [{}] status: {}", res.tag, res.status);
+
         } catch (ChimeraNFSException e) {
-            _log.log(Level.INFO, "NFS operation failed: {0}", e.getMessage());
+            _log.info("NFS operation failed: {}", e.getMessage());
             res.resarray = new nfs_resop4[0];
             res.status = e.getStatus();
             res.tag = arg1.tag;
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "Unhandled exception:", e);
+            _log.error("Unhandled exception:", e);
             res.resarray = new nfs_resop4[0];
             res.status = nfsstat4.NFS4ERR_SERVERFAULT;
             res.tag = arg1.tag;
+        }finally{
+            MDC.remove(NfsMdc.TAG);
+            MDC.remove(NfsMdc.CLIENT);
+            MDC.remove(NfsMdc.SESSION);
         }
 
         return res;

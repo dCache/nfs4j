@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
@@ -34,10 +32,12 @@ import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcCall;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MountServer extends mount_protServerStub {
 
-    private static final Logger _log = Logger.getLogger(MountServer.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
     private final ExportFile _exportFile;
     private final Map<String, Set<String>> _mounts = new HashMap<String, Set<String>>();
     private final FileSystemProvider _fs;
@@ -61,11 +61,11 @@ public class MountServer extends mount_protServerStub {
         java.io.File f = new java.io.File(arg1.value);
         String mountPoint = f.getAbsolutePath();
 
-        _log.log(Level.FINE, "Mount request for: {0}", mountPoint);
+        _log.debug("Mount request for: {}", mountPoint);
 
         if (!isAllowed(call$.getTransport().getRemoteSocketAddress().getAddress(), mountPoint)) {
             m.fhs_status = mountstat3.MNT3ERR_ACCES;
-            _log.warning("Mount deny for: " + call$.getTransport().getRemoteSocketAddress().getHostName() + " " + mountPoint);
+            _log.info("Mount deny for: {}:{}", call$.getTransport().getRemoteSocketAddress().getHostName(), mountPoint);
             return m;
         }
 
@@ -75,9 +75,9 @@ public class MountServer extends mount_protServerStub {
 
             FsInode rootInode = null;
             try {
-                _log.log(Level.FINEST, "asking chimera for the root inode");
+                _log.debug("asking chimera for the root inode");
                 rootInode = _fs.path2inode(mountPoint);
-                _log.log(Level.FINEST, "root inode: {0}", rootInode);
+                _log.debug("root inode: {}", rootInode);
             } catch (ChimeraFsException e1) {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOENT, "Path not found");
             }
@@ -168,7 +168,7 @@ public class MountServer extends mount_protServerStub {
 
 
         for (String path : _exportFile.getExports()) {
-            System.out.println("path: " + path);
+
             FsExport export = _exportFile.getExport(path);
 
             eList.value = new exportnode();

@@ -1,13 +1,13 @@
 package org.dcache.chimera.nfs.v4;
 
-import org.apache.log4j.Logger;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger
-            .getLogger(OperationGETDEVICEINFO.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICEINFO.class);
 
     OperationGETDEVICEINFO(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_GETDEVICEINFO);
@@ -24,11 +24,9 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         deviceid4 deviceId = _args.opgetdeviceinfo.gdia_device_id;
 
-        if (_log.isDebugEnabled()) {
-            _log.debug("             Info for #" + deviceId);
-            _log.debug("             type for #"
-                    + _args.opgetdeviceinfo.gdia_layout_type);
-        }
+        _log.debug("             Info for #{}", deviceId);
+        _log.debug("             type for #{}",
+                    _args.opgetdeviceinfo.gdia_layout_type);
         try {
 
             res.gdir_resok4 = new GETDEVICEINFO4resok();
@@ -49,9 +47,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
             res.gdir_status = nfsstat4.NFS4_OK;
 
         } catch (ChimeraNFSException he) {
-            if (_log.isDebugEnabled()) {
-                _log.debug("GETDEVICEINFO: " + he.getMessage());
-            }
+            _log.debug("GETDEVICEINFO: {}", he.getMessage());
             res.gdir_status = he.getStatus();
         } catch (Exception e) {
             _log.error("GETDEVICEINFO4: ", e);

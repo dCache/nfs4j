@@ -9,14 +9,15 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LINK4resok;
 import org.dcache.chimera.nfs.v4.xdr.LINK4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationLINK extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationLINK.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationLINK.class);
 
 	OperationLINK(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_LINK);

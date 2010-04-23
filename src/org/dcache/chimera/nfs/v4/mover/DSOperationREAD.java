@@ -6,8 +6,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
@@ -19,10 +17,12 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.posix.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DSOperationREAD extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(DSOperationREAD.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
 
 	private final File _poolRoot = new File("/tmp/pNFS");
 
@@ -62,22 +62,21 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
             res.resok4.eof = eof;
 
             in.close();
-            _log.log( Level.FINER,
-                    "MOVER: {0}@{1} readed, {2} requested.",
+            _log.debug("MOVER: {}@{} readed, {} requested.",
                     new Object[] { bytesReaded, offset, _args.opread.count.value.value });
 
         }catch(IOHimeraFsException hioe) {
-            _log.log(Level.SEVERE, "READ : ", hioe);
+            _log.error("READ : ", hioe);
             res.status = nfsstat4.NFS4ERR_IO;
         }catch(ChimeraNFSException he) {
             res.status = he.getStatus();
         }catch(ChimeraFsException hfe) {
             res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;
         }catch(IOException ioe) {
-            _log.log(Level.SEVERE, "READ : ", ioe);
+            _log.error("READ : ", ioe);
     		res.status = nfsstat4.NFS4ERR_IO;
     	}catch(Exception e) {
-            _log.log(Level.SEVERE, "READ : ", e);
+            _log.error("READ : ", e);
     		res.status = nfsstat4.NFS4ERR_IO;
     	}
 
@@ -105,7 +104,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 	    	/*
 	    	 * while file size can be modified in namespace adjust file size to expected one.
 	    	 */
-            _log.log(Level.FINE, "MOVER: {0} : filesize set to {1}", new Object[] { path,  size});
+            _log.debug("MOVER: {} : filesize set to {}", new Object[] { path,  size});
 	    	_in = new RandomAccessFile(ioFile, "rw");
 	    	_in.setLength(size);
 

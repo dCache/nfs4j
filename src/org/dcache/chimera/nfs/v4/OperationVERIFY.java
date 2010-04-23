@@ -9,12 +9,12 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.VERIFY4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.Arrays;
-
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationVERIFY extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationVERIFY.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationVERIFY.class);
 
 	OperationVERIFY(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_VERIFY);
@@ -47,9 +47,8 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
 
             }
 
-            if(_log.isDebugEnabled() ) {
-            	_log.debug(context.currentInode().toFullString() + " is same? = " + res.status );
-            }
+            _log.debug("{} is same? {}",
+                    new Object[] { context.currentInode().toFullString(), res.status} );
 
         }catch(ChimeraNFSException he) {
         	res.status = he.getStatus();

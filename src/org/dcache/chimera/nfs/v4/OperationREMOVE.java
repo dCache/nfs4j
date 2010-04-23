@@ -9,17 +9,17 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.REMOVE4resok;
 import org.dcache.chimera.nfs.v4.xdr.REMOVE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationREMOVE extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationREMOVE.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationREMOVE.class);
 
     OperationREMOVE(nfs_argop4 args) {
 	super(args, nfs_opnum4.OP_REMOVE);
@@ -52,7 +52,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADNAME, "bad name '.' or '..'");
         }
 
-        _log.log(Level.FINEST, "REMOVE: {0} : {1}",
+        _log.debug("REMOVE: {} : {}",
                 new Object[] {parentInode.toString(), name}
         );
 
@@ -83,10 +83,10 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
 	}catch(FileNotFoundHimeraFsException e){
 	    res.status = nfsstat4.NFS4ERR_NOENT;
     } catch (ChimeraNFSException he) {
-        _log.log(Level.FINEST, "REMOVE: ", he.getMessage());
+        _log.debug("REMOVE: {}", he.getMessage());
 	    res.status = he.getStatus();
 	} catch (Exception e) {
-        _log.log(Level.SEVERE, "REMOVE: ", e);
+        _log.error("REMOVE: ", e);
 	    res.status = nfsstat4.NFS4ERR_SERVERFAULT;
 	}
 

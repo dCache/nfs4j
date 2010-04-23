@@ -6,8 +6,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.chimera.nfs.v4.CompoundContext;
@@ -22,10 +20,12 @@ import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.stable_how4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DSOperationWRITE extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(DSOperationWRITE.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(DSOperationWRITE.class);
 
     private final File _poolRoot = new File("/tmp/pNFS");
 
@@ -60,8 +60,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
             context.currentInode().setSize(out.size());
-            _log.log( Level.FINER,
-                    "MOVER: {0}@{1} written, {2} requested. New File size {3}",
+            _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
                     new Object[] { bytesWritten, offset, _args.opwrite.data, out.size() });
             out.close();
 
@@ -70,10 +69,10 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
             res.status = he.getStatus();
         }catch(IOException ioe) {
-            _log.log(Level.SEVERE, "WRITE: ", ioe);
+            _log.error("WRITE: ", ioe);
             res.status = nfsstat4.NFS4ERR_IO;
         }catch(Exception e) {
-            _log.log(Level.SEVERE, "WRITE: ", e);
+            _log.error("WRITE: ", e);
             res.status = nfsstat4.NFS4ERR_IO;
         }
 
@@ -96,7 +95,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             _out = new RandomAccessFile(ioFile, "rw");
             _fc = _out.getChannel();
             if( truncate ) {
-                _log.log( Level.FINE, "truncate file {0}", ioFile.getPath() );
+                _log.error("truncate file {}", ioFile.getPath() );
                 _fc.truncate(0);
             }
         }

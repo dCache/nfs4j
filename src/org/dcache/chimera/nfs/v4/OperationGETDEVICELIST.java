@@ -1,14 +1,15 @@
 package org.dcache.chimera.nfs.v4;
 
-import org.apache.log4j.Logger;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationGETDEVICELIST.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICELIST.class);
 
     OperationGETDEVICELIST(nfs_argop4 args) {
     super(args, nfs_opnum4.OP_GETDEVICELIST);
@@ -54,8 +55,9 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         }
 
         if (_log.isDebugEnabled()) {
-        _log.debug("GETDEVICELIST4: new list of #" + res.gdlr_resok4.gdlr_deviceid_list.length + ", maxcount "
-            + _args.opgetdevicelist.gdla_maxdevices.value.value);
+        _log.debug("GETDEVICELIST4: new list of #{}, maxcount {}",
+            new Object[] {res.gdlr_resok4.gdlr_deviceid_list.length,
+            _args.opgetdevicelist.gdla_maxdevices.value.value});
         }
 
         /* we reply only one dummy entry. The rest is dynamic */
@@ -63,9 +65,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         res.gdlr_status = nfsstat4.NFS4_OK;
 
     } catch (ChimeraNFSException he) {
-        if (_log.isDebugEnabled()) {
-        _log.debug("GETDEVICELIST4: " + he.getMessage());
-        }
+        _log.debug("GETDEVICELIST4: {}", he.getMessage());
         res.gdlr_status = he.getStatus();
     } catch (Exception e) {
         _log.error("GETDEVICELIST4:", e);

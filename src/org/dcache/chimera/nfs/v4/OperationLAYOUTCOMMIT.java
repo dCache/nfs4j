@@ -9,12 +9,13 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTCOMMIT4resok;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTCOMMIT4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.ChimeraFsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationLAYOUTCOMMIT.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTCOMMIT.class);
 
 	OperationLAYOUTCOMMIT(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_LAYOUTCOMMIT);
@@ -27,15 +28,11 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
 
     	try {
 
-	    	if(_log.isDebugEnabled() ) {
-
-	    		_log.debug("LAYOUTCOMMIT: inode=" + context.currentInode().toFullString() + " length="
-	    				+  _args.oplayoutcommit.loca_length.value.value + " offset="
-	    				+ _args.oplayoutcommit.loca_offset.value.value + " loca_last_write_offset="
-	    				+ ( _args.oplayoutcommit.loca_last_write_offset.no_newoffset ?
-	    						_args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset")
-	    				);
-	    	}
+            _log.debug("LAYOUTCOMMIT: inode=" + context.currentInode().toFullString() + " length="
+                    + _args.oplayoutcommit.loca_length.value.value + " offset="
+                    + _args.oplayoutcommit.loca_offset.value.value + " loca_last_write_offset="
+                    + (_args.oplayoutcommit.loca_last_write_offset.no_newoffset
+                    ? _args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset"));
 
 	    	if( _args.oplayoutcommit.loca_length.value.value > 0 ) {
 	    		context.getFs().setFileSize(context.currentInode(), _args.oplayoutcommit.loca_length.value.value);
@@ -49,8 +46,8 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
 	    	res.locr_status = nfsstat4.NFS4_OK;
 
 
-
         }catch(ChimeraNFSException hne) {
+            _log.error("LAYOUTCOMMIT: {}", hne.getMessage());
     		res.locr_status = hne.getStatus();
     	}catch(ChimeraFsException hfe) {
     		_log.error("LAYOUTCOMMIT:", hfe);

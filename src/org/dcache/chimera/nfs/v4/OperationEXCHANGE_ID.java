@@ -26,9 +26,8 @@ import java.security.ProtectionDomain;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
 import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
@@ -37,7 +36,7 @@ import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cs;
 
 public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationEXCHANGE_ID.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationEXCHANGE_ID.class);
     private final int _flag;
 
     /**
@@ -103,7 +102,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
             if(_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV)
             {
-                _log.log(Level.FINEST, "EXCHANGE_ID4: state protection : {0}", _args.opexchange_id.eia_state_protect.spa_how);
+                _log.debug("EXCHANGE_ID4: state protection : {}", _args.opexchange_id.eia_state_protect.spa_how);
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "invalid state protection");
             }
 
@@ -154,7 +153,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
             //Check if there is another ssv use -> TODO: Implement SSV
             if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE){
-                _log.log(Level.FINEST, "Tried the wrong security Option! {0}:", _args.opexchange_id.eia_state_protect.spa_how);
+                _log.debug("Tried the wrong security Option! {}:", _args.opexchange_id.eia_state_protect.spa_how);
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "SSV other than SP4NONE to use");
             }
 
@@ -172,12 +171,12 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             if(client == null){
 
                 if (update){
-                    _log.log(Level.FINEST, "Case 7a: Update but No Confirmed Record");
+                    _log.debug("Case 7a: Update but No Confirmed Record");
                     throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOENT, "no such client");
                 }
 
                 // create a new client: case 1
-                _log.log(Level.FINEST, "Case 1: New Owner ID");
+                _log.debug("Case 1: New Owner ID");
                 client = new NFS4Client(remoteSocketAddress, localSocketAddress,
                         clientOwner, _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                 NFSv4StateHandler.getInstace().addClient(client);
@@ -189,16 +188,16 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
                     if( client.isConfirmed() ) {
                         if( client.verify_verifier(verifier) && principal.equals(client.principal() ) ) {
-                            _log.log(Level.FINEST, "Case 6: Update");
+                            _log.debug("Case 6: Update");
                         }else if( !client.verify_verifier(verifier) ) {
-                          _log.log(Level.FINEST, "case 8: Update but Wrong Verifier");
+                          _log.debug("case 8: Update but Wrong Verifier");
                           throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOT_SAME,"Update but Wrong Verifier");
                         }else {
-                          _log.log(Level.FINEST, "case 9: Update but Wrong Principal");
+                          _log.debug("case 9: Update but Wrong Principal");
                           throw new ChimeraNFSException(nfsstat4.NFS4ERR_PERM,"Principal Mismatch");
                         }
                     }else{
-                        _log.log(Level.FINEST, "Case 7b: Update but No Confirmed Record");
+                        _log.debug("Case 7b: Update but No Confirmed Record");
                         throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOENT, "no such client");
                     }
 
@@ -206,20 +205,20 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
                     if( client.isConfirmed() ) {
                         if( client.verify_verifier(verifier) && principal.equals(client.principal() ) ) {
-                            _log.log(Level.FINEST, "Case 2: Non-Update on Existing Client ID");
+                            _log.debug("Case 2: Non-Update on Existing Client ID");
                         }else if ( principal.equals(client.principal() ) ) {
 
-                            _log.log(Level.FINEST, "case 5: Client Restart");
+                            _log.debug("case 5: Client Restart");
                             NFSv4StateHandler.getInstace().removeClient(client);
                             client = new NFS4Client(remoteSocketAddress,  localSocketAddress,
                                     new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                             NFSv4StateHandler.getInstace().addClient(client);
                         }else {
-                            _log.log(Level.FINEST, "Case 3: Client Collision");
+                            _log.debug("Case 3: Client Collision");
                             throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE,"Principal Missmatch");
                         }
                     }else{
-                      _log.log(Level.FINEST, "case 4: Replacement of Unconfirmed Record");
+                      _log.debug("case 4: Replacement of Unconfirmed Record");
                       NFSv4StateHandler.getInstace().removeClient(client);
                       client = new NFS4Client(remoteSocketAddress, localSocketAddress,
                               new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
@@ -260,7 +259,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             res.eir_status = hne.getStatus();
             _log.info(hne.getMessage());
         }catch(Exception e) {
-            _log.log(Level.SEVERE, "EXCHANGE_ID:", e);
+            _log.error("EXCHANGE_ID:", e);
             res.eir_status = nfsstat4.NFS4ERR_SERVERFAULT;
         }
 

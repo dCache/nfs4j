@@ -5,15 +5,15 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LOOKUP4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationLOOKUP extends AbstractNFSv4Operation {
 
 
-	private static final Logger _log = Logger.getLogger(OperationLOOKUP.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUP.class);
 
 	OperationLOOKUP(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_LOOKUP);
@@ -60,7 +60,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
             res.status = he.getStatus();
         }catch(Exception e) {
-            _log.log(Level.SEVERE, "Error: ", e);
+            _log.error("Error: ", e);
         	res.status = nfsstat4.NFS4ERR_RESOURCE;
         }
 

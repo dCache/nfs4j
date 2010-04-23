@@ -9,11 +9,12 @@ import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4res;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationREADLINK extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationREADLINK.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationREADLINK.class);
 
 	OperationREADLINK(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_READLINK);
@@ -30,7 +31,7 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
         	}
 
             byte[] link = context.currentInode().readlink();
-            _log.debug("NFS Request  READLINK4 link: " + new String(link) );
+            _log.debug("NFS Request  READLINK4 link: {}", new String(link) );
             res.resok4 = new READLINK4resok();
             res.resok4.link = new linktext4();
             res.resok4.link.value = new utf8str_cs();
@@ -39,9 +40,7 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
             res.status = nfsstat4.NFS4_OK;
 
         }catch(ChimeraNFSException he){
-        	if(_log.isDebugEnabled() ) {
-        		_log.debug("READLINK: " + he.getMessage() );
-        	}
+            _log.debug("READLINK: {}", he.getMessage() );
             res.status = he.getStatus();
         }catch(Exception e) {
             _log.error("READLINK4", e);

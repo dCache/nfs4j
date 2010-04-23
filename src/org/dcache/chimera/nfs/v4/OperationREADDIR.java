@@ -18,8 +18,6 @@ import org.dcache.chimera.nfs.v4.xdr.READDIR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.Random;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
@@ -27,10 +25,12 @@ import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.chimera.util.DirectoryListCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationREADDIR extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationREADDIR.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationREADDIR.class);
 
 
     // needed to calculate replay size for READDIR4
@@ -203,7 +203,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
                     res.resok4.reply.eof = false;
 
-                   _log.log(Level.FINEST, "Sending {0} entries ({1} bytes from {2}, dircount = {3} from {4} ) cookie = {5} total {6}",
+                   _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
                        new Object[] {
                            i - startValue, currcount,
                            _args.opreaddir.maxcount.value.value,
@@ -238,7 +238,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             }
 
             res.status = nfsstat4.NFS4_OK;
-            _log.log(Level.FINEST, "Sending {0} entries ({1} bytes from {2}, dircount = {3} from {4} ) cookie = {5} total {6} EOF={7}",
+            _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {} EOF={}",
                 new Object[] {
                     fcount, currcount,
                     _args.opreaddir.maxcount.value.value,
@@ -249,11 +249,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             );
 
         }catch(ChimeraNFSException he) {
-            _log.log(Level.INFO, "READDIR: ", he.getMessage() );
+            _log.debug("READDIR: {}", he.getMessage() );
             res.status = he.getStatus();
         }catch(Exception e) {
         	res.status = nfsstat4.NFS4ERR_SERVERFAULT;
-            _log.log(Level.SEVERE, "READDIR4", e);
+            _log.error("READDIR4", e);
         }
 
         _result.opreaddir = res;

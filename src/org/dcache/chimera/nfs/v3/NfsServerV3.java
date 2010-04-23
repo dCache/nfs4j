@@ -112,8 +112,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
@@ -138,6 +136,8 @@ import org.dcache.chimera.posix.UnixPermissionHandler;
 import org.dcache.chimera.util.DirectoryListCache;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.dcache.chimera.nfs.v3.HimeraNfsUtils.defaultPostOpAttr;
 import static org.dcache.chimera.nfs.v3.HimeraNfsUtils.defaultWccData;
@@ -149,7 +149,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private static final int ENTRYPLUS3_SIZE = 124;
     private static final int READDIR3RESOK_SIZE = 104;
     private static final int READDIRPLUS3RESOK_SIZE = 104;
-    private static final Logger _log = Logger.getLogger(NfsServerV3.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(NfsServerV3.class);
     private static final AclHandler _permissionHandler = UnixPermissionHandler.getInstance();
     private final FileSystemProvider _fs;
     private final ExportFile _exports;
@@ -172,7 +172,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request ACCESS uid: {0}", user);
+        _log.debug("NFS Request ACCESS uid: {}", user);
 
         try {
 
@@ -243,16 +243,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new ACCESS3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
-            _log.log(Level.SEVERE, "ACCESS", e);
+            _log.error("ACCESS", e);
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "ACCESS", e);
+            _log.error("ACCESS", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new ACCESS3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "Access failed : {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("Access failed : {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
         return res;
 
@@ -273,7 +273,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request CREATE3 uid: {0}", user);
+        _log.debug("NFS Request CREATE3 uid: {}", user);
 
         CREATE3res res = new CREATE3res();
 
@@ -363,25 +363,25 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraNFSException hne) {
 
-            _log.log(Level.FINE, hne.getMessage());
+            _log.debug(hne.getMessage());
             res.resfail = new CREATE3resfail();
             res.resfail.dir_wcc = defaultWccData();
 
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "Create {0}", path);
+            _log.error("Create {}", path);
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new CREATE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "create", e);
+            _log.error("create", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new CREATE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "create failed : {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("create failed : {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
         return res;
 
@@ -392,7 +392,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request FSINFO from: {0}", user);
+        _log.debug("NFS Request FSINFO from: {}", user);
 
         FSINFO3res res = new FSINFO3res();
         FsInode inode = NFSHandle.toFsInode(_fs, arg1.fsroot.data);
@@ -439,16 +439,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new FSINFO3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
             res.status = nfsstat3.NFS3ERR_IO;
-            _log.log(Level.SEVERE, "FSINFO", e);
+            _log.error("FSINFO", e);
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "FSINFO", e);
+            _log.error("FSINFO", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new FSINFO3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "FSinfo failed : {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("FSinfo failed : {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
 
 
@@ -457,8 +457,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public FSSTAT3res NFSPROC3_FSSTAT_3(RpcCall call$, FSSTAT3args arg1) {
-        // org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$, _fs);
-        // JSyslog.log(JSyslog.LOG_DEBUG, "NFS Request FSSTAT3 uid: {0}", user);
 
         FSSTAT3res res = new FSSTAT3res();
 
@@ -487,19 +485,19 @@ public class NfsServerV3 extends nfs3_protServerStub {
             HimeraNfsUtils.fill_attributes(inode.stat(), res.resok.obj_attributes.attributes);
 
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "FSSTAT", e);
+            _log.error("FSSTAT", e);
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new FSSTAT3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "FSSTAT", e);
+            _log.error("FSSTAT", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new FSSTAT3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "FSSTAT ({0}) failed: {1}",
+            _log.error("FSSTAT ({}) failed: {}",
                     new Object[]{new String(arg1.fsroot.data),
                         HimeraNfsUtils.nfsErr2String(res.status)
                     });
@@ -512,12 +510,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public GETATTR3res NFSPROC3_GETATTR_3(RpcCall call$, GETATTR3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request GETTATTR3 uid: {0}", user);
+        _log.debug("NFS Request GETTATTR3 uid: {}", user);
 
         GETATTR3res res = new GETATTR3res();
 
         FsInode inode = NFSHandle.toFsInode(_fs, arg1.object.data);
-        _log.log(Level.FINEST, "NFS Request GETATTR for inode: {0}", inode.toString());
+        _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
 
         try {
             res.status = nfsstat3.NFS3_OK;
@@ -529,15 +527,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (FileNotFoundHimeraFsException fnf) {
             res.status = nfsstat3.NFS3ERR_NOENT;
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "GETATTR", e);
+            _log.error("GETATTR", e);
             res.status = nfsstat3.NFS3ERR_IO;
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "GETATTR", e);
+            _log.error("GETATTR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "Getattr failed : {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("Getattr failed : {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
 
         return res;
@@ -547,7 +545,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public LINK3res NFSPROC3_LINK_3(RpcCall call$, LINK3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request LINK3 uid: {0}", user);
+        _log.debug("NFS Request LINK3 uid: {}", user);
 
 
         LINK3res res = new LINK3res();
@@ -608,12 +606,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.file_attributes = defaultPostOpAttr();
             res.resfail.linkdir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "LINK", e);
+            _log.error("LINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail.file_attributes = defaultPostOpAttr();
             res.resfail.linkdir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "LINK", e);
+            _log.error("LINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail.file_attributes = defaultPostOpAttr();
             res.resfail.linkdir_wcc = defaultWccData();
@@ -664,22 +662,22 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new LOOKUP3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "LOOKUP", e);
+            _log.error("LOOKUP", e);
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new LOOKUP3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "LOOKUP", e);
+            _log.error("LOOKUP", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new LOOKUP3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
-        _log.log(Level.FINEST, "LOOKUP for {0} in {1}: {2}",
+        _log.debug("LOOKUP for {} in {}: {}",
                 new Object[]{name, parent.toString(), inode});
 
         if ((res.status != nfsstat3.NFS3_OK) && (res.status != nfsstat3.NFS3ERR_NOENT)) {
-            _log.log(Level.SEVERE, "lookup {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("lookup {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
         return res;
 
@@ -689,7 +687,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public MKDIR3res NFSPROC3_MKDIR_3(RpcCall call$, MKDIR3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request MKDIR3 uid: {0}", user);
+        _log.debug("NFS Request MKDIR3 uid: {}", user);
 
         MKDIR3res res = new MKDIR3res();
 
@@ -758,12 +756,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.dir_wcc = defaultWccData();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "MKDIR", e);
+            _log.error("MKDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new MKDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "MKDIR", e);
+            _log.error("MKDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new MKDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
@@ -821,7 +819,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public READDIRPLUS3res NFSPROC3_READDIRPLUS_3(RpcCall call$, READDIRPLUS3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request READDIRPLUS3 uid: {0}", user);
+        _log.debug("NFS Request READDIRPLUS3 uid: {}", user);
 
         READDIRPLUS3res res = new READDIRPLUS3res();
 
@@ -858,10 +856,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 cookieverf = arg1.cookieverf;
                 dirList = _dlCacheFull.get(cookieverf);
                 if (dirList == null) {
-                    _log.log(Level.FINEST, "updating dirlist from db");
+                    _log.debug("updating dirlist from db");
                     dirList = DirectoryStreamHelper.listOf(dir);
                 } else {
-                    _log.log(Level.FINEST, "using dirlist from cache");
+                    _log.debug("using dirlist from cache");
                 }
 
             } else {
@@ -929,7 +927,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     res.resok.reply.eof = false;
                     lastEntry.nextentry = null;
 
-                    _log.log(Level.FINEST, "Sending {0} entries ( {1} bytes from {2}, dircount = {3} from {4} ) cookie = {5} total {6}",
+                    _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
                             new Object[]{(i - startValue), currcount,
                                 arg1.maxcount.value.value, dircount,
                                 arg1.dircount.value.value,
@@ -950,26 +948,26 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.reply.eof = true;
             // all entries sent to client, remove cache
             _dlCacheFull.remove(cookieverf);
-            _log.log(Level.FINEST, "Cleaning cache");
+            _log.debug("Cleaning cache");
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new READDIRPLUS3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "READDIRPLUS3", e);
+            _log.error("READDIRPLUS3", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READDIRPLUS3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "READDIRPLUS3", e);
+            _log.error("READDIRPLUS3", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READDIRPLUS3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "READDIRPLUS3 status - {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("READDIRPLUS3 status - {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
         return res;
     }
@@ -978,7 +976,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public READDIR3res NFSPROC3_READDIR_3(RpcCall call$, READDIR3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request READDIR3 uid: {0}", user);
+        _log.debug("NFS Request READDIR3 uid: {}", user);
 
         READDIR3res res = new READDIR3res();
 
@@ -1066,7 +1064,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
                     res.resok.reply.eof = false;
 
-                    _log.log(Level.FINEST, "Sending {0} entries ( {1} bytes from {2}) cookie = {3} total {4}",
+                    _log.debug("Sending {} entries ( {} bytes from {}) cookie = {} total {}",
                             new Object[]{(i - startValue), currcount,
                                 arg1.count.value.value,
                                 startValue, dirList.size()
@@ -1092,19 +1090,19 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.dir_attributes = defaultPostOpAttr();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "READDIR", e);
+            _log.error("READDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READDIR3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "READDIR", e);
+            _log.error("READDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READDIR3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
         if (res.status != nfsstat3.NFS3_OK) {
-            _log.log(Level.SEVERE, "READDIR status - {0}", HimeraNfsUtils.nfsErr2String(res.status));
+            _log.error("READDIR status - {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
         return res;
 
@@ -1130,12 +1128,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = nfsstat3.NFS3_OK;
 
         } catch (ChimeraFsException e) {
-            _log.log(Level.SEVERE, "READLINK", e);
+            _log.error("READLINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READLINK3resfail();
             res.resfail.symlink_attributes = defaultPostOpAttr();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "READLINK", e);
+            _log.error("READLINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READLINK3resfail();
             res.resfail.symlink_attributes = defaultPostOpAttr();
@@ -1200,9 +1198,9 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = nfsstat3.NFS3ERR_IO;
             res.resfail = new READ3resfail();
             res.resfail.file_attributes = defaultPostOpAttr();
-            _log.log(Level.SEVERE, "READ", e);
+            _log.error("READ", e);
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "READ", e);
+            _log.error("READ", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new READ3resfail();
             res.resfail.file_attributes = defaultPostOpAttr();
@@ -1216,7 +1214,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public REMOVE3res NFSPROC3_REMOVE_3(RpcCall call$, REMOVE3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request REMOVE3 uid: {0}", user);
+        _log.debug("NFS Request REMOVE3 uid: {}", user);
 
 
         REMOVE3res res = new REMOVE3res();
@@ -1276,7 +1274,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new REMOVE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "REMOVE", e);
+            _log.error("REMOVE", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new REMOVE3resfail();
             res.resfail.dir_wcc = defaultWccData();
@@ -1290,7 +1288,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public RENAME3res NFSPROC3_RENAME_3(RpcCall call$, RENAME3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request RENAME3 uid: {0}", user);
+        _log.debug("NFS Request RENAME3 uid: {}", user);
 
         RENAME3res res = new RENAME3res();
 
@@ -1332,7 +1330,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.fromdir_wcc = defaultWccData();
             res.resfail.todir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "RENAME", e);
+            _log.error("RENAME", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new RENAME3resfail();
             res.resfail.fromdir_wcc = defaultWccData();
@@ -1347,7 +1345,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public RMDIR3res NFSPROC3_RMDIR_3(RpcCall call$, RMDIR3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request RMDIR3 uid: {0}", user);
+        _log.debug("NFS Request RMDIR3 uid: {}", user);
 
 
         RMDIR3res res = new RMDIR3res();
@@ -1401,7 +1399,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new RMDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "RMDIR", e);
+            _log.error("RMDIR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new RMDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
@@ -1414,7 +1412,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public SETATTR3res NFSPROC3_SETATTR_3(RpcCall call$, SETATTR3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request SETATTR3 uid: {0}", user);
+        _log.debug("NFS Request SETATTR3 uid: {}", user);
 
 
         SETATTR3res res = new SETATTR3res();
@@ -1457,7 +1455,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new SETATTR3resfail();
             res.resfail.obj_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "SETATTR", e);
+            _log.error("SETATTR", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new SETATTR3resfail();
             res.resfail.obj_wcc = defaultWccData();
@@ -1471,7 +1469,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public SYMLINK3res NFSPROC3_SYMLINK_3(RpcCall call$, SYMLINK3args arg1) {
         org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
                 _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
-        _log.log(Level.FINEST, "NFS Request SYMLINK3 uid: {0}", user);
+        _log.debug("NFS Request SYMLINK3 uid: {}", user);
 
         SYMLINK3res res = new SYMLINK3res();
 
@@ -1543,7 +1541,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new SYMLINK3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "SYMLINK", e);
+            _log.error("SYMLINK", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new SYMLINK3resfail();
             res.resfail.dir_wcc = defaultWccData();
@@ -1605,7 +1603,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new WRITE3resfail();
             res.resfail.file_wcc = defaultWccData();
         } catch (Exception e) {
-            _log.log(Level.SEVERE, "WRITE", e);
+            _log.error("WRITE", e);
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new WRITE3resfail();
             res.resfail.file_wcc = defaultWccData();

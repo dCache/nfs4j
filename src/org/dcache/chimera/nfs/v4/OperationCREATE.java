@@ -11,17 +11,18 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.CREATE4res;
 import org.dcache.chimera.nfs.v4.xdr.CREATE4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationCREATE extends AbstractNFSv4Operation {
 
 
-	private static final Logger _log = Logger.getLogger(OperationCREATE.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationCREATE.class);
 
 
 	OperationCREATE(nfs_argop4 args) {
@@ -115,9 +116,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
     		context.currentInode(inode);
 
         }catch(ChimeraNFSException he) {
-    		if(_log.isDebugEnabled() ) {
-    			_log.debug("CREATE: " + he.getMessage() );
-    		}
+            _log.debug("CREATE: {}", he.getMessage() );
     		res.status = he.getStatus();
     	}catch(Exception e) {
     		_log.error("CREATE: ", e);

@@ -10,14 +10,14 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SEQUENCE4res;
 import org.dcache.chimera.nfs.v4.xdr.SEQUENCE4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationSEQUENCE.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationSEQUENCE.class);
     private final boolean _trackSession;
 
     public OperationSEQUENCE(nfs_argop4 args, boolean trackSession ) {
@@ -60,14 +60,14 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             NFSv41Session session = NFSv4StateHandler.getInstace().sessionById(_args.opsequence.sa_sessionid);
 
             if(session == null ) {
-                _log.log(Level.FINEST, "no session for id [{0}]",  _args.opsequence.sa_sessionid );
+                _log.debug("no session for id [{}]",  _args.opsequence.sa_sessionid );
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADSESSION, "client not found");
             }
 
             NFS4Client client = session.getClient();
 
             if( client.sessionsEmpty(session)) {
-                _log.log(Level.FINEST, "no client for session for id [{0}]",  _args.opsequence.sa_sessionid );
+                _log.debug("no client for session for id [{}]",  _args.opsequence.sa_sessionid );
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADSESSION, "client not found");
             }
 
@@ -102,10 +102,10 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
             res.sr_status = nfsstat4.NFS4_OK;
         }catch(ChimeraNFSException ne) {
-            _log.log(Level.FINEST, "SQUENCE : ", ne.getMessage());
+            _log.debug("SQUENCE : {}", ne.getMessage());
             res.sr_status = ne.getStatus();
         }catch(Exception e) {
-               _log.log(Level.SEVERE, "SEQUENCE :", e);
+            _log.error("SEQUENCE :", e);
             res.sr_status = nfsstat4.NFS4ERR_SERVERFAULT;
         }
 

@@ -20,8 +20,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.nfs.v4.acl.AclStore;
@@ -29,11 +27,13 @@ import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.xdr.XdrBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationSETATTR extends AbstractNFSv4Operation {
 
 
-	private static final Logger _log = Logger.getLogger(OperationSETATTR.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationSETATTR.class);
 
 	OperationSETATTR(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_SETATTR);
@@ -64,7 +64,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
     		res.attrsset.value[0] = new uint32_t(0);
     		res.attrsset.value[1] = new uint32_t(0);
     	}catch(Exception e) {
-            _log.log(Level.SEVERE, "SETATTR4:", e);
+            _log.error("SETATTR4:", e);
     		res.status = nfsstat4.NFS4ERR_SERVERFAULT;
     	}
 
@@ -78,12 +78,12 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     static bitmap4 setAttributes(fattr4 attributes, FsInode inode) throws Exception {
 
-        _log.log(Level.FINEST, "set Attribute length: {0}", attributes.attrmask.value.length);
+        _log.debug("set Attribute length: {}", attributes.attrmask.value.length);
 
         int[] mask = new int[attributes.attrmask.value.length];
         for( int i = 0; i < mask.length; i++) {
             mask[i] = attributes.attrmask.value[i].value;
-            _log.log(Level.FINEST, "setAttributes[{0}]: {1}",
+            _log.debug("setAttributes[{}]: {}",
                     new Object[] {i, Integer.toBinaryString(mask[i])}
             );
         }
@@ -99,13 +99,13 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 int newmask = (mask[i/32] >> (i-(32*(i/32))) );
                 if( (newmask & 1L) != 0 ) {
                     if( xdr2fattr(i, inode, xdr) ) {
-                        _log.log(Level.FINEST, "   setAttributes : {0} ({1}) OK",
+                        _log.debug("   setAttributes : {} ({}) OK",
                             new Object[] {i, OperationGETATTR.attrMask2String(i)}
                         );
                         int attrmask = 1 << (i-(32*(i/32)));
                         retMask[i/32] |= attrmask;
                     }else{
-                        _log.log(Level.FINEST, "   setAttributes : {0} ({1}) NOT SUPPORTED",
+                        _log.debug("   setAttributes : {} ({}) NOT SUPPORTED",
                             new Object[] {i, OperationGETATTR.attrMask2String(i)}
                         );
                         throw new ChimeraNFSException( nfsstat4.NFS4ERR_ATTRNOTSUPP, "attribute "+ OperationGETATTR.attrMask2String(i) +" not supported");
@@ -130,7 +130,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         boolean isApplied = false;
 
-        _log.log(Level.FINEST, "    FileAttribute: {0}", fattr);
+        _log.debug("    FileAttribute: {}", fattr);
 
         switch(fattr) {
 
@@ -191,7 +191,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 utf8str_cs owner = new utf8str_cs ();
                 owner.xdrDecode(xdr);
                 String new_owner = new String(owner.value.value);
-                _log.log(Level.FINEST, "new owner: {0}", new_owner );
+                _log.debug("new owner: {}", new_owner );
                 if( new_owner.matches("[0-9]+") ){
                     // already numeric
                     inode.setUID(Integer.parseInt(new_owner));
@@ -210,7 +210,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 utf8str_cs owner_group = new utf8str_cs ();
                 owner_group.xdrDecode(xdr);
                 String new_group = new String(owner_group.value.value);
-                _log.log(Level.FINEST, "new owner_group: {0}", new_group);
+                _log.debug("new owner_group: {}", new_group);
                 if( new_group.matches("[0-9]+") ){
                     // already numeric
                     inode.setGID(Integer.parseInt(new_group));
@@ -260,7 +260,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         }
 
         if(!isApplied ) {
-            _log.log(Level.INFO, "Attribute not applied: {0}", OperationGETATTR.attrMask2String(fattr) );
+            _log.info("Attribute not applied: {}", OperationGETATTR.attrMask2String(fattr) );
         }
         return isApplied;
     }

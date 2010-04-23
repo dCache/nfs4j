@@ -21,8 +21,6 @@ import org.dcache.chimera.nfs.v3.xdr.time_how;
 import org.dcache.chimera.nfs.v3.xdr.wcc_attr;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
-
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.UnixPermission;
@@ -32,6 +30,8 @@ import org.dcache.chimera.nfs.v3.xdr.wcc_data;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthTypeUnix;
 import org.dcache.xdr.RpcCall;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class HimeraNfsUtils {
@@ -39,7 +39,7 @@ public class HimeraNfsUtils {
 
 	private static final int MODE_MASK = 0770000;
 
-	private static final Logger _log = Logger.getLogger(HimeraNfsUtils.class.getName());
+	private static final Logger _log = LoggerFactory.getLogger(HimeraNfsUtils.class);
 
     private HimeraNfsUtils() {
         // no instance allowed

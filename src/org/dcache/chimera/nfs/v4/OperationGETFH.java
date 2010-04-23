@@ -7,12 +7,12 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.GETFH4res;
 import org.dcache.chimera.nfs.v4.xdr.GETFH4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationGETFH extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationGETFH.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationGETFH.class);
 
 	OperationGETFH(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_GETFH);
@@ -32,7 +32,7 @@ public class OperationGETFH extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
         	res.status = he.getStatus();
         }catch(Exception e) {
-            _log.log(Level.SEVERE, "GETFH4:", e);
+            _log.error("GETFH4:", e);
             res.status = nfsstat4.NFS4ERR_RESOURCE;
         }
 

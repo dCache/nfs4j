@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.utils.Cache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NFSv4StateHandler {
 
-    private static final Logger _log = Logger.getLogger(NFSv4StateHandler.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
 
     private static final NFSv4StateHandler HANDLER = new NFSv4StateHandler();
 

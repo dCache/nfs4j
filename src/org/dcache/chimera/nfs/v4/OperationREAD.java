@@ -7,16 +7,17 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.READ4resok;
 import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationREAD extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationREAD.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationREAD.class);
 
 	public OperationREAD(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_READ);
@@ -81,14 +82,10 @@ public class OperationREAD extends AbstractNFSv4Operation {
             }
 
         }catch(IOHimeraFsException hioe) {
-        	if(_log.isDebugEnabled() ) {
-        		_log.debug("READ: " + hioe.getMessage() );
-        	}
+            _log.debug("READ: {}", hioe.getMessage() );
             res.status = nfsstat4.NFS4ERR_IO;
         }catch(ChimeraNFSException he) {
-        	if(_log.isDebugEnabled() ) {
-        		_log.debug("READ: " + he.getMessage() );
-        	}
+            _log.debug("READ: {}", he.getMessage() );
             res.status = he.getStatus();
         }catch(ChimeraFsException hfe) {
             res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;

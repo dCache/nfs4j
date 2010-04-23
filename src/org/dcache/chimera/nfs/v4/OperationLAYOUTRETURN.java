@@ -8,12 +8,12 @@ import org.dcache.chimera.nfs.v4.xdr.layoutreturn_type4;
 import org.dcache.chimera.nfs.v4.xdr.layoutreturn_stateid;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTRETURN4res;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationLAYOUTRETURN.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTRETURN.class);
 
 	OperationLAYOUTRETURN(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_LAYOUTRETURN);
@@ -24,10 +24,10 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
 	    LAYOUTRETURN4res res = new LAYOUTRETURN4res();
 
-        _log.log(Level.FINEST, "LAYOUTRETURN4args :        type: {0}", _args.oplayoutreturn.lora_layout_type);
-        _log.log(Level.FINEST, "LAYOUTRETURN4args :        mode: {0}", _args.oplayoutreturn.lora_iomode);
-        _log.log(Level.FINEST, "LAYOUTRETURN4args : return type: {0}", _args.oplayoutreturn.lora_layoutreturn.lr_returntype);
-        _log.log(Level.FINEST, "LAYOUTRETURN4args :     reclaim: {0}", _args.oplayoutreturn.lora_reclaim);
+        _log.debug("LAYOUTRETURN4args :        type: {}", _args.oplayoutreturn.lora_layout_type);
+        _log.debug("LAYOUTRETURN4args :        mode: {}", _args.oplayoutreturn.lora_iomode);
+        _log.debug("LAYOUTRETURN4args : return type: {}", _args.oplayoutreturn.lora_layoutreturn.lr_returntype);
+        _log.debug("LAYOUTRETURN4args :     reclaim: {}", _args.oplayoutreturn.lora_reclaim);
 
         try {
 
@@ -48,7 +48,7 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
         }catch(Exception e) {
             res.lorr_status = nfsstat4.NFS4ERR_SERVERFAULT;
-            _log.log(Level.SEVERE, "LAYOUTRETURN: ", e);
+            _log.error("LAYOUTRETURN: ", e);
         }
       _result.oplayoutreturn = res;
 

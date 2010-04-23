@@ -4,25 +4,15 @@
 package org.dcache.chimera.nfs;
 
 
+import org.dcache.chimera.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.FsInode;
-import org.dcache.chimera.FsInodeType;
-import org.dcache.chimera.FsInode_CONST;
-import org.dcache.chimera.FsInode_ID;
-import org.dcache.chimera.FsInode_NAMEOF;
-import org.dcache.chimera.FsInode_PARENT;
-import org.dcache.chimera.FsInode_PATHOF;
-import org.dcache.chimera.FsInode_PGET;
-import org.dcache.chimera.FsInode_PSET;
-import org.dcache.chimera.FsInode_TAG;
-import org.dcache.chimera.FsInode_TAGS;
 
 public class NFSHandle {
 
-    private static final Logger _log = Logger.getLogger(NFSHandle.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(NFSHandle.class);
 
     private NFSHandle() {
         // no instance allowed
@@ -34,7 +24,7 @@ public class NFSHandle {
 
         String strHandle = new String(handle);
 
-        _log.log(Level.FINEST, "Processing FH: {0}", strHandle );
+        _log.debug("Processing FH: {}", strHandle );
 
         StringTokenizer st = new StringTokenizer(strHandle, "[:]");
 
@@ -125,8 +115,7 @@ public class NFSHandle {
 
             }
         } catch (IllegalArgumentException iae) {
-            _log.log(Level.INFO, "Failed to generate an inode from file handle : {0} : {1}",
-                    new Object[] {strHandle, iae});
+            _log.info("Failed to generate an inode from file handle : {} : {}", strHandle, iae);
             inode = null;
         }
 

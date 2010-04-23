@@ -72,8 +72,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
@@ -83,10 +81,12 @@ import org.dcache.chimera.FsStat;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.v4.acl.Ace;
 import org.dcache.chimera.nfs.v4.acl.AclStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationGETATTR extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationGETATTR.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationGETATTR.class);
 
 	public OperationGETATTR(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_GETATTR);
@@ -106,7 +106,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
         	res.status = he.getStatus();
         }catch(Exception e) {
-            _log.log(Level.SEVERE, "GETATTR:", e);
+            _log.debug("GETATTR:", e);
             res.status = nfsstat4.NFS4ERR_RESOURCE;
         }
 
@@ -123,7 +123,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         int[] mask = new int[bitmap.value.length];
         for( int i = 0; i < mask.length; i++) {
             mask[i] = bitmap.value[i].value;
-            _log.log(Level.FINEST, "getAttributes[{0}]: {1}",
+            _log.debug("getAttributes[{}]: {}",
                     new Object[] { i, Integer.toBinaryString(mask[i])} );
         }
 
@@ -140,13 +140,13 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 if( (newmask & 1) > 0 ) {
                         XdrAble attrXdr = fattr2xdr(i, inode);
                         if( attrXdr != null) {
-                            _log.log(Level.FINEST, "   getAttributes : {0} ({1}) OK.",
+                            _log.debug("   getAttributes : {} ({}) OK.",
                                     new Object[] { i, attrMask2String(i)} );
                             attrXdr.xdrEncode(xdr);
                             int attrmask = 1 << (i-(32*(i/32)));
                             retMask[i/32] |= attrmask;
                         }else{
-                            _log.log(Level.FINEST, "   getAttributes : {0} ({1}) NOT SUPPORTED.",
+                            _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.",
                                     new Object[] { i, attrMask2String(i)} );
                         }
                 }
@@ -164,7 +164,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         attributes.attrmask.value = new uint32_t[retMask.length];
         for( int i = 0; i < retMask.length; i++) {
             attributes.attrmask.value[i] = new uint32_t(retMask[i]);
-            _log.log(Level.FINEST, "getAttributes[{0}] reply : {1}",
+            _log.debug("getAttributes[{}] reply : {}",
                     new Object[] { i, Integer.toBinaryString(retMask[i])} );
 
         }
@@ -286,7 +286,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             		aces = new nfsace4[0];
             	}
 
-                _log.log(Level.FINEST, "{0}",  new Ace(aces) );
+                _log.debug("{}",  new Ace(aces) );
 
             	fattr4_acl acl = new fattr4_acl(aces);
 
@@ -496,7 +496,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "getattr of write-only attributes");
             default:
-                _log.log(Level.INFO, "GETATTR for #{0}", fattr);
+                _log.debug("GETATTR for #{}", fattr);
 
         }
 

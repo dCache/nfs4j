@@ -2,13 +2,12 @@ package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
-    private static final Logger _log = Logger.getLogger(OperationLAYOUTGET.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTGET.class);
 
     OperationLAYOUTGET(nfs_argop4 args) {
     super(args, nfs_opnum4.OP_LAYOUTGET);
@@ -77,10 +76,10 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         res.logr_status = nfsstat4.NFS4_OK;
 
     } catch (ChimeraNFSException he) {
-        _log.log(Level.INFO, "LAYOUTGET: {0}",  he.getMessage());
+        _log.debug("LAYOUTGET: {}",  he.getMessage());
         res.logr_status = he.getStatus();
     } catch (Exception e) {
-        _log.log(Level.SEVERE, "LAYOUTGET:", e);
+        _log.error("LAYOUTGET:", e);
         res.logr_status = nfsstat4.NFS4ERR_SERVERFAULT;
     }
 

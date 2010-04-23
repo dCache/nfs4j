@@ -8,13 +8,13 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.CREATE_SESSION4resok;
 import org.dcache.chimera.nfs.v4.xdr.CREATE_SESSION4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
 
-	private static final Logger _log = Logger.getLogger(OperationCREATE_SESSION.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationCREATE_SESSION.class);
 
 	public OperationCREATE_SESSION(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_CREATE_SESSION);
@@ -81,7 +81,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
     		if( seqId == client.currentSeqID()  ) {
     			// retransmit
-    	    	_log.log(Level.FINE, "CREATE_SESSION4 retransmit session: {0}", client.currentSeqID() );
+                    _log.debug("CREATE_SESSION4 retransmit session: {}", client.currentSeqID() );
     		}
 
     		if(client.currentSeqID() < _args.opcreate_session.csa_sequence.value.value | 0 > _args.opcreate_session.csa_sequence.value.value){
@@ -93,7 +93,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
     		}
 
    			if(client.sessions().isEmpty() ) {
-                            _log.log(Level.FINE, "set client {0} confirmed", client);
+                            _log.debug("set client {} confirmed", client);
    			    client.confirmed(true);
    			}
 
@@ -114,7 +114,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
                     session = new NFSv41Session(client,_args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value );
 	            client.addSession( session);
-                    _log.log(Level.FINE, "adding new session [{0}]",  session.id() );
+                    _log.debug("adding new session [{}]",  session.id() );
 	            NFSv4StateHandler.getInstace().sessionById(session.id(), session);
 	    		client.confirmed();
 	    		client.nextSeqID();
@@ -145,10 +145,10 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 	    	res.csr_status = nfsstat4.NFS4_OK;
 
         }catch(ChimeraNFSException ne) {
-    		_log.log(Level.INFO, "CREATE_SESSION4res : {0}",  ne.getMessage());
+            _log.debug("CREATE_SESSION4res : {}",  ne.getMessage());
     		res.csr_status = ne.getStatus();
     	}catch(Exception e) {
-    		_log.log(Level.SEVERE, "CREATE_SESSION4 : {0}", e);
+            _log.error("CREATE_SESSION4 :", e);
     		res.csr_status = nfsstat4.NFS4ERR_SERVERFAULT;
     	}
 

@@ -1,22 +1,23 @@
 package org.dcache.chimera.nfs.v4;
 
-import java.util.List;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.UnixUser;
 import org.dcache.xdr.RpcCall;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 
 public class CompoundContext {
 
-    private static final Logger _log = Logger.getLogger(CompoundContext.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(CompoundContext.class);
 
     private FsInode _rootInode = null;
     private FsInode _currentInode = null;
@@ -104,7 +105,7 @@ public class CompoundContext {
      */
     public void currentInode(FsInode inode) throws ChimeraNFSException {
         _currentInode = inode;
-        _log.log(Level.FINEST, "current Inode: {0}",  _currentInode.toString() );
+        _log.debug("current Inode: {}",  _currentInode.toString() );
     }
     
     public FsInode rootInode() {
@@ -113,7 +114,7 @@ public class CompoundContext {
 
     public void rootInode(FsInode inode) {
         _rootInode = inode;
-        _log.log(Level.FINEST, "root Inode: {0}", _rootInode.toFullString() );
+        _log.debug("root Inode: {}", _rootInode.toFullString() );
     }
 
     /**
@@ -127,7 +128,7 @@ public class CompoundContext {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_RESTOREFH, "no saved file handle");
         }
         _currentInode = _savedInode;
-        _log.log(Level.FINEST, "restored Inode: {0}",  _currentInode.toString() );
+        _log.debug("restored Inode: {}",  _currentInode.toString() );
     }
 
     public FsInode savedInode() throws ChimeraNFSException {
@@ -148,7 +149,7 @@ public class CompoundContext {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOFILEHANDLE, "no file handle");
         }
         _savedInode = _currentInode;
-        _log.log(Level.FINEST, "saved Inode: {0}", _savedInode.toString() );
+        _log.debug("saved Inode: {}", _savedInode.toString() );
     }
 
     /**

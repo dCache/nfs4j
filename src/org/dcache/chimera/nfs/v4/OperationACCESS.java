@@ -8,14 +8,15 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.ACCESS4res;
 import org.dcache.chimera.nfs.v4.xdr.ACCESS4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.apache.log4j.Logger;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationACCESS extends AbstractNFSv4Operation {
 
-	private static final Logger _log = Logger.getLogger(OperationACCESS.class.getName());
+        private static final Logger _log = LoggerFactory.getLogger(OperationACCESS.class);
 
 	OperationACCESS(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_ACCESS);
@@ -26,9 +27,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
 
         ACCESS4res res = new ACCESS4res();
 
-        if(_log.isDebugEnabled() ) {
-        	_log.debug("NFS Request ACCESS uid: " + context.getUser() );
-        }
+        _log.debug("NFS Request ACCESS uid: {}", context.getUser() );
 
         try {
             int reqAccess = _args.opaccess.access.value;
@@ -80,9 +79,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
 
             res.status = nfsstat4.NFS4_OK;
         }catch(ChimeraNFSException he) {
-        	if(_log.isDebugEnabled() ) {
-        		_log.debug("ACCESS: " + he.getMessage() );
-        	}
+            _log.debug("ACCESS: {}", he.getMessage() );
             res.status = he.getStatus();
         }catch(Exception e) {
             _log.error("ACCESS:", e);
