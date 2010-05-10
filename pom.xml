@@ -228,6 +228,12 @@
             <url>http://download.java.net/maven/2/</url>
             <layout>default</layout>
         </repository>
+        <repository>
+            <id>maven2-repository.dcache.org</id>
+            <name>dCache.ORG Repository for Maven</name>
+            <url>http://www.dcache.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+        </repository>
     </repositories>
 
     <!--
