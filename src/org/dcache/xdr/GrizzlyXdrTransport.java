@@ -17,19 +17,19 @@
 
 package org.dcache.xdr;
 
+import com.sun.grizzly.Context;
+import com.sun.grizzly.filter.ReadFilter;
+import com.sun.grizzly.util.OutputWriter;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.grizzly.Context;
-import com.sun.grizzly.filter.ReadFilter;
-import com.sun.grizzly.util.OutputWriter;
-import java.net.SocketAddress;
-import java.nio.channels.DatagramChannel;
 
 public class GrizzlyXdrTransport implements XdrTransport {
 
@@ -54,7 +54,7 @@ public class GrizzlyXdrTransport implements XdrTransport {
             default:
                 _local = null;
                 _remote = null;
-                _log.log(Level.SEVERE, "Unsupported ptotocol: {0}", _context.getProtocol());
+                _log.log(Level.SEVERE, "Unsupported protocol: {0}", _context.getProtocol());
 
         }
         _log.log(Level.FINE, "RPC call: remote/local: {0}/{1}", new Object[] { _remote,  _local } );
@@ -76,7 +76,7 @@ public class GrizzlyXdrTransport implements XdrTransport {
                 OutputWriter.flushChannel(datagramChannel, address, data);
                 break;
             default:
-                _log.log(Level.SEVERE, "Unsupported ptotocol: {0}", _context.getProtocol());
+                _log.log(Level.SEVERE, "Unsupported protocol: {0}", _context.getProtocol());
         }
     }
 
