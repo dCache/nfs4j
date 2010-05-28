@@ -51,6 +51,23 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            <!--
+               start java app
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.dcache.xdr.SpringRunner</mainClass>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -89,6 +106,11 @@
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
                             <archive>
+                                <manifest>
+                                    <mainClass>org.dcache.xdr.SpringRunner</mainClass>
+                                    <packageName>org.dcache.chimera.nfs</packageName>
+                                    <addExtensions/>
+                                </manifest>
                                 <manifestEntries>
                                     <mode>development</mode>
                                     <Implementation-Build>${buildNumber}</Implementation-Build>
@@ -181,6 +203,11 @@
             <version>0.9.94</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>2.5.6</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.7</version>
@@ -213,7 +240,7 @@
         <dependency>
             <groupId>org.dcache.chimera</groupId>
             <artifactId>chimera-core</artifactId>
-            <version>1.9.5</version>
+            <version>0.0.9</version>
         </dependency>
     </dependencies>
 

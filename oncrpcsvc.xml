@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close">
+        <property name="user" value="postgres"/>
+        <property name="password" value=""/>
+        <property name="driverClass" value="org.postgresql.Driver"/>
+        <property name="jdbcUrl" value="jdbc:postgresql://localhost/chimera?prepareThreshold=3"/>
+    </bean>
+
+    <!--
+        NFSv4.1 pNFS Data Server manager
+    -->
+    <bean id="device-manager" class="org.dcache.chimera.nfs.v4.DeviceManager">
+        <description>Device manager</description>
+    </bean>
+
+    <!--
+        FileSystem engine. Currently only Chimera is supported
+    -->
+    <bean id="fileSystem" class="org.dcache.chimera.JdbcFs">
+        <description>Chimera Filesystem</description>
+        <constructor-arg ref="dataSource" />
+        <constructor-arg value="PgSQL" />
+    </bean>
+
+    <bean id="export" class="org.dcache.chimera.nfs.ExportFile">
+        <description>Export file</description>
+        <constructor-arg>
+            <bean class="java.io.File">
+                <constructor-arg value="/etc/exports"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <!--
+        NFSv4.1 Operation factory
+    -->
+    <bean id="mds-factory" class="org.dcache.chimera.nfs.v4.MDSOperationFactory">
+        <description>MDS operation factory</description>
+    </bean>
+
+    <!--
+        NFSv4.1 Operation factory
+    -->
+    <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.mover.DSOperationFactory">
+        <description>DS operation factory</description>
+    </bean>
+
+    <bean id="acl-handler" class="org.dcache.chimera.posix.UnixPermissionHandler"
+        factory-method="getInstance"/>
+
+    <!--
+       NFSv4.1 MDS
+    -->
+    <bean id="mds" class="org.dcache.chimera.nfs.v4.NFSServerV41">
+        <description>NFSv4.1 MDS server</description>
+        <constructor-arg ref="mds-factory"/>
+        <constructor-arg ref="device-manager" />
+        <constructor-arg ref="acl-handler" />
+        <constructor-arg ref="fileSystem" />
+        <constructor-arg ref="export" />
+    </bean>
+
+    <!--
+       NFSv4.1 DS
+    -->
+    <bean id="ds" class="org.dcache.chimera.nfs.v4.NFSServerV41">
+        <description>NFSv4.1 DS server</description>
+        <constructor-arg index="0" ref="ds-factory"/>
+        <constructor-arg index="1" ref="device-manager" />
+        <constructor-arg index="2" ref="acl-handler" />
+        <constructor-arg index="3" ref="fileSystem" />
+        <constructor-arg index="4"><null/></constructor-arg>
+    </bean>
+    <!--
+        MOUNTD server
+    -->
+    <bean id="mountd" class="org.dcache.chimera.nfs.v3.MountServer">
+        <description>Mountd seriver</description>
+        <constructor-arg ref="export" />
+        <constructor-arg ref="fileSystem" />
+    </bean>
+
+    <!--
+        Embeded RPCBIND.
+
+        It will autodetect if there a system one already enabled.
+    -->
+    <bean id="rpcbind" class="org.dcache.xdr.portmap.OncRpcEmbeddedPortmap" />
+
+    <!-- NFSv4 programm -->
+    <bean id="nfsv4-programm" class="org.dcache.xdr.OncRpcProgram">
+        <description>NFSv4.1 programm number</description>
+        <constructor-arg index="0" value="100003" />
+        <constructor-arg index="1" value="4" />
+    </bean>
+
+    <!-- NFSv3 programm -->
+    <bean id="nfsv3-programm" class="org.dcache.xdr.OncRpcProgram">
+        <description>NFSv3 programm number</description>
+        <constructor-arg index="0" value="100003" />
+        <constructor-arg index="1" value="3" />
+    </bean>
+
+    <!-- mount programm -->
+    <bean id="mount-programm" class="org.dcache.xdr.OncRpcProgram">
+        <description>Mount programm number</description>
+        <constructor-arg index="0" value="100005" />
+        <constructor-arg index="1" value="3" />
+    </bean>
+
+    <!--
+       NFSv3
+    -->
+    <bean id="nfs3" class="org.dcache.chimera.nfs.v3.NfsServerV3">
+        <description>NFSv3 server</description>
+        <constructor-arg ref="fileSystem" />
+        <constructor-arg ref="export" />
+    </bean>
+
+    <!--
+        ONC RPC service
+    -->
+    <bean id="oncrpcsvc" class="org.dcache.xdr.OncRpcSvc" destroy-method="stop" depends-on="rpcbind,oncrpcsvc-ds">
+        <description>Onc RPC service for MDS</description>
+        <constructor-arg type="int" value="2049"/>
+        <property name="programs">
+            <map>
+                <entry key-ref="nfsv4-programm" value-ref="mds"/>
+                <entry key-ref="nfsv3-programm" value-ref="nfs3"/>
+                <entry key-ref="mount-programm" value-ref="mountd"/>
+            </map>
+        </property>
+    </bean>
+
+    <!--
+        ONC RPC service for MDS
+    -->
+    <bean id="oncrpcsvc-ds" class="org.dcache.xdr.OncRpcSvc" destroy-method="stop">
+        <description>Onc RPC service FOR DS</description>
+        <constructor-arg type="int" value="2052"/>
+        <constructor-arg type="boolean" value="false"/>
+        <property name="programs">
+            <map>
+                <entry key-ref="nfsv4-programm" value-ref="ds"/>
+            </map>
+        </property>
+    </bean>
+</beans>

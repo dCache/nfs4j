@@ -239,6 +239,14 @@ public class OncRpcSvc {
     }
 
     /**
+     * Add programs to existing services.
+     * @param services
+     */
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchable> services) {
+        _programs.putAll(services);
+    }
+
+    /**
      * Register a new PRC service. Existing registration will be overwritten.
      *
      * @param prog program number
