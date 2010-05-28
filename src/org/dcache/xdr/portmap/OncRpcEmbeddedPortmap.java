@@ -64,7 +64,7 @@ public class OncRpcEmbeddedPortmap {
         }
 
         if(!localPortmapperRunning) {
-            OncRpcSvc rpcbindServer = new OncRpcSvc(OncRpcPortmap.PORTMAP_PORT, IpProtocolType.UDP | IpProtocolType.TCP);
+            OncRpcSvc rpcbindServer = new OncRpcSvc(OncRpcPortmap.PORTMAP_PORT, IpProtocolType.UDP | IpProtocolType.TCP, true);
             rpcbindServer.register(new OncRpcProgram( OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), new OncRpcbindServer());
             rpcbindServer.start();
         }

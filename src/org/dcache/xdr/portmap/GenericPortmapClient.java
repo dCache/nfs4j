@@ -77,8 +77,8 @@ public class GenericPortmapClient implements OncPortmapClient {
              * check for V4
              */
             portmapClient.ping();
+            portmapClient.setPort(100003, 4, "tcp", "127.0.0.2.8.4", System.getProperty("user.name"));
             portmapClient.dump();
-            portmapClient.setPort(100003, 4, "tcp", "127.0.0.2.8.4", "3750");
 
         } finally {
             rpcClient.close();

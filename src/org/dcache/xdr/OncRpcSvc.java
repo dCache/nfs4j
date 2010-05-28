@@ -29,12 +29,17 @@ import com.sun.grizzly.TCPSelectorHandler;
 import com.sun.grizzly.UDPSelectorHandler;
 import com.sun.grizzly.util.DefaultThreadPool;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dcache.xdr.portmap.GenericPortmapClient;
+import org.dcache.xdr.portmap.OncPortmapClient;
+import org.dcache.xdr.portmap.OncRpcPortmap;
 
 public class OncRpcSvc {
 
@@ -42,6 +47,7 @@ public class OncRpcSvc {
 
     private final Controller _controller = new Controller();
     private final CountDownLatch _serverReady = new CountDownLatch(1);
+    private final boolean _publish;
 
     /**
      * mapping of registered programs.
@@ -55,7 +61,17 @@ public class OncRpcSvc {
      * @param port TCP/UDP port to which service will he bound.
      */
     public OncRpcSvc(int port) {
-        this(port, IpProtocolType.TCP | IpProtocolType.UDP);
+        this(port, IpProtocolType.TCP | IpProtocolType.UDP, true);
+    }
+
+    /**
+     * Create a new server. Bind to all supported protocols.
+     *
+     * @param port TCP/UDP port to which service will he bound.
+     * @param publish if true, register service by portmap
+     */
+    public OncRpcSvc(int port, boolean publish) {
+        this(port, IpProtocolType.TCP | IpProtocolType.UDP, publish);
     }
 
      /**
@@ -64,8 +80,8 @@ public class OncRpcSvc {
      * @param port TCP/UDP port to which service will he bound.
      * @param protocol to bind (tcp or udp)
      */
-    public OncRpcSvc(int port, int protocol) {
-        this(new PortRange(port), protocol);
+    public OncRpcSvc(int port, int protocol, boolean publish) {
+        this(new PortRange(port), protocol, publish);
     }
 
     /**
@@ -74,7 +90,9 @@ public class OncRpcSvc {
      * @param {@link PortRange} of TCP/UDP ports to which service will he bound.
      * @param protocol to bind (tcp or udp).
      */
-    public OncRpcSvc(PortRange portRange, int protocol) {
+    public OncRpcSvc(PortRange portRange, int protocol, boolean publish) {
+
+        _publish = publish;
 
         if( (protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0 ) {
             throw new IllegalArgumentException("TCP or UDP protocol have to be defined");
@@ -157,6 +175,42 @@ public class OncRpcSvc {
     }
 
     /**
+     * Register services in portmap.
+     *
+     * @throws IOException
+     * @throws UnknownHostException
+     */
+    private void publishToPortmap() throws IOException, UnknownHostException {
+
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getLocalHost(),
+                IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
+        XdrTransport transport = rpcClient.connect();
+        OncPortmapClient portmapClient = new GenericPortmapClient(transport);
+
+        try {
+            TCPSelectorHandler tcp = (TCPSelectorHandler) _controller.getSelectorHandler(Controller.Protocol.TCP);
+            UDPSelectorHandler udp = (UDPSelectorHandler) _controller.getSelectorHandler(Controller.Protocol.UDP);
+            String username = System.getProperty("user.name");
+            for (OncRpcProgram program : _programs.keySet()) {
+                try {
+                    if (tcp != null) {
+                        portmapClient.setPort(program.getNumber(), program.getVersion(),
+                                "tcp", netid.toString(tcp.getPortLowLevel()), username);
+                    }
+                    if (udp != null) {
+                        portmapClient.setPort(program.getNumber(), program.getVersion(),
+                                "udp", netid.toString(udp.getPortLowLevel()), username);
+                    }
+                } catch (OncRpcException ex) {
+                    _log.log(Level.SEVERE, "Failed to register program", ex);
+                }
+            }
+        } finally {
+            rpcClient.close();
+        }
+    }
+
+    /**
      * Start service.
      */
     public void start() throws IOException  {
@@ -166,6 +220,10 @@ public class OncRpcSvc {
         } catch (InterruptedException ex) {
             _log.log(Level.SEVERE, "failed to start Controller", ex);
             throw new IOException(ex.getMessage());
+        }
+
+        if(_publish) {
+            publishToPortmap();
         }
     }
 
