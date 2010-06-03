@@ -19,9 +19,8 @@ package org.dcache.xdr;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 public class SpringRunner {
 
@@ -34,8 +33,9 @@ public class SpringRunner {
             System.err.println("Usage: SpringRunner <config>");
             System.exit(1);
         }
-        BeanFactory factory = new XmlBeanFactory(new FileSystemResource(args[0]));
-        OncRpcSvc service = (OncRpcSvc)factory.getBean("oncrpcsvc");
+
+        ApplicationContext context = new FileSystemXmlApplicationContext(args[0]);
+        OncRpcSvc service = (OncRpcSvc)context.getBean("oncrpcsvc");
         service.start();
 
     }
