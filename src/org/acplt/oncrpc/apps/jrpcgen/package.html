@@ -1,0 +1,165 @@
+<html>
+    <head>
+        <title>jrpcgen for ONC/RPC Java package</title>
+    </head>
+    <body>
+
+        jrpcgen for ONC/RPC Java package.
+
+        <p>This package provides a Java-based rpcgen RPC protocol
+            compiler called "jrpcgen". jrpcgen is a Java-based tool that generates
+            source code of Java classes to implement an RPC protocol. The input to
+            jrpcgen is a language similiar to C (but more probably much more similiar
+            to FORTRAN) known as the RPC language (Remote Procedure Call Language).
+            Because the files containing RPC language are typically tagged with ".x"
+            they are called "x-files" throughout this documentation.
+
+        <p><b>Usage:</b>
+
+        <p><code>jrpcgen</code> [<code>-</code><i>options</i>] <i>x-file</i>
+
+        <p>where options include:
+
+        <dl>
+            <dt><code>-c</code> <i>classname</i></dt>
+            <dd>Specify class name of client proxy stub.
+            </dd>
+            <dt><code>-d</code> <i>directory</i></dt>
+            <dd>Specify directory where to place generated class source code files.
+            </dd>
+            <dt><code>-p</code> <i>package name</i> or <code>-package</code> <i>package name</i><dt>
+            <dd>Specify package name for generated source code files.
+            </dd>
+            <dt><code>-s</code> <i>classname</i></dt>
+            <dd>Specify class name of server proxy stub.
+            </dd>
+            <dt><code>-ser</code></dt>
+            <dd>tag classes generated for XDR structs, XDR unions and XDR typedefs as
+                serializable. Also automatically generates <code>serialVersionUID</code>
+                using the SHA-1 algorithm.
+            </dd>
+            <dt><code>-initstrings</code></dt>
+            <dd>automatically initialize all <code>Strings</code> as empty strings ("").
+                Note that this may lead to lazy programming; better make explicitly sure
+                that every member of a struct gets initialized properly before encoding the
+                struct.
+            </dd>
+            <dt><code>-nobackup</code></dt>
+            <dd>Do not make backups of old source code files for which new source code
+                is generated.
+            </dd>
+            <dt><code>-noclient</code></dt>
+            <dd>Do not create source code for the client proxy stub.
+            </dd>
+            <dt><code>-noserver</code></dt>
+            <dd>Do not create source code for the server proxy stub.
+            </dd>
+            <dt><code>-parseonly</code></dt>
+            <dd>Parse x-file only but do not generate source code files.
+            </dd>
+            <dt><code>-verbose</code></dt>
+            <dd>Enable verbose output about what the jrpcgen compiler is doing.
+            </dd>
+            <dt><code>-version</code></dt>
+            <dd>Print jrpcgen version.
+            </dd>
+            <dt><code>-?</code> or <code>-help</code></dt>
+            <dd>Print this help.
+            </dd>
+            <dt><code>--</code></dt>
+            <dd>End options.
+            </dd>
+        </dl>
+
+        <p><b>Notes</b>
+
+        <p>To cite the man pages for rpcgen(1):
+            <i>The RPC Language does not support nesting of structures.
+                As a work-around, structures can be declared at the top-level,
+                and their name used inside other structures in order to achieve
+                the same effect. Name clashes can occur when using program
+                definitions, since the apparent scoping does not really apply. Most
+                of these can be avoided by giving unique names for programs, versions,
+                procedures, and types.</i> And I thought that the RFC was written
+            before rpcgen to reflect reality but not wishes for further development.
+
+        <p>jrpcgen can process the same x-files as its SunOS4.1-based rpcgen
+            counterpart. Or at least it should. The Java language as well as the
+            Java environment cause some slight differences in the code generated
+            with respect to the typical C code emitted by rpcgen. Please also
+            refer to the <code>demo.x</code> example in
+            <code>tests.org.acplt.oncrpc.jrpcgen</code> for the inner details.
+
+        <p>However, <code>jrpcgen</code> currently does not support C preprocessor
+            directives, as <code>rpcgen</code> does my running <code>cpp</code> first
+            on the x-file. If you need to achieve the same effect, first run
+            <code>cpp</code> by hand (pardon: makefile) and pipe the result into
+            <code>jrpcgen</code>.
+
+        <ul>
+            <li><p>All global constants are put into one public interface with the
+                    same name as the x-file. Global constants are constants either defined
+                    using "const" or program and version constants. If a x-file named
+                    <code>demo.x</code> defines a constant <code>FOO</code>, then its
+                    Java counterpart will be accessible as <code>demo.FOO</code>.</p>
+
+            <li><p>All enumeration members of a particular enumeration are put into a
+                    public interface with the same name as the enumeration. For example:
+                    <code>enum FOO { foo };</code> results in a public <code>interface FOO</code>
+                    with a <code>public static final int foo</code>. The enumeration members
+                    are accessed like <code>FOO.foo</code>. Within the generated Java code,
+                    wherever the enumeration type is used, a Java base data type of
+                    <code>int</code> is used instead to avoid cluttering the code.</p>
+
+            <li><p>For each typedef the jrpcgen protocol compiler emits a class source file
+                    of the same name. For instance, <code>typedef string STRING<>;</code> results
+                    in <code>class STRING</code>. Such classes always contain exactly one attribute
+                    named <code>value</code>. This attribute is of the same type as specified
+                    in the typedef, that is <code>String</code> (Java base type) in our case.</p>
+
+            <li><p>For each struct the protocol compiler also emits a class source file
+                    of the same name, containing the specified attributes.</p>
+
+            <li><p>The server stub code contains the dispatcher code and defines each
+                    remote procedure specified in the x-file as abstract. You need to supply
+                    your own implementation for each one of these stubs. Note that RPC base
+                    data types like int, u_long, etc. are mapped to their appropriate
+                    Java base type counterparts (int, int, in this example).</p>
+
+                <p>By default, the server stub class is named after the x-file but with
+                    <code>ServerStub</code> appended. For example, if the x-file is named
+                    <code>demo.x</code>, then the server stub class is <code>demoServerStub</code>.</p>
+
+            <li><p>The client stub/proxy implements the remote procedures specified in
+                    the x-file as local methods which will call their remote counterpart on
+                    an ONC/RPC server.</p>
+
+                <p>By default, the client stub class is named after the x-file but with
+                    <code>Client</code> appended. For example, if the x-file is named
+                    <code>demo.x</code>, then the client class is <code>demoClient</code>.</p>
+
+        </ul>
+
+
+        <p>This package is part of the Remote Tea Java Library package.
+
+        <p>(c) 1999 <a href="http://www.plt.rwth-aachen.de/english">Lehrstuhl f&uuml;r
+                Proze&szlig;leittechnik</a>, Aachen University of Technology, Germany.
+
+        <p>This library is free software; you can redistribute it and/or modify
+            it under the terms of the GNU Library General Public License as
+            published by the Free Software Foundation; either version 2 of the
+            License, or (at your option) any later version.
+
+        <p>This library is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+            GNU Library General Public License for more details.
+
+        <p>You should have received a copy of the GNU Library General Public
+            License along with this program (see the file COPYING.LIB for more
+            details); if not, write to the Free Software Foundation, Inc.,
+            675 Mass Ave, Cambridge, MA 02139, USA.
+
+    </body>
+</html>
