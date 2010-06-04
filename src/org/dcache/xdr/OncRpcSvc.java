@@ -27,14 +27,12 @@ import com.sun.grizzly.ProtocolChainInstanceHandler;
 import com.sun.grizzly.ProtocolFilter;
 import com.sun.grizzly.TCPSelectorHandler;
 import com.sun.grizzly.UDPSelectorHandler;
-import com.sun.grizzly.util.DefaultThreadPool;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.xdr.portmap.GenericPortmapClient;
@@ -136,19 +134,6 @@ public class OncRpcSvc {
                         _serverReady.countDown();
                     }
                 });
-
-        DefaultThreadPool defp;
-        ExecutorService executorService = _controller.getThreadPool();
-
-        if (executorService instanceof DefaultThreadPool) {
-            defp = (DefaultThreadPool) executorService;
-        } else {
-            defp = new DefaultThreadPool();
-            _controller.setThreadPool(defp);
-        }
-        defp.setInitialByteBufferSize(Xdr.MAX_XDR_SIZE);
-        _controller.setReadThreadsCount(
-                5);
 
         final ProtocolChain protocolChain = new DefaultProtocolChain();
         protocolChain.addFilter(protocolKeeper);
