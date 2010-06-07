@@ -4,13 +4,21 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>nfs.properties</value>
+                <value>chimera.properties</value>
+            </list>
+        </property>
+    </bean>
 
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
           destroy-method="close">
-        <property name="user" value="postgres"/>
-        <property name="password" value=""/>
-        <property name="driverClass" value="org.postgresql.Driver"/>
-        <property name="jdbcUrl" value="jdbc:postgresql://localhost/chimera?prepareThreshold=3"/>
+        <property name="user" value="${chimera.db.user}"/>
+        <property name="password" value="${chimera.db.password}"/>
+        <property name="driverClass" value="${chimera.db.driver}"/>
+        <property name="jdbcUrl" value="${chimera.db.url}"/>
     </bean>
 
     <!--
@@ -129,7 +137,7 @@
     -->
     <bean id="oncrpcsvc" class="org.dcache.xdr.OncRpcSvc" destroy-method="stop" depends-on="rpcbind,oncrpcsvc-ds">
         <description>Onc RPC service for MDS</description>
-        <constructor-arg type="int" value="2049"/>
+        <constructor-arg type="int" value="${mds.port}"/>
         <property name="programs">
             <map>
                 <entry key-ref="nfsv4-programm" value-ref="mds"/>
@@ -144,7 +152,7 @@
     -->
     <bean id="oncrpcsvc-ds" class="org.dcache.xdr.OncRpcSvc" destroy-method="stop">
         <description>Onc RPC service FOR DS</description>
-        <constructor-arg type="int" value="2052"/>
+        <constructor-arg type="int" value="${ds.port}"/>
         <constructor-arg type="boolean" value="false"/>
         <property name="programs">
             <map>
