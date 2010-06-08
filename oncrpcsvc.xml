@@ -34,7 +34,7 @@
     <bean id="fileSystem" class="org.dcache.chimera.JdbcFs">
         <description>Chimera Filesystem</description>
         <constructor-arg ref="dataSource" />
-        <constructor-arg value="PgSQL" />
+        <constructor-arg value="${chimera.db.dialect}" />
     </bean>
 
     <bean id="export" class="org.dcache.chimera.nfs.ExportFile">
