@@ -28,7 +28,10 @@ import org.dcache.chimera.nfs.v4.NFSv41Error;
 import org.dcache.chimera.nfs.v4.xdr.clientid4;
 import org.dcache.chimera.nfs.v4.xdr.deviceid4;
 import org.dcache.chimera.nfs.v4.xdr.entry4;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_fs_locations;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_type;
+import org.dcache.chimera.nfs.v4.xdr.fs_location4;
+import org.dcache.chimera.nfs.v4.xdr.fs_locations4;
 import org.dcache.chimera.nfs.v4.xdr.layout4;
 import org.dcache.chimera.nfs.v4.xdr.layoutiomode4;
 import org.dcache.chimera.nfs.v4.xdr.layouttype4;
@@ -100,7 +103,8 @@ public class Main {
             "filebomb",
             "remove",
             "umount",
-            "write"
+            "write",
+            "fs_locations"
         };
 
         PrintWriter out = new PrintWriter(System.out);
@@ -206,6 +210,20 @@ public class Main {
                     continue;
                 }
                 nfsClient.read(commandArgs[1]);
+
+            } else if (commandArgs[0].equals("fs_locations")) {
+
+                if (nfsClient == null) {
+                    System.out.println("Not mounted");
+                    continue;
+                }
+
+                if (commandArgs.length != 2) {
+                    System.out.println("usage: fs_locations <file>");
+                    continue;
+                }
+
+                nfsClient.get_fs_locations(commandArgs[1]);
 
             } else if (commandArgs[0].equals("remove")) {
 
@@ -629,6 +647,40 @@ public class Main {
 
         if (compound4res.status != nfsstat4.NFS4_OK) {
             System.out.println("mkdir failed. Error = "
+                    + NFSv41Error.errcode2string(compound4res.status));
+        }
+
+    }
+
+    private void get_fs_locations(String path) throws OncRpcException, IOException {
+
+        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+
+        List<Integer> attrs = new ArrayList<Integer>(1);
+        attrs.add(nfs4_prot.FATTR4_FS_LOCATIONS);
+
+        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
+                _sequenceID.value.value, 12, 0));
+        ops.add(PutfhStub.generateRequest(_cwd));
+        ops.add(LookupStub.generateRequest(path));
+        ops.add(GetattrStub.generateRequest(attrs));
+
+        COMPOUND4res compound4res = sendCompound(ops, "get_fs_locations");
+
+        if (compound4res.status == nfsstat4.NFS4_OK) {
+
+            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray[ops.size()-1].opgetattr.resok4.obj_attributes);
+
+            fattr4_fs_locations locations = (fattr4_fs_locations) attrMap.get(nfs4_prot.FATTR4_FS_LOCATIONS);
+            if (locations != null) {
+                System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0].value.toString());
+                System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0].value.toString());
+                System.out.println("fs_locations locations server: " + new String(locations.value.locations[0].server[0].value.value));
+
+            }
+
+        } else {
+            System.out.println("get_fs_locations failed. Error = "
                     + NFSv41Error.errcode2string(compound4res.status));
         }
 
@@ -1338,7 +1390,6 @@ public class Main {
 
         return sb.toString();
     }
-
     private final Map<InetSocketAddress, Main> _servers =
             new HashMap<InetSocketAddress, Main>();
 
