@@ -101,6 +101,7 @@ public class MkdirStub {
             // ignored
         }
 
+        xdr.endEncoding();
         ByteBuffer b = xdr.body();
         byte[] retBytes = new byte[b.remaining()] ;
         b.get(retBytes);
