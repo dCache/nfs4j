@@ -126,8 +126,7 @@ public class Layout {
 
         layout.nfl_util = new nfl_util4(new uint32_t(NFSv4Defaults.NFS4_STRIPE_SIZE
                 & nfs4_prot.NFL4_UFLG_STRIPE_UNIT_SIZE_MASK));
-        layout.nfl_util = new nfl_util4(new uint32_t(layout.nfl_util.value.value
-                | nfs4_prot.NFL4_UFLG_DENSE));
+        layout.nfl_util = new nfl_util4(new uint32_t(layout.nfl_util.value.value));
 
         //where the striping pattern starts
         layout.nfl_pattern_offset = new offset4(new uint64_t(0));
