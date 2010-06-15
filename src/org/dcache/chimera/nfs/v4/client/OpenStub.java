@@ -184,6 +184,7 @@ public class OpenStub {
             // ignored
         }
 
+        xdr.endEncoding();
         ByteBuffer b = xdr.body();
         byte[] retBytes = new byte[b.remaining()];
         b.get(retBytes);
