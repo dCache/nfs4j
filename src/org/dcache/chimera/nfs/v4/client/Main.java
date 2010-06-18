@@ -116,8 +116,11 @@ public class Main {
 
 
         if (args.length > 0) {
-            nfsClient = new Main(InetAddress.getByName(args[0]));
-            nfsClient.mount();
+            String[] share = args[0].split(":");
+            String host = share[0];
+            String root = share.length == 2? share[1] : "/";
+            nfsClient = new Main(InetAddress.getByName(share[0]));
+            nfsClient.mount(root);
         }
 
         while ((line = reader.readLine(PROMPT)) != null) {
@@ -132,8 +135,10 @@ public class Main {
 
                 String host = commandArgs.length > 1 ? commandArgs[1]
                         : "localhost";
+                String root =  commandArgs.length > 2 ? commandArgs[2]
+                        : "/";
                 nfsClient = new Main(InetAddress.getByName(host));
-                nfsClient.mount();
+                nfsClient.mount(root);
 
             } else if (commandArgs[0].equals("umount")) {
 
@@ -373,15 +378,15 @@ public class Main {
         _servers.put(address, this);
     }
 
-    public void mount() throws OncRpcException, IOException {
+    public void mount(String root) throws OncRpcException, IOException {
         exchange_id();
         create_session();
 
+        getRootFh(root);
         get_supported_attributes();
         if (_isMDS) {
             get_devicelist();
         }
-        getRootFh();
 
         _lastUpdate = System.currentTimeMillis();
 
@@ -473,20 +478,26 @@ public class Main {
 
     }
 
-    private void getRootFh() throws OncRpcException, IOException {
+    private void getRootFh(String path) throws OncRpcException, IOException {
 
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
         ops.add(PutrootfhStub.generateRequest());
+        String[] pathElements = path.split("/");
+        for (String p : pathElements) {
+            if (p != null && p.length() > 0) {
+                ops.add(LookupStub.generateRequest(p));
+            }
+        }
         ops.add(GetfhStub.generateRequest());
 
         COMPOUND4res compound4res = sendCompound(ops, "get_root_fh");
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            _rootFh = compound4res.resarray[2].opgetfh.resok4.object;
+            _rootFh = compound4res.resarray[ops.size() - 1].opgetfh.resok4.object;
             _cwd = _rootFh;
             System.out.println("root fh = " + toHexString(_rootFh.value));
 
@@ -575,7 +586,7 @@ public class Main {
                     _sequenceID.value.value, 12, 0));
 
             if (path.charAt(0) == '/') {
-                ops.add(PutrootfhStub.generateRequest());
+                ops.add(PutfhStub.generateRequest(_rootFh));
             } else {
                 ops.add(PutfhStub.generateRequest(fh));
             }
@@ -694,7 +705,7 @@ public class Main {
                 _sequenceID.value.value, 12, 0));
 
         if (path.charAt(0) == '/') {
-            ops.add(PutrootfhStub.generateRequest());
+            ops.add(PutfhStub.generateRequest(_rootFh));
         } else {
             ops.add(PutfhStub.generateRequest(_cwd));
         }
@@ -861,7 +872,7 @@ public class Main {
 
 
         if (path.charAt(0) == '/') {
-            ops.add(PutrootfhStub.generateRequest());
+            ops.add(PutfhStub.generateRequest(_rootFh));
         } else {
             ops.add(PutfhStub.generateRequest(_cwd));
         }
@@ -911,7 +922,7 @@ public class Main {
                 _sequenceID.value.value, 12, 0));
 
         if (path.charAt(0) == '/') {
-            ops.add(PutrootfhStub.generateRequest());
+            ops.add(PutfhStub.generateRequest(_rootFh));
         } else {
             ops.add(PutfhStub.generateRequest(_cwd));
         }
@@ -1135,7 +1146,7 @@ public class Main {
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
-        ops.add(PutrootfhStub.generateRequest());
+        ops.add(PutfhStub.generateRequest(_rootFh));
         ops.add(GetDeviceListStub.normal());
 
         COMPOUND4res compound4res = sendCompound(ops, "get_devicelist");
@@ -1284,7 +1295,7 @@ public class Main {
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
-        ops.add(PutrootfhStub.generateRequest());
+        ops.add(PutfhStub.generateRequest(_rootFh));
         ops.add(GetfhStub.generateRequest());
         ops.add(GetattrStub.generateRequest(attrs));
 
