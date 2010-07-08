@@ -40,7 +40,7 @@ public class NFS4Client {
     /**
      * Server boot id.
      */
-    private final static int BOOTID = (int) (System.currentTimeMillis() / 1000);
+    private final static long BOOTID = (System.currentTimeMillis() / 1000);
 
     /**
      * client id generator.
