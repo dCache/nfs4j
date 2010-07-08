@@ -328,8 +328,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
     }
 
     public void xdrEncodeByteBuffer(ByteBuffer buf) {
-        buf.limit(buf.position());
-        buf.rewind();
+        buf.flip();
         int len = buf.remaining();
         int padding = (4 - (len & 3)) & 3;
         xdrEncodeInt(len);
