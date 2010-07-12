@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import org.dcache.utils.net.InetSocketAddresses;
 
 /**
  *
@@ -138,7 +139,7 @@ public class DeviceManager implements NFSv41DeviceManager {
 
             file_type.nflda_multipath_ds_list[i].value[0] = new netaddr4();
             file_type.nflda_multipath_ds_list[i].value[0].na_r_addr =
-                                HimeraNFS4Utils.inetAddress2rAddr(deviceAddress[i]);
+                                InetSocketAddresses.uaddrOf(deviceAddress[i]);
             file_type.nflda_multipath_ds_list[i].value[0].na_r_netid = "tcp";
 
         }

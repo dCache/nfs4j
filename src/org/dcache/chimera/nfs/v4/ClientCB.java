@@ -5,6 +5,7 @@ package org.dcache.chimera.nfs.v4;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.dcache.utils.net.InetSocketAddresses;
 
 class ClientCB {
 
@@ -64,16 +65,16 @@ class ClientCB {
 	}
 	
 	
-	public static void main(String args[]) {
-		
-		try {
-			System.out.println(new ClientCB("127.0.0.2.4.63", "tcp", 1005));
-			System.out.println(new ClientCB( HimeraNFS4Utils.inetAddress2rAddr("127.0.0.2", 1087) , "tcp", 1005));
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-	}	
+    public static void main(String args[]) {
+
+        try {
+            System.out.println(new ClientCB("127.0.0.2.4.63", "tcp", 1005));
+            System.out.println(new ClientCB(InetSocketAddresses.uaddrOf("127.0.0.2", 1087), "tcp", 1005));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 	
 }
 

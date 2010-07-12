@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,6 +51,7 @@ import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.posix.Stat;
+import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 
@@ -1096,7 +1096,8 @@ public class Main {
 
             nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub.decodeFileDevice(compound4res.resarray[1].opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
-            InetSocketAddress inetAddr = device2Address(addr.nflda_multipath_ds_list[0].value[0].na_r_addr);
+            InetSocketAddress inetAddr = InetSocketAddresses.forUaddrString(
+                    addr.nflda_multipath_ds_list[0].value[0].na_r_addr);
 
             _knowDevices.put(deviceId, inetAddr);
 
@@ -1104,31 +1105,6 @@ public class Main {
             System.out.println("getdeviceinfo failed. Error = "
                     + NFSv41Error.errcode2string(compound4res.status));
         }
-    }
-
-    public static final InetSocketAddress device2Address(String deviceId)
-            throws UnknownHostException {
-
-        String[] cb_addr = deviceId.trim().split("[.]");
-
-        byte[] addr = new byte[4];
-        addr[0] = Integer.valueOf(cb_addr[0]).byteValue();
-        addr[1] = Integer.valueOf(cb_addr[1]).byteValue();
-        addr[2] = Integer.valueOf(cb_addr[2]).byteValue();
-        addr[3] = Integer.valueOf(cb_addr[3]).byteValue();
-
-        InetAddress inetAddr = InetAddress.getByAddress(addr);
-
-        Integer p1 = new Integer(cb_addr[4]);
-        Integer p2 = new Integer(cb_addr[5]);
-
-        int port = p1.intValue();
-
-        port <<= 8;
-        port |= p2.intValue();
-
-        return new InetSocketAddress(inetAddr, port);
-
     }
 
     private void get_devicelist() throws OncRpcException, IOException {

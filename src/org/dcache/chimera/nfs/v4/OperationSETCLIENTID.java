@@ -9,6 +9,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID4resok;
 import org.dcache.chimera.nfs.v4.xdr.SETCLIENTID4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.utils.net.InetSocketAddresses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 		        try {
 	    	        ClientCB cb = new ClientCB(r_addr, r_netid, program);
 	    	        //	TODO: work around. client should send correct IP
-	    	        cb = new ClientCB(  HimeraNFS4Utils.inetAddress2rAddr(context.getRpcCall().getTransport().getRemoteSocketAddress() ), r_netid, program);
+                        cb = new ClientCB(  InetSocketAddresses.uaddrOf(context.getRpcCall().getTransport().getRemoteSocketAddress() ), r_netid, program);
                     _log.debug("Client callback: {}", cb);
 	                client.setCB(cb);
 		        }catch(Exception ignode_call_back) {

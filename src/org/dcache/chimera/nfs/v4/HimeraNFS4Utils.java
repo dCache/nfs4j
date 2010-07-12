@@ -9,8 +9,6 @@ import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cis;
 import org.dcache.chimera.nfs.v4.xdr.utf8string;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthTypeUnix;
@@ -55,36 +53,6 @@ public class HimeraNFS4Utils {
         return user;
 
     }
-
-
-    public static String inetAddress2rAddr( InetSocketAddress address)  {
-
-
-        byte[] host_part = address.getAddress().getAddress();
-
-        int port = address.getPort();
-        int port_part[] = new int[2];
-        port_part[0] = (port & 0xff00) >> 8;
-        port_part[1] = port & 0x00ff;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(0xFF & host_part[0]).append(".");
-        sb.append(0xFF & host_part[1]).append(".");
-        sb.append(0xFF & host_part[2]).append(".");
-        sb.append(0xFF & host_part[3]).append(".");
-        sb.append(0xFF & port_part[0]).append(".");
-        sb.append(0xFF & port_part[1]);
-
-        return sb.toString();
-
-    }
-
-    public static String inetAddress2rAddr( String host, int port) throws UnknownHostException  {
-
-        return inetAddress2rAddr( new InetSocketAddress(host, port));
-    }
-
-
 
     public static String aceToString(nfsace4 ace) {
 
