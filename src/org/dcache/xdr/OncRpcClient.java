@@ -95,7 +95,8 @@ public class OncRpcClient {
 
                     @Override
                     public void onException(Throwable e) {
-                        _log.log(Level.SEVERE, "Grizzly controller exception:" + e.getMessage());
+                        _log.log(Level.SEVERE, "Grizzly controller exception: {0}",
+                                e.getMessage());
                     }
                 });
         final ProtocolFilter protocolKeeper = new ProtocolKeeperFilter();
