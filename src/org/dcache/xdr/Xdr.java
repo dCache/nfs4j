@@ -220,8 +220,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * @return Decoded long value.
      */
     public long xdrDecodeLong() {
-        return (((long) xdrDecodeInt()) << 32) +
-        ((xdrDecodeInt()) & 0x00000000FFFFFFFFl);
+        return _body.getLong();
     }
 
     public ByteBuffer xdrDecodeByteBuffer() {
@@ -323,8 +322,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * babble and is 64&nbsp;bits wide) and write it down this XDR stream.
      */
     public void xdrEncodeLong(long value) {
-        xdrEncodeInt((int)(value >>> 32));
-        xdrEncodeInt((int)(value & 0xFFFFFFFF));
+       _body.putLong(value);
     }
 
     public void xdrEncodeByteBuffer(ByteBuffer buf) {
