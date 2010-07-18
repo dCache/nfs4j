@@ -3,43 +3,43 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import java.security.SecureRandom;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 
 class NFS4State {            
-    
-    
+        
     /*
-                  struct stateid4 {
-                    uint32_t        seqid;
-                    opaque          other[12];
-                  };
+        struct stateid4 {
+            uint32_t        seqid;
+            opaque          other[12];
+        };
 
-           This structure is used for the various state sharing mechanisms
-           between the client and server.  For the client, this data structure
-           is read-only.  The starting value of the seqid field is undefined.
-           The server is required to increment the seqid field monotonically at
-           each transition of the stateid.  This is important since the client
-           will inspect the seqid in OPEN stateids to determine the order of
-           OPEN processing done by the server.
-   
+       This structure is used for the various state sharing mechanisms
+        between the client and server.  For the client, this data structure
+        is read-only.  The starting value of the seqid field is undefined.
+        The server is required to increment the seqid field monotonically at
+        each transition of the stateid.  This is important since the client
+        will inspect the seqid in OPEN stateids to determine the order of
+        OPEN processing done by the server.
+
      */
 		        	
     private final stateid4 _stateid;
     private boolean _isConfimed = false;
+
+    /**
+     * Random generator to generate stateids.
+     */
+    private static final SecureRandom RANDOM = new SecureRandom();
     
     public NFS4State(int seqid) {
 
         _stateid = new stateid4();
         _stateid.other = new byte[12];
         _stateid.seqid = new uint32_t(seqid);
-        byte[] other_local = Integer.toString( this.hashCode()).getBytes();
-        
-        int len = other_local.length > 12 ? 12 : other_local.length;        
-        System.arraycopy(other_local, 0, _stateid.other, 0, len);
-        for( int i = 0; i  < 12 - len; i++ ) {
-            _stateid.other[len + i] = '0';
-        }
+        // generated using a cryptographically strong pseudo random number generator.
+        RANDOM.nextBytes(_stateid.other);
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
