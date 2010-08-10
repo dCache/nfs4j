@@ -102,7 +102,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
             res.sr_status = nfsstat4.NFS4_OK;
         }catch(ChimeraNFSException ne) {
-            _log.debug("SQUENCE : {}", ne.getMessage());
+            _log.debug("SEQUENCE : {}", ne.getMessage());
             res.sr_status = ne.getStatus();
         }catch(Exception e) {
             _log.error("SEQUENCE :", e);
