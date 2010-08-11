@@ -311,4 +311,8 @@ public class NFS4Client {
     public String principal() {
         return _principal;
     }
+
+    public boolean hasState() {
+        return (_clinetStates.isEmpty()) ? false : true;
+    }
 }

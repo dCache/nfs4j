@@ -143,7 +143,6 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             if( _args.opexchange_id.eia_client_impl_id.length > 1 ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BADXDR, "invalid array size of client implementaion");
             }
-
             /*if(_args.opexchange_id.eia_flags.value != 0 && nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R != 0){
                         throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "Client used server-only flag");
             }*/
@@ -214,8 +213,16 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                                     new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                             NFSv4StateHandler.getInstace().addClient(client);
                         }else {
-                            _log.debug("Case 3: Client Collision");
-                            throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE,"Principal Missmatch");
+                            if ((!client.hasState()) || (System.currentTimeMillis() - client.leaseTime()) > (NFSv4Defaults.NFS4_LEASE_TIME * 1000)){
+                                _log.debug("case 3a: Client Collision is equivalent to case 1 (the new Owner ID)");
+                                NFSv4StateHandler.getInstace().removeClient(client);
+                                client = new NFS4Client(remoteSocketAddress, localSocketAddress,
+                                        new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value, principal);
+                                NFSv4StateHandler.getInstace().addClient(client);
+                            } else {
+                                _log.debug("Case 3b: Client Collision");
+                                throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "Principal Missmatch");
+                            }
                         }
                     }else{
                       _log.debug("case 4: Replacement of Unconfirmed Record");
