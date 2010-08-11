@@ -38,6 +38,17 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationEXCHANGE_ID.class);
     private final int _flag;
+    private static final int mask = (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS
+            | nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS
+            | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS
+            | nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_MIGR
+            | nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_REFER
+            | nfs4_prot.EXCHGID4_FLAG_MASK_PNFS
+            | nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A
+            | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R
+            | nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID
+            | nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A
+            | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
 
     /**
      * compile time
@@ -106,35 +117,9 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "invalid state protection");
             }
 
-            /*
-             * check valid flag
-             * TODO: make it more elegant
-             */
-
-            if(_args.opexchange_id.eia_flags.value != 0 &&  (_args.opexchange_id.eia_flags.value | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS |
-                    nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS |
-                    nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS |
-                    nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_MIGR |
-                    nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_REFER |
-                    nfs4_prot.EXCHGID4_FLAG_MASK_PNFS |
-                    nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
-                    nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R |
-                    nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID |
-                    nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
-                    nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R     ) !=
-                        (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS |
-                        nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS |
-                        nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS |
-                        nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_MIGR |
-                        nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_REFER |
-                        nfs4_prot.EXCHGID4_FLAG_MASK_PNFS |
-                        nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
-                        nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R |
-                        nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID |
-                        nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A |
-                        nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R )
-                        ) {
-                throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "invalid flag");
+          
+            if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value | mask) != mask) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid flag");
             }
 
             /*
@@ -143,11 +128,13 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             if( _args.opexchange_id.eia_client_impl_id.length > 1 ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BADXDR, "invalid array size of client implementaion");
             }
-            /*if(_args.opexchange_id.eia_flags.value != 0 && nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R != 0){
-                        throw new ChimeraNFSException( nfsstat4.NFS4ERR_INVAL, "Client used server-only flag");
-            }*/
 
-
+            /*The EXCHGID4_FLAG_CONFIRMED_R bit can only be set in eir_flags;
+             * it is always off in eia_flags.
+             */
+            if (_args.opexchange_id.eia_flags.value != 0 && ((_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R) == nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R)) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "Client used server-only flag");
+            }
 
 
             //Check if there is another ssv use -> TODO: Implement SSV
