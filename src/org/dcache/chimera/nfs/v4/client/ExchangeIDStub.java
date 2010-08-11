@@ -15,7 +15,7 @@ import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cis;
 import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cs;
 
-public class ExchengeIDStub {
+public class ExchangeIDStub {
 
 
     public static nfs_argop4 normal(String nii_domain, String nii_name,

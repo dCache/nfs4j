@@ -409,7 +409,7 @@ public class Main {
         String domain = "nairi.desy.de";
         String name = "dCache.ORG java based client";
 
-        ops.add(ExchengeIDStub.normal(domain, name, UUID.randomUUID().toString(), 0, state_protect_how4.SP4_NONE));
+        ops.add(ExchangeIDStub.normal(domain, name, UUID.randomUUID().toString(), 0, state_protect_how4.SP4_NONE));
 
         COMPOUND4res compound4res = sendCompound(ops, "exchange_id");
 

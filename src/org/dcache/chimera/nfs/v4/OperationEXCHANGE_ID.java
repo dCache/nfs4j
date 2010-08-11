@@ -90,9 +90,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
     @Override
     public boolean process(CompoundContext context) {
 
-
         EXCHANGE_ID4res res = new EXCHANGE_ID4res();
-
 
         try {
 
