@@ -313,6 +313,6 @@ public class NFS4Client {
     }
 
     public boolean hasState() {
-        return (_clinetStates.isEmpty()) ? false : true;
+        return !_clinetStates.isEmpty();
     }
 }
