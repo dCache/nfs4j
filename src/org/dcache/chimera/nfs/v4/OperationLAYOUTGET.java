@@ -58,9 +58,12 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_LAYOUTUNAVAILABLE, "layout not supported");
         }
 
-        if (_args.oplayoutget.loga_minlength.value.value < 1) {
-               throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADLAYOUT, "loga_minlength field should be at least one.");
-        }
+        /*
+         * FIXME: sing/unsign issue here
+         */
+//        if (_args.oplayoutget.loga_minlength.value.value < 1) {
+//               throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADLAYOUT, "loga_minlength field should be at least one.");
+//        }
 
         res.logr_resok4 = new LAYOUTGET4resok();
 
