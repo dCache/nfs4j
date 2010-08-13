@@ -15,7 +15,6 @@ import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.xdr.OncRpcException;
@@ -25,22 +24,13 @@ import org.dcache.xdr.XdrDecodingStream;
 public class GetattrStub {
 
 
-    public static nfs_argop4 generateRequest(List<Integer> attrs) {
+    public static nfs_argop4 generateRequest(int ... attrs) {
 
 
         nfs_argop4 op = new nfs_argop4();
         GETATTR4args args = new GETATTR4args();
 
-        args.attr_request = new bitmap4();
-        args.attr_request.value = new uint32_t[2];
-        args.attr_request.value[0] = new uint32_t();
-        args.attr_request.value[1] = new uint32_t();
-
-        for( Integer mask : attrs) {
-            int bit = mask -(32*(mask/32));
-            args.attr_request.value[mask/32].value |= 1 << bit;
-        }
-
+        args.attr_request = bitmap4.of(attrs);
         op.argop = nfs_opnum4.OP_GETATTR;
         op.opgetattr = args;
 

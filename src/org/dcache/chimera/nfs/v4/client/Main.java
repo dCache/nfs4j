@@ -639,20 +639,18 @@ public class Main {
 
 
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-        List<Integer> attrs = new ArrayList<Integer>(1);
-        attrs.add(nfs4_prot.FATTR4_CHANGE);
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
 
         ops.add(PutfhStub.generateRequest(_cwd));
         ops.add(SavefhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
         ops.add(MkdirStub.generateRequest(path));
         ops.add(RestorefhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
         ops.add(LookuppStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
 
         COMPOUND4res compound4res = sendCompound(ops, "mkdir");
 
@@ -667,14 +665,11 @@ public class Main {
 
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
-        List<Integer> attrs = new ArrayList<Integer>(1);
-        attrs.add(nfs4_prot.FATTR4_FS_LOCATIONS);
-
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
         ops.add(PutfhStub.generateRequest(_cwd));
         ops.add(LookupStub.generateRequest(path));
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_FS_LOCATIONS));
 
         COMPOUND4res compound4res = sendCompound(ops, "get_fs_locations");
 
@@ -742,16 +737,12 @@ public class Main {
 
         Stat stat = new Stat();
 
-        List<Integer> attrs = new ArrayList<Integer>(2);
-        attrs.add(nfs4_prot.FATTR4_SIZE);
-        attrs.add(nfs4_prot.FATTR4_TYPE);
-
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
         ops.add(PutfhStub.generateRequest(fh));
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_SIZE,nfs4_prot.FATTR4_TYPE));
 
         COMPOUND4res compound4res = sendCompound(ops, "getattr (stat)");
 
@@ -1290,14 +1281,11 @@ public class Main {
 
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
-        List<Integer> attrs = new ArrayList<Integer>(1);
-        attrs.add(nfs4_prot.FATTR4_CHANGE);
-
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
         ops.add(PutfhStub.generateRequest(_rootFh));
         ops.add(GetfhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
 
         COMPOUND4res compound4res = sendCompound(ops, "get_supported_attributes");
 
@@ -1334,12 +1322,6 @@ public class Main {
 
     private void lookup(String path) throws OncRpcException, IOException {
 
-
-        List<Integer> attrs = new ArrayList<Integer>(1);
-        attrs.add(nfs4_prot.FATTR4_CHANGE);
-        attrs.add(nfs4_prot.FATTR4_SIZE);
-        attrs.add(nfs4_prot.FATTR4_TIME_MODIFY);
-
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
@@ -1349,9 +1331,11 @@ public class Main {
         ops.add(SavefhStub.generateRequest());
         ops.add(LookupStub.generateRequest(path));
         ops.add(GetfhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE,
+                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY));
         ops.add(RestorefhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(attrs));
+        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE,
+                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY));
 
         COMPOUND4res compound4res = sendCompound(ops, "lookup-sun");
 

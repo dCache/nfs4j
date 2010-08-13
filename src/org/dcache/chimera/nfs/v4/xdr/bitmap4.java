@@ -33,5 +33,43 @@ public class bitmap4 implements XdrAble {
         { int $size = xdr.xdrDecodeInt(); value = new uint32_t[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx] = new uint32_t(xdr); } }
     }
 
+    /**
+     * Create a {@link bitmap4} for given values.
+     *
+     * @param values
+     * @throws IllegalArgumentException if no values are provided
+     * @return bitmap
+     */
+    public static bitmap4 of(int ... values) {
+        if(values.length == 0) {
+            throw new IllegalArgumentException("No values provided");
+        }
+
+        /*
+         * find max value to calculate bitmap size
+         */
+        int max = values[0];
+        for(int v: values) {
+            if( v > max) max = v;
+        }
+
+        /*
+         * ceate a bitmap to hold values
+         */
+        int n = max/32 +1;
+        bitmap4 bitmap = new bitmap4(new uint32_t[n]);
+        for(int i = 0; i < n; i++) {
+            bitmap.value[i] = new uint32_t();
+        }
+
+        /*
+         * and populate them
+         */
+        for (int v : values) {
+            int bit = v - (32 * (v / 32));
+            bitmap.value[v / 32].value |= 1 << bit;
+        }
+        return bitmap;
+    }
 }
 // End of bitmap4.java
