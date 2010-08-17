@@ -17,6 +17,7 @@
 
 package org.dcache.xdr;
 
+import org.dcache.utils.ByteBufferFactory;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -24,6 +25,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Xdr implements XdrDecodingStream, XdrEncodingStream {
+
+    private final static ByteBufferFactory POOL = new ByteBufferFactory(100);
 
     /**
      * Maximal size of a XDR message.
@@ -49,7 +52,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * @param size of the buffer in bytes
      */
     public Xdr(int size) {
-        this(ByteBuffer.allocate(size));
+        this(POOL.allocate(size));
     }
 
     /**
@@ -332,5 +335,9 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
         xdrEncodeInt(len);
         _body.put(buf);
         _body.position(_body.position() + padding);
+    }
+
+    public void close() {
+        POOL.recycle(_body);
     }
 }

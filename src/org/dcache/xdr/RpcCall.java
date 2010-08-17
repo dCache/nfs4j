@@ -169,6 +169,7 @@ public class RpcCall {
 
             ByteBuffer message = xdr.body();
             _transport.send(message);
+            _xdr.close();
 
         } catch (OncRpcException e) {
             _log.log(Level.WARNING, "Xdr exception: ", e);
