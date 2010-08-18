@@ -37,6 +37,11 @@
             <name>Tigran Mkrtchyan</name>
             <organization>dCache.ORG</organization>
         </developer>
+        <developer>
+            <id>tatjana</id>
+            <name>Tatjana Baranova</name>
+            <organization>dCache.ORG</organization>
+        </developer>
     </developers>
 
     <build>
@@ -269,10 +274,12 @@
         </repository>
     </repositories>
 
-    <!--
-        NETBEANS specific
-    -->
     <properties>
+        <!--
+            NETBEANS specific
+        -->
         <netbeans.hint.license>lglp20</netbeans.hint.license>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>
