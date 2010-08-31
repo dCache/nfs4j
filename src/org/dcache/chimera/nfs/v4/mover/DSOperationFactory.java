@@ -40,7 +40,7 @@ public class DSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_DESTROY_SESSION:
                 return new OperationDESTROY_SESSION(op);
             case nfs_opnum4.OP_SEQUENCE:
-                return new OperationSEQUENCE(op, false);
+                return new OperationSEQUENCE(op);
         }
 
         return new OperationILLEGAL(op);

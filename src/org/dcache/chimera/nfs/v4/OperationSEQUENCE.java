@@ -18,11 +18,9 @@ import org.slf4j.LoggerFactory;
 public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSEQUENCE.class);
-    private final boolean _trackSession;
 
-    public OperationSEQUENCE(nfs_argop4 args, boolean trackSession ) {
+    public OperationSEQUENCE(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_SEQUENCE);
-        _trackSession = trackSession;
     }
 
     @Override
@@ -72,27 +70,21 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             }
 
 
-            /*
-             * in some cases we can ignore lease time update,
-             * while client do not keep track of them ( DS )
-             *
-             */
-            if( _trackSession ) {
-                List<nfs_resop4> reply;
-                if(_args.opsequence.sa_cachethis) {
-                    reply = context.processedOperations();
-                }else{
-                    reply = null;
-                }
-                if(session.updateSlot(_args.opsequence.sa_slotid.value.value,_args.opsequence.sa_sequenceid.value.value , reply) ) {
-                    /*
-                     * retransmit + cached reply available.
-                     * Stop processing.
-                     */
-                    return false;
-                }
-                session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+            List<nfs_resop4> reply;
+            if (_args.opsequence.sa_cachethis) {
+                reply = context.processedOperations();
+            } else {
+                reply = null;
             }
+            if (session.updateSlot(_args.opsequence.sa_slotid.value.value, _args.opsequence.sa_sequenceid.value.value, reply)) {
+                /*
+                 * retransmit + cached reply available.
+                 * Stop processing.
+                 */
+                return false;
+            }
+            session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+
             context.setSession(session);
 
             //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );

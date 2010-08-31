@@ -115,7 +115,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_DESTROY_SESSION:
                 return new OperationDESTROY_SESSION(op);
             case nfs_opnum4.OP_SEQUENCE:
-                return new OperationSEQUENCE(op, true);
+                return new OperationSEQUENCE(op);
             case nfs_opnum4.OP_ILLEGAL:
 
         }
