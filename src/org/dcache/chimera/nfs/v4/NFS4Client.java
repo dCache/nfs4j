@@ -106,7 +106,7 @@ public class NFS4Client {
     // the server MUST provide an "seqid" value starting at one...
     private int _seqid = 0;
     
-    private Map<stateid4, NFS4State> _clinetStates = new HashMap<stateid4, NFS4State>();
+    private Map<stateid4, NFS4State> _clientStates = new HashMap<stateid4, NFS4State>();
     /**
      * sessions associated with the client
      */
@@ -262,11 +262,11 @@ public class NFS4Client {
     }
 
     public void addState(NFS4State state) {
-        _clinetStates.put(state.stateid(), state);
+        _clientStates.put(state.stateid(), state);
     }
 
     public NFS4State state(stateid4 stateid) {
-        return _clinetStates.get(stateid);
+        return _clientStates.get(stateid);
     }
 
     @Override
@@ -313,6 +313,6 @@ public class NFS4Client {
     }
 
     public boolean hasState() {
-        return !_clinetStates.isEmpty();
+        return !_clientStates.isEmpty();
     }
 }

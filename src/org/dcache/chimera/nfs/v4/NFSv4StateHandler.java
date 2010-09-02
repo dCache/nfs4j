@@ -49,7 +49,13 @@ public class NFSv4StateHandler {
         for(NFSv41Session session: client.sessions() ) {
             _sessionById.remove( session.id() );
         }
-        _clientsByServerId.remove(client.id_srv());
+
+        for (stateid4 stateId : _clientsByStateId.keySet()) {
+            Long clientId = _clientsByStateId.get(stateId);
+            if (Long.getLong(client.id()) == clientId) {
+                _clientsByStateId.remove(stateId);
+            }
+        }
         _clientsByServerId.remove(client.id_srv());
         _clientByOwner.remove(client.id());
         _clientsByVerifier.remove( new String( client.verifier() ) ) ;
