@@ -16,6 +16,7 @@
  */
 package org.dcache.utils;
 
+import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 
 /**
@@ -31,10 +32,10 @@ public class ByteBufferFactory {
 
     private static final int MAX_CACHED_SIZE = 512*1024;
 
-    private final ByteBuffer[] _buffers;
+    private final SoftReference<ByteBuffer>[] _buffers;
 
     public ByteBufferFactory(int size) {
-        _buffers = new ByteBuffer[size];
+        _buffers = new SoftReference[size];
     }
 
     /**
@@ -51,14 +52,18 @@ public class ByteBufferFactory {
              * do no scan cached entriles if requested size is greater than
              * we will cache.
              */
-            synchronized(_buffers) {
-                for(int i = 0; i < _buffers.length; i++) {
-                    if( _buffers[i] != null && size <= _buffers[i].capacity()) {
-                        ByteBuffer b = _buffers[i];
-                        _buffers[i] = null;
-                        b.clear();
-                        b.limit(size);
-                        return b;
+            synchronized (_buffers) {
+                for (int i = 0; i < _buffers.length; i++) {
+                    SoftReference<ByteBuffer> ref = _buffers[i];
+                    if (ref != null ) {
+                        ByteBuffer b = ref.get();
+                        if (b == null) continue;
+                        if (size <= b.capacity()) {
+                            ref.clear();
+                            b.clear();
+                            b.limit(size);
+                            return b;
+                        }
                     }
                 }
             }
@@ -86,18 +91,25 @@ public class ByteBufferFactory {
             int indexOfSmallest = -1;
             int smallest = b.capacity();
 
-             for(int i = 0; i < _buffers.length; i++) {
-                 if(_buffers[i] == null) {
-                     _buffers[i] = b;
-                     return;
-                 }else if (_buffers[i].capacity() < smallest) {
-                     smallest = _buffers[i].capacity();
-                     indexOfSmallest = i;
-                 }
-             }
+            for (int i = 0; i < _buffers.length; i++) {
+
+                if (_buffers[i] == null) {
+                    _buffers[i] = new SoftReference<ByteBuffer>(b);
+                    return;
+                } else {
+                    ByteBuffer old = _buffers[i].get();
+                    if (old == null) {
+                        _buffers[i] = new SoftReference<ByteBuffer>(b);
+                        return;
+                    } else if (old.capacity() < smallest) {
+                        smallest = old.capacity();
+                        indexOfSmallest = i;
+                    }
+                }
+            }
 
              if(indexOfSmallest != -1) {
-                 _buffers[indexOfSmallest] = b;
+                 _buffers[indexOfSmallest] = new SoftReference<ByteBuffer>(b);
              }
         }
     }
