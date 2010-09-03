@@ -52,7 +52,7 @@ public class NFSv4StateHandler {
 
         for (stateid4 stateId : _clientsByStateId.keySet()) {
             Long clientId = _clientsByStateId.get(stateId);
-            if (Long.getLong(client.id()) == clientId) {
+           if (clientId.equals(Long.valueOf(client.id_srv()))) {
                 _clientsByStateId.remove(stateId);
             }
         }
