@@ -1175,11 +1175,9 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            System.out.println("["
-                    + new String(
-                    compound4res.resarray[2].opread.resok4.data.array(),
-                    compound4res.resarray[2].opread.resok4.data.remaining())
-                    + "]");
+            byte[] data = new byte[compound4res.resarray[2].opread.resok4.data.remaining()];
+            compound4res.resarray[2].opread.resok4.data.get(data);
+            System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("read failed. Error = "
                     + NFSv41Error.errcode2string(compound4res.status));
@@ -1201,11 +1199,9 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            System.out.println("["
-                    + new String(
-                    compound4res.resarray[2].opread.resok4.data.array(),
-                    compound4res.resarray[2].opread.resok4.data.remaining())
-                    + "]");
+            byte[] data = new byte[compound4res.resarray[2].opread.resok4.data.remaining()];
+            compound4res.resarray[2].opread.resok4.data.get(data);
+            System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("read failed. Error = "
                     + NFSv41Error.errcode2string(compound4res.status));
