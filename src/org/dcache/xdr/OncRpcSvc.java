@@ -29,6 +29,7 @@ import com.sun.grizzly.TCPSelectorHandler;
 import com.sun.grizzly.UDPSelectorHandler;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -267,5 +268,34 @@ public class OncRpcSvc {
      */
     public void setThreadCount(int count) {
         _controller.setReadThreadsCount(count);
+    }
+
+    /**
+     * Returns the address of the endpoint this service is bound to,
+     * or <code>null<code> if it is not bound yet.
+     * @param protocol
+     * @return a {@link InetSocketAddress} representing the local endpoint of
+     * this service, or <code>null</code> if it is not bound yet.
+     */
+    public InetSocketAddress getInetSocketAddress(int protocol) {
+
+        TCPSelectorHandler handler;
+        switch(protocol){
+            case IpProtocolType.TCP:
+                handler =
+                    (TCPSelectorHandler) _controller.getSelectorHandler(Controller.Protocol.TCP);
+                break;
+            case IpProtocolType.UDP:
+                handler =
+                    (UDPSelectorHandler) _controller.getSelectorHandler(Controller.Protocol.UDP);
+                break;
+            default:
+                handler = null;
+        }
+
+        if (handler != null) {
+            return new InetSocketAddress(handler.getInet(), handler.getPort());
+        }
+       return null;
     }
 }
