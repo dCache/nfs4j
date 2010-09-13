@@ -97,12 +97,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
    			    client.confirmed(true);
    			}
 
-
-    		//check of a contrived replay result
-    		if( seqId != _args.opcreate_session.csa_sequence.value.value  ) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + client.currentSeqID() + " / " + seqId);
-    		}
-
     		if (client.currentSeqID() != 0)
     			session = client.getSession(client.currentSeqID()-1);
 

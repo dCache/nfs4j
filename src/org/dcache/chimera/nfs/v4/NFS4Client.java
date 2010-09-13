@@ -304,10 +304,6 @@ public class NFS4Client {
         return _sessions.isEmpty();
     }
 
-    public int sessionsLeft(NFSv41Session session) {
-        return _sessions.size();
-    }
-
     public String principal() {
         return _principal;
     }
