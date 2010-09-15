@@ -38,7 +38,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationEXCHANGE_ID.class);
     private final int _flag;
-    private static final int mask = (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS
+    private static final int EXCHGID4_FLAG_MASK = (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS
             | nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS
             | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS
             | nfs4_prot.EXCHGID4_FLAG_SUPP_MOVED_MIGR
@@ -116,7 +116,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             }
 
           
-            if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value | mask) != mask) {
+            if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value | EXCHGID4_FLAG_MASK) != EXCHGID4_FLAG_MASK) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid flag");
             }
 
