@@ -127,7 +127,7 @@ public class OncRpcClient {
 
     public XdrTransport connect() throws IOException {
 
-        new Thread(controller).start();
+        new Thread(controller, "ONCRPC Client").start();
 
         try{
             clientReady.await();

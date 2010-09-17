@@ -200,7 +200,7 @@ public class OncRpcSvc {
      * Start service.
      */
     public void start() throws IOException  {
-        new Thread(_controller).start();
+        new Thread(_controller, "ONCRPC Service").start();
         try {
             _serverReady.await();
         } catch (InterruptedException ex) {
