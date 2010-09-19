@@ -146,8 +146,8 @@ public class Cache<K, V> extends  TimerTask {
      *
      * @param name Unique id for this cache.
      * @param size maximal number of elements.
-     * @param default entryLifeTime maximal time in milliseconds.
-     * @param default entryIdleTime maximal idle time in milliseconds.
+     * @param entryLifeTime maximal time in milliseconds.
+     * @param entryIdleTime maximal idle time in milliseconds.
      */
     public Cache(String name, int size, long entryLifeTime, long entryIdleTime) {
         this(name, size, entryLifeTime, entryIdleTime,
@@ -160,8 +160,8 @@ public class Cache<K, V> extends  TimerTask {
      *
      * @param name Unique id for this cache.
      * @param size maximal number of elements.
-     * @param default entryLifeTime maximal time in milliseconds.
-     * @param default entryIdleTime maximal idle time in milliseconds.
+     * @param entryLifeTime maximal time in milliseconds.
+     * @param entryIdleTime maximal idle time in milliseconds.
      * @param eventListener {@link CacheEventListener}
      * @param timeValue how oftem cleaner thread have to check for invalidated entries.
      * @param timeUnit a {@link TimeUnit} determining how to interpret the
