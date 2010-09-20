@@ -38,7 +38,7 @@ public class CompoundContext {
     /**
      * Create context of COUMPOUND request.
      *
-     * @param processedOps @{link List} wnere results of processed operations are stored.
+     * @param processedOps @{link List} where results of processed operations are stored.
      * @param minorversion NFSv4 minor version number.
      * @param fs backend file-system interface
      * @param call RPC call
@@ -76,7 +76,7 @@ public class CompoundContext {
     }
     /**
      * Get NFSv4 minor version number. The version number os provided by client
-     * for each coumpound.
+     * for each compound.
      * @return version number.
      */
     public int getMinorversion() {
@@ -85,7 +85,7 @@ public class CompoundContext {
 
     /**
      * Current file handle is a server side variable passed from one operation
-     * to other inside a coumpound.
+     * to other inside a compound.
      *
      * @return file handle
      * @throws ChimeraNFSException

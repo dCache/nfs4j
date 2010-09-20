@@ -19,8 +19,8 @@ public abstract class AbstractNFSv4Operation {
     }
 
     /**
-     * Process current opration.
-     * @return <code>true</code> if next operration may continue.
+     * Process current operation.
+     * @return <code>true</code> if next operation may continue.
      */
     public abstract boolean process(CompoundContext context);
 }
