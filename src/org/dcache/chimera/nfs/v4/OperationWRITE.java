@@ -65,7 +65,10 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
 	    	long offset = _args.opwrite.offset.value.value;
 	    	int count = _args.opwrite.data.remaining();
-	        int bytesWritten = context.currentInode().write(offset, _args.opwrite.data.array(), 0, count);
+                byte[] data = new byte[count];
+                _args.opwrite.data.get(data);
+
+	        int bytesWritten = context.currentInode().write(offset, data, 0, count);
 
 	        if( bytesWritten < 0 ) {
 	            throw new IOHimeraFsException("IO not allowed");
