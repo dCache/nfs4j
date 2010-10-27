@@ -79,11 +79,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
     		 * that is one greater than last successfully used.
     		 */
 
-    		if( seqId == client.currentSeqID()  ) {
-    			// retransmit
-                    _log.debug("CREATE_SESSION4 retransmit session: {}", client.currentSeqID() );
-    		}
-
     		if(client.currentSeqID() < _args.opcreate_session.csa_sequence.value.value | 0 > _args.opcreate_session.csa_sequence.value.value){
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + client.currentSeqID() + " / " + _args.opcreate_session.csa_sequence.value.value);
     		}
@@ -92,27 +87,16 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "client already in use: " + client.principal()+ " " + context.getUser().getUID());
     		}
 
-   			if(client.sessions().isEmpty() ) {
-                            _log.debug("set client {} confirmed", client);
-   			    client.confirmed(true);
-   			}
-
     		if (client.currentSeqID() != 0)
     			session = client.getSession(client.currentSeqID()-1);
 
-    		if(session == null){
+            if (session == null) {
 
-	    		if( seqId > client.currentSeqID() +1 ) {
-                    throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + client.currentSeqID() + " / " + seqId);
-	    		}
-
-                    session = new NFSv41Session(client,_args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value );
-	            client.addSession( session);
-                    _log.debug("adding new session [{}]",  session.id() );
-	            NFSv4StateHandler.getInstace().sessionById(session.id(), session);
-	    		client.confirmed();
-	    		client.nextSeqID();
-    		}
+                session = client.createSession(_args.opcreate_session.csa_sequence.value.value,
+                        _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value);
+                _log.debug("adding new session [{}]", session.id());
+                NFSv4StateHandler.getInstace().sessionById(session.id(), session);
+            }
 
     		client.refreshLeaseTime();
     		//client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);

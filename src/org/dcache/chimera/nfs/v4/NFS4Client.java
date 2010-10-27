@@ -105,7 +105,12 @@ public class NFS4Client {
     // See 8.1.3.1 of draft-10:
     // the server MUST provide an "seqid" value starting at one...
     private int _seqid = 0;
-    
+
+    /**
+     * The sequence number used to track session creations.
+     */
+    private int _sessionSequence = 0;
+
     private Map<stateid4, NFS4State> _clientStates = new HashMap<stateid4, NFS4State>();
     /**
      * sessions associated with the client
@@ -292,8 +297,29 @@ public class NFS4Client {
         return _sessions;
     }
 
-    public void addSession(NFSv41Session session) {
+    public NFSv41Session createSession(int sequence, int cacheSize) throws ChimeraNFSException {
+
+        /*
+         * For unconfirmed cleints server expects sequence number to be equal to
+         * value of eir_sequenceid that was returned in results of the EXCHANGE_ID.
+         */
+       if( sequence == _sessionSequence && _isConfirmed ) {
+                _log.debug("retransmit on create session");
+                // FIXME:
+        }
+
+    	if(sequence > _sessionSequence +1) {
+    		throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + _sessionSequence + " / " + sequence);
+    	}
+
+    	_sessionSequence++;
+    	NFSv41Session session = new NFSv41Session(this, cacheSize);
+    	if(!_isConfirmed) {
+    	    _log.debug("set client configrmed");
+    	    _isConfirmed = true;
+    	}
         _sessions.add(session);
+        return session;
     }
 
     public void removeSession(NFSv41Session session) {
