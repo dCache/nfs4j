@@ -34,6 +34,7 @@ public class CompoundContext {
     private final ExportFile _exportFile;
     private final NFSv41DeviceManager _deviceManager;
     private final AclHandler _aclHandler;
+    private final NFSv4StateHandler _stateHandler;
 
     /**
      * Create context of COUMPOUND request.
@@ -45,6 +46,7 @@ public class CompoundContext {
      * @param exportFile list of servers exports.
      */
     public CompoundContext(List<nfs_resop4> processedOps, int minorversion, FileSystemProvider fs,
+            NFSv4StateHandler stateHandler,
             NFSv41DeviceManager deviceManager, AclHandler aclHandler, RpcCall call, ExportFile exportFile) {
         _processedOps = processedOps;
         _minorversion = minorversion;
@@ -54,6 +56,7 @@ public class CompoundContext {
         _callInfo = call;
         _exportFile = exportFile;
         _user = HimeraNFS4Utils.remoteUser(_callInfo, _exportFile);
+        _stateHandler = stateHandler;
     }
 
     public RpcCall getRpcCall() {
@@ -174,5 +177,9 @@ public class CompoundContext {
      */
     public List<nfs_resop4> processedOperations() {
         return _processedOps;
+    }
+
+    public NFSv4StateHandler getStateHandler() {
+        return _stateHandler;
     }
 }

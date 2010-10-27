@@ -39,12 +39,12 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
                 stateid4 stateid = _args.opopen_confirm.open_stateid;
                 _log.debug("confirmed stateID: {}", stateid );
-            Long clientId = NFSv4StateHandler.getInstace().getClientIdByStateId(stateid);
+            Long clientId = context.getStateHandler().getClientIdByStateId(stateid);
             if(clientId == null ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
             }
 
-            NFS4Client client = NFSv4StateHandler.getInstace().getClientByID(clientId);
+            NFS4Client client = context.getStateHandler().getClientByID(clientId);
             if(client == null ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
             }

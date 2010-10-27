@@ -45,7 +45,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             NFS4Client client = null;
 
             if (context.getSession() == null) {
-                client = NFSv4StateHandler.getInstace().getClientByID(clientid);
+                client = context.getStateHandler().getClientByID(clientid);
 
                 if (client == null || !client.isConfirmed()) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_STALE_CLIENTID, "bad client id.");
@@ -174,7 +174,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             res.resok4.stateid = nfs4state.stateid();
             client.addState(nfs4state);
-            NFSv4StateHandler.getInstace().addClinetByStateID(nfs4state.stateid(), clientid);
+            context.getStateHandler().addClinetByStateID(nfs4state.stateid(), clientid);
             _log.debug("New stateID: {}", nfs4state.stateid());
 
             res.status = nfsstat4.NFS4_OK;

@@ -19,30 +19,20 @@ public class NFSv4StateHandler {
 
     private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
 
-    private static final NFSv4StateHandler HANDLER = new NFSv4StateHandler();
-
-
-    private List<NFS4Client> _clients = new ArrayList<NFS4Client>();
+    private final List<NFS4Client> _clients = new ArrayList<NFS4Client>();
 
     // all seen by server
-    private static Map<String, NFS4Client> _clientsByVerifier = new HashMap<String, NFS4Client>();
+    private final Map<String, NFS4Client> _clientsByVerifier = new HashMap<String, NFS4Client>();
 
 
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
-    private static Map<Long, NFS4Client> _clientsByServerId = new HashMap<Long, NFS4Client>();
-    private static Map<stateid4, Long> _clientsByStateId = new HashMap<stateid4, Long>();
+    private final Map<Long, NFS4Client> _clientsByServerId = new HashMap<Long, NFS4Client>();
+    private final Map<stateid4, Long> _clientsByStateId = new HashMap<stateid4, Long>();
 
     private final Cache<sessionid4, NFSv41Session> _sessionById =
             new Cache<sessionid4, NFSv41Session>("NFSv41 sessions", 5000, Long.MAX_VALUE, TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME*2));
 
-    private static Map<String, NFS4Client> _clientByOwner = new HashMap<String, NFS4Client>();
-
-    private NFSv4StateHandler() {}
-
-
-    public static NFSv4StateHandler getInstace() {
-        return HANDLER;
-    }
+    private final Map<String, NFS4Client> _clientByOwner = new HashMap<String, NFS4Client>();
 
     public void removeClient(NFS4Client client) {
 

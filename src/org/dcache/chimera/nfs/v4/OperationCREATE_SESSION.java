@@ -49,7 +49,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "bad ceate_session flag");
     		}
 
-    		NFS4Client client = NFSv4StateHandler.getInstace().getClientByID(clientId);
+    		NFS4Client client = context.getStateHandler().getClientByID(clientId);
 
     		/*
     		 * Phase 1:
@@ -95,7 +95,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 session = client.createSession(_args.opcreate_session.csa_sequence.value.value,
                         _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value);
                 _log.debug("adding new session [{}]", session.id());
-                NFSv4StateHandler.getInstace().sessionById(session.id(), session);
+                context.getStateHandler().sessionById(session.id(), session);
             }
 
     		client.refreshLeaseTime();

@@ -31,7 +31,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
 	            byte[] clientid = _args.opsetclientid.client.id; // clientid
 
-	            if( NFSv4StateHandler.getInstace().getClientByVerifier(clientid) != null ) {
+	            if( context.getStateHandler().getClientByVerifier(clientid) != null ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "Client Id In use");
 	            }
 
@@ -53,7 +53,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                     _log.debug("no callback defined for: {}", context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress());
 		        }
 
-		        NFSv4StateHandler.getInstace().addClient(client);
+		        context.getStateHandler().addClient(client);
 
 		        res.resok4 = new SETCLIENTID4resok();
 		        res.resok4.clientid = new clientid4();

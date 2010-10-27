@@ -27,7 +27,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
             FsInode inode = context.currentInode();
 
             if( context.getSession() == null ) {
-                NFSv4StateHandler.getInstace().updateClientLeaseTime(_args.opclose.open_stateid);
+                context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
             }else{
                 context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }

@@ -52,7 +52,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
                  * and RENEW opertations. With introduction of sessions in
                  * v4.1 update of the lease time done through SEQUENCE operation.
                  */
-                NFSv4StateHandler.getInstace().updateClientLeaseTime(_args.opread.stateid);
+                context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
             }
 
 

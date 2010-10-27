@@ -24,7 +24,7 @@ public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
         try {
             Long clientid = Long.valueOf(_args.opsetclientid_confirm.clientid.value.value);
 
-            NFS4Client client = NFSv4StateHandler.getInstace().getClientByID(clientid);
+            NFS4Client client = context.getStateHandler().getClientByID(clientid);
             if (client == null) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_STALE_CLIENTID, "Bad client id");
             }

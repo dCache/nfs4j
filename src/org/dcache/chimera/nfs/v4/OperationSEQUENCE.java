@@ -55,7 +55,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             res.sr_resok4.sr_target_highest_slotid = new slotid4(_args.opsequence.sa_slotid.value);
             res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
 
-            NFSv41Session session = NFSv4StateHandler.getInstace().sessionById(_args.opsequence.sa_sessionid);
+            NFSv41Session session = context.getStateHandler().sessionById(_args.opsequence.sa_sessionid);
 
             if(session == null ) {
                 _log.debug("no session for id [{}]",  _args.opsequence.sa_sessionid );
