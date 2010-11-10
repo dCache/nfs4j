@@ -42,7 +42,7 @@ public class OncRpcEmbeddedPortmap {
 
     public  OncRpcEmbeddedPortmap(int timeout) throws UnknownHostException, IOException {
 
-        // we start embeded portmap only if there no other one is running
+        // we start embedded portmap only if there no other one is running
 
         OncRpcClient rpcClient = null;
         boolean localPortmapperRunning = false;
@@ -64,7 +64,8 @@ public class OncRpcEmbeddedPortmap {
         }
 
         if(!localPortmapperRunning) {
-            OncRpcSvc rpcbindServer = new OncRpcSvc(OncRpcPortmap.PORTMAP_PORT, IpProtocolType.UDP | IpProtocolType.TCP, true);
+            OncRpcSvc rpcbindServer = new OncRpcSvc(OncRpcPortmap.PORTMAP_PORT, IpProtocolType.UDP | IpProtocolType.TCP,
+            		true, "Embedded Portmap");
             rpcbindServer.register(new OncRpcProgram( OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), new OncRpcbindServer());
             rpcbindServer.start();
         }

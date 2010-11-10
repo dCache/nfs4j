@@ -44,10 +44,14 @@ public class OncRpcSvc {
 
     private final static Logger _log = Logger.getLogger(OncRpcSvc.class.getName());
 
+    /**
+     * Default name of RPC service.
+     */
+    private final static String DEFAULT_SERVICE_NAME = "ONCRPC Service";
+
     private final Controller _controller = new Controller();
     private final CountDownLatch _serverReady = new CountDownLatch(1);
     private final boolean _publish;
-
     /**
      * mapping of registered programs.
      */
@@ -55,12 +59,27 @@ public class OncRpcSvc {
             new ConcurrentHashMap<OncRpcProgram, RpcDispatchable>();
 
     /**
-     * Create a new server. Bind to all supported protocols.
+     * Name of this service. Used as a thread name.
+     */
+    private final String _name;
+
+    /**
+     * Create a new server with default name. Bind to all supported protocols.
      *
      * @param port TCP/UDP port to which service will he bound.
      */
     public OncRpcSvc(int port) {
-        this(port, IpProtocolType.TCP | IpProtocolType.UDP, true);
+        this(port, IpProtocolType.TCP | IpProtocolType.UDP, true, DEFAULT_SERVICE_NAME);
+    }
+
+    /**
+     * Create a new server with given. Bind to all supported protocols.
+     *
+     * @param port to bing
+     * @param name of the service
+     */
+    public OncRpcSvc(int port, String name) {
+        this(port, IpProtocolType.TCP | IpProtocolType.UDP, true, name);
     }
 
     /**
@@ -69,29 +88,46 @@ public class OncRpcSvc {
      * @param port TCP/UDP port to which service will he bound.
      * @param publish if true, register service by portmap
      */
-    public OncRpcSvc(int port, boolean publish) {
-        this(port, IpProtocolType.TCP | IpProtocolType.UDP, publish);
-    }
-
-     /**
-      * Create a new server.
-      *
-     * @param port TCP/UDP port to which service will he bound.
-     * @param protocol to bind (tcp or udp)
-     */
-    public OncRpcSvc(int port, int protocol, boolean publish) {
-        this(new PortRange(port), protocol, publish);
+    public OncRpcSvc(int port, boolean publish, String nameOfServer) {
+        this(port, IpProtocolType.TCP | IpProtocolType.UDP, publish, nameOfServer);
     }
 
     /**
-     * Create a new server.
+     * Create a new server with given name, protocol and port number.
+     *
+     * @param port TCP/UDP port to which service will he bound.
+     * @param protocol to bind (tcp or udp)
+     * @param name of the service
+     */
+    public OncRpcSvc(int port, int protocol, boolean publish, String name) {
+        this(new PortRange(port), protocol, publish, name);
+    }
+
+    /**
+     * Create a new server with @{link PortRange} and name. If <code>publish</code>
+     * is <code>true</code>, publish this service in a portmap.
+     *
+     * @param portRange to use.
+     * @param publish this service
+     * @param name of the service
+     */
+    public OncRpcSvc(PortRange portRange, boolean publish, String name) {
+        this(portRange, IpProtocolType.TCP | IpProtocolType.UDP, publish, name);
+    }
+
+    /**
+     * Create a new server with given @{link PortRange} and name. If <code>publish</code>
+     * is <code>true</code>, publish this service in a portmap.
      *
      * @param {@link PortRange} of TCP/UDP ports to which service will he bound.
      * @param protocol to bind (tcp or udp).
+     * @param publish this service.
+     * @param name of the service.
      */
-    public OncRpcSvc(PortRange portRange, int protocol, boolean publish) {
+    public OncRpcSvc(PortRange portRange, int protocol, boolean publish, String name) {
 
         _publish = publish;
+        _name = name;
 
         if( (protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0 ) {
             throw new IllegalArgumentException("TCP or UDP protocol have to be defined");
@@ -200,7 +236,7 @@ public class OncRpcSvc {
      * Start service.
      */
     public void start() throws IOException  {
-        new Thread(_controller, "ONCRPC Service").start();
+        new Thread(_controller, _name).start();
         try {
             _serverReady.await();
         } catch (InterruptedException ex) {
