@@ -90,7 +90,7 @@
                         <manifestEntries>
                             <mode>development</mode>
                             <Implementation-Build>${buildNumber}</Implementation-Build>
-                            <url>${pom.url}</url>
+                            <url>${project.url}</url>
                             <Build-Time>${maven.build.timestamp}</Build-Time>
                         </manifestEntries>
                     </archive>
@@ -119,7 +119,7 @@
                                 <manifestEntries>
                                     <mode>development</mode>
                                     <Implementation-Build>${buildNumber}</Implementation-Build>
-                                    <url>${pom.url}</url>
+                                    <url>${project.url}</url>
                                     <Build-Time>${maven.build.timestamp}</Build-Time>
                                 </manifestEntries>
                             </archive>
