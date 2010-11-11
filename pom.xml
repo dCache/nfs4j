@@ -289,4 +289,18 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <!--
+        MAVEN DEPLOYMENT REPOSITORY
+    -->
+    <distributionManagement>
+        <repository>
+            <id>dcache.org</id>
+            <url>http://www.dcache.org/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>dcache.org</id>
+            <url>http://www.dcache.org/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
