@@ -93,8 +93,4 @@ public class SessionSlot {
         return _reply;
     }
 
-    int sequence() {
-        return _sequence;
-    }
-
 }
