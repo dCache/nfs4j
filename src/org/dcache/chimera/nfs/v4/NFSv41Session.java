@@ -1,16 +1,20 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.utils.Bytes;
 
 public class NFSv41Session {
 
-    private static final AtomicLong SESSIONS = new AtomicLong(0);
+    /**
+     * Unique session identifier. 16 bytes long.
+     *
+     * |0 - client id - 7|8 - reserved - 11 | 12 - sequence id - 15|
+     */
     private final sessionid4 _session;
     /**
      * Session reply slots.
@@ -18,12 +22,16 @@ public class NFSv41Session {
     private final SessionSlot[] _slots;
     private final NFS4Client _client;
 
-    public NFSv41Session(NFS4Client client, int replyCacheSize) {
+    private final int _sequence;
+
+    public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize) {
         _client = client;
+        _sequence = sequence;
         _slots = new SessionSlot[replyCacheSize];
-        long newSession = SESSIONS.incrementAndGet();
-        byte[] id = String.format("%16X", newSession).getBytes();
-        assert id.length == nfs4_prot.NFS4_SESSIONID_SIZE;
+        byte[] id  = new byte[nfs4_prot.NFS4_SESSIONID_SIZE];
+
+        Bytes.putLong(id, 0, client.id_srv());
+        Bytes.putInt(id, 12, sequence);
         _session = new sessionid4(id);
     }
 
@@ -53,7 +61,7 @@ public class NFSv41Session {
      * @return cache slot.
      * @throws ChimeraNFSException
      */
-    SessionSlot getSlot(int slot) throws ChimeraNFSException {
+    private SessionSlot getSlot(int slot) throws ChimeraNFSException {
 
         if (slot > slotMax()) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADSLOT, "slot id overflow");
@@ -66,9 +74,20 @@ public class NFSv41Session {
         return _slots[slot];
     }
 
+    public int getSecuence() {
+        return _sequence;
+    }
     @Override
     public String toString() {
-        String s = String.format("Session: [%s]", _session);
-        return s;
+        return toHexString(_session.value);
+    }
+
+    public String toHexString(byte[] data) {
+
+        StringBuilder sb = new StringBuilder();
+        for (byte b : data) {
+            sb.append(Integer.toHexString(b));
+        }
+        return sb.toString();
     }
 }

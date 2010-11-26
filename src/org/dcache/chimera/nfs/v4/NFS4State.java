@@ -6,6 +6,7 @@ package org.dcache.chimera.nfs.v4;
 import java.security.SecureRandom;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
+import org.dcache.utils.Bytes;
 
 class NFS4State {            
         
@@ -33,13 +34,14 @@ class NFS4State {
      */
     private static final SecureRandom RANDOM = new SecureRandom();
     
-    public NFS4State(int seqid) {
+    public NFS4State(long clientid, int seqid) {
 
         _stateid = new stateid4();
-        _stateid.other = new byte[12];
+        _stateid.other = new byte[12];        
         _stateid.seqid = new uint32_t(seqid);
         // generated using a cryptographically strong pseudo random number generator.
-        RANDOM.nextBytes(_stateid.other);
+        Bytes.putLong(_stateid.other, 0, clientid);
+        Bytes.putInt(_stateid.other, 8, RANDOM.nextInt());
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }

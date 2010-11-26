@@ -12,6 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.utils.Cache;
+import org.dcache.utils.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,6 @@ public class NFSv4StateHandler {
 
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
     private final Map<Long, NFS4Client> _clientsByServerId = new HashMap<Long, NFS4Client>();
-    private final Map<stateid4, Long> _clientsByStateId = new HashMap<stateid4, Long>();
 
     private final Cache<sessionid4, NFSv41Session> _sessionById =
             new Cache<sessionid4, NFSv41Session>("NFSv41 sessions", 5000, Long.MAX_VALUE, TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME*2));
@@ -40,12 +40,6 @@ public class NFSv4StateHandler {
             _sessionById.remove( session.id() );
         }
 
-        for (stateid4 stateId : _clientsByStateId.keySet()) {
-            Long clientId = _clientsByStateId.get(stateId);
-           if (clientId.equals(Long.valueOf(client.id_srv()))) {
-                _clientsByStateId.remove(stateId);
-            }
-        }
         _clientsByServerId.remove(client.id_srv());
         _clientByOwner.remove(client.id());
         _clientsByVerifier.remove( new String( client.verifier() ) ) ;
@@ -60,25 +54,21 @@ public class NFSv4StateHandler {
         _clientByOwner.put( newClient.id(), newClient);
     }
 
-    public NFS4Client getClientByID( Long id) {
-        return _clientsByServerId.get(id);
+    public NFS4Client getClientByID( Long id) throws ChimeraNFSException {
+        NFS4Client client = _clientsByServerId.get(id);
+        if(client == null) {
+            throw new ChimeraNFSException(nfsstat4.NFS4ERR_STALE_CLIENTID, "bad client id.");
+        }
+        return client;
     }
 
-
-    public Long getClientIdByStateId(stateid4 stateId) {
-        return _clientsByStateId.get(stateId);
+    public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
+        try {
+            return getClientByID(Long.valueOf(Bytes.getLong(stateId.other, 0)));
+        }catch(ChimeraNFSException e) {
+            throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_STATEID, "bad state id.");
+        }
     }
-
-
-    public void addClientByID(Long id, NFS4Client client) {
-        _clientsByServerId.put(id, client);
-    }
-
-
-    public void addClinetByStateID(stateid4 stateId, Long clientId) {
-        _clientsByStateId.put(stateId, clientId);
-    }
-
 
     public void addClientByVerifier( byte[] verifier, NFS4Client client) {
         _clientsByVerifier.put(new String(verifier), client );
@@ -103,12 +93,7 @@ public class NFSv4StateHandler {
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
 
-        Long clientId = _clientsByStateId.get(stateid);
-        if(clientId == null ) {
-            throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "No client ID associated with sate."  );
-        }
-
-        NFS4Client client = _clientsByServerId.get(clientId);
+        NFS4Client client = _clientsByServerId.get(Bytes.getLong(stateid.other, 0));
         if(client == null ) {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "No client associated with client id."  );
         }
