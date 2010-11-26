@@ -158,22 +158,19 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
             res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
-            NFS4State nfs4state = null;
             /*
              * if it's not session-based  request, then client have to confirm
              */
             if (context.getSession() == null) {
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX
                         | nfs4_prot.OPEN4_RESULT_CONFIRM);
-                nfs4state = new NFS4State(_args.opopen.seqid.value.value);
             } else {
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
-                nfs4state = new NFS4State(context.getSession().getClient().currentSeqID());
-                context.getSession().getClient().nextSeqID();
             }
 
+            NFS4State nfs4state = client.createState();
             res.resok4.stateid = nfs4state.stateid();
-            client.addState(nfs4state);
+
             context.getStateHandler().addClinetByStateID(nfs4state.stateid(), clientid);
             _log.debug("New stateID: {}", nfs4state.stateid());
 

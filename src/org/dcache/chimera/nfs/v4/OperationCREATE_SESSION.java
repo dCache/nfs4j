@@ -24,13 +24,9 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 	public boolean process(CompoundContext context) {
     	CREATE_SESSION4res res = new CREATE_SESSION4res();
 
-
     	Long clientId = Long.valueOf(_args.opcreate_session.csa_clientid.value.value);
-    	int seqId = _args.opcreate_session.csa_sequence.value.value;
 
     	try {
-
-    		NFSv41Session session = null;
 
     		/*
     		 * check for correct arguments
@@ -79,24 +75,14 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
     		 * that is one greater than last successfully used.
     		 */
 
-    		if(client.currentSeqID() < _args.opcreate_session.csa_sequence.value.value | 0 > _args.opcreate_session.csa_sequence.value.value){
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQ_MISORDERED, "bad sequence id: " + client.currentSeqID() + " / " + _args.opcreate_session.csa_sequence.value.value);
-    		}
-
     		if( !client.principal().equals(Integer.toString(context.getUser().getUID())) && !client.isConfirmed() ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "client already in use: " + client.principal()+ " " + context.getUser().getUID());
     		}
 
-    		if (client.currentSeqID() != 0)
-    			session = client.getSession(client.currentSeqID()-1);
-
-            if (session == null) {
-
-                session = client.createSession(_args.opcreate_session.csa_sequence.value.value,
+        	NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value.value,
                         _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value);
-                _log.debug("adding new session [{}]", session.id());
+                _log.debug("adding new session [{}]", session);
                 context.getStateHandler().sessionById(session.id(), session);
-            }
 
     		client.refreshLeaseTime();
     		//client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);

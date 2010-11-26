@@ -10,35 +10,30 @@ import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 
 public class NFSv41Session {
 
-
-	private static final AtomicLong SESSIONS = new AtomicLong(0);
-
-        private final sessionid4 _session;
-
+    private static final AtomicLong SESSIONS = new AtomicLong(0);
+    private final sessionid4 _session;
     /**
      * Session reply slots.
      */
     private final SessionSlot[] _slots;
+    private final NFS4Client _client;
 
-	private final NFS4Client _client;
+    public NFSv41Session(NFS4Client client, int replyCacheSize) {
+        _client = client;
+        _slots = new SessionSlot[replyCacheSize];
+        long newSession = SESSIONS.incrementAndGet();
+        byte[] id = String.format("%16X", newSession).getBytes();
+        assert id.length == nfs4_prot.NFS4_SESSIONID_SIZE;
+        _session = new sessionid4(id);
+    }
 
-        public NFSv41Session(NFS4Client client, int replyCacheSize) {
-		_client = client;
-                _slots = new SessionSlot[replyCacheSize];
-                long newSession = SESSIONS.incrementAndGet();
-                byte[] id  = String.format("%16X", newSession ).getBytes();
-                assert id.length == nfs4_prot.NFS4_SESSIONID_SIZE;
-                _session = new sessionid4(id);
-	}
+    public sessionid4 id() {
+        return _session;
+    }
 
-        public sessionid4 id() {
-            return _session;
-	}
-
-	public NFS4Client getClient() {
-		return _client;
-	}
-
+    public NFS4Client getClient() {
+        return _client;
+    }
 
     /**
      * Get maximum slot id.
