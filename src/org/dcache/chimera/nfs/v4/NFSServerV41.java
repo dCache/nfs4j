@@ -118,4 +118,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
         return res;
     }
+
+    /**
+     * Get {@link List} of currently active clients.
+     * @return clients.
+     */
+    public List<NFS4Client> getClients() {
+        return _statHandler.getClients();
+    }
 }
