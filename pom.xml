@@ -16,6 +16,10 @@
     <name>Grizzly Based ONC RPC implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
+    <scm>
+        <connection>scm:hg:http://www.dcache.org/hg/Grizzly-RPC</connection>
+        <developerConnection>scm:hg:ssh://svn.dcache.org/hg/grizzly-rpc</developerConnection>
+    </scm>
 
     <!--
         CODE LICENSE
