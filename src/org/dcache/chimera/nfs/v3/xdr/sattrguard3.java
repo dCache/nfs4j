@@ -22,7 +22,7 @@ public class sattrguard3 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(check);
-        if ( check == true ) {
+        if ( check ) {
             obj_ctime.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class sattrguard3 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         check = xdr.xdrDecodeBoolean();
-        if ( check == true ) {
+        if ( check ) {
             obj_ctime = new nfstime3(xdr);
         }
     }

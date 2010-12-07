@@ -25,7 +25,7 @@ public class groups implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        if ( value != null ) { xdr.xdrEncodeBoolean(true); value.xdrEncode(xdr); } else { xdr.xdrEncodeBoolean(false); };
+        if ( value != null ) { xdr.xdrEncodeBoolean(true); value.xdrEncode(xdr); } else { xdr.xdrEncodeBoolean(false); }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)

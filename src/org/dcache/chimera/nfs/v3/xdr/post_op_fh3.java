@@ -22,7 +22,7 @@ public class post_op_fh3 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(handle_follows);
-        if ( handle_follows == true ) {
+        if ( handle_follows ) {
             handle.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class post_op_fh3 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         handle_follows = xdr.xdrDecodeBoolean();
-        if ( handle_follows == true ) {
+        if ( handle_follows ) {
             handle = new nfs_fh3(xdr);
         }
     }

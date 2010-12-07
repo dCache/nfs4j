@@ -22,7 +22,7 @@ public class newsize4 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(ns_sizechanged);
-        if ( ns_sizechanged == true ) {
+        if ( ns_sizechanged ) {
             ns_size.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class newsize4 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         ns_sizechanged = xdr.xdrDecodeBoolean();
-        if ( ns_sizechanged == true ) {
+        if ( ns_sizechanged ) {
             ns_size = new length4(xdr);
         }
     }

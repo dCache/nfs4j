@@ -22,7 +22,7 @@ public class set_uid3 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(set_it);
-        if ( set_it == true ) {
+        if ( set_it ) {
             uid.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class set_uid3 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         set_it = xdr.xdrDecodeBoolean();
-        if ( set_it == true ) {
+        if ( set_it ) {
             uid = new uid3(xdr);
         }
     }

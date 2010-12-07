@@ -22,7 +22,7 @@ public class pre_op_attr implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(attributes_follow);
-        if ( attributes_follow == true ) {
+        if ( attributes_follow ) {
             attributes.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class pre_op_attr implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         attributes_follow = xdr.xdrDecodeBoolean();
-        if ( attributes_follow == true ) {
+        if ( attributes_follow ) {
             attributes = new wcc_attr(xdr);
         }
     }

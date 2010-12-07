@@ -23,10 +23,10 @@ public class locker4 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(new_lock_owner);
-        if ( new_lock_owner == true ) {
+        if ( new_lock_owner ) {
             open_owner.xdrEncode(xdr);
         }
-        else if ( new_lock_owner == false ) {
+        else if ( !new_lock_owner ) {
             lock_owner.xdrEncode(xdr);
         }
     }
@@ -34,10 +34,10 @@ public class locker4 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         new_lock_owner = xdr.xdrDecodeBoolean();
-        if ( new_lock_owner == true ) {
+        if ( new_lock_owner ) {
             open_owner = new open_to_lock_owner4(xdr);
         }
-        else if ( new_lock_owner == false ) {
+        else if ( !new_lock_owner ) {
             lock_owner = new exist_lock_owner4(xdr);
         }
     }

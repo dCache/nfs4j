@@ -22,7 +22,7 @@ public class layoutreturn_stateid implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(lrs_present);
-        if ( lrs_present == true ) {
+        if ( lrs_present ) {
             lrs_stateid.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class layoutreturn_stateid implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         lrs_present = xdr.xdrDecodeBoolean();
-        if ( lrs_present == true ) {
+        if ( lrs_present ) {
             lrs_stateid = new stateid4(xdr);
         }
     }

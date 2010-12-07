@@ -22,7 +22,7 @@ public class newoffset4 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(no_newoffset);
-        if ( no_newoffset == true ) {
+        if ( no_newoffset ) {
             no_offset.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class newoffset4 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         no_newoffset = xdr.xdrDecodeBoolean();
-        if ( no_newoffset == true ) {
+        if ( no_newoffset ) {
             no_offset = new offset4(xdr);
         }
     }

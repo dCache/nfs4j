@@ -4,7 +4,7 @@
  * See http://remotetea.sourceforge.net for details
  */
 package org.dcache.chimera.nfs.v4.xdr;
-import org.dcache.chimera.nfs.v4.*;
+
 import org.dcache.chimera.nfs.v4.xdr.LOCK4denied;
 import org.dcache.xdr.*;
 import java.io.IOException;

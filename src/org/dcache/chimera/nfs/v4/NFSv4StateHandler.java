@@ -119,7 +119,7 @@ public class NFSv4StateHandler {
             if (stateid.seqid.value != 0){
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad seqid.");
             }
-            if (allow == true){
+            if (allow){
                 return 0;
             }
             else{
@@ -128,7 +128,7 @@ public class NFSv4StateHandler {
         }
         else if (Arrays.equals(stateid.other, array_allOnes)){
             if(stateid.seqid.value == 0xffffffff){
-                if (allow == true){
+                if (allow){
                     return 1;
                 }else{
                     throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "Can't use 1 as stateid");

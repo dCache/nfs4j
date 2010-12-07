@@ -22,7 +22,7 @@ public class newtime4 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(nt_timechanged);
-        if ( nt_timechanged == true ) {
+        if ( nt_timechanged ) {
             nt_time.xdrEncode(xdr);
         }
     }
@@ -30,7 +30,7 @@ public class newtime4 implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         nt_timechanged = xdr.xdrDecodeBoolean();
-        if ( nt_timechanged == true ) {
+        if ( nt_timechanged ) {
             nt_time = new nfstime4(xdr);
         }
     }
