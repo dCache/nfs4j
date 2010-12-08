@@ -265,7 +265,7 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      *
      */
     public void xdrEncodeIntVector(int[] values) {
-        _log.log(Level.FINEST, "Ecoding int array {0}", Arrays.toString(value));
+        _log.log(Level.FINEST, "Ecoding int array {0}", Arrays.toString(values));
         _body.putInt(values.length);
         for (int value: values) {
             _body.putInt( value );
