@@ -207,8 +207,8 @@ public class Ace {
 
 		StringBuilder sb = new StringBuilder();
 
-		for(int i = 0; i < _ace.length; i++) {
-			sb.append( HimeraNFS4Utils.aceToString(_ace[i]) ).append("\n");
+		for(nfsace4 ace: _ace) {
+			sb.append( HimeraNFS4Utils.aceToString(ace) ).append("\n");
 		}
 
 		return sb.toString();

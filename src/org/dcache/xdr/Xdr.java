@@ -261,14 +261,14 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
      * Encodes (aka "serializes") a vector of ints and writes it down
      * this XDR stream.
      *
-     * @param value int vector to be encoded.
+     * @param values int vector to be encoded.
      *
      */
-    public void xdrEncodeIntVector(int[] value) {
+    public void xdrEncodeIntVector(int[] values) {
         _log.log(Level.FINEST, "Ecoding int array {0}", Arrays.toString(value));
-        _body.putInt(value.length);
-        for (int i = 0; i < value.length; i++) {
-            _body.putInt( value[i] );
+        _body.putInt(values.length);
+        for (int value: values) {
+            _body.putInt( value );
         }
     }
 

@@ -53,8 +53,7 @@ public class ByteBufferFactory {
              * we will cache.
              */
             synchronized (_buffers) {
-                for (int i = 0; i < _buffers.length; i++) {
-                    SoftReference<ByteBuffer> ref = _buffers[i];
+                for (SoftReference<ByteBuffer> ref: _buffers) {
                     if (ref != null ) {
                         ByteBuffer b = ref.get();
                         if (b == null) continue;
