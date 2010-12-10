@@ -89,7 +89,7 @@ public class GrizzlyXdrTransport implements XdrTransport {
         return _remote;
     }
 
-    public ReplyQueue getReplyQueue() {
+    public ReplyQueue<Integer, RpcReply> getReplyQueue() {
         return null;
     }
 }
