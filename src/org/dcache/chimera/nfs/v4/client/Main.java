@@ -1,5 +1,7 @@
 package org.dcache.chimera.nfs.v4.client;
 
+import com.google.common.base.Function;
+import com.google.common.collect.MapMaker;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
@@ -783,7 +786,7 @@ public class Main {
             Stripe stripe = stripes.get(0);
             deviceid4 device = stripe.getDeviceId();
             InetSocketAddress deviceAddr = _knowDevices.get(device);
-            Main dsClient = getNfsClient(deviceAddr);
+            Main dsClient = _servers.get(deviceAddr);
 
             dsClient.dsRead(dsClient, stripe.getFh(), or.stateid());
 
@@ -832,7 +835,7 @@ public class Main {
                     Stripe stripe = stripes.get(0);
                     deviceid4 device = stripe.getDeviceId();
                     InetSocketAddress deviceAddr = _knowDevices.get(device);
-                    Main dsClient = getNfsClient(deviceAddr);
+                    Main dsClient = _servers.get(deviceAddr);
 
                     dsClient.dsWrite(dsClient, stripe.getFh(), data, offset, or.stateid());
                     offset += n;
@@ -1357,19 +1360,21 @@ public class Main {
 
         return sb.toString();
     }
-    private final Map<InetSocketAddress, Main> _servers =
-            new HashMap<InetSocketAddress, Main>();
+    private final ConcurrentMap<InetSocketAddress, Main> _servers =
+            new MapMaker().makeComputingMap(new Connector());
 
-    public Main getNfsClient(InetSocketAddress server) throws OncRpcException, IOException {
+    private static class Connector implements Function<InetSocketAddress, Main> {
 
-        System.out.println(server.toString());
-        Main client = _servers.get(server);
-        if (client == null) {
-            client = new Main(server);
-            _servers.put(server, client);
-
-            client.dsMount();
+        @Override
+        public Main apply(InetSocketAddress f) {
+            try {
+                Main client = new Main(f);
+                client.dsMount();
+                return client;
+            } catch (Exception e) {
+                return null;
+            }
         }
-        return client;
     }
+
 }
