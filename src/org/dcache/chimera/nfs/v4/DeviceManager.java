@@ -69,7 +69,8 @@ public class DeviceManager implements NFSv41DeviceManager {
                     new Object[]{deviceId, id, stateid});
 
             //hard coded for now
-            InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName("127.0.0.1") , 2052 );
+            InetSocketAddress addr =
+                    new InetSocketAddress(client.getLocalAddress().getAddress(), 2052 );
             deviceAddr = deviceAddrOf(addr);
 
             _deviceMap.put(deviceId, deviceAddr);
