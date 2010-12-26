@@ -1298,8 +1298,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
         FsInode to = NFSHandle.toFsInode(_fs, arg1.to.dir.data);
         String file2 = arg1.to.name.value;
 
-
         try {
+
+            Stat fromStat = from.stat();
+            Stat toStat = to.stat();
+
+            UnixAcl fromAcl = new UnixAcl(fromStat.getUid(), fromStat.getGid(), fromStat.getMode() & 0777);
+            UnixAcl toAcl = new UnixAcl(toStat.getUid(), toStat.getGid(), toStat.getMode() & 0777);
+            if (!(_permissionHandler.isAllowed(fromAcl, user, AclHandler.ACL_DELETE)
+                    && _permissionHandler.isAllowed(toAcl, user, AclHandler.ACL_INSERT))) {
+                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+            }
 
             _fs.move(from, file1, to, file2);
 
@@ -1324,6 +1333,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.todir_wcc.before.attributes_follow = false;
 
             res.status = nfsstat3.NFS3_OK;
+        } catch (ChimeraNFSException hne) {
+            res.status = hne.getStatus();
+            res.resfail = new RENAME3resfail();
+            res.resfail.fromdir_wcc = defaultWccData();
+            res.resfail.todir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
             res.status = nfsstat3.NFS3ERR_SERVERFAULT;
             res.resfail = new RENAME3resfail();
