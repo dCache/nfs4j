@@ -134,15 +134,8 @@ public class RpcCall {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("RPC vers.: ").append(_rpcvers).append("\n");
-        sb.append("Program  : ").append(_prog).append("\n");
-        sb.append("Version  : ").append(_version).append("\n");
-        sb.append("Procedure: ").append(_proc).append("\n");
-        sb.append("cred     : ").append(_cred).append("\n");
-
-        return sb.toString();
+        return String.format("RPCv%d call: program=%d, version=%d, procedure=%d",
+                _rpcvers, _prog, _version, _proc);
     }
 
     /**
