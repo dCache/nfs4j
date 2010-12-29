@@ -264,7 +264,7 @@ public class Cache<K, V> extends  TimerTask {
         }
 
         if(!valid) {
-            _eventListener.notifyRemove(this, v);
+            _eventListener.notifyExpired(this, v);
             v = null;
         }else{
             _eventListener.notifyGet(this, v);
