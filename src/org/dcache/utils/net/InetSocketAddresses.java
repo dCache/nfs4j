@@ -83,6 +83,22 @@ public class InetSocketAddresses {
     }
 
     /**
+     * Convert a {@link String} in a form <code>host:port</code>
+     * into corresponding {@link InetSocketAddress}.
+     * @param address
+     * @return socketAddress
+     */
+    public static InetSocketAddress inetAddressOf(String address) {
+        int colom = address.indexOf(":");
+        if (colom < 0) {
+            throw new IllegalArgumentException("invalid host:port format");
+        }
+
+        return new InetSocketAddress(address.substring(0, colom),
+                Integer.parseInt(address.substring(colom + 1)));
+    }
+
+    /**
      * Convert {@link InetSocketAddress} to it's UADDR representation as defined in rfc5665.
      * @param socketAddress
      * @return uaddr.

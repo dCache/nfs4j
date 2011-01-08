@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.utils.net.InetSocketAddresses;
 
 /**
@@ -45,12 +45,29 @@ public class DeviceManager implements NFSv41DeviceManager {
     private final Map<deviceid4, device_addr4> _deviceMap =
             new ConcurrentHashMap<deviceid4, device_addr4>();
 
+    private InetSocketAddress[] _knownDataServers;
+    private final StripingPattern<InetSocketAddress> _stripingPattern = new
+            RoundRobinStripingPattern<InetSocketAddress>();
+
+    /**
+     * Set configures data servers. Each string represents a dataserver
+     * as <code>IP:port</code>
+     * @param servers
+     */
+    public void setDataservers(String[] servers) {
+        _knownDataServers = new InetSocketAddress[servers.length];
+        for(int i = 0; i < servers.length; i++) {
+            _knownDataServers[i] = InetSocketAddresses.inetAddressOf(servers[i]);
+        }
+    }
+
     /*
      * (non-Javadoc)
      *
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#getIoDeviceId(org.dcache.chimera.FsInode,
      *      int, java.net.InetAddress)
      */
+    @Override
     public Layout layoutGet(FsInode inode, int ioMode, NFS4Client client, stateid4 stateid)
             throws IOException {
 
@@ -61,6 +78,10 @@ public class DeviceManager implements NFSv41DeviceManager {
             deviceId = MDS_ID;
         } else {
 
+            if(_knownDataServers.length == 0) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_LAYOUTUNAVAILABLE,
+                        "No dataservers available");
+            }
             int id = _deviceIdGenerator.nextInt(256);
             ++id; /* 0 is reserved */
             deviceId = deviceidOf(id);
@@ -68,10 +89,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             _log.debug("generating new device: {} ({}) for stateid {}",
                     new Object[]{deviceId, id, stateid});
 
-            //hard coded for now
-            InetSocketAddress addr =
-                    new InetSocketAddress(client.getLocalAddress().getAddress(), 2052 );
-            deviceAddr = deviceAddrOf(addr);
+            deviceAddr = deviceAddrOf(_stripingPattern, _knownDataServers);
 
             _deviceMap.put(deviceId, deviceAddr);
         }
@@ -90,12 +108,13 @@ public class DeviceManager implements NFSv41DeviceManager {
      *
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#layoutGet(int)
      */
+    @Override
     public device_addr4 getDeviceInfo(NFS4Client client, deviceid4 deviceId) {
 
         _log.debug("lookup for device: {}", deviceId );
         /* in case of MDS access we return the same interface which client already connected to */
         if(deviceId.equals(MDS_ID)) {
-            return deviceAddrOf(client.getLocalAddress());
+            return deviceAddrOf(_stripingPattern, client.getLocalAddress());
         }
 
         return  _deviceMap.get(deviceId);
@@ -106,6 +125,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      *
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#getDeviceList()
      */
+    @Override
     public List<deviceid4> getDeviceList(NFS4Client client) {
         return new ArrayList<deviceid4>(_deviceMap.keySet());
     }
@@ -115,6 +135,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      *
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#layoutReturn()
      */
+    @Override
     public void layoutReturn(NFS4Client client, stateid4 stateid) {
         // I'am fine
         _log.debug( "release device for stateid {}", stateid );
@@ -123,13 +144,14 @@ public class DeviceManager implements NFSv41DeviceManager {
     /**
      * Create a multipath based NFSv4.1 file layout address.
      *
+     * @param stripingPattern of the device
      * @param deviceAddress
      * @return device address
      */
-    public static device_addr4 deviceAddrOf(InetSocketAddress ... deviceAddress) {
+    public static device_addr4 deviceAddrOf(StripingPattern<InetSocketAddress> stripingPattern,
+            InetSocketAddress ... deviceAddress) {
 
         nfsv4_1_file_layout_ds_addr4 file_type = new nfsv4_1_file_layout_ds_addr4();
-
 
         file_type.nflda_multipath_ds_list = new multipath_list4[deviceAddress.length];
 
@@ -142,12 +164,9 @@ public class DeviceManager implements NFSv41DeviceManager {
             file_type.nflda_multipath_ds_list[i].value[0].na_r_addr =
                                 InetSocketAddresses.uaddrOf(deviceAddress[i]);
             file_type.nflda_multipath_ds_list[i].value[0].na_r_netid = "tcp";
-
         }
 
-        file_type.nflda_stripe_indices = new uint32_t[1];
-        file_type.nflda_stripe_indices[0] = new uint32_t();
-        file_type.nflda_stripe_indices[0].value = 0;
+        file_type.nflda_stripe_indices = stripingPattern.getPattern(deviceAddress);
 
         XdrEncodingStream xdr = new XdrBuffer(128);
         try {
