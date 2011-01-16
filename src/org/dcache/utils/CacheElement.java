@@ -81,9 +81,8 @@ public class CacheElement<V> {
     @Override
     public String toString() {
         long now = System.currentTimeMillis();
-        String s = String.format("Element: [%s], created: %s, last access: %s, life time %d, idle: %d, max idle: %d",
-                _inner.toString(), new Date( _creationTime), new Date(_lastAccessTime),
-                _maxLifeTime, now - _lastAccessTime, _idleTime);
-        return s;
+        return String.format("Element: [%s], created: %s, last access: %s, life time %d, idle: %d, max idle: %d",
+            _inner.toString(), new Date( _creationTime), new Date(_lastAccessTime),
+            _maxLifeTime, now - _lastAccessTime, _idleTime);
     }
 }
