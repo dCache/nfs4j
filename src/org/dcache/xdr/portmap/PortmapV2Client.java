@@ -21,11 +21,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
+import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.netid;
 
 public class PortmapV2Client implements OncPortmapClient {
 
@@ -71,4 +74,19 @@ public class PortmapV2Client implements OncPortmapClient {
 
         return isSet.booleanValue();
     }
+
+    @Override
+    public String getPort(int program, int version, String nid) throws OncRpcException, IOException {
+
+        mapping m = new mapping(program, version, netid.idOf(nid), 0);
+        XdrInt port = new XdrInt();
+
+        _call.call(OncRpcPortmap.PMAPPROC_GETPORT, m, port);
+        return InetSocketAddresses.uaddrOf(_call.getTransport()
+                .getRemoteSocketAddress()
+                .getAddress()
+                .getHostAddress()
+            , port.intValue());
+    }
+
 }

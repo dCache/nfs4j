@@ -64,6 +64,10 @@ public class GenericPortmapClient implements OncPortmapClient {
         return _portmapClient.setPort(program, version, netid, addr, owner);
     }
 
+    public String getPort(int program, int version, String netid) throws OncRpcException, IOException {
+        return _portmapClient.getPort(program, version, netid);
+    }
+
     public static void main(String[] args) throws UnknownHostException, InterruptedException, IOException, OncRpcException {
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName("127.0.0.1"), IpProtocolType.UDP, 111);
@@ -80,6 +84,7 @@ public class GenericPortmapClient implements OncPortmapClient {
             portmapClient.setPort(100003, 4, "tcp", "127.0.0.2.8.4", System.getProperty("user.name"));
             portmapClient.dump();
 
+            System.out.println("getport: " + portmapClient.getPort(100000, 4, "tcp"));
         } finally {
             rpcClient.close();
         }

@@ -25,6 +25,7 @@ import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
+import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
 
 public class RpcbindV4Client implements OncPortmapClient {
@@ -65,6 +66,14 @@ public class RpcbindV4Client implements OncPortmapClient {
         _call.call(OncRpcPortmap.RPCBPROC_SET, m1, isSet);
         return isSet.booleanValue();
 
+    }
+
+    @Override
+    public String getPort(int program, int version, String netid) throws OncRpcException, IOException {
+        rpcb arg = new rpcb(program, version, netid, "", "");
+        XdrString xdrString = new XdrString();
+        _call.call(OncRpcPortmap.RPCBPROC_GETADDR, arg, xdrString);
+        return xdrString.stringValue();
     }
 
     public void dump() throws OncRpcException, IOException {

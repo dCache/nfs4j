@@ -14,17 +14,34 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap;
+
+package org.dcache.xdr;
 
 import java.io.IOException;
-import org.dcache.xdr.OncRpcException;
 
-public interface OncPortmapClient {
+public class XdrInt implements XdrAble {
 
-    void dump() throws OncRpcException, IOException;
+    private int _value;
 
-    boolean ping();
+    public XdrInt() {
+    }
 
-    boolean setPort(int program, int version, String netid, String addr, String owner) throws OncRpcException, IOException;
-    String  getPort(int program, int version, String netid) throws OncRpcException, IOException;
+    public XdrInt(int value) {
+        _value = value;
+    }
+
+    /**
+     * Returns the value of this <code>XdrString</code> object as a {@code String}.
+     */
+    public int intValue() {
+        return _value;
+    }
+
+    public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
+        _value = xdr.xdrDecodeInt();
+    }
+
+    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
+        xdr.xdrEncodeInt(_value);
+    }
 }
