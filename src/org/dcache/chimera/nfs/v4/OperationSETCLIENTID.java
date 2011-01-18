@@ -47,9 +47,9 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 	        try {
 
 
-	            byte[] clientid = _args.opsetclientid.client.id; // clientid
+	            verifier4 verifier = _args.opsetclientid.client.verifier;
 
-	            if( context.getStateHandler().getClientByVerifier(clientid) != null ) {
+	            if( context.getStateHandler().getClientByVerifier(verifier) != null ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "Client Id In use");
 	            }
 

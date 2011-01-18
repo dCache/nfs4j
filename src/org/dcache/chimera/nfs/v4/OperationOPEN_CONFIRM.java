@@ -67,12 +67,11 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad client id."  );
             }
 
-            state.bumpSeqid();
-
             if( state.stateid().seqid.value != _args.opopen_confirm.seqid.value.value ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_SEQID, "bad seqid."  );
             }
 
+            state.bumpSeqid();
             state.confirm();
 
             res.resok4 = new OPEN_CONFIRM4resok();
