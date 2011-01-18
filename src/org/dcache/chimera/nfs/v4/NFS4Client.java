@@ -22,6 +22,7 @@ package org.dcache.chimera.nfs.v4;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
+import org.dcache.utils.Opaque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +78,7 @@ public class NFS4Client {
      * The client identifier string, from the eia_clientowner structure
      * of the EXCHANGE_ID4args structure
      */
-    private final String _ownerId;
+    private final Opaque _ownerId;
 
     /**
      * A client-specific value used to indicate reboots, from
@@ -147,9 +148,9 @@ public class NFS4Client {
 
 
     public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
-            String ownerID, byte[] verifier, String principal) {
+            byte[] ownerID, byte[] verifier, String principal) {
 
-        _ownerId = ownerID;
+        _ownerId = new Opaque(ownerID);
         _verifier = verifier;
         _principal = principal;
         _clientId = (BOOTID << 32) + CLIENTID.incrementAndGet();
@@ -173,7 +174,7 @@ public class NFS4Client {
      *
      * @return owner id
      */
-    public String id() {
+    public Opaque id() {
         return _ownerId;
     }
 

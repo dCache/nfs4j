@@ -120,7 +120,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 _log.info("EXCHANGE_ID4:  " + new String(impelemtation.nii_name.value.value) );
             }*/
 
-            String clientOwner = new String( _args.opexchange_id.eia_clientowner.co_ownerid );
+            byte[] clientOwner = _args.opexchange_id.eia_clientowner.co_ownerid;
 
             /*
              * check the state
@@ -212,14 +212,14 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                             _log.debug("case 5: Client Restart");
                              context.getStateHandler().removeClient(client);
                             client = new NFS4Client(remoteSocketAddress,  localSocketAddress,
-                                    new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                                _args.opexchange_id.eia_clientowner.co_ownerid, _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                             context.getStateHandler().addClient(client);
                         }else {
                             if ((!client.hasState()) || (System.currentTimeMillis() - client.leaseTime()) > (NFSv4Defaults.NFS4_LEASE_TIME * 1000)){
                                 _log.debug("case 3a: Client Collision is equivalent to case 1 (the new Owner ID)");
                                  context.getStateHandler().removeClient(client);
                                 client = new NFS4Client(remoteSocketAddress, localSocketAddress,
-                                        new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value, principal);
+                                    _args.opexchange_id.eia_clientowner.co_ownerid, _args.opexchange_id.eia_clientowner.co_verifier.value, principal);
                                  context.getStateHandler().addClient(client);
                             } else {
                                 _log.debug("Case 3b: Client Collision");
@@ -230,7 +230,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                       _log.debug("case 4: Replacement of Unconfirmed Record");
                        context.getStateHandler().removeClient(client);
                       client = new NFS4Client(remoteSocketAddress, localSocketAddress,
-                              new String(_args.opexchange_id.eia_clientowner.co_ownerid), _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
+                          _args.opexchange_id.eia_clientowner.co_ownerid, _args.opexchange_id.eia_clientowner.co_verifier.value , principal);
                        context.getStateHandler().addClient(client);
                     }
 

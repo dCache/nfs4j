@@ -59,8 +59,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
                         NFS4Client client = new NFS4Client(context.getRpcCall().getTransport().getRemoteSocketAddress(),
                                 context.getRpcCall().getTransport().getLocalSocketAddress(),
-                            new String(_args.opsetclientid.client.id),_args.opsetclientid.client.verifier.value, null );
-
+                                _args.opsetclientid.client.id,_args.opsetclientid.client.verifier.value, null );
 		        try {
 	    	        ClientCB cb = new ClientCB(r_addr, r_netid, program);
 	    	        //	TODO: work around. client should send correct IP

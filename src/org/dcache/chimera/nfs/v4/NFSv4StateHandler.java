@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.utils.Cache;
 import org.dcache.utils.Bytes;
+import org.dcache.utils.Opaque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class NFSv4StateHandler {
     private final Cache<sessionid4, NFSv41Session> _sessionById =
             new Cache<sessionid4, NFSv41Session>("NFSv41 sessions", 5000, Long.MAX_VALUE, TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME*2));
 
-    private final Map<String, NFS4Client> _clientByOwner = new HashMap<String, NFS4Client>();
+    private final Map<Opaque, NFS4Client> _clientByOwner = new HashMap<Opaque, NFS4Client>();
 
     public void removeClient(NFS4Client client) {
 
@@ -104,8 +105,8 @@ public class NFSv4StateHandler {
         _sessionById.put(id, session);
     }
 
-    public NFS4Client clientByOwner( String ownerid) {
-        return _clientByOwner.get(ownerid);
+    public NFS4Client clientByOwner( byte[] ownerid) {
+        return _clientByOwner.get(new Opaque(ownerid));
     }
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
