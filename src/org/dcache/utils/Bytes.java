@@ -42,6 +42,7 @@ public final class Bytes {
 
         bytes[offset] = (byte) (value >> 56);
         bytes[offset + 1] = (byte) (value >> 48);
+        bytes[offset + 2] = (byte) (value >> 40);
         bytes[offset + 3] = (byte) (value >> 32);
         bytes[offset + 4] = (byte) (value >> 24);
         bytes[offset + 5] = (byte) (value >> 16);
