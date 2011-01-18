@@ -27,11 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import org.dcache.chimera.nfs.v4.xdr.verifier4;
 
 public class NFS4Client {
 
@@ -85,7 +85,7 @@ public class NFS4Client {
      * the eia_clientowner structure of the EXCHANGE_ID4args structure
      */
 
-    private final byte[] _verifier;
+    private final verifier4 _verifier;
     /**
      * The RPCSEC_GSS principal sent via the RPC headers.
      */
@@ -148,7 +148,7 @@ public class NFS4Client {
 
 
     public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
-            byte[] ownerID, byte[] verifier, String principal) {
+            byte[] ownerID, verifier4 verifier, String principal) {
 
         _ownerId = new Opaque(ownerID);
         _verifier = verifier;
@@ -182,7 +182,7 @@ public class NFS4Client {
      *
      * @return client generated verifier
      */
-    public byte[] verifier() {
+    public verifier4 verifier() {
         return _verifier;
     }
 
@@ -194,8 +194,8 @@ public class NFS4Client {
         return _clientId;
     }
 
-    public boolean verify_verifier(byte[] testVerifier) {
-        return Arrays.equals(_verifier, testVerifier);
+    public boolean verifierEquals(verifier4 verifier) {
+        return _verifier.equals(verifier);
     }
 
     public boolean verify_serverId(long serverId) {

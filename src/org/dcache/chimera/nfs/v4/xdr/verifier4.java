@@ -51,5 +51,15 @@ public class verifier4 implements XdrAble {
         return Arrays.equals(other.value, this.value);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (byte b : value) {
+            sb.append(Integer.toHexString(0xFF & b).toUpperCase());
+        }
+        sb.append(']');
+        return sb.toString();
+    }
 }
 // End of verifier4.java

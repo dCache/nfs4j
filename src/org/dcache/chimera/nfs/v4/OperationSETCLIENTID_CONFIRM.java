@@ -47,7 +47,7 @@ public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
             }
 
             res.status = nfsstat4.NFS4ERR_INVAL;
-            if (client.verify_serverId(_args.opsetclientid_confirm.clientid.value.value) && client.verify_verifier(_args.opsetclientid_confirm.setclientid_confirm.value)) {
+            if (client.verify_serverId(_args.opsetclientid_confirm.clientid.value.value) && client.verifierEquals(_args.opsetclientid_confirm.setclientid_confirm)) {
                 res.status = nfsstat4.NFS4_OK;
                 client.confirmed();
             }

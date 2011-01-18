@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
+import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Cache;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.Opaque;
@@ -41,7 +42,7 @@ public class NFSv4StateHandler {
     private final List<NFS4Client> _clients = new ArrayList<NFS4Client>();
 
     // all seen by server
-    private final Map<String, NFS4Client> _clientsByVerifier = new HashMap<String, NFS4Client>();
+    private final Map<verifier4, NFS4Client> _clientsByVerifier = new HashMap<verifier4, NFS4Client>();
 
 
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
@@ -60,7 +61,7 @@ public class NFSv4StateHandler {
 
         _clientsByServerId.remove(client.id_srv());
         _clientByOwner.remove(client.id());
-        _clientsByVerifier.remove( new String( client.verifier() ) ) ;
+        _clientsByVerifier.remove(client.verifier()) ;
         _clients.remove(client);
 
     }
@@ -68,7 +69,7 @@ public class NFSv4StateHandler {
     public void addClient(NFS4Client newClient) {
         _clients.add(newClient);
         _clientsByServerId.put(newClient.id_srv(), newClient);
-        _clientsByVerifier.put(new String(newClient.verifier()), newClient);
+        _clientsByVerifier.put(newClient.verifier(), newClient);
         _clientByOwner.put( newClient.id(), newClient);
     }
 
@@ -86,10 +87,6 @@ public class NFSv4StateHandler {
         }catch(ChimeraNFSException e) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_STATEID, "bad state id.");
         }
-    }
-
-    public void addClientByVerifier( byte[] verifier, NFS4Client client) {
-        _clientsByVerifier.put(new String(verifier), client );
     }
 
     public NFS4Client getClientByVerifier(byte[] client) {
