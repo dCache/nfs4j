@@ -166,7 +166,7 @@
     <!--
         ONC RPC service for DS
     -->
-    <bean id="oncrpcsvc-ds" class="org.dcache.xdr.OncRpcSvc" destroy-method="stop">
+    <bean id="oncrpcsvc-ds" class="org.dcache.xdr.OncRpcSvc" init-method="start" destroy-method="stop">
         <description>Onc RPC service FOR DS</description>
         <constructor-arg type="int" value="${ds.port}"/>
         <constructor-arg type="boolean" value="false"/>
