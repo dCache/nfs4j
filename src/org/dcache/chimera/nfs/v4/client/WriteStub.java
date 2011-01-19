@@ -18,6 +18,7 @@
 package org.dcache.chimera.nfs.v4.client;
 
 import java.nio.ByteBuffer;
+
 import org.dcache.chimera.nfs.v4.xdr.WRITE4args;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -28,7 +29,7 @@ import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 
 public class WriteStub {
 
-    public  static nfs_argop4 generateRequest(long offset, byte[] data, stateid4 stateid ) {
+    public static nfs_argop4 generateRequest(long offset, byte[] data, stateid4 stateid) {
 
         WRITE4args args = new WRITE4args();
 
@@ -39,6 +40,7 @@ public class WriteStub {
         args.stateid = stateid;
 
         args.data = ByteBuffer.wrap(data);
+        args.data.position(data.length);
 
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_WRITE;
@@ -46,5 +48,4 @@ public class WriteStub {
 
         return op;
     }
-
 }
