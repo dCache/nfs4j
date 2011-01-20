@@ -7,6 +7,8 @@ package org.dcache.chimera.nfs.v4.client;
 import java.io.IOException;
 
 import java.net.InetAddress;
+
+import com.sun.security.auth.module.UnixSystem;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
@@ -59,7 +61,12 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
         XdrTransport transport;
         transport = rpcClient.connect();
 
-        RpcAuth credential = new RpcAuthTypeUnix(3750, 1000, new int[]{1000}, (int) (System.currentTimeMillis() / 1000), "nairi");
+        UnixSystem unix = new UnixSystem();
+        RpcAuth credential = new RpcAuthTypeUnix(
+            (int) unix.getUid(), (int) unix.getGid(),
+            new int[]{(int) unix.getGid()},
+            (int) (System.currentTimeMillis() / 1000),
+            InetAddress.getLocalHost().getHostName());
         client = new RpcCall(100003, 4, credential, transport);
     }
 
