@@ -78,7 +78,7 @@ import org.dcache.xdr.OncRpcException;
 public class Main {
 
     private final nfs4_prot_NFS4_PROGRAM_Client _nfsClient;
-    private final Map<deviceid4, InetSocketAddress> _knowDevices = new HashMap<deviceid4, InetSocketAddress>();
+    private final Map<deviceid4, FileIoDevice> _knowDevices = new HashMap<deviceid4, FileIoDevice>();
     private nfs_fh4 _cwd = null;
     private nfs_fh4 _rootFh = null;
     // FIXME:
@@ -802,7 +802,10 @@ public class Main {
             List<Stripe> stripes = stripeMap.getStripe(0, 4096);
             Stripe stripe = stripes.get(0);
             deviceid4 device = stripe.getDeviceId();
-            InetSocketAddress deviceAddr = _knowDevices.get(device);
+            FileIoDevice ioDevice = _knowDevices.get(device);
+            InetSocketAddress deviceAddr =
+                    ioDevice.of(stripe.getPatternOffset(), stripe.getUnit(),
+                                0, 4096, stripe.getFirstStripeIndex());
             Main dsClient = _servers.get(deviceAddr);
 
             dsClient.dsRead(dsClient, stripe.getFh(), or.stateid());
@@ -851,7 +854,10 @@ public class Main {
                     List<Stripe> stripes = stripeMap.getStripe(offset, 4096);
                     Stripe stripe = stripes.get(0);
                     deviceid4 device = stripe.getDeviceId();
-                    InetSocketAddress deviceAddr = _knowDevices.get(device);
+                    FileIoDevice ioDevice = _knowDevices.get(device);
+                    InetSocketAddress deviceAddr = ioDevice.of(
+                            stripe.getPatternOffset(), stripe.getUnit(),
+                            offset, data.length, stripe.getFirstStripeIndex());
                     Main dsClient = _servers.get(deviceAddr);
 
                     dsClient.dsWrite(dsClient, stripe.getFh(), data, offset, or.stateid());
@@ -1032,7 +1038,11 @@ public class Main {
                 System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
 
                 deviceid4 deviceID = fileDevice.nfl_deviceid;
-                Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0], l.lo_length.value.value, l.lo_offset.value.value);
+                Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0],
+                        l.lo_length.value.value, l.lo_offset.value.value,
+                        fileDevice.nfl_pattern_offset.value.value,
+                        fileDevice.nfl_util.value.value,
+                        fileDevice.nfl_first_stripe_index.value);
                 stripeMap.addStripe(stripe);
 
                 if (!_knowDevices.containsKey(deviceID)) {
@@ -1041,12 +1051,11 @@ public class Main {
                 } else {
                     System.out.println("    new: false");
                 }
-                InetSocketAddress address = _knowDevices.get(deviceID);
+                FileIoDevice address = _knowDevices.get(deviceID);
                 if (address == null) {
                     System.out.println("    address: failed to get");
                 } else {
-                    System.out.println("    address: " + address.getHostName()
-                            + ":" + address.getPort());
+                    System.out.println("    address: " + address);
                 }
 
                 return stripeMap;
@@ -1116,10 +1125,7 @@ public class Main {
 
             nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub.decodeFileDevice(compound4res.resarray[1].opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
-            InetSocketAddress inetAddr = InetSocketAddresses.forUaddrString(
-                    addr.nflda_multipath_ds_list[0].value[0].na_r_addr);
-
-            _knowDevices.put(deviceId, inetAddr);
+            _knowDevices.put(deviceId, new FileIoDevice(addr) );
 
         } else {
             System.out.println("getdeviceinfo failed. Error = "

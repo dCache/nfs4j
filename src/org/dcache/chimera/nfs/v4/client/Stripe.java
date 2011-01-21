@@ -27,6 +27,9 @@ public class Stripe {
     private final long _len;
     private final deviceid4 _deviceId;
     private final nfs_fh4 _fh;
+    private final long _pattern_offset;
+    private final int _unit;
+    private final int _first_stripe_index;
 
 
     /**
@@ -36,9 +39,14 @@ public class Stripe {
      * @param fh
      * @param len
      * @param offset
-     * @throws IllegalArgumentException if device id or fh is null
+     * @param pattern_offset
+     * @param unit
+     * @param first_stripe_index
+     * @throws IllegalArgumentException
      */
-    public Stripe(deviceid4 deviceId, nfs_fh4 fh, long len, long offset)
+    public Stripe(deviceid4 deviceId, nfs_fh4 fh, long len, long offset,
+                  long pattern_offset,
+                  int unit, int first_stripe_index)
             throws IllegalArgumentException {
 
         if( deviceId == null ) {
@@ -58,6 +66,21 @@ public class Stripe {
          */
         this._len = len == -1 ? Long.MAX_VALUE: len;
         this._offset = offset;
+        _pattern_offset = pattern_offset;
+        _unit = unit;
+        _first_stripe_index = first_stripe_index;
+    }
+
+    public int getFirstStripeIndex() {
+        return _first_stripe_index;
+    }
+
+    public long getPatternOffset() {
+        return _pattern_offset;
+    }
+
+    public int getUnit() {
+        return _unit;
     }
 
     /**
