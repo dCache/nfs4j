@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.utils.Bytes;
 import org.dcache.utils.net.InetSocketAddresses;
 
 /**
@@ -208,17 +209,9 @@ public class DeviceManager implements NFSv41DeviceManager {
     }
 
     private static deviceid4 deviceidOf(int id) {
-        return new deviceid4(id2deviceid(id));
-    }
+        byte[] deviceidBytes = new byte[nfs4_prot.NFS4_DEVICEID4_SIZE];
+        Bytes.putInt(deviceidBytes, 0, id);
 
-    private static byte[] id2deviceid(int id) {
-
-        byte[] buf = Integer.toString(id).getBytes();
-        byte[] devData = new byte[nfs4_prot.NFS4_DEVICEID4_SIZE];
-
-        int len = Math.min(buf.length, nfs4_prot.NFS4_DEVICEID4_SIZE);
-        System.arraycopy(buf, 0, devData, 0, len);
-
-        return devData;
+        return new deviceid4(deviceidBytes);
     }
 }
