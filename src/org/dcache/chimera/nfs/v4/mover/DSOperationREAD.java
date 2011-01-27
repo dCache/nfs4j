@@ -41,10 +41,11 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
         private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
 
-	private final File _poolRoot = new File("/tmp/pNFS");
+	private final File _base;
 
-	public DSOperationREAD(nfs_argop4 args) {
+	public DSOperationREAD(nfs_argop4 args, File base) {
 		super(args, nfs_opnum4.OP_READ);
+                _base = base;
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
            ByteBuffer bb = ByteBuffer.allocateDirect(count);
 
-	    	IOReadFile in = new IOReadFile(_poolRoot, context.currentInode().toString(), context.currentInode().stat().getSize());
+	    	IOReadFile in = new IOReadFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize());
 
 	    	int bytesReaded = in.read(bb, offset, count);
 	    	if( bytesReaded < 0 ) {

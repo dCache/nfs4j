@@ -74,6 +74,7 @@
     -->
     <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.mover.DSOperationFactory">
         <description>DS operation factory</description>
+        <constructor-arg value="${ds.base}" />
     </bean>
 
     <bean id="acl-handler" class="org.dcache.chimera.posix.UnixPermissionHandler"

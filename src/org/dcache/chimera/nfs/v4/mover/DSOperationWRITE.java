@@ -44,11 +44,12 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(DSOperationWRITE.class);
 
-    private final File _poolRoot = new File("/tmp/pNFS");
+    private final File _base;
 
 
-    public DSOperationWRITE(nfs_argop4 args) {
+    public DSOperationWRITE(nfs_argop4 args, File base) {
         super(args, nfs_opnum4.OP_WRITE);
+        _base = base;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             long offset = _args.opwrite.offset.value.value;
             int count = _args.opwrite.data.remaining();
 
-            IOWriteFile out = new IOWriteFile(_poolRoot, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
+            IOWriteFile out = new IOWriteFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
 
             int bytesWritten = out.write(_args.opwrite.data, offset, count);
 

@@ -14,9 +14,9 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4.mover;
 
+import java.io.File;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.chimera.nfs.v4.NFSv4OperationFactory;
 import org.dcache.chimera.nfs.v4.OperationCOMMIT;
@@ -34,6 +34,14 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 
 public class DSOperationFactory implements NFSv4OperationFactory {
 
+    private final File _base;
+
+    public DSOperationFactory(String base) {
+        _base = new File(base);
+        if( !_base.exists() )
+            throw new IllegalArgumentException( base + " : not exist or not a directory");
+    }
+
     @Override
     public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
 
@@ -47,9 +55,9 @@ public class DSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_PUTROOTFH:
                 return new OperationPUTROOTFH(op);
             case nfs_opnum4.OP_READ:
-                return new DSOperationREAD(op);
+                return new DSOperationREAD(op, _base);
             case nfs_opnum4.OP_WRITE:
-                return new DSOperationWRITE(op);
+                return new DSOperationWRITE(op, _base);
             case nfs_opnum4.OP_EXCHANGE_ID:
                 return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS);
             case nfs_opnum4.OP_CREATE_SESSION:
