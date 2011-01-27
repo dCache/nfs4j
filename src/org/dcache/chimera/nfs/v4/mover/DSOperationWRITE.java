@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4.mover;
 
 import java.io.File;
@@ -43,9 +42,7 @@ import org.slf4j.LoggerFactory;
 public class DSOperationWRITE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(DSOperationWRITE.class);
-
     private final File _base;
-
 
     public DSOperationWRITE(nfs_argop4 args, File base) {
         super(args, nfs_opnum4.OP_WRITE);
@@ -66,35 +63,35 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
             int bytesWritten = out.write(_args.opwrite.data, offset, count);
 
-            if( bytesWritten < 0 ) {
+            if (bytesWritten < 0) {
                 throw new IOHimeraFsException("IO not allowd");
             }
 
             res.status = nfsstat4.NFS4_OK;
             res.resok4 = new WRITE4resok();
-            res.resok4.count = new count4( new uint32_t(bytesWritten) );
+            res.resok4.count = new count4(new uint32_t(bytesWritten));
             res.resok4.committed = stable_how4.FILE_SYNC4;
             res.resok4.writeverf = new verifier4();
             res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
             context.currentInode().setSize(out.size());
             _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
-                    new Object[] { bytesWritten, offset, _args.opwrite.data, out.size() });
+                    new Object[]{bytesWritten, offset, _args.opwrite.data, out.size()});
             out.close();
 
-        }catch(IOHimeraFsException hioe) {
+        } catch (IOHimeraFsException hioe) {
             res.status = nfsstat4.NFS4ERR_IO;
-        }catch(ChimeraNFSException he) {
+        } catch (ChimeraNFSException he) {
             res.status = he.getStatus();
-        }catch(IOException ioe) {
+        } catch (IOException ioe) {
             _log.error("WRITE: ", ioe);
             res.status = nfsstat4.NFS4ERR_IO;
-        }catch(Exception e) {
+        } catch (Exception e) {
             _log.error("WRITE: ", e);
             res.status = nfsstat4.NFS4ERR_IO;
         }
 
-       _result.opwrite = res;
+        _result.opwrite = res;
 
         context.processedOperations().add(_result);
         return res.status == nfsstat4.NFS4_OK;
@@ -112,8 +109,8 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
             _out = new RandomAccessFile(ioFile, "rw");
             _fc = _out.getChannel();
-            if( truncate ) {
-                _log.error("truncate file {}", ioFile.getPath() );
+            if (truncate) {
+                _log.error("truncate file {}", ioFile.getPath());
                 _fc.truncate(0);
             }
         }
@@ -123,7 +120,6 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             return _fc.write(data, off);
         }
 
-
         public void close() throws IOException {
             _fc.close();
             _out.close();
@@ -132,7 +128,5 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         public long size() throws IOException {
             return _fc.size();
         }
-
     }
-
 }

@@ -38,8 +38,9 @@ public class DSOperationFactory implements NFSv4OperationFactory {
 
     public DSOperationFactory(String base) {
         _base = new File(base);
-        if( !_base.exists() )
-            throw new IllegalArgumentException( base + " : not exist or not a directory");
+        if (!_base.exists()) {
+            throw new IllegalArgumentException(base + " : not exist or not a directory");
+        }
     }
 
     @Override

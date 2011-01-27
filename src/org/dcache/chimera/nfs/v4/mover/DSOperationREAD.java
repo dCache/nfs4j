@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4.mover;
 
 import java.io.File;
@@ -39,17 +38,16 @@ import org.slf4j.LoggerFactory;
 
 public class DSOperationREAD extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
+    private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
+    private final File _base;
 
-	private final File _base;
+    public DSOperationREAD(nfs_argop4 args, File base) {
+        super(args, nfs_opnum4.OP_READ);
+        _base = base;
+    }
 
-	public DSOperationREAD(nfs_argop4 args, File base) {
-		super(args, nfs_opnum4.OP_READ);
-                _base = base;
-	}
-
-	@Override
-	public boolean process(CompoundContext context) {
+    @Override
+    public boolean process(CompoundContext context) {
         READ4res res = new READ4res();
 
         try {
@@ -60,89 +58,85 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
             long offset = _args.opread.offset.value.value;
             int count = _args.opread.count.value.value;
 
-           ByteBuffer bb = ByteBuffer.allocateDirect(count);
+            ByteBuffer bb = ByteBuffer.allocateDirect(count);
 
-	    	IOReadFile in = new IOReadFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize());
+            IOReadFile in = new IOReadFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize());
 
-	    	int bytesReaded = in.read(bb, offset, count);
-	    	if( bytesReaded < 0 ) {
-	    	    eof = true;
-	    	    bytesReaded = 0;
-	    	}
+            int bytesReaded = in.read(bb, offset, count);
+            if (bytesReaded < 0) {
+                eof = true;
+                bytesReaded = 0;
+            }
 
             res.status = nfsstat4.NFS4_OK;
             res.resok4 = new READ4resok();
             res.resok4.data = bb;
 
-            if( offset + bytesReaded == inodeStat.getSize() ) {
+            if (offset + bytesReaded == inodeStat.getSize()) {
                 eof = true;
             }
             res.resok4.eof = eof;
 
             in.close();
             _log.debug("MOVER: {}@{} readed, {} requested.",
-                    new Object[] { bytesReaded, offset, _args.opread.count.value.value });
+                    new Object[]{bytesReaded, offset, _args.opread.count.value.value});
 
-        }catch(IOHimeraFsException hioe) {
+        } catch (IOHimeraFsException hioe) {
             _log.error("READ : ", hioe);
             res.status = nfsstat4.NFS4ERR_IO;
-        }catch(ChimeraNFSException he) {
+        } catch (ChimeraNFSException he) {
             res.status = he.getStatus();
-        }catch(ChimeraFsException hfe) {
+        } catch (ChimeraFsException hfe) {
             res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;
-        }catch(IOException ioe) {
+        } catch (IOException ioe) {
             _log.error("READ : ", ioe);
-    		res.status = nfsstat4.NFS4ERR_IO;
-    	}catch(Exception e) {
+            res.status = nfsstat4.NFS4ERR_IO;
+        } catch (Exception e) {
             _log.error("READ : ", e);
-    		res.status = nfsstat4.NFS4ERR_IO;
-    	}
+            res.status = nfsstat4.NFS4ERR_IO;
+        }
 
-       _result.opread = res;
+        _result.opread = res;
 
-            context.processedOperations().add(_result);
-            return res.status == nfsstat4.NFS4_OK;
-	}
-
+        context.processedOperations().add(_result);
+        return res.status == nfsstat4.NFS4_OK;
+    }
 
     private static class IOReadFile {
 
-    	private final RandomAccessFile _in;
-    	private final FileChannel _fc;
+        private final RandomAccessFile _in;
+        private final FileChannel _fc;
 
+        public IOReadFile(File root, String path, long size) throws IOException {
 
-    	public IOReadFile(File root, String path, long size) throws IOException {
+            File ioFile = new File(root, path);
 
-	    	File ioFile = new File(root, path);
+            if (!ioFile.exists() && !ioFile.createNewFile()) {
+                throw new IOException(path + " does't exist and failed to create");
+            }
 
-	    	if( !ioFile.exists() && ! ioFile.createNewFile()) {
-	    	    throw new IOException(path + " does't exist and failed to create");
-	    	}
+            /*
+             * while file size can be modified in namespace adjust file size to expected one.
+             */
+            _log.debug("MOVER: {} : filesize set to {}", new Object[]{path, size});
+            _in = new RandomAccessFile(ioFile, "rw");
+            _in.setLength(size);
 
-	    	/*
-	    	 * while file size can be modified in namespace adjust file size to expected one.
-	    	 */
-            _log.debug("MOVER: {} : filesize set to {}", new Object[] { path,  size});
-	    	_in = new RandomAccessFile(ioFile, "rw");
-	    	_in.setLength(size);
-
-	    	_fc = _in.getChannel();
-    	}
+            _fc = _in.getChannel();
+        }
 
         public int read(ByteBuffer bb, long off, long len) throws IOException {
-	    	bb.rewind();
-	    	return _fc.read(bb, off);
-	    }
+            bb.rewind();
+            return _fc.read(bb, off);
+        }
 
-	    public void close() throws IOException {
-	    	_fc.close();
-	    	_in.close();
-	    }
+        public void close() throws IOException {
+            _fc.close();
+            _in.close();
+        }
 
-	    public long size() throws IOException {
-	    	return _fc.size();
-	    }
+        public long size() throws IOException {
+            return _fc.size();
+        }
     }
-
-
 }
