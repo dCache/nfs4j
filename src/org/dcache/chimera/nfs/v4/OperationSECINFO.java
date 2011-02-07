@@ -54,7 +54,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
             res.resok4.value[0] = new secinfo4();
             res.resok4.value[0].flavor = RpcAuthType.UNIX;
             res.resok4.value[0].flavor_info = new rpcsec_gss_info();
-
+            context.clearCurrentInode();
             res.status = nfsstat4.NFS4_OK;
         } catch (ChimeraNFSException he) {
             _log.debug("SECINFO:", he.getMessage());
