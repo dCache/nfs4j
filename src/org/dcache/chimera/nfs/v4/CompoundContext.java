@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import org.dcache.chimera.nfs.NfsUser;
 
 
 public class CompoundContext {
@@ -72,7 +73,7 @@ public class CompoundContext {
         _aclHandler = aclHandler;
         _callInfo = call;
         _exportFile = exportFile;
-        _user = HimeraNFS4Utils.remoteUser(_callInfo, _exportFile);
+        _user = NfsUser.remoteUser(_callInfo, _exportFile);
         _stateHandler = stateHandler;
     }
 

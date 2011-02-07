@@ -138,6 +138,7 @@ import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.NFSHandle;
+import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.v3.xdr.COMMIT3resfail;
 import org.dcache.chimera.nfs.v3.xdr.FSSTAT3resfail;
 import org.dcache.chimera.nfs.v3.xdr.MKNOD3resfail;
@@ -147,6 +148,7 @@ import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.chimera.posix.UnixPermissionHandler;
+import org.dcache.chimera.posix.UnixUser;
 import org.dcache.chimera.util.DirectoryListCache;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
@@ -184,8 +186,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         ACCESS3res res = new ACCESS3res();
 
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request ACCESS uid: {}", user);
 
         try {
@@ -285,8 +286,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     @Override
     public CREATE3res NFSPROC3_CREATE_3(RpcCall call$, CREATE3args arg1) {
 
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request CREATE3 uid: {}", user);
 
         CREATE3res res = new CREATE3res();
@@ -404,8 +404,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     @Override
     public FSINFO3res NFSPROC3_FSINFO_3(RpcCall call$, FSINFO3args arg1) {
 
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request FSINFO from: {}", user);
 
         FSINFO3res res = new FSINFO3res();
@@ -522,8 +521,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public GETATTR3res NFSPROC3_GETATTR_3(RpcCall call$, GETATTR3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request GETTATTR3 uid: {}", user);
 
         GETATTR3res res = new GETATTR3res();
@@ -557,8 +555,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public LINK3res NFSPROC3_LINK_3(RpcCall call$, LINK3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request LINK3 uid: {}", user);
 
 
@@ -699,8 +696,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public MKDIR3res NFSPROC3_MKDIR_3(RpcCall call$, MKDIR3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request MKDIR3 uid: {}", user);
 
         MKDIR3res res = new MKDIR3res();
@@ -831,8 +827,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
      */
     @Override
     public READDIRPLUS3res NFSPROC3_READDIRPLUS_3(RpcCall call$, READDIRPLUS3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request READDIRPLUS3 uid: {}", user);
 
         READDIRPLUS3res res = new READDIRPLUS3res();
@@ -988,8 +983,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public READDIR3res NFSPROC3_READDIR_3(RpcCall call$, READDIR3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request READDIR3 uid: {}", user);
 
         READDIR3res res = new READDIR3res();
@@ -1168,8 +1162,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                    _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+            UnixUser user = NfsUser.remoteUser(call$, _exports);
             Stat inodeStat = inode.statCache();
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(fileAcl, user, AclHandler.ACL_READ)) {
@@ -1226,8 +1219,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public REMOVE3res NFSPROC3_REMOVE_3(RpcCall call$, REMOVE3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request REMOVE3 uid: {}", user);
 
 
@@ -1300,8 +1292,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public RENAME3res NFSPROC3_RENAME_3(RpcCall call$, RENAME3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request RENAME3 uid: {}", user);
 
         RENAME3res res = new RENAME3res();
@@ -1371,8 +1362,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public RMDIR3res NFSPROC3_RMDIR_3(RpcCall call$, RMDIR3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request RMDIR3 uid: {}", user);
 
 
@@ -1438,8 +1428,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public SETATTR3res NFSPROC3_SETATTR_3(RpcCall call$, SETATTR3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request SETATTR3 uid: {}", user);
 
 
@@ -1495,8 +1484,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public SYMLINK3res NFSPROC3_SYMLINK_3(RpcCall call$, SYMLINK3args arg1) {
-        org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+        UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request SYMLINK3 uid: {}", user);
 
         SYMLINK3res res = new SYMLINK3res();
@@ -1591,8 +1579,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         try {
             Stat inodeStat = inode.statCache();
 
-            org.dcache.chimera.posix.UnixUser user = HimeraNfsUtils.remoteUser(call$,
-                    _exports.isTrusted(call$.getTransport().getRemoteSocketAddress().getAddress()));
+            UnixUser user = NfsUser.remoteUser(call$, _exports);
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(fileAcl, user, AclHandler.ACL_WRITE)) {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");

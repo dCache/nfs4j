@@ -40,9 +40,6 @@ import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.v3.xdr.post_op_attr;
 import org.dcache.chimera.nfs.v3.xdr.pre_op_attr;
 import org.dcache.chimera.nfs.v3.xdr.wcc_data;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.RpcAuthTypeUnix;
-import org.dcache.xdr.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,36 +196,6 @@ public class HimeraNfsUtils {
         }
 
         return ret;
-    }
-
-    public static org.dcache.chimera.posix.UnixUser remoteUser(RpcCall call, boolean isTrusted) {
-
-        org.dcache.chimera.posix.UnixUser user = null;
-        int uid = -1;
-        int gid = -1;
-        int[] gids = null;
-
-        if( call.getCredential().type() == RpcAuthType.UNIX) {
-
-            uid = ((RpcAuthTypeUnix)call.getCredential()).uid();
-            gid = ((RpcAuthTypeUnix)call.getCredential()).gid();
-            gids = ((RpcAuthTypeUnix)call.getCredential()).gids();
-        }
-
-
-        String host = call.getTransport().getRemoteSocketAddress().getAddress().getHostName();
-
-
-        // root access only for trusted hosts
-        if( uid == 0 && ! isTrusted) {
-            // FIXME: actually 'nobody' account should be used
-            uid = -1;
-            gid = -1;
-        }
-
-        user = new org.dcache.chimera.posix.UnixUser(uid, gid, gids, host);
-
-        return user;
     }
 
     static public String nfsErr2String(int nfsStatus) {
