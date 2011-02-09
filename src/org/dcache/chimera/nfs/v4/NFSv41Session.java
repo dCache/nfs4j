@@ -68,8 +68,9 @@ public class NFSv41Session {
         return _slots.length - 1;
     }
 
-    public boolean updateSlot(int slot, int sequence, List<nfs_resop4> reply) throws ChimeraNFSException {
-        return getSlot(slot).update(sequence, reply);
+    public boolean updateSlot(int slot, int sequence, boolean cacheThis, List<nfs_resop4> reply)
+            throws ChimeraNFSException {
+        return getSlot(slot).update(sequence, reply, cacheThis);
     }
 
     /**

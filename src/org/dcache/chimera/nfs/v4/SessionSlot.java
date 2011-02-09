@@ -49,7 +49,7 @@ public class SessionSlot {
      * @return true if retransmit is detected and cached reply available.
      * @throws ChimeraNFSException
      */
-    boolean update(int sequence, List<nfs_resop4> reply) throws ChimeraNFSException {
+    boolean update(int sequence, List<nfs_resop4> reply, boolean cacheThis) throws ChimeraNFSException {
 
         if( sequence == _sequence ) {
             _log.info("retransmit detected");
@@ -85,7 +85,11 @@ public class SessionSlot {
         }
 
         _sequence = sequence;
-        _reply = reply;
+        if( cacheThis ){
+            _reply = reply;
+        }else{
+            _reply = null;
+        }
         return false;
     }
 

@@ -56,8 +56,6 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
              * in a COMPOUND. Such operations will get the error NFS4ERR_OP_NOT_IN_SESSION if they do
              * appear at the start of a COMPOUND.
              *
-             *
-             *
              */
 
 
@@ -87,19 +85,17 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             }
 
 
-            List<nfs_resop4> reply;
-            if (_args.opsequence.sa_cachethis) {
-                reply = context.processedOperations();
-            } else {
-                reply = null;
-            }
-            if (session.updateSlot(_args.opsequence.sa_slotid.value.value, _args.opsequence.sa_sequenceid.value.value, reply)) {
+            List<nfs_resop4> reply = context.processedOperations();
+            if(session.updateSlot(_args.opsequence.sa_slotid.value.value,
+                    _args.opsequence.sa_sequenceid.value.value,
+                    _args.opsequence.sa_cachethis, reply)){
                 /*
-                 * retransmit + cached reply available.
-                 * Stop processing.
-                 */
+                * retransmit + cached reply available.
+                * Stop processing.
+                */
                 return false;
             }
+
             session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
 
             context.setSession(session);
