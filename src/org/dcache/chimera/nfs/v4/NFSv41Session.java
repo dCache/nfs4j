@@ -91,9 +91,10 @@ public class NFSv41Session {
         return _slots[slot];
     }
 
-    public int getSecuence() {
+    public int getSequence() {
         return _sequence;
     }
+
     @Override
     public String toString() {
         return toHexString(_session.value);

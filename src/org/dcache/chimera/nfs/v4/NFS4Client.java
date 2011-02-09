@@ -327,7 +327,7 @@ public class NFS4Client {
     }
 
     public void removeSession(NFSv41Session session) {
-        _sessions.remove(session.getSecuence());
+        _sessions.remove(session.getSequence());
     }
 
     public boolean sessionsEmpty(NFSv41Session session) {
