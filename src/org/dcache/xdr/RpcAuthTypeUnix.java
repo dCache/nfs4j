@@ -20,6 +20,8 @@ package org.dcache.xdr;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.Arrays;
+import javax.security.auth.Subject;
+import org.dcache.auth.Subjects;
 
 public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
@@ -32,6 +34,7 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
     private int _gids[];
     private int _stamp;
     private String _machine;
+    private Subject _subject;
 
     private final static Logger _log = Logger.getLogger(RpcAuthTypeUnix.class.getName());
 
@@ -47,6 +50,8 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
                 4/*machine len place holder*/ + _machine.length() +
                 ((4 - (_machine.length() & 3)) & 3) /*padding bytes*/+
                  + 4/*stamp*/;
+
+        _subject = Subjects.of(_uid, _gid, _gids);
     }
 
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
@@ -58,6 +63,13 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
         _gid = xdr.xdrDecodeInt();
         _gids = xdr.xdrDecodeIntVector();
         _verifier.xdrDecode(xdr);
+
+        _subject = Subjects.of(_uid, _gid, _gids);
+    }
+
+    @Override
+    public Subject getSubject() {
+        return _subject;
     }
 
     @Override

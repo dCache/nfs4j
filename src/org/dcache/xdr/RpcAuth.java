@@ -17,6 +17,8 @@
 
 package org.dcache.xdr;
 
+import javax.security.auth.Subject;
+
 public interface RpcAuth extends XdrAble {
 
     /**
@@ -40,4 +42,10 @@ public interface RpcAuth extends XdrAble {
      * @return verifier.
      */
     RpcAuthVerifier getVerifier();
+
+    /**
+     * Get {@link Subject} associated with credentials.
+     * @return subject.
+     */
+    Subject getSubject();
 }

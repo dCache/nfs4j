@@ -256,6 +256,11 @@
             <artifactId>chimera-core</artifactId>
             <version>0.0.9</version>
         </dependency>
+        <dependency>
+            <groupId>org.dcache.common</groupId>
+            <artifactId>dcache-auth</artifactId>
+            <version>0.0.10-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <!--
@@ -279,6 +284,12 @@
             <id>maven2-repository.dcache.org</id>
             <name>dCache.ORG Repository for Maven</name>
             <url>http://www.dcache.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>dcache-snapshots</id>
+            <name>dCache.ORG snapshots repository</name>
+            <url>http://www.dcache.org/nexus/content/repositories/snapshots</url>
             <layout>default</layout>
         </repository>
     </repositories>

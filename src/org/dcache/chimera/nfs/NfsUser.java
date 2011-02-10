@@ -16,17 +16,15 @@
  */
 package org.dcache.chimera.nfs;
 
+import javax.security.auth.Subject;
 import org.dcache.chimera.posix.UnixUser;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.RpcAuthTypeUnix;
 import org.dcache.xdr.RpcCall;
+import org.dcache.auth.Subjects;
 
 /**
  * Utility class extract user record from NFS request
  */
 public class NfsUser {
-
-    private final static int[] NO_GROUPS = new int[0];
 
     /*no instances allowed*/
     private NfsUser() {
@@ -35,15 +33,14 @@ public class NfsUser {
     public static UnixUser remoteUser(RpcCall call, ExportFile exports) {
 
         UnixUser user;
-        int uid = -1;
-        int gid = -1;
-        int[] gids = NO_GROUPS;
+        int uid;
+        int gid;
+        int[] gids;
 
-        if (call.getCredential().type() == RpcAuthType.UNIX) {
-            uid = ((RpcAuthTypeUnix) call.getCredential()).uid();
-            gid = ((RpcAuthTypeUnix) call.getCredential()).gid();
-            gids = ((RpcAuthTypeUnix) call.getCredential()).gids();
-        }
+        Subject subject = call.getCredential().getSubject();
+        uid = Subjects.getUid(subject);
+        gids = Subjects.getGids(subject);
+        gid = gids.length > 0 ? gids[0] : -1;
 
         String host = call.getTransport().getRemoteSocketAddress().getAddress().getHostName();
 
