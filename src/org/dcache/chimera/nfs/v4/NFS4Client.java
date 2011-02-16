@@ -267,8 +267,13 @@ public class NFS4Client {
         return state;
     }
 
-    public NFS4State state(stateid4 stateid) {
-        return _clientStates.get(stateid);
+    public NFS4State state(stateid4 stateid) throws ChimeraNFSException {
+        NFS4State state = _clientStates.get(stateid);
+        if(state == null) {
+            throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_STATEID,
+                    "State not know to the client.");
+        }
+        return state;
     }
 
     @Override

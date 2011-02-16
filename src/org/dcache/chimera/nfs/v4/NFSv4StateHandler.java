@@ -21,7 +21,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,57 +103,14 @@ public class NFSv4StateHandler {
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
 
-        NFS4Client client = _clientsByServerId.get(Bytes.getLong(stateid.other, 0));
-        if(client == null ) {
-            throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "No client associated with client id."  );
-        }
-
+        NFS4Client client = getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
-        if( state == null) {
-            throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "State not know to the client."  );
-        }
 
         if( !state.isConfimed() ) {
             throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "State is not confirmed"  );
         }
 
         client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-    }
-
-    public int acquire_state(stateid4  stateid, boolean allow) throws ChimeraNFSException{
-
-        byte[] array_zero = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        byte[] array_allOnes ={0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf, 0xf};
-
-        if ( Arrays.equals(stateid.other, array_zero)){
-            if (stateid.seqid.value != 0){
-                throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad seqid.");
-            }
-            if (allow){
-                return 0;
-            }
-            else{
-                throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "Can't use 0 as stateid");
-            }
-        }
-        else if (Arrays.equals(stateid.other, array_allOnes)){
-            if(stateid.seqid.value == 0xffffffff){
-                if (allow){
-                    return 1;
-                }else{
-                    throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "Can't use 1 as stateid");
-                }
-            }else if (stateid.seqid.value == 0){
-                //Use Current stateid
-                return stateid.seqid.value;
-            }else{
-                throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad seqid");
-            }
-        }
-        if (stateid.seqid.value != 0){
-            throw new ChimeraNFSException( nfsstat4.NFS4ERR_BAD_STATEID, "bad seqid");
-        }
-        return stateid.seqid.value;
     }
 
     public List<NFS4Client> getClients() {
