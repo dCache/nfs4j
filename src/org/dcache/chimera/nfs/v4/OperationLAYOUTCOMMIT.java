@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
@@ -32,53 +31,55 @@ import org.slf4j.LoggerFactory;
 
 public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTCOMMIT.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTCOMMIT.class);
 
-	OperationLAYOUTCOMMIT(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_LAYOUTCOMMIT);
-	}
+    OperationLAYOUTCOMMIT(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_LAYOUTCOMMIT);
+    }
 
-	@Override
-	public boolean process(CompoundContext context) {
+    @Override
+    public boolean process(CompoundContext context) {
 
-    	LAYOUTCOMMIT4res res = new LAYOUTCOMMIT4res();
+        LAYOUTCOMMIT4res res = new LAYOUTCOMMIT4res();
 
-    	try {
+        try {
 
-            _log.debug("LAYOUTCOMMIT: inode=" + context.currentInode().toFullString() + " length="
+            _log.debug("LAYOUTCOMMIT: inode=" + context.currentInode() + " length="
                     + _args.oplayoutcommit.loca_length.value.value + " offset="
                     + _args.oplayoutcommit.loca_offset.value.value + " loca_last_write_offset="
                     + (_args.oplayoutcommit.loca_last_write_offset.no_newoffset
                     ? _args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset"));
 
-	    	if( _args.oplayoutcommit.loca_length.value.value > 0 ) {
-	    		context.getFs().setFileSize(context.currentInode(), _args.oplayoutcommit.loca_length.value.value);
-	    	}
+            res.locr_resok4 = new LAYOUTCOMMIT4resok();
+            res.locr_resok4.locr_newsize = new newsize4();
+            res.locr_resok4.locr_newsize.ns_sizechanged = false;
 
+            if (_args.oplayoutcommit.loca_last_write_offset.no_newoffset) {
+                long currentSize = context.currentInode().stat().getSize();
+                long newSize = _args.oplayoutcommit.loca_last_write_offset.no_offset.value.value + 1;
+                if (newSize > currentSize) {
+                    context.currentInode().setSize(newSize);
+                    res.locr_resok4.locr_newsize.ns_sizechanged = true;
+                    res.locr_resok4.locr_newsize.ns_size = new length4(new uint64_t(newSize));
+                }
+            }
 
-	    	res.locr_resok4 = new LAYOUTCOMMIT4resok();
-	    	res.locr_resok4.locr_newsize = new newsize4();
-	    	res.locr_resok4.locr_newsize.ns_sizechanged = true;
-	    	res.locr_resok4.locr_newsize.ns_size = new length4(new uint64_t( context.currentInode().statCache().getSize() ) );
-	    	res.locr_status = nfsstat4.NFS4_OK;
+            res.locr_status = nfsstat4.NFS4_OK;
 
-
-        }catch(ChimeraNFSException hne) {
+        } catch (ChimeraNFSException hne) {
             _log.error("LAYOUTCOMMIT: {}", hne.getMessage());
-    		res.locr_status = hne.getStatus();
-    	}catch(ChimeraFsException hfe) {
-    		_log.error("LAYOUTCOMMIT:", hfe);
-    		res.locr_status = nfsstat4.NFS4ERR_SERVERFAULT;
-    	}catch(Exception e) {
-        	_log.error("LAYOUTCOMMIT:", e);
+            res.locr_status = hne.getStatus();
+        } catch (ChimeraFsException hfe) {
+            _log.error("LAYOUTCOMMIT:", hfe);
             res.locr_status = nfsstat4.NFS4ERR_SERVERFAULT;
-    	}
+        } catch (Exception e) {
+            _log.error("LAYOUTCOMMIT:", e);
+            res.locr_status = nfsstat4.NFS4ERR_SERVERFAULT;
+        }
 
         _result.oplayoutcommit = res;
 
-            context.processedOperations().add(_result);
-            return res.locr_status == nfsstat4.NFS4_OK;
-
-	}
-
+        context.processedOperations().add(_result);
+        return res.locr_status == nfsstat4.NFS4_OK;
+    }
 }
