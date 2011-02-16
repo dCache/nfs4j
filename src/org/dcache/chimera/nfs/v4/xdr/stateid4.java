@@ -50,7 +50,7 @@ public class stateid4 implements XdrAble, Serializable {
 
     @Override
     public int hashCode() {
-        return seqid == null? 17 :  seqid.value;
+        return Arrays.hashCode(other);
     }
 
     @Override
