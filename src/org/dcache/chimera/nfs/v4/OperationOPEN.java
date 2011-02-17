@@ -162,7 +162,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                     break;
                 case open_claim_type4.CLAIM_PREVIOUS:
-                    _log.debug("open by Inode for : {}", context.currentInode().toFullString());
+                    _log.debug("open by Inode for : {}", context.currentInode());
                     break;
                 case open_claim_type4.CLAIM_DELEGATE_CUR:
                     break;

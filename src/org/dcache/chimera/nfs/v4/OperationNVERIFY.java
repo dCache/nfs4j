@@ -53,8 +53,7 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
                 }
             }
 
-            _log.debug("{} is !same = {}",
-                    new Object[]{context.currentInode().toFullString(), res.status});
+            _log.debug("{} is !same = {}", context.currentInode(), res.status);
         } catch (ChimeraNFSException he) {
             res.status = he.getStatus();
         } catch (Exception e) {
