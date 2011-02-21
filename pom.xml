@@ -132,6 +132,13 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+        	<resource>
+        		<directory>resources</directory>
+        		<includes>
+        		</includes>
+        	</resource>
+        </resources>
     </build>
 
     <!--
