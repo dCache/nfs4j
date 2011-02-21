@@ -120,9 +120,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 	    	res.csr_resok4.csr_fore_chan_attrs = _args.opcreate_session.csa_fore_chan_attrs;
 	    	res.csr_resok4.csr_back_chan_attrs = _args.opcreate_session.csa_back_chan_attrs;
 
-	    	if (client.isConfirmed())
-                res.csr_resok4.csr_flags = new uint32_t(res.csr_resok4.csr_flags.value | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
-
 	    	res.csr_status = nfsstat4.NFS4_OK;
 
         }catch(ChimeraNFSException ne) {
