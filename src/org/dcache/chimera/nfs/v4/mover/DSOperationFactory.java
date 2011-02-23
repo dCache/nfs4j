@@ -27,6 +27,7 @@ import org.dcache.chimera.nfs.v4.OperationGETATTR;
 import org.dcache.chimera.nfs.v4.OperationILLEGAL;
 import org.dcache.chimera.nfs.v4.OperationPUTFH;
 import org.dcache.chimera.nfs.v4.OperationPUTROOTFH;
+import org.dcache.chimera.nfs.v4.OperationRECLAIM_COMPLETE;
 import org.dcache.chimera.nfs.v4.OperationSEQUENCE;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -67,6 +68,8 @@ public class DSOperationFactory implements NFSv4OperationFactory {
                 return new OperationDESTROY_SESSION(op);
             case nfs_opnum4.OP_SEQUENCE:
                 return new OperationSEQUENCE(op);
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                return new OperationRECLAIM_COMPLETE(op);
         }
 
         return new OperationILLEGAL(op);

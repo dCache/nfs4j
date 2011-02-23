@@ -26,9 +26,9 @@ import org.slf4j.LoggerFactory;
 
 public class OperationRECLAIM_COMPLETE extends AbstractNFSv4Operation {
 
-    private static final Logger _log = LoggerFactory.getLogger(OperationLOCKU.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationRECLAIM_COMPLETE.class);
 
-    OperationRECLAIM_COMPLETE(nfs_argop4 args) {
+    public OperationRECLAIM_COMPLETE(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_RECLAIM_COMPLETE);
     }
 
