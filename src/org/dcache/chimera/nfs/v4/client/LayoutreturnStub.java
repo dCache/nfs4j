@@ -41,7 +41,7 @@ public class LayoutreturnStub {
         op.argop = nfs_opnum4.OP_LAYOUTRETURN;
         op.oplayoutreturn = new LAYOUTRETURN4args();
 
-        op.oplayoutreturn.lora_reclaim = true;
+        op.oplayoutreturn.lora_reclaim = false;
         op.oplayoutreturn.lora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
         op.oplayoutreturn.lora_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
         op.oplayoutreturn.lora_layoutreturn = new layoutreturn4();
