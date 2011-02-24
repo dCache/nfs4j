@@ -123,7 +123,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
         	res.status = he.getStatus();
         }catch(Exception e) {
-            _log.debug("GETATTR:", e);
+            _log.error("GETATTR:", e);
             res.status = nfsstat4.NFS4ERR_RESOURCE;
         }
 
