@@ -40,7 +40,8 @@ public class RpcCredential {
                 credential = new RpcAuthTypeNone();
                 break;
             default:
-                throw new RpcAuthMissmatch(RpcAuthStat.AUTH_FAILED);
+                throw new RpcAuthException("Unsuported type: " + authType,
+                                new RpcAuthError(RpcAuthStat.AUTH_FAILED));
         }
         credential.xdrDecode(xdr);
         return credential;

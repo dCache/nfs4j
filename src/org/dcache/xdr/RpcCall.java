@@ -82,20 +82,23 @@ public class RpcCall {
         _xdr = new Xdr(Xdr.MAX_XDR_SIZE);
     }
 
-    public RpcCall(int xid, Xdr xdr, XdrTransport transport) throws OncRpcException, IOException {
+    public RpcCall(int xid, Xdr xdr, XdrTransport transport) {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;
-        _rpcvers = _xdr.xdrDecodeInt();
-        if (_rpcvers != RPCVERS) {
-            throw new RpcMismatchReply(2, 2);
-        }
-        _prog = xdr.xdrDecodeInt();
-        _version = xdr.xdrDecodeInt();
-        _proc = xdr.xdrDecodeInt();
-
-        _cred = RpcCredential.decode(xdr);
     }
+
+    public void accept() throws IOException, OncRpcException {
+         _rpcvers = _xdr.xdrDecodeInt();
+         if (_rpcvers != RPCVERS) {
+            throw new RpcMismatchReply(_rpcvers, 2);
+         }
+
+        _prog = _xdr.xdrDecodeInt();
+        _version = _xdr.xdrDecodeInt();
+        _proc = _xdr.xdrDecodeInt();
+        _cred = RpcCredential.decode(_xdr);
+     }
 
     /**
      * Get RPC call program number.
@@ -138,6 +141,36 @@ public class RpcCall {
                 _rpcvers, _prog, _version, _proc);
     }
 
+    /**
+     * Reject the request with given status. The call can be rejected for two
+     * reasons: either the server is not running a compatible version of the
+     * RPC protocol (RPC_MISMATCH), or the server rejects the identity of the
+     * caller (AUTH_ERROR).
+     *
+     * @see RpcRejectStatus
+     * @param status
+     * @param reason
+     */
+    public void reject(int status, XdrAble reason) {
+        XdrEncodingStream xdr = _xdr;
+        try {
+            RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
+            xdr.beginEncoding();
+            replyMessage.xdrEncode(_xdr);
+            xdr.xdrEncodeInt(RpcReplyStatus.MSG_DENIED);
+            xdr.xdrEncodeInt(status);
+            reason.xdrEncode(_xdr);
+            xdr.endEncoding();
+
+            ByteBuffer message = xdr.body();
+            _transport.send(message);
+
+        } catch (OncRpcException e) {
+            _log.log(Level.WARNING, "Xdr exception: ", e);
+        } catch (IOException e) {
+            _log.log(Level.SEVERE, "Failed send reply: ", e);
+        }
+    }
     /**
      * Send accepted reply to the client.
      *

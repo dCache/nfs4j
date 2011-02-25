@@ -14,19 +14,11 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.xdr;
 
-public class RpcAuthMissmatch extends OncRpcException {
+public class RpcAuthException extends RpcException {
 
-    private final int _status;
-
-    public RpcAuthMissmatch(int status) {
-        super(RpcAuthStat.toString(status));
-        _status = status;
-    }
-
-    public int getAuthError() {
-        return _status;
+    public RpcAuthException(String msg, RpcAuthError error) {
+        super(RpcRejectStatus.AUTH_ERROR, msg, error);
     }
 }

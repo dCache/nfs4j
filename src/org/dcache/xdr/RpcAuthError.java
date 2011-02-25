@@ -14,23 +14,38 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.xdr;
 
+import java.io.IOException;
+
 /**
- * The server is not running a compatible version
- * of the RPC protocol (RPC_MISMATCH).
+ * Server rejects the identity of the caller (AUTH_ERROR).
  */
-public class RpcMismatchReply extends RpcException {
+public class RpcAuthError implements XdrAble {
 
-    private final MismatchInfo _mismatchInfo;
+    private int _stat;
 
-    public RpcMismatchReply(int min, int max) {
-        this(new MismatchInfo(min, max));
+    public RpcAuthError() {
     }
 
-    public RpcMismatchReply(MismatchInfo mismatchInfo) {
-        super( RpcRejectStatus.RPC_MISMATCH, mismatchInfo.toString(), mismatchInfo );
-        _mismatchInfo = mismatchInfo;
+    public RpcAuthError(int _stat) {
+        this._stat = _stat;
     }
+
+    public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
+        _stat = xdr.xdrDecodeInt();
+    }
+
+    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
+        xdr.xdrEncodeInt(_stat);
+    }
+
+    public int getStat() {
+        return _stat;
+    }
+
+    public void setStat(int _stat) {
+        this._stat = _stat;
+    }
+
 }

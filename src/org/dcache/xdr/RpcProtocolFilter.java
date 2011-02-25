@@ -55,8 +55,9 @@ public class RpcProtocolFilter implements ProtocolFilter {
         XdrTransport transport = new GrizzlyXdrTransport(context);
 
         if (message.type() == RpcMessageType.CALL) {
+            RpcCall call = new RpcCall(message.xid(), xdr, transport);
             try {
-                RpcCall call = new RpcCall(message.xid(), xdr, transport);
+                call.accept();
 
                /*
                 * pass RPC call to the next filter in the chain
@@ -65,12 +66,7 @@ public class RpcProtocolFilter implements ProtocolFilter {
                context.setAttribute(RPC_CALL, call);
 
             }catch (RpcException e) {
-                RpcReply reply = e.getRpcReply();
-                try {
-                    reply.reply(XdrVoid.XDR_VOID);
-                } catch (OncRpcException ex) {
-                    Logger.getLogger(RpcProtocolFilter.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                call.reject(e.getStatus(), e.getRpcReply());
                 _log.log(Level.INFO, "RPC request rejected: {1}", e.getMessage());
                 return false;
             }catch (OncRpcException e) {
