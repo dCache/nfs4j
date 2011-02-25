@@ -58,8 +58,8 @@ public class NFSv4StateHandler {
             _sessionById.remove( session.id() );
         }
 
-        _clientsByServerId.remove(client.id_srv());
-        _clientByOwner.remove(client.id());
+        _clientsByServerId.remove(client.getId());
+        _clientByOwner.remove(client.getOwner());
         _clientsByVerifier.remove(client.verifier()) ;
         _clients.remove(client);
 
@@ -67,9 +67,9 @@ public class NFSv4StateHandler {
 
     public void addClient(NFS4Client newClient) {
         _clients.add(newClient);
-        _clientsByServerId.put(newClient.id_srv(), newClient);
+        _clientsByServerId.put(newClient.getId(), newClient);
         _clientsByVerifier.put(newClient.verifier(), newClient);
-        _clientByOwner.put( newClient.id(), newClient);
+        _clientByOwner.put( newClient.getOwner(), newClient);
     }
 
     public NFS4Client getClientByID( Long id) throws ChimeraNFSException {

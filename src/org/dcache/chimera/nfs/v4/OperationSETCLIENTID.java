@@ -74,7 +74,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
 		        res.resok4 = new SETCLIENTID4resok();
 		        res.resok4.clientid = new clientid4();
-		        res.resok4.clientid.value = new uint64_t(client.id_srv());
+		        res.resok4.clientid.value = new uint64_t(client.getId());
 		        res.resok4.setclientid_confirm = client.verifier();
 		        res.status = nfsstat4.NFS4_OK;
 

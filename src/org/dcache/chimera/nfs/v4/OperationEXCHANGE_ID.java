@@ -241,7 +241,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
             client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
 
-            res.eir_resok4.eir_clientid = new clientid4( new uint64_t(client.id_srv()) );
+            res.eir_resok4.eir_clientid = new clientid4( new uint64_t(client.getId()) );
             res.eir_resok4.eir_sequenceid = new sequenceid4( new uint32_t(client.currentSeqID() ));
             res.eir_resok4.eir_flags = new uint32_t(_flag);
 

@@ -47,7 +47,7 @@ public class NFSv41Session {
         _slots = new SessionSlot[replyCacheSize];
         byte[] id  = new byte[nfs4_prot.NFS4_SESSIONID_SIZE];
 
-        Bytes.putLong(id, 0, client.id_srv());
+        Bytes.putLong(id, 0, client.getId());
         Bytes.putInt(id, 12, sequence);
         _session = new sessionid4(id);
     }
