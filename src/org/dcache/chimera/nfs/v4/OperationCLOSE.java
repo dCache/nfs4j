@@ -43,20 +43,17 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
             FsInode inode = context.currentInode();
 
-            if( context.getSession() == null ) {
+            if (context.getSession() == null) {
                 context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
-            }else{
+            } else {
                 context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }
 
+            res.open_stateid = stateid4.INVAL_STATEID;
             res.status = nfsstat4.NFS4_OK;
 
-            res.open_stateid = new stateid4();
-            res.open_stateid.seqid = _args.opclose.open_stateid.seqid;
-            res.open_stateid.other = _args.opclose.open_stateid.other;
-
-        }catch(ChimeraNFSException he) {
-            _log.debug("CLOSE: {}", he.getMessage() );
+        } catch (ChimeraNFSException he) {
+            _log.debug("CLOSE: {}", he.getMessage());
             res.status = he.getStatus();
         }
 
@@ -65,5 +62,4 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         context.processedOperations().add(_result);
         return res.status == nfsstat4.NFS4_OK;
     }
-
 }

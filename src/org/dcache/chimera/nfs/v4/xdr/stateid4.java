@@ -13,10 +13,21 @@ public class stateid4 implements XdrAble, Serializable {
 
     static final long serialVersionUID = -6677150504723505919L;
 
+    public final static stateid4 CURRENT_STATEID =
+            new stateid4(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1);
+
+    public final static stateid4 INVAL_STATEID =
+            new stateid4(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nfs4_prot.NFS4_UINT32_MAX);
+
     public uint32_t seqid;
     public byte [] other;
 
     public stateid4() {
+    }
+
+    private stateid4(byte[] other, int seq) {
+        this.other = other;
+        seqid = new uint32_t(seq);
     }
 
     public stateid4(XdrDecodingStream xdr)
