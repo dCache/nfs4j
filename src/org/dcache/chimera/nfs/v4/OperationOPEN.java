@@ -97,7 +97,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     FsInode inode;
                     if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
 
-                        boolean exclusive = _args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4;
+                        boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4) ||
+                                (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
 
                         try {
 
@@ -134,8 +135,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             inode = context.currentInode().create(name, context.getUser().getUID(),
                                     context.getUser().getGID(), 0600);
 
-                            if (!exclusive) {
-                                 res.resok4.attrset = OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode);
+                            // FIXME: proper implemtation required
+                            switch (_args.opopen.openhow.how.mode) {
+                                case createmode4.UNCHECKED4:
+                                case createmode4.GUARDED4:
+                                    res.resok4.attrset = OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode);
+                                    break;
+                                case createmode4.EXCLUSIVE4:
+                                case createmode4.EXCLUSIVE4_1:
                             }
                         }
 
