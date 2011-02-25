@@ -810,7 +810,7 @@ public class Main {
 
             dsClient.dsRead(dsClient, stripe.getFh(), or.stateid());
 
-            layoutreturn(0, -1, new byte[0], or.stateid());
+            layoutreturn(or.fh(), 0, -1, new byte[0], or.stateid());
 
         } else {
             nfsRead(or.fh(), or.stateid());
@@ -870,7 +870,7 @@ public class Main {
                 if (raf != null) {
                     raf.close();
                 }
-                layoutreturn(0, -1, new byte[0], or.stateid());
+                layoutreturn(or.fh(), 0, -1, new byte[0], or.stateid());
             }
 
         } else {
@@ -1071,13 +1071,14 @@ public class Main {
 
     }
 
-    private void layoutreturn(long offset, long len, byte[] body, stateid4 stateid) throws OncRpcException,
+    private void layoutreturn(nfs_fh4 fh, long offset, long len, byte[] body, stateid4 stateid) throws OncRpcException,
             IOException {
 
         List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
 
         ops.add(SequenceStub.generateRequest(false, _sessionid.value,
                 _sequenceID.value.value, 12, 0));
+        ops.add(PutfhStub.generateRequest(fh));
         ops.add(LayoutreturnStub.generateRequest(offset, len, body, stateid));
 
         COMPOUND4res compound4res = sendCompound(ops, "layoutreturn");
