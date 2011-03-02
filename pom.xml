@@ -225,9 +225,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>8.4-701.jdbc3</version>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -249,7 +249,11 @@
             <artifactId>guava</artifactId>
             <version>r07</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>2.0.1</version>
+        </dependency>
         <!--
             LOCAL JARS
         -->
@@ -261,7 +265,7 @@
         <dependency>
             <groupId>org.dcache.chimera</groupId>
             <artifactId>chimera-core</artifactId>
-            <version>0.0.9</version>
+            <version>0.0.10-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.dcache.common</groupId>

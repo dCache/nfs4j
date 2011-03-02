@@ -47,7 +47,14 @@
     <!--
         FileSystem engine. Currently only Chimera is supported
     -->
-    <bean id="fileSystem" class="org.dcache.chimera.JdbcFs">
+
+     <bean id="liquibase" class="liquibase.integration.spring.SpringLiquibase">
+         <property name="dataSource" ref="dataSource" />
+         <property name="changeLog" value="${chimera.db.changeset}" />
+         <property name="contexts" value="production" />
+     </bean>
+
+     <bean id="fileSystem" class="org.dcache.chimera.JdbcFs" depends-on="liquibase">
         <description>Chimera Filesystem</description>
         <constructor-arg ref="dataSource" />
         <constructor-arg value="${chimera.db.dialect}" />
@@ -178,4 +185,5 @@
             </map>
         </property>
     </bean>
+
 </beans>
