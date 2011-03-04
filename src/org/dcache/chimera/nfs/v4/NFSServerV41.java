@@ -35,6 +35,7 @@ import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
@@ -100,13 +101,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 _log.debug("CURFH: NULL");
             }
 
-            v = context.processedOperations();
-            res.resarray = v.toArray(new nfs_resop4[v.size()]);
+            res.resarray = context.processedOperations();
             // result  status must be equivalent
             // to the status of the last operation that
             // was executed within the COMPOUND procedure
             if (!v.isEmpty()) {
-                res.status = res.resarray[res.resarray.length - 1].getStatus();
+                res.status = res.resarray.get(res.resarray.size() - 1).getStatus();
             } else {
                 res.status = nfsstat4.NFS4_OK;
             }
@@ -116,12 +116,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
         } catch (ChimeraNFSException e) {
             _log.info("NFS operation failed: {}", e.getMessage());
-            res.resarray = new nfs_resop4[0];
+            res.resarray = Collections.EMPTY_LIST;
             res.status = e.getStatus();
             res.tag = arg1.tag;
         } catch (Exception e) {
             _log.error("Unhandled exception:", e);
-            res.resarray = new nfs_resop4[0];
+            res.resarray = Collections.EMPTY_LIST;
             res.status = nfsstat4.NFS4ERR_SERVERFAULT;
             res.tag = arg1.tag;
         }finally{

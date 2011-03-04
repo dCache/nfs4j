@@ -435,23 +435,23 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            if (compound4res.resarray[0].opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
+            if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
                 String serverId = new String(
-                        compound4res.resarray[0].opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.value.value);
+                        compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.value.value);
                 System.out.println("Connected to: " + serverId);
             } else {
                 System.out.println("Connected to: Mr. X");
             }
 
-            _clientIdByServer = compound4res.resarray[0].opexchange_id.eir_resok4.eir_clientid;
-            _sequenceID = compound4res.resarray[0].opexchange_id.eir_resok4.eir_sequenceid;
+            _clientIdByServer = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_clientid;
+            _sequenceID = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_sequenceid;
 
-            if ((compound4res.resarray[0].opexchange_id.eir_resok4.eir_flags.value
+            if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
                     & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS) > 0) {
                 _isMDS = true;
             }
 
-            if ((compound4res.resarray[0].opexchange_id.eir_resok4.eir_flags.value
+            if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
                     & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS) > 0) {
                 _isDS = true;
             }
@@ -476,7 +476,7 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            _sessionid = compound4res.resarray[0].opcreate_session.csr_resok4.csr_sessionid;
+            _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
             // FIXME: no idea why, but other wise server reply MISORDER
             _sequenceID.value.value = 0;
 
@@ -517,7 +517,7 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            _rootFh = compound4res.resarray[ops.size() - 1].opgetfh.resok4.object;
+            _rootFh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
             _cwd = _rootFh;
             System.out.println("root fh = " + toHexString(_rootFh.value));
 
@@ -568,10 +568,10 @@ public class Main {
             COMPOUND4res compound4res = sendCompound(ops, "readdir");
 
             if (compound4res.status == nfsstat4.NFS4_OK) {
-                verifier = compound4res.resarray[2].opreaddir.resok4.cookieverf;
-                done = compound4res.resarray[2].opreaddir.resok4.reply.eof;
+                verifier = compound4res.resarray.get(2).opreaddir.resok4.cookieverf;
+                done = compound4res.resarray.get(2).opreaddir.resok4.reply.eof;
 
-                entry4 dirEntry = compound4res.resarray[2].opreaddir.resok4.reply.entries;
+                entry4 dirEntry = compound4res.resarray.get(2).opreaddir.resok4.reply.entries;
                 while (dirEntry != null) {
                     cookie = dirEntry.cookie.value.value;
                     list.add(new String(dirEntry.name.value.value.value));
@@ -627,14 +627,12 @@ public class Main {
 
             COMPOUND4res compound4res = sendCompound(ops, "readdir");
 
-            int opCount = ops.size();
-
             if (compound4res.status == nfsstat4.NFS4_OK) {
 
-                verifier = compound4res.resarray[opCount - 1].opreaddir.resok4.cookieverf;
-                done = compound4res.resarray[opCount - 1].opreaddir.resok4.reply.eof;
+                verifier = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.cookieverf;
+                done = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.reply.eof;
 
-                entry4 dirEntry = compound4res.resarray[opCount - 1].opreaddir.resok4.reply.entries;
+                entry4 dirEntry = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.reply.entries;
                 while (dirEntry != null) {
                     cookie = dirEntry.cookie.value.value;
                     list.add(new String(dirEntry.name.value.value.value));
@@ -695,7 +693,7 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray[ops.size()-1].opgetattr.resok4.obj_attributes);
+            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(ops.size() - 1).opgetattr.resok4.obj_attributes);
 
             fattr4_fs_locations locations = (fattr4_fs_locations) attrMap.get(nfs4_prot.FATTR4_FS_LOCATIONS);
             if (locations != null) {
@@ -741,7 +739,7 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            _cwd = compound4res.resarray[ops.size() - 1].opgetfh.resok4.object;
+            _cwd = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
             System.out.println("CWD fh = " + toHexString(_cwd.value));
 
         } else {
@@ -769,7 +767,7 @@ public class Main {
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
 
-            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray[2].opgetattr.resok4.obj_attributes);
+            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
 
             uint64_t size = (uint64_t) attrMap.get(nfs4_prot.FATTR4_SIZE);
             if (size != null) {
@@ -916,8 +914,8 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            nfs_fh4 fh = compound4res.resarray[opCount - 1].opgetfh.resok4.object;
-            stateid4 stateid = compound4res.resarray[opCount - 2].opopen.resok4.stateid;
+            nfs_fh4 fh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
+            stateid4 stateid = compound4res.resarray.get(ops.size() - 2).opopen.resok4.stateid;
             System.out.println("open_read fh = " + toHexString(fh.value));
 
             return new OpenReply(fh, stateid);
@@ -966,8 +964,8 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            nfs_fh4 fh = compound4res.resarray[opCount - 1].opgetfh.resok4.object;
-            stateid4 stateid = compound4res.resarray[opCount - 2].opopen.resok4.stateid;
+            nfs_fh4 fh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
+            stateid4 stateid = compound4res.resarray.get(ops.size() - 2).opopen.resok4.stateid;
             System.out.println("open_read fh = " + toHexString(fh.value));
 
             return new OpenReply(fh, stateid);
@@ -1018,9 +1016,9 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            layout4[] layout = compound4res.resarray[2].oplayoutget.logr_resok4.logr_layout;
+            layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
             System.out.println("Layoutget for fh: " + toHexString(fh.value));
-            System.out.println("    roc   : " + compound4res.resarray[2].oplayoutget.logr_resok4.logr_return_on_close);
+            System.out.println("    roc   : " + compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_return_on_close);
 
             StripeMap stripeMap = new StripeMap();
 
@@ -1124,7 +1122,7 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub.decodeFileDevice(compound4res.resarray[1].opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
+            nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub.decodeFileDevice(compound4res.resarray.get(ops.size() - 1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
             _knowDevices.put(deviceId, new FileIoDevice(addr) );
 
@@ -1147,7 +1145,7 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            deviceid4[] deviceList = compound4res.resarray[2].opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
+            deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
 
             System.out.println("Know devices: ");
             for (deviceid4 device : deviceList) {
@@ -1178,8 +1176,8 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            byte[] data = new byte[compound4res.resarray[2].opread.resok4.data.remaining()];
-            compound4res.resarray[2].opread.resok4.data.get(data);
+            byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
+            compound4res.resarray.get(2).opread.resok4.data.get(data);
             System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("read failed. Error = "
@@ -1202,8 +1200,8 @@ public class Main {
 
         if (compound4res.status == nfsstat4.NFS4_OK) {
 
-            byte[] data = new byte[compound4res.resarray[2].opread.resok4.data.remaining()];
-            compound4res.resarray[2].opread.resok4.data.get(data);
+            byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
+            compound4res.resarray.get(2).opread.resok4.data.get(data);
             System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("read failed. Error = "
@@ -1251,7 +1249,7 @@ public class Main {
                     + NFSv41Error.errcode2string(compound4res.status));
         } else {
 
-            System.out.println(compound4res.resarray[2].opwrite.resok4.count.value.value
+            System.out.println(compound4res.resarray.get(2).opwrite.resok4.count.value.value
                     + " bytes written.");
         }
 
@@ -1349,7 +1347,7 @@ public class Main {
 
     public void processSequence(COMPOUND4res compound4res) {
 
-        if (compound4res.resarray[0].resop == nfs_opnum4.OP_SEQUENCE && compound4res.resarray[0].opsequence.sr_status == nfsstat4.NFS4_OK) {
+        if (compound4res.resarray.get(0).resop == nfs_opnum4.OP_SEQUENCE && compound4res.resarray.get(0).opsequence.sr_status == nfsstat4.NFS4_OK) {
             _lastUpdate = System.currentTimeMillis();
             ++_sequenceID.value.value;
         }

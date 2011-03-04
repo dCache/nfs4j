@@ -43,6 +43,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
     @Override
     public boolean process(CompoundContext context) {
        SEQUENCE4res res = new SEQUENCE4res();
+       boolean cached = false;
 
         try {
             /*
@@ -86,15 +87,9 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
 
             List<nfs_resop4> reply = context.processedOperations();
-            if(session.updateSlot(_args.opsequence.sa_slotid.value.value,
+            cached = session.updateSlot(_args.opsequence.sa_slotid.value.value,
                     _args.opsequence.sa_sequenceid.value.value,
-                    _args.opsequence.sa_cachethis, reply)){
-                /*
-                * retransmit + cached reply available.
-                * Stop processing.
-                */
-                return false;
-            }
+                    _args.opsequence.sa_cachethis, reply);
 
             session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
 
@@ -114,7 +109,12 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             res.sr_status = nfsstat4.NFS4ERR_SERVERFAULT;
         }
 
-       _result.opsequence = res;
+        _result.opsequence = res;
+        if (cached) {
+            context.processedOperations().set(0, _result);
+            return false;
+        }
+
         context.processedOperations().add(_result);
         return res.sr_status == nfsstat4.NFS4_OK;
     }
