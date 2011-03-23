@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 
 public class NFS4Client {
@@ -45,7 +45,7 @@ public class NFS4Client {
     /**
      * client id generator.
      */
-    private final static AtomicLong CLIENTID = new AtomicLong(0);
+    private final static AtomicInteger CLIENTID = new AtomicInteger(0);
 
     /*
      * from NFSv4.1 spec:
@@ -153,7 +153,7 @@ public class NFS4Client {
         _ownerId = new Opaque(ownerID);
         _verifier = verifier;
         _principal = principal;
-        _clientId = (BOOTID << 32) + CLIENTID.incrementAndGet();
+        _clientId = (BOOTID << 32) | CLIENTID.incrementAndGet();
 
         _clientAddress = clientAddress;
         _localAddress = localAddress;
