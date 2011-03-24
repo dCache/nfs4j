@@ -72,8 +72,12 @@
     <!--
         NFSv4.1 Operation factory
     -->
-    <bean id="mds-factory" class="org.dcache.chimera.nfs.v4.MDSOperationFactory">
+    <bean id="mds-factory-inner" class="org.dcache.chimera.nfs.v4.MDSOperationFactory">
         <description>MDS operation factory</description>
+    </bean>
+    <bean id="mds-factory" class="org.dcache.chimera.nfs.v4.OperationFactoryMXBeanImpl">
+        <description>MDS operation factory JMX wrapper</description>
+        <constructor-arg ref="mds-factory-inner"/>
     </bean>
 
     <!--
