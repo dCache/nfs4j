@@ -36,7 +36,8 @@ public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
         _cache = cache;
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
-            String name = String.format("%s:type=Cache,name=%s",_cache.getClass().getPackage(), _cache.getName());
+            String name = String.format("%s:type=Cache,name=%s",
+                    _cache.getClass().getPackage().getName(), _cache.getName());
             ObjectName mxBeanName = new ObjectName(name);
             if( !server.isRegistered(mxBeanName)) {
                 server.registerMBean(this, new ObjectName(name));
