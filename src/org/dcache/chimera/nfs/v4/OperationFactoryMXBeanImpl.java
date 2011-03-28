@@ -37,8 +37,14 @@ public class OperationFactoryMXBeanImpl implements OperationFactoryMXBean, NFSv4
     private final Map<Integer, AtomicLong> _counters = new ConcurrentHashMap<Integer, AtomicLong>();
     private final NFSv4OperationFactory _inner;
 
-    public OperationFactoryMXBeanImpl(NFSv4OperationFactory _inner) {
-        this._inner = _inner;
+    /**
+     * Create a new JMX bean for specified {@link NFSv4OperationFactory}.
+     *
+     * @param inner {@link NFSv4OperationFactory} to wrap.
+     * @param name extention used to create a unique {@link ObjectName}
+     */
+    public OperationFactoryMXBeanImpl(NFSv4OperationFactory inner, String name) {
+        _inner = inner;
 
         _counters.put(nfs_opnum4.OP_ACCESS, new AtomicLong());
         _counters.put(nfs_opnum4.OP_CLOSE, new AtomicLong());
@@ -100,10 +106,11 @@ public class OperationFactoryMXBeanImpl implements OperationFactoryMXBean, NFSv4
 
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
-            String name = String.format("%s:type=NFSv4.1 Operations,name=%s", _inner.getClass().getPackage(), _inner.getClass().getSimpleName());
-            ObjectName mxBeanName = new ObjectName(name);
+            String jmxName = String.format("%s:type=NFSv4.1 Operations, name=%s-%s",
+                    _inner.getClass().getPackage().getName(), _inner.getClass().getSimpleName(), name);
+            ObjectName mxBeanName = new ObjectName(jmxName);
             if (!server.isRegistered(mxBeanName)) {
-                server.registerMBean(this, new ObjectName(name));
+                server.registerMBean(this, new ObjectName(jmxName));
             }
         } catch (MalformedObjectNameException ex) {
             _log.log(Level.SEVERE, ex.getMessage(), ex);

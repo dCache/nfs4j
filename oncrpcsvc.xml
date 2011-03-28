@@ -78,6 +78,7 @@
     <bean id="mds-factory" class="org.dcache.chimera.nfs.v4.OperationFactoryMXBeanImpl">
         <description>MDS operation factory JMX wrapper</description>
         <constructor-arg ref="mds-factory-inner"/>
+        <constructor-arg value="mds"/>
     </bean>
 
     <!--
