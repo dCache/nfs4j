@@ -98,6 +98,9 @@
                             <Build-Time>${maven.build.timestamp}</Build-Time>
                         </manifestEntries>
                     </archive>
+                    <excludes>
+                        <exclude>**/logback.xml</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -133,11 +136,11 @@
             </plugin>
         </plugins>
         <resources>
-        	<resource>
-        		<directory>resources</directory>
-        		<includes>
-        		</includes>
-        	</resource>
+            <resource>
+               <directory>resources</directory>
+               <includes>
+               </includes>
+            </resource>
         </resources>
     </build>
 
