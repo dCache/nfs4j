@@ -60,8 +60,8 @@ public class FsExportTest {
     public void testTrustedMultimpleClients() throws UnknownHostException {
         FsExport export = _exportFile.getExport("/trusted");
 
-        InetAddress trusted = InetAddress.getByName("nairi.desy.de");
-        InetAddress nontrusted = InetAddress.getByName("ani.desy.de");
+        InetAddress trusted = InetAddress.getByName("www.google.com");
+        InetAddress nontrusted = InetAddress.getByName("www.yahoo.com");
 
         assertTrue("trusted host not respected", export.isTrusted(trusted) );
         assertFalse("nontrusted host respected", export.isTrusted(nontrusted) );
