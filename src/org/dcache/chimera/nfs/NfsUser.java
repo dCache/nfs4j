@@ -38,8 +38,8 @@ public class NfsUser {
         int[] gids;
 
         Subject subject = call.getCredential().getSubject();
-        uid = Subjects.getUid(subject);
-        gids = Subjects.getGids(subject);
+        uid = (int)Subjects.getUid(subject);
+        gids = from(Subjects.getGids(subject));
         gid = gids.length > 0 ? gids[0] : -1;
 
         String host = call.getTransport().getRemoteSocketAddress().getAddress().getHostName();
@@ -58,6 +58,17 @@ public class NfsUser {
         user = new UnixUser(uid, gid, gids, host);
 
         return user;
-
     }
+
+    private static int[] from(long[] longs) {
+        int[] ints = new int[longs.length];
+
+        int i = 0;
+        for (long l : longs) {
+            ints[i] = (int) l;
+            i++;
+        }
+        return ints;
+    }
+
 }
