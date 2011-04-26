@@ -42,7 +42,7 @@ public class stateid4Test {
         stateidB.seqid = new uint32_t(2);
         stateidB.other = "state".getBytes();
 
-        assertFalse("differ by sequence not detected", stateidA.equals(stateidB));
+        assertTrue("differ by sequence should still be equal", stateidA.equals(stateidB));
     }
 
     @Test

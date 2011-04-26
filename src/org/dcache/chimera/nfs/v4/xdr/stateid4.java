@@ -55,8 +55,7 @@ public class stateid4 implements XdrAble, Serializable {
 
         final stateid4 other_id = (stateid4) obj;
 
-        return this.seqid.value  == other_id.seqid.value &&
-                Arrays.equals(this.other, other_id.other);
+        return Arrays.equals(this.other, other_id.other);
     }
 
     @Override
