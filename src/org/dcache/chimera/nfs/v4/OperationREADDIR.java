@@ -33,15 +33,17 @@ import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.READDIR4resok;
 import org.dcache.chimera.nfs.v4.xdr.READDIR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.util.Random;
+import org.dcache.chimera.ChimeraFsException;
 
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
+import org.dcache.chimera.nfs.InodeCacheEntry;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.chimera.util.DirectoryListCache;
+import org.dcache.utils.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,13 +89,13 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
     private static final int READDIR4RESOK_SIZE = DIRLIST4_SIZE + ENTRY4_SIZE;
 
 
-    private static final DirectoryListCache<verifier4,List<HimeraDirectoryEntry>> _dlCache =
-        new DirectoryListCache<verifier4, List<HimeraDirectoryEntry>>();
+    private static final DirectoryListCache<InodeCacheEntry<verifier4>,List<HimeraDirectoryEntry>> _dlCache =
+        new DirectoryListCache<InodeCacheEntry<verifier4>, List<HimeraDirectoryEntry>>();
 
     /**
-     * random to generate verifiers
+     * for each 100 entries cache lifetime will be increased by 1 second
      */
-    private final static Random _random = new Random();
+    private final static int READDIR_CACHE_FACTOR = 100;
 
 	OperationREADDIR(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_READDIR);
@@ -138,7 +140,14 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             long startValue = _args.opreaddir.cookie.value.value;
 
 
-            /**
+            /*
+             * For fresh readdir requests, cookie == 0, generate a new verifier and check
+             * cache for an existing result.
+             *
+             * For requests with cookie != 0 provided verifier used for cache lookup.
+             */
+
+            /*
              * we have to fake cookie values, while '0' and '1' is reserved
              * so we start with 3
              */
@@ -147,24 +156,20 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
                 // while client sends to us last cookie, we have to continue from the next one
                 ++startValue;
-
                 verifier = _args.opreaddir.cookieverf;
-
-                dirList = _dlCache.get(verifier);
-                if( dirList == null ) {
-                    throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOT_SAME, "invalid verifier");
-                    //dirList = context.getFs().listDirFull(dir) ;
-                }
-
+                checkVerifier(dir, verifier);
             }else{
-                byte[] b = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
-                _random.nextBytes(b);
-                verifier = new verifier4(b);
-                dirList = DirectoryStreamHelper.listOf(dir);
-                _dlCache.add(verifier, dirList, dirList.size()  );
+                verifier = generateDirectoryVerifier(dir);
                 startValue = COOKIE_OFFSET;
             }
 
+            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<verifier4>(dir, verifier);
+            dirList = _dlCache.get(cacheKey);
+            if (dirList == null) {
+                _log.debug("No cached list found for {}", dir);
+                dirList = DirectoryStreamHelper.listOf(dir);
+                _dlCache.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
+            }
 
             // the cookie==1,2 is reserved
             if( (startValue > dirList.size()+COOKIE_OFFSET) || (startValue < COOKIE_OFFSET) ) {
@@ -250,10 +255,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 lastEntry.nextentry = null;
             }
 
-            if(res.resok4.reply.eof) {
-      //      	_dlCache.remove(new VerifierAsKey(verifier));
-            }
-
             res.status = nfsstat4.NFS4_OK;
             _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {} EOF={}",
                 new Object[] {
@@ -280,4 +281,40 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
 	}
 
+    /**
+     * Generate a {@link verifier4} for a directory.
+     *
+     * @param dir
+     * @return
+     * @throws IllegalArgumentException
+     * @throws ChimeraFsException
+     */
+    private verifier4 generateDirectoryVerifier(FsInode dir) throws IllegalArgumentException, ChimeraFsException {
+        byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        Bytes.putLong(verifier, 0, dir.statCache().getMTime());
+        return new verifier4(verifier);
+    }
+
+    /**
+     * Check verifier validity. As there is no BAD_VERIFIER error the NFS4ERR_BAD_COOKIE is
+     * the only one which we can use to force client to re-try.
+     * @param dir
+     * @param verifier
+     * @throws ChimeraNFSException
+     * @throws ChimeraFsException
+     */
+    private void checkVerifier(FsInode dir, verifier4 verifier) throws ChimeraNFSException, ChimeraFsException {
+        long mtime = Bytes.getLong(verifier.value, 0);
+        if( mtime > dir.statCache().getMTime() )
+            throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_COOKIE, "bad cookie");
+
+        /*
+         * To be spec compliant we have to fail with nfsstat3.NFS4ERR_BAD_COOKIE in case
+         * if mtime  < dir.statCache().getMTime(). But this can produce an infinite loop if
+         * the directory changes too fast.
+         *
+         * The code currently produces snapshot like behavior which is compliant with spec.
+         * It's the client responsibility to keep track of directory changes.
+         */
+    }
 }

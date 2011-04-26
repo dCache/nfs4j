@@ -124,7 +124,6 @@ import org.dcache.chimera.nfs.v3.xdr.FSINFO3resfail;
 import org.dcache.chimera.nfs.v3.xdr.ACCESS3res;
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
@@ -137,6 +136,7 @@ import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
+import org.dcache.chimera.nfs.InodeCacheEntry;
 import org.dcache.chimera.nfs.NFSHandle;
 import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.v3.xdr.COMMIT3resfail;
@@ -150,6 +150,7 @@ import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.chimera.posix.UnixPermissionHandler;
 import org.dcache.chimera.posix.UnixUser;
 import org.dcache.chimera.util.DirectoryListCache;
+import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
 import org.slf4j.Logger;
@@ -169,12 +170,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private static final AclHandler _permissionHandler = UnixPermissionHandler.getInstance();
     private final FileSystemProvider _fs;
     private final ExportFile _exports;
-    private static final DirectoryListCache<cookieverf3, List<HimeraDirectoryEntry>> _dlCacheFull =
-            new DirectoryListCache<cookieverf3, List<HimeraDirectoryEntry>>();
+    private static final DirectoryListCache<InodeCacheEntry<cookieverf3>, List<HimeraDirectoryEntry>> _dlCacheFull =
+            new DirectoryListCache<InodeCacheEntry<cookieverf3>, List<HimeraDirectoryEntry>>();
+
     /**
-     * random to generate verifiers
+     * for each 100 entries cache lifetime will be increased by 1 second
      */
-    private final static Random _random = new Random();
+    private final static int READDIR_CACHE_FACTOR = 100;
 
     public NfsServerV3(ExportFile exports, FileSystemProvider fs) throws OncRpcException, IOException {
         _fs = fs;
@@ -817,12 +819,49 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     }
 
+    /**
+     * Generate a {@link cookieverf3} for a directory.
+     *
+     * @param dir
+     * @return
+     * @throws IllegalArgumentException
+     * @throws ChimeraFsException
+     */
+    private cookieverf3 generateDirectoryVerifier(FsInode dir) throws IllegalArgumentException, ChimeraFsException {
+        byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
+        Bytes.putLong(verifier, 0, dir.statCache().getMTime());
+        return new cookieverf3(verifier);
+    }
+
+    /**
+     * Check verifier validity. As there is no BAD_VERIFIER error the NFS3ERR_BAD_COOKIE is
+     * the only one which we can use to force client to re-try.
+     * @param dir
+     * @param verifier
+     * @throws ChimeraNFSException
+     * @throws ChimeraFsException
+     */
+    private void checkVerifier(FsInode dir, cookieverf3 verifier) throws ChimeraNFSException, ChimeraFsException {
+        long mtime = Bytes.getLong(verifier.value, 0);
+        if (mtime > dir.statCache().getMTime()) {
+            throw new ChimeraNFSException(nfsstat3.NFS3ERR_BAD_COOKIE, "bad cookie");
+        }
+
+        /*
+         * To be spec compliant we have to fail with nfsstat3.NFS3ERR_BAD_COOKIE in case
+         * if mtime  < dir.statCache().getMTime(). But this can produce an infinite loop if
+         * the directory changes too fast.
+         *
+         * The code currently produces snapshot like behavior which is compliant with spec.
+         * It's the client responsibility to keep track of directory changes.
+         */
+    }
+
     /*
      * to simulate snapshot-like list following trick is used:
      *
-     *   1. for each mew readdir(plus) ( cookie == 0 ) generate new cookie verifier
+     *   1. for each new readdir(plus) ( cookie == 0 ) generate new cookie verifier
      *   2. list result stored in timed Map, where verifier used as a key
-     *   3. remove cached entry as soon as list sent
      *
      */
     @Override
@@ -852,31 +891,32 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             long startValue = arg1.cookie.value.value;
-            cookieverf3 cookieverf = null;
+            cookieverf3 cookieverf;
 
             List<HimeraDirectoryEntry> dirList = null;
 
             /*
-             * use cache only in subsequent readdirs
+             * For fresh readdir requests, cookie == 0, generate a new verifier and check
+             * cache for an existing result.
+             *
+             * For requests with cookie != 0 provided verifier used for cache lookup.
              */
             if (startValue != 0) {
                 ++startValue;
-
                 cookieverf = arg1.cookieverf;
-                dirList = _dlCacheFull.get(cookieverf);
-                if (dirList == null) {
-                    _log.debug("updating dirlist from db");
-                    dirList = DirectoryStreamHelper.listOf(dir);
-                } else {
-                    _log.debug("using dirlist from cache");
-                }
-
+                checkVerifier(dir, cookieverf);
             } else {
-                byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
-                _random.nextBytes(verifier);
-                cookieverf = new cookieverf3(verifier);
+                cookieverf = generateDirectoryVerifier(dir);
+            }
 
+            InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<cookieverf3>(dir, cookieverf);
+            dirList = _dlCacheFull.get(cacheKey);
+            if (dirList == null) {
+                _log.debug("updating dirlist from db");
                 dirList = DirectoryStreamHelper.listOf(dir);
+                _dlCacheFull.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
+            } else {
+                _log.debug("using dirlist from cache");
             }
 
             if (startValue > dirList.size()) {
@@ -930,9 +970,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 int newDirSize = name.length();
                 if ((currcount + newSize > arg1.maxcount.value.value) || (dircount + newDirSize > arg1.dircount.value.value)) {
 
-                    // cache result
-                    _dlCacheFull.add(cookieverf, dirList, dirList.size() / 100);
-
                     res.resok.reply.eof = false;
                     lastEntry.nextentry = null;
 
@@ -955,9 +992,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             res.resok.reply.eof = true;
-            // all entries sent to client, remove cache
-            _dlCacheFull.remove(cookieverf);
-            _log.debug("Cleaning cache");
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new READDIRPLUS3resfail();
@@ -1011,21 +1045,28 @@ public class NfsServerV3 extends nfs3_protServerStub {
             List<HimeraDirectoryEntry> dirList = null;
             cookieverf3 cookieverf;
 
+            /*
+             * For fresh readdir requests, cookie == 0, generate a new verifier and check
+             * cache for an existing result.
+             *
+             * For requests with cookie != 0 provided verifier used for cache lookup.
+             */
             if (startValue != 0) {
                 ++startValue;
                 cookieverf = arg1.cookieverf;
-                // try cache first
-                dirList = _dlCacheFull.get(cookieverf);
-                if (dirList == null) {
-                    dirList = DirectoryStreamHelper.listOf(dir);
-                }
-
+                checkVerifier(dir, cookieverf);
             } else {
-                byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
-                _random.nextBytes(verifier);
-                cookieverf = new cookieverf3(verifier);
+                cookieverf = generateDirectoryVerifier(dir);
+            }
 
+            InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<cookieverf3>(dir, cookieverf);
+            dirList = _dlCacheFull.get(cacheKey);
+            if (dirList == null) {
+                _log.debug("updating dirlist from db");
                 dirList = DirectoryStreamHelper.listOf(dir);
+                _dlCacheFull.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
+            } else {
+                _log.debug("using dirlist from cache");
             }
 
             if (startValue > dirList.size()) {
@@ -1067,9 +1108,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 if (currcount + newSize > arg1.count.value.value) {
                     lastEntry.nextentry = null;
 
-                    // cache result
-                    _dlCacheFull.add(cookieverf, dirList, dirList.size() / 200);
-
                     res.resok.reply.eof = false;
 
                     _log.debug("Sending {} entries ( {} bytes from {}) cookie = {} total {}",
@@ -1090,8 +1128,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             res.resok.reply.eof = true;
-            // all entries sent to client, remove cache
-            _dlCacheFull.remove(cookieverf);
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new READDIR3resfail();
