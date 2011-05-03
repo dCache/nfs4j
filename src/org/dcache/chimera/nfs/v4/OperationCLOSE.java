@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -49,6 +50,13 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
                 context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
             }
 
+            try {
+                context.getDeviceManager().layoutReturn(context.getSession().getClient(),
+                        _args.opclose.open_stateid);
+            } catch (IOException e) {
+                _log.error("Failed to return a layout: {}", e.getMessage());
+            }
+
             res.open_stateid = stateid4.INVAL_STATEID;
             res.status = nfsstat4.NFS4_OK;
 
@@ -56,7 +64,6 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
             _log.debug("CLOSE: {}", he.getMessage());
             res.status = he.getStatus();
         }
-
         _result.opclose = res;
 
         context.processedOperations().add(_result);
