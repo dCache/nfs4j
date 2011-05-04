@@ -24,8 +24,8 @@ package org.dcache.chimera.nfs.v4;
  */
 public class SimpleIdMap implements NfsIdMapping {
 
-    private final int NOBODY_UID = -1;
-    private final int NOBODY_GID = -1;
+    private static final int NOBODY_UID = -1;
+    private static final int NOBODY_GID = -1;
 
     @Override
     public int principalToGid(String principal) {
