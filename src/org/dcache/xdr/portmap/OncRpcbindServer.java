@@ -66,7 +66,6 @@ public class OncRpcbindServer implements RpcDispatchable {
                 call.reply(XdrVoid.XDR_VOID);
                 break;
             case OncRpcPortmap.PMAPPROC_SET:
-                _log.log(Level.ALL, "Got PMAPPROC_SET");
                 mapping newMapping = new mapping();
                 call.retrieveCall(newMapping);
                 // we sore every thing in v4 format

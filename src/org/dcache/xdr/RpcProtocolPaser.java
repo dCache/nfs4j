@@ -103,7 +103,7 @@ public class RpcProtocolPaser implements ProtocolParser<Xdr> {
             !_expectingMoreData &&
             _buffer.position() > _nextMessageStartPosition;
 
-        _log.log(Level.ALL, "hasMoreBytesToParse {0}, buffer : {1}, next read at: {2}",
+        _log.log(Level.FINEST, "hasMoreBytesToParse {0}, buffer : {1}, next read at: {2}",
                 new Object[]{rc, _buffer, _nextMessageStartPosition});
         return rc;
     }
