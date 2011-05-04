@@ -92,6 +92,8 @@
     <bean id="acl-handler" class="org.dcache.chimera.posix.UnixPermissionHandler"
         factory-method="getInstance"/>
 
+    <bean id="idmapd" class="org.dcache.chimera.nfs.v4.SimpleIdMap" />
+
     <!--
        NFSv4.1 MDS
     -->
@@ -101,6 +103,7 @@
         <constructor-arg ref="device-manager" />
         <constructor-arg ref="acl-handler" />
         <constructor-arg ref="fileSystem" />
+        <constructor-arg ref="idmapd" />
         <constructor-arg ref="export" />
     </bean>
 
@@ -114,6 +117,7 @@
         <constructor-arg index="2" ref="acl-handler" />
         <constructor-arg index="3" ref="fileSystem" />
         <constructor-arg index="4"><null/></constructor-arg>
+        <constructor-arg index="5"><null/></constructor-arg>
     </bean>
     <!--
         MOUNTD server
