@@ -56,28 +56,24 @@ public class CachingIdmap implements NfsIdMapping {
 
         _uidByNameCache = new MapMaker().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softKeys().
                 softValues().
                 maximumSize(size).
                 makeComputingMap( new ForwardUidMapping());
 
         _gidByNameCache  = new MapMaker().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softKeys().
                 softValues().
                 maximumSize(size).
                 makeComputingMap( new ForwardGidMapping());
 
          _userNameByIdCache = new MapMaker().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softKeys().
                 softValues().
                 maximumSize(size).
                 makeComputingMap(new ReverseUidMapping());
 
         _groupNameByIdCache = new MapMaker().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softKeys().
                 softValues().
                 maximumSize(size).
                 makeComputingMap(new ReverseGidMapping());
