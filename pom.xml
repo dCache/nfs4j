@@ -9,14 +9,14 @@
     </description>
 
     <groupId>org.dcache.chimera</groupId>
-    <artifactId>grizzly-rpc</artifactId>
+    <artifactId>jpNFS</artifactId>
     <version>0.0.4-SNAPSHOT</version>
     <name>Grizzly Based ONC RPC implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
     <scm>
-        <connection>scm:hg:http://www.dcache.org/hg/Grizzly-RPC</connection>
-        <developerConnection>scm:hg:ssh://svn.dcache.org/hg/grizzly-rpc</developerConnection>
+        <connection>scm:hg:http://www.dcache.org/hg/jpNFS</connection>
+        <developerConnection>scm:hg:ssh://svn.dcache.org/hg/jpNFS</developerConnection>
     </scm>
 
     <!--
