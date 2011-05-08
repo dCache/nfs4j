@@ -93,11 +93,11 @@ import org.dcache.chimera.ChimeraFsException;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsStat;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.chimera.nfs.v4.acl.Ace;
-import org.dcache.chimera.nfs.v4.acl.AclStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +118,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
 	        res.resok4 = new GETATTR4resok();
 	        res.resok4.obj_attributes = getAttributes(_args.opgetattr.attr_request,
+                        context.getFs(),
                         context.currentInode(), context);
 
 	        res.status = nfsstat4.NFS4_OK;
@@ -136,7 +137,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
 	}
 
-    static fattr4  getAttributes(bitmap4 bitmap, FsInode inode, CompoundContext context) throws Exception {
+    static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context) throws Exception {
 
         int[] mask = new int[bitmap.value.length];
         for( int i = 0; i < mask.length; i++) {
@@ -156,7 +157,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
                 int newmask = (mask[i/32] >> (i-(32*(i/32))) );
                 if( (newmask & 1) > 0 ) {
-                        XdrAble attrXdr = fattr2xdr(i, inode, context);
+                        XdrAble attrXdr = fattr2xdr(i, fs, inode, context);
                         if( attrXdr != null) {
                             _log.debug("   getAttributes : {} ({}) OK.",
                                     new Object[] { i, attrMask2String(i)} );
@@ -192,11 +193,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
     }
 
-    private static FsStat getFsStat(FsStat fsStat, FsInode inode) throws ChimeraFsException {
+    private static FsStat getFsStat(FsStat fsStat, VirtualFileSystem fs) throws ChimeraFsException {
         if (fsStat != null) {
             return fsStat;
         }
-        return inode.getFs().getFsStat();
+        return fs.getFsStat();
     }
 
     /**
@@ -211,7 +212,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
      */
 
     // read/read-write
-    private static XdrAble fattr2xdr( int fattr , FsInode inode, CompoundContext context) throws Exception {
+    private static XdrAble fattr2xdr( int fattr , VirtualFileSystem fs, Inode inode, CompoundContext context) throws Exception {
 
         XdrAble ret = null;
         FsStat fsStat = null;
@@ -278,37 +279,18 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_FILEHANDLE :
             	nfs_fh4 fh = new nfs_fh4();
-            	fh.value = inode.toFullString().getBytes();
+            	fh.value = inode.toFileHandle();
                 fattr4_filehandle filehandle = new fattr4_filehandle(fh);
             	ret = filehandle;
                 break;
-            case nfs4_prot.FATTR4_ACL :
+            case nfs4_prot.FATTR4_ACL:
 
-            	/*
-            	 * TODO:
-            	 * here is the place to talk with ACL module
-            	 * for now we just reply some thing
-            	 */
+                nfsace4[] aces = inode.getAcl();
+                _log.debug("{}", new Ace(aces));
 
-            	nfsace4[] aces = null;
+                fattr4_acl acl = new fattr4_acl(aces);
 
-            	/*
-            	 * use dummy store
-            	 */
-
-            	nfsace4[] savedAcl = AclStore.getInstance().getAcl(inode);
-            	if( savedAcl != null ) {
-            		aces = new nfsace4[savedAcl.length];
-            		System.arraycopy(savedAcl, 0, aces, 0, savedAcl.length);
-            	}else{
-            		aces = new nfsace4[0];
-            	}
-
-                _log.debug("{}",  new Ace(aces) );
-
-            	fattr4_acl acl = new fattr4_acl(aces);
-
-            	ret = acl;
+                ret = acl;
                 break;
             case nfs4_prot.FATTR4_ACLSUPPORT :
                 fattr4_aclsupport aclSupport = new fattr4_aclsupport();
@@ -338,17 +320,17 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = fileid;
                 break;
             case nfs4_prot.FATTR4_FILES_AVAIL:
-                fsStat = getFsStat(fsStat, inode);
+                fsStat = getFsStat(fsStat, fs);
                 fattr4_files_avail files_avail = new fattr4_files_avail(new uint64_t(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
                 ret = files_avail;
                 break;
             case nfs4_prot.FATTR4_FILES_FREE:
-                fsStat = getFsStat(fsStat, inode);
+                fsStat = getFsStat(fsStat, fs);
                 fattr4_files_free files_free = new fattr4_files_free(new uint64_t(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
                 ret = files_free;
                 break;
             case nfs4_prot.FATTR4_FILES_TOTAL:
-                fsStat = getFsStat(fsStat, inode);
+                fsStat = getFsStat(fsStat, fs);
                 fattr4_files_total files_total = new fattr4_files_total(new uint64_t(fsStat.getTotalFiles()));
                 ret = files_total;
                 break;
@@ -425,17 +407,17 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             	ret = rawdev;
                 break;
             case nfs4_prot.FATTR4_SPACE_AVAIL:
-                fsStat = getFsStat(fsStat, inode);
+                fsStat = getFsStat(fsStat, fs);
                 uint64_t spaceAvail = new uint64_t(fsStat.getTotalSpace() - fsStat.getUsedSpace());
                 ret = spaceAvail;
                 break;
             case nfs4_prot.FATTR4_SPACE_FREE:
-                fsStat = getFsStat(fsStat, inode);
+                fsStat = getFsStat(fsStat, fs);
                 fattr4_space_free space_free = new fattr4_space_free(new uint64_t(fsStat.getTotalSpace() - fsStat.getUsedSpace()));
                 ret = space_free;
                 break;
             case nfs4_prot.FATTR4_SPACE_TOTAL:
-                fsStat = getFsStat(fsStat, inode);
+                fsStat = getFsStat(fsStat, fs);
                 fattr4_space_total space_total = new fattr4_space_total(new uint64_t(fsStat.getTotalSpace()));
                 ret = space_total;
                 break;

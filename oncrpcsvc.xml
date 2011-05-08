@@ -60,6 +60,11 @@
         <constructor-arg value="${chimera.db.dialect}" />
     </bean>
 
+    <bean id="vfs" class="org.dcache.chimera.nfs.vfs.ChimeraVfs">
+        <description>Chimera Filesystem</description>
+        <constructor-arg ref="fileSystem"/>
+    </bean>
+
     <bean id="export" class="org.dcache.chimera.nfs.ExportFile">
         <description>Export file</description>
         <constructor-arg>
@@ -102,7 +107,7 @@
         <constructor-arg ref="mds-factory"/>
         <constructor-arg ref="device-manager" />
         <constructor-arg ref="acl-handler" />
-        <constructor-arg ref="fileSystem" />
+        <constructor-arg ref="vfs" />
         <constructor-arg ref="idmapd" />
         <constructor-arg ref="export" />
     </bean>
@@ -115,7 +120,7 @@
         <constructor-arg index="0" ref="ds-factory"/>
         <constructor-arg index="1" ref="device-manager" />
         <constructor-arg index="2" ref="acl-handler" />
-        <constructor-arg index="3" ref="fileSystem" />
+        <constructor-arg index="3" ref="vfs" />
         <constructor-arg index="4"><null/></constructor-arg>
         <constructor-arg index="5"><null/></constructor-arg>
     </bean>
@@ -161,7 +166,7 @@
     -->
     <bean id="nfs3" class="org.dcache.chimera.nfs.v3.NfsServerV3">
         <description>NFSv3 server</description>
-        <constructor-arg ref="fileSystem" />
+        <constructor-arg ref="vfs" />
         <constructor-arg ref="export" />
     </bean>
 

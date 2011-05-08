@@ -23,7 +23,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LOOKUP4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +44,11 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
             String name = NameFilter.convert(_args.oplookup.objname.value.value.value);
 
-            if( context.currentInode().isLink() ) {
+            if( context.currentInode().type() == Inode.Type.SYMLINK ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_SYMLINK, "parent not a symbolic link");
             }
 
-        	if( !context.currentInode().isDirectory() ) {
+        	if( context.currentInode().type() != Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "parent not a directory");
         	}
 
@@ -64,7 +64,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADNAME, "bad name '.' or '..'");
             }
 
-            FsInode newInode = context.currentInode().inodeOf(name);
+            Inode newInode = context.getFs().inodeOf(context.currentInode(), name);
 	        if( !newInode.exists() ) {
 	          	res.status = nfsstat4.NFS4ERR_NOENT;
 	         }

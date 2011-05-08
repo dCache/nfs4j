@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
@@ -26,48 +25,48 @@ import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4res;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OperationREADLINK extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationREADLINK.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationREADLINK.class);
 
-	OperationREADLINK(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_READLINK);
-	}
+    OperationREADLINK(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_READLINK);
+    }
 
-	@Override
-	public boolean process(CompoundContext context) {
+    @Override
+    public boolean process(CompoundContext context) {
         READLINK4res res = new READLINK4res();
 
         try {
 
-        	if( !context.currentInode().isLink()  ) {
+            if (context.currentInode().type() != Inode.Type.SYMLINK) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "not a symlink");
-        	}
+            }
 
-            byte[] link = context.currentInode().readlink();
-            _log.debug("NFS Request  READLINK4 link: {}", new String(link) );
+            String link = context.getFs().readlink(context.currentInode());
+            _log.debug("NFS Request  READLINK4 link: {}", link);
             res.resok4 = new READLINK4resok();
             res.resok4.link = new linktext4();
             res.resok4.link.value = new utf8str_cs();
             res.resok4.link.value.value = new utf8string();
-            res.resok4.link.value.value.value = link;
+            res.resok4.link.value.value.value = link.getBytes();
             res.status = nfsstat4.NFS4_OK;
 
-        }catch(ChimeraNFSException he){
-            _log.debug("READLINK: {}", he.getMessage() );
+        } catch (ChimeraNFSException he) {
+            _log.debug("READLINK: {}", he.getMessage());
             res.status = he.getStatus();
-        }catch(Exception e) {
+        } catch (Exception e) {
             _log.error("READLINK4", e);
             res.status = nfsstat4.NFS4ERR_SERVERFAULT;
         }
 
-      _result.opreadlink = res;
+        _result.opreadlink = res;
 
-            context.processedOperations().add(_result);
-            return res.status == nfsstat4.NFS4_OK;
-	}
-
+        context.processedOperations().add(_result);
+        return res.status == nfsstat4.NFS4_OK;
+    }
 }

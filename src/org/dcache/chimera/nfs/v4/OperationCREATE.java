@@ -28,8 +28,7 @@ import org.dcache.chimera.nfs.v4.xdr.CREATE4res;
 import org.dcache.chimera.nfs.v4.xdr.CREATE4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.FsInode;
-import org.dcache.chimera.UnixPermission;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -53,7 +52,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         fattr4 objAttr = _args.opcreate.createattrs;
         int type = _args.opcreate.objtype.type;
         String name = new String(_args.opcreate.objname.value.value.value);
-        FsInode inode = null;
+        Inode inode = null;
 
 
 
@@ -77,7 +76,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NAMETOOLONG, "name too long");
             }
 
-            if (!context.currentInode().isDirectory()) {
+            if (context.currentInode().type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
             }
 
@@ -88,7 +87,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
             // TODO: this check have to be moved into JdbcFs
             try {
-                inode = context.currentInode().inodeOf(name);
+                inode = context.getFs().inodeOf(context.currentInode(), name);
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_EXIST, "path already exist");
             } catch (ChimeraFsException hfe) {
             }
@@ -96,33 +95,29 @@ public class OperationCREATE extends AbstractNFSv4Operation {
             switch (type) {
 
                 case nfs_ftype4.NF4DIR:
-                    inode = context.currentInode().mkdir(name);
+                    inode = context.getFs().mkdir(context.currentInode(), name,
+                            context.getUser().getUID(), context.getUser().getGID(), 777);
                     break;
                 case nfs_ftype4.NF4LNK:
-                    byte[] linkDest = _args.opcreate.objtype.linkdata.value.value.value;
-                    inode = context.getFs().createLink(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(),
-                            777, linkDest);
+                    String linkDest = new String(_args.opcreate.objtype.linkdata.value.value.value);
+                    inode = context.getFs().symlink(context.currentInode(), name, linkDest, 
+                            context.getUser().getUID(), context.getUser().getGID(), 777);
                     break;
                 case nfs_ftype4.NF4BLK:
-                    inode = context.getFs().createFile(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(),
-                            777, UnixPermission.S_IFBLK);
+                    inode = context.getFs().create(context.currentInode(), Inode.Type.BLOCK, name,
+                            context.getUser().getUID(), context.getUser().getGID(), 777);
                     break;
                 case nfs_ftype4.NF4CHR:
-                    inode = context.getFs().createFile(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(),
-                            777, UnixPermission.S_IFCHR);
+                    inode = context.getFs().create(context.currentInode(), Inode.Type.CHAR, name,
+                            context.getUser().getUID(), context.getUser().getGID(), 777);
                     break;
                 case nfs_ftype4.NF4FIFO:
-                    inode = context.getFs().createFile(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(),
-                            777, UnixPermission.S_IFIFO);
+                    inode = context.getFs().create(context.currentInode(), Inode.Type.FIFO, name,
+                            context.getUser().getUID(), context.getUser().getGID(), 777);
                     break;
                 case nfs_ftype4.NF4SOCK:
-                    inode = context.getFs().createFile(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(),
-                            777, UnixPermission.S_IFSOCK);
+                    inode = context.getFs().create(context.currentInode(), Inode.Type.SOCK, name,
+                            context.getUser().getUID(), context.getUser().getGID(), 777);
                     break;
                 case nfs_ftype4.NF4ATTRDIR:
                 case nfs_ftype4.NF4NAMEDATTR:

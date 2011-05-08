@@ -26,6 +26,7 @@ import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -47,11 +48,11 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         try {
 
-            if( context.currentInode().isDirectory() ) {
+            if( context.currentInode().type() == Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
             }
 
-            if( context.currentInode().isLink() ) {
+            if( context.currentInode().type() == Inode.Type.SYMLINK) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "path is a symlink");
             }
 
@@ -78,7 +79,8 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
             ByteBuffer buf = ByteBuffer.allocate(count);
 
-            int bytesReaded = context.currentInode().read(offset, buf.array(), 0, count);
+            int bytesReaded = context.getFs().read(context.currentInode(),
+                    buf.array(), offset, count);
             if( bytesReaded < 0 ) {
                 throw new IOHimeraFsException("IO not allowd");
             }

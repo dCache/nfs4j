@@ -55,7 +55,8 @@ public class OperationLINK extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
             }
 
-			context.getFs().createHLink(context.currentInode(),  context.savedInode(),newName );
+			context.getFs().link(context.currentInode(), context.savedInode(), newName,
+                                context.getUser().getUID(), context.getUser().getGID());
 
 			_result.oplink.resok4 = new LINK4resok();
 			_result.oplink.resok4.cinfo = new change_info4();

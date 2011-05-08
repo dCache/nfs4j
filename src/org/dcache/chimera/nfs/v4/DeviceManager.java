@@ -17,8 +17,6 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.FsInode;
-import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.nfs.v4.xdr.*;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
@@ -35,6 +33,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.net.InetSocketAddresses;
 
@@ -83,13 +82,13 @@ public class DeviceManager implements NFSv41DeviceManager {
      *      int, java.net.InetAddress)
      */
     @Override
-    public Layout layoutGet(FsInode inode, int ioMode, NFS4Client client, stateid4 stateid)
+    public Layout layoutGet(Inode inode, int ioMode, NFS4Client client, stateid4 stateid)
             throws IOException {
 
         device_addr4 deviceAddr;
         deviceid4 deviceId;
 
-        if (inode.type() != FsInodeType.INODE) {
+        if (inode.type() != Inode.Type.LEGACY) {
             deviceId = MDS_ID;
         } else {
 
@@ -109,7 +108,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             _deviceMap.put(deviceId, deviceAddr);
         }
 
-        nfs_fh4 fh = new nfs_fh4(inode.toFullString().getBytes());
+        nfs_fh4 fh = new nfs_fh4(inode.toFileHandle());
 
         //  -1 is special value, which means entire file
         layout4 layout = Layout.getLayoutSegment(deviceId, fh, ioMode, 0, nfs4_prot.NFS4_UINT64_MAX);

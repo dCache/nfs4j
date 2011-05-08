@@ -38,8 +38,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.XdrDecodingStream;
-import org.dcache.chimera.FsInode;
-import org.dcache.chimera.nfs.v4.acl.AclStore;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -93,7 +92,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
 	}
 
-    static bitmap4 setAttributes(fattr4 attributes, FsInode inode, CompoundContext context) throws Exception {
+    static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws Exception {
 
         _log.debug("set Attribute length: {}", attributes.attrmask.value.length);
 
@@ -143,7 +142,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         return bitmap;
     }
 
-    static boolean xdr2fattr( int fattr , FsInode inode, CompoundContext context, XdrDecodingStream xdr) throws Exception {
+    static boolean xdr2fattr( int fattr , Inode inode, CompoundContext context, XdrDecodingStream xdr) throws Exception {
 
         boolean isApplied = false;
 
@@ -153,11 +152,11 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
             case nfs4_prot.FATTR4_SIZE :
 
-            	if( inode.isDirectory() ) {
+            	if( inode.type() == Inode.Type.DIRECTORY ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
             	}
 
-            	if( inode.isLink() ) {
+            	if( inode.type() == Inode.Type.SYMLINK ) {
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "path is a symbolic link");
             	}
 
@@ -173,11 +172,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 	_log.info("newacl: " + HimeraNFS4Utils.aceToString(acl.value[i]));
                 }
 
-                /*
-                 * TODO: here is the place to call ACL module
-                 */
-
-                AclStore.getInstance().setAcl(inode, acl.value);
+                inode.setAcl(acl.value);
                 inode.setMTime(System.currentTimeMillis());
 
                 isApplied = true;

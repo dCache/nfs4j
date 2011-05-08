@@ -35,9 +35,9 @@ import org.dcache.chimera.nfs.v3.xdr.wcc_attr;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
 
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.v3.xdr.post_op_attr;
 import org.dcache.chimera.nfs.v3.xdr.pre_op_attr;
 import org.dcache.chimera.nfs.v3.xdr.wcc_data;
@@ -115,7 +115,7 @@ public class HimeraNfsUtils {
 
     }
 
-    public static void set_sattr( FsInode inode, sattr3 s) throws ChimeraFsException {
+    public static void set_sattr( Inode inode, sattr3 s) throws ChimeraFsException {
 
         long now = System.currentTimeMillis();
 

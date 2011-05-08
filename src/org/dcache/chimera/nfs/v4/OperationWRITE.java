@@ -31,6 +31,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -58,11 +59,11 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 			 }
 
 
-            if( context.currentInode().isDirectory() ) {
+            if( context.currentInode().type() == Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
     		}
 
-            if( context.currentInode().isLink() ) {
+            if( context.currentInode().type() == Inode.Type.SYMLINK ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "path is a symlink");
             }
 
@@ -85,7 +86,8 @@ public class OperationWRITE extends AbstractNFSv4Operation {
                 byte[] data = new byte[count];
                 _args.opwrite.data.get(data);
 
-	        int bytesWritten = context.currentInode().write(offset, data, 0, count);
+	        int bytesWritten = context.getFs().write(context.currentInode(),
+                    data, offset, count);
 
 	        if( bytesWritten < 0 ) {
 	            throw new IOHimeraFsException("IO not allowed");

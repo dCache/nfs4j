@@ -27,7 +27,7 @@ import org.dcache.chimera.nfs.v4.xdr.REMOVE4resok;
 import org.dcache.chimera.nfs.v4.xdr.REMOVE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -49,9 +49,9 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
 
 	try {
 
-	    FsInode parentInode = context.currentInode();
+	    Inode parentInode = context.currentInode();
 
-        if (!context.currentInode().isDirectory()) {
+        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "parent not a directory");
         }
 
@@ -74,7 +74,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
         );
 
 
-	    Stat inodeStat = context.currentInode().inodeOf(name).statCache();
+	    Stat inodeStat = context.getFs().inodeOf(context.currentInode(), name).statCache();
 	    Stat parentStat = parentInode.statCache();
 
 	    UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
@@ -86,8 +86,8 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
 	    }
 
-	    boolean rc = context.currentInode().remove(name);
-	    if (!rc && context.currentInode().isDirectory()) {
+	    boolean rc = context.getFs().remove(parentInode, name);
+	    if (!rc && context.currentInode().type() == Inode.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTEMPTY, "directory not empty");
 	    }
 

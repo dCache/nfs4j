@@ -39,6 +39,8 @@ import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.nfs.InodeCacheEntry;
+import org.dcache.chimera.nfs.vfs.DirectoryEntry;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -89,8 +91,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
     private static final int READDIR4RESOK_SIZE = DIRLIST4_SIZE + ENTRY4_SIZE;
 
 
-    private static final DirectoryListCache<InodeCacheEntry<verifier4>,List<HimeraDirectoryEntry>> _dlCache =
-        new DirectoryListCache<InodeCacheEntry<verifier4>, List<HimeraDirectoryEntry>>();
+    private static final DirectoryListCache<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
+        new DirectoryListCache<InodeCacheEntry<verifier4>, List<DirectoryEntry>>();
 
     /**
      * for each 100 entries cache lifetime will be increased by 1 second
@@ -119,7 +121,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         try {
 
-            FsInode dir = context.currentInode();
+            Inode dir = context.currentInode();
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(),dirStat.getMode() & 0777 );
@@ -131,11 +133,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOENT, "Path Do not exist."  );
             }
 
-            if(  !dir.isDirectory() ) {
+            if(  dir.type() == Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOTDIR, "Path is not a directory."  );
             }
 
-            List<HimeraDirectoryEntry> dirList = null;
+            List<DirectoryEntry> dirList = null;
             verifier4 verifier;
             long startValue = _args.opreaddir.cookie.value.value;
 
@@ -167,7 +169,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             dirList = _dlCache.get(cacheKey);
             if (dirList == null) {
                 _log.debug("No cached list found for {}", dir);
-                dirList = DirectoryStreamHelper.listOf(dir);
+                dirList = context.getFs().list(dir);
                 _dlCache.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
             }
 
@@ -199,7 +201,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             int fcount = 0;
             for ( long i = startValue; i < dirList.size() + COOKIE_OFFSET; i++) { // chimera have . and ..
 
-                HimeraDirectoryEntry le = dirList.get((int)(i-COOKIE_OFFSET));
+                DirectoryEntry le = dirList.get((int)(i-COOKIE_OFFSET));
                 String name = le.getName();
 
                 // skip . and .. while nfsv4 do not care about them
@@ -208,14 +210,14 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
                 fcount++;
 
-                FsInode ei = le.getInode();
+                Inode ei = le.getInode();
 
                 currentEntry.name = new component4( new utf8str_cs( new utf8string(name.getBytes()) ));
                 // keep offset
                 currentEntry.cookie = new nfs_cookie4( new uint64_t(i) );
 
                 // TODO: catch here error from getattr and reply 'fattr4_rdattr_error' to the client
-                currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, ei, context);
+                currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request,  context.getFs(), ei, context);
                 currentEntry.nextentry = null;
 
                 // check if writing this entry exceeds the count limit
@@ -289,7 +291,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      * @throws IllegalArgumentException
      * @throws ChimeraFsException
      */
-    private verifier4 generateDirectoryVerifier(FsInode dir) throws IllegalArgumentException, ChimeraFsException {
+    private verifier4 generateDirectoryVerifier(Inode dir) throws IllegalArgumentException, ChimeraFsException {
         byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
         Bytes.putLong(verifier, 0, dir.statCache().getMTime());
         return new verifier4(verifier);
@@ -303,7 +305,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      * @throws ChimeraNFSException
      * @throws ChimeraFsException
      */
-    private void checkVerifier(FsInode dir, verifier4 verifier) throws ChimeraNFSException, ChimeraFsException {
+    private void checkVerifier(Inode dir, verifier4 verifier) throws ChimeraNFSException, ChimeraFsException {
         long mtime = Bytes.getLong(verifier.value, 0);
         if( mtime > dir.statCache().getMTime() )
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_COOKIE, "bad cookie");

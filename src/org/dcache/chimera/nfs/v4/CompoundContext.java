@@ -17,8 +17,6 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
@@ -30,23 +28,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.NfsUser;
+import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 
 
 public class CompoundContext {
 
     private static final Logger _log = LoggerFactory.getLogger(CompoundContext.class);
 
-    private FsInode _rootInode = null;
-    private FsInode _currentInode = null;
-    private FsInode _savedInode = null;
+    private Inode _rootInode = null;
+    private Inode _currentInode = null;
+    private Inode _savedInode = null;
 
     private final int _minorversion;
 
     private NFSv41Session _session = null;
     private final List<nfs_resop4> _processedOps;
 
-    private final FileSystemProvider _fs;
+    private final VirtualFileSystem _fs;
     private final RpcCall _callInfo;
     private final UnixUser _user;
     private final ExportFile _exportFile;
@@ -64,7 +64,7 @@ public class CompoundContext {
      * @param call RPC call
      * @param exportFile list of servers exports.
      */
-    public CompoundContext(List<nfs_resop4> processedOps, int minorversion, FileSystemProvider fs,
+    public CompoundContext(List<nfs_resop4> processedOps, int minorversion, VirtualFileSystem fs,
             NFSv4StateHandler stateHandler,
             NFSv41DeviceManager deviceManager, AclHandler aclHandler, RpcCall call,
             NfsIdMapping idMapping,
@@ -88,7 +88,7 @@ public class CompoundContext {
         return _user;
     }
 
-    public FileSystemProvider getFs() {
+    public VirtualFileSystem getFs() {
         return _fs;
     }
 
@@ -115,7 +115,7 @@ public class CompoundContext {
      * @return file handle
      * @throws ChimeraNFSException
      */
-    public FsInode currentInode() throws ChimeraNFSException {
+    public Inode currentInode() throws ChimeraNFSException {
         if( _currentInode == null ) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOFILEHANDLE, "no file handle");
         }
@@ -128,7 +128,7 @@ public class CompoundContext {
      * @param inode
      * @throws ChimeraNFSException
      */
-    public void currentInode(FsInode inode) throws ChimeraNFSException {
+    public void currentInode(Inode inode) throws ChimeraNFSException {
         _currentInode = inode;
         _log.debug("current Inode: {}",  _currentInode );
     }
@@ -142,11 +142,11 @@ public class CompoundContext {
         _currentInode = null;
     }
 
-    public FsInode rootInode() {
+    public Inode rootInode() {
         return _rootInode;
     }
 
-    public void rootInode(FsInode inode) {
+    public void rootInode(Inode inode) {
         _rootInode = inode;
         _log.debug("root Inode: {}", _rootInode );
     }
@@ -165,7 +165,7 @@ public class CompoundContext {
         _log.debug("restored Inode: {}",  _currentInode );
     }
 
-    public FsInode savedInode() throws ChimeraNFSException {
+    public Inode savedInode() throws ChimeraNFSException {
         if( _savedInode == null ) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOFILEHANDLE, "no file handle");
         }

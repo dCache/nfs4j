@@ -29,6 +29,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -49,14 +50,14 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
     	try {
 
-    		FsInode sourceDir = context.savedInode();
-    		FsInode destDir = context.currentInode();
+    		Inode sourceDir = context.savedInode();
+    		Inode destDir = context.currentInode();
 
-            if( ! sourceDir.isDirectory() ) {
+            if( sourceDir.type() != Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "source path not a directory");
             }
 
-            if( ! destDir.isDirectory() ) {
+            if( destDir.type() != Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "destination path  not a directory");
             }
 
@@ -81,9 +82,9 @@ public class OperationRENAME extends AbstractNFSv4Operation {
             }
 
 
-            if( sourceDir.fsId() != destDir.fsId() ) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_XDEV, "cross filesystem request");
-            }
+//            if( sourceDir.fsId() != destDir.fsId() ) {
+//                throw new ChimeraNFSException(nfsstat4.NFS4ERR_XDEV, "cross filesystem request");
+//            }
 
             _log.debug("Rename: src={} name={} dest={} name={}", new Object[] {
                     sourceDir,

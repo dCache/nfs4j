@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v3;
 
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.v3.xdr.LOOKUP3res;
 import org.dcache.chimera.nfs.v3.xdr.WRITE3resfail;
 import org.dcache.chimera.nfs.v3.xdr.RMDIR3resok;
@@ -126,24 +127,21 @@ import java.io.IOException;
 import java.util.List;
 
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsStat;
-import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.InodeCacheEntry;
-import org.dcache.chimera.nfs.NFSHandle;
 import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.v3.xdr.COMMIT3resfail;
 import org.dcache.chimera.nfs.v3.xdr.FSSTAT3resfail;
 import org.dcache.chimera.nfs.v3.xdr.MKNOD3resfail;
 import org.dcache.chimera.nfs.v3.xdr.READLINK3resfail;
 import org.dcache.chimera.nfs.v3.xdr.RENAME3resfail;
+import org.dcache.chimera.nfs.vfs.DirectoryEntry;
+import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -168,17 +166,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private static final int READDIRPLUS3RESOK_SIZE = 104;
     private static final Logger _log = LoggerFactory.getLogger(NfsServerV3.class);
     private static final AclHandler _permissionHandler = UnixPermissionHandler.getInstance();
-    private final FileSystemProvider _fs;
+    private final VirtualFileSystem _fs;
     private final ExportFile _exports;
-    private static final DirectoryListCache<InodeCacheEntry<cookieverf3>, List<HimeraDirectoryEntry>> _dlCacheFull =
-            new DirectoryListCache<InodeCacheEntry<cookieverf3>, List<HimeraDirectoryEntry>>();
+    private static final DirectoryListCache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>> _dlCacheFull =
+            new DirectoryListCache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>>();
 
     /**
      * for each 100 entries cache lifetime will be increased by 1 second
      */
     private final static int READDIR_CACHE_FACTOR = 100;
 
-    public NfsServerV3(ExportFile exports, FileSystemProvider fs) throws OncRpcException, IOException {
+    public NfsServerV3(ExportFile exports, VirtualFileSystem fs) throws OncRpcException, IOException {
         _fs = fs;
         _exports = exports;
     }
@@ -202,7 +200,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            FsInode inode = NFSHandle.toFsInode(_fs, arg1.object.data);
+            Inode inode = _fs.inodeOf(arg1.object.data);
 
             if (!inode.exists()) {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_STALE, "Path do not exist.");
@@ -293,7 +291,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         CREATE3res res = new CREATE3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.where.dir.data);
+        Inode parent = _fs.inodeOf(arg1.where.dir.data);
         String path = arg1.where.name.value;
 
         sattr3 newAttr = null;
@@ -305,14 +303,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            FsInode inode = null;
+            Inode inode = null;
             Stat inodeStat = new Stat();
             Stat parentStat = null;
             boolean exists = true;
             long now = System.currentTimeMillis();
 
             try {
-                inode = parent.inodeOf(path);
+                inode = _fs.inodeOf(parent, path);
             } catch (FileNotFoundHimeraFsException hfe) {
                 exists = false;
             }
@@ -332,7 +330,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 if (newAttr != null) {
                     fmode = newAttr.mode.mode.value.value | UnixPermission.S_IFREG;
                 }
-                inode = parent.create(path, user.getUID(), user.getGID(), fmode);
+                inode = _fs.create(parent, Inode.Type.REGULAR, path, user.getUID(), user.getGID(), fmode);
 
                 // as inode is new, we can use our information and do not ask DB for it
                 inodeStat.setATime(now);
@@ -361,7 +359,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
-            res.resok.obj.handle.data = inode.toFullString().getBytes();
+            res.resok.obj.handle.data = inode.toFileHandle();
 
             res.resok.dir_wcc = new wcc_data();
             res.resok.dir_wcc.after = new post_op_attr();
@@ -410,7 +408,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         _log.debug("NFS Request FSINFO from: {}", user);
 
         FSINFO3res res = new FSINFO3res();
-        FsInode inode = NFSHandle.toFsInode(_fs, arg1.fsroot.data);
+        Inode inode = _fs.inodeOf(arg1.fsroot.data);
         try {
 
             res.status = nfsstat3.NFS3_OK;
@@ -495,7 +493,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            FsInode inode = NFSHandle.toFsInode(_fs, arg1.fsroot.data);
+            Inode inode = _fs.inodeOf(arg1.fsroot.data);
 
             HimeraNfsUtils.fill_attributes(inode.stat(), res.resok.obj_attributes.attributes);
 
@@ -528,7 +526,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         GETATTR3res res = new GETATTR3res();
 
-        FsInode inode = NFSHandle.toFsInode(_fs, arg1.object.data);
+        Inode inode = _fs.inodeOf(arg1.object.data);
         _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
 
         try {
@@ -563,15 +561,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         LINK3res res = new LINK3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.link.dir.data);
+        Inode parent = _fs.inodeOf(arg1.link.dir.data);
         String name = arg1.link.name.value;
 
-        FsInode hlink = NFSHandle.toFsInode(_fs, arg1.file.data);
+        Inode hlink = _fs.inodeOf(arg1.file.data);
 
         try {
 
 
-            FsInode inode = null;
+            Inode inode = null;
             boolean exists = true;
             try {
                 inode = _fs.inodeOf(parent, name);
@@ -589,7 +587,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
             }
 
-            _fs.createHLink(parent, hlink, name);
+            _fs.link(parent, hlink, name, user.getUID(), user.getGID());
 
             res.resok = new LINK3resok();
             res.resok.file_attributes = new post_op_attr();
@@ -638,10 +636,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         LOOKUP3res res = new LOOKUP3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.what.dir.data);
+        Inode parent = _fs.inodeOf(arg1.what.dir.data);
         String name = arg1.what.name.value;
 
-        FsInode inode = null;
+        Inode inode = null;
 
         try {
 
@@ -655,7 +653,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new LOOKUP3resok();
 
             nfs_fh3 fh3 = new nfs_fh3();
-            fh3.data = (inode.toFullString()).getBytes();
+            fh3.data = inode.toFileHandle();
             res.resok.object = fh3;
 
             res.resok.obj_attributes = new post_op_attr();
@@ -703,7 +701,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         MKDIR3res res = new MKDIR3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.where.dir.data);
+        Inode parent = _fs.inodeOf(arg1.where.dir.data);
 
         String name = arg1.where.name.value;
         sattr3 attr = arg1.attributes;
@@ -717,9 +715,9 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
             }
 
-            FsInode inode = null;
+            Inode inode = null;
             try {
-                inode = _fs.mkdir(parent, name);
+                inode = _fs.mkdir(parent, name, 0, 0, 777);
             } catch (ChimeraFsException hfe) {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_EXIST, "Directory already exist.");
             }
@@ -740,7 +738,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
-            res.resok.obj.handle.data = inode.toFullString().getBytes();
+            res.resok.obj.handle.data = inode.toFileHandle();
 
             res.resok.obj_attributes = new post_op_attr();
             res.resok.obj_attributes.attributes_follow = true;
@@ -827,7 +825,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
      * @throws IllegalArgumentException
      * @throws ChimeraFsException
      */
-    private cookieverf3 generateDirectoryVerifier(FsInode dir) throws IllegalArgumentException, ChimeraFsException {
+    private cookieverf3 generateDirectoryVerifier(Inode dir) throws IllegalArgumentException, ChimeraFsException {
         byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
         Bytes.putLong(verifier, 0, dir.statCache().getMTime());
         return new cookieverf3(verifier);
@@ -841,7 +839,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
      * @throws ChimeraNFSException
      * @throws ChimeraFsException
      */
-    private void checkVerifier(FsInode dir, cookieverf3 verifier) throws ChimeraNFSException, ChimeraFsException {
+    private void checkVerifier(Inode dir, cookieverf3 verifier) throws ChimeraNFSException, ChimeraFsException {
         long mtime = Bytes.getLong(verifier.value, 0);
         if (mtime > dir.statCache().getMTime()) {
             throw new ChimeraNFSException(nfsstat3.NFS3ERR_BAD_COOKIE, "bad cookie");
@@ -873,7 +871,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            FsInode dir = NFSHandle.toFsInode(_fs, arg1.dir.data);
+            Inode dir = _fs.inodeOf(arg1.dir.data);
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
@@ -886,14 +884,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path Do not exist.");
             }
 
-            if (!dir.isDirectory()) {
+            if (dir.type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOTDIR, "Path is not a directory.");
             }
 
             long startValue = arg1.cookie.value.value;
             cookieverf3 cookieverf;
 
-            List<HimeraDirectoryEntry> dirList = null;
+            List<DirectoryEntry> dirList = null;
 
             /*
              * For fresh readdir requests, cookie == 0, generate a new verifier and check
@@ -913,7 +911,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             dirList = _dlCacheFull.get(cacheKey);
             if (dirList == null) {
                 _log.debug("updating dirlist from db");
-                dirList = DirectoryStreamHelper.listOf(dir);
+                dirList = _fs.list(dir);
                 _dlCacheFull.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
             } else {
                 _log.debug("using dirlist from cache");
@@ -946,10 +944,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             for (long i = startValue; i < dirList.size(); i++) {
 
-                HimeraDirectoryEntry le = dirList.get((int) i);
+                DirectoryEntry le = dirList.get((int) i);
                 String name = le.getName();
 
-                FsInode ef = le.getInode();
+                Inode ef = le.getInode();
 
                 currentEntry.fileid = new fileid3(new uint64(ef.id()));
                 currentEntry.name = new filename3(name);
@@ -957,7 +955,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 currentEntry.name_handle = new post_op_fh3();
                 currentEntry.name_handle.handle_follows = true;
                 currentEntry.name_handle.handle = new nfs_fh3();
-                currentEntry.name_handle.handle.data = ef.toFullString().getBytes();
+                currentEntry.name_handle.handle.data = ef.toFileHandle();
                 currentEntry.name_attributes = new post_op_attr();
                 currentEntry.name_attributes.attributes_follow = true;
                 currentEntry.name_attributes.attributes = new fattr3();
@@ -1024,7 +1022,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            FsInode dir = NFSHandle.toFsInode(_fs, arg1.dir.data);
+            Inode dir = _fs.inodeOf(arg1.dir.data);
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
@@ -1036,13 +1034,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path Do not exist.");
             }
 
-            if (!dir.isDirectory()) {
+            if (dir.type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOTDIR, "Path is not a directory.");
             }
 
 
             long startValue = arg1.cookie.value.value;
-            List<HimeraDirectoryEntry> dirList = null;
+            List<DirectoryEntry> dirList = null;
             cookieverf3 cookieverf;
 
             /*
@@ -1063,7 +1061,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             dirList = _dlCacheFull.get(cacheKey);
             if (dirList == null) {
                 _log.debug("updating dirlist from db");
-                dirList = DirectoryStreamHelper.listOf(dir);
+                dirList = _fs.list(dir);
                 _dlCacheFull.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
             } else {
                 _log.debug("using dirlist from cache");
@@ -1094,9 +1092,9 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             for (long i = startValue; i < dirList.size(); i++) {
 
-                HimeraDirectoryEntry le = dirList.get((int) i);
+                DirectoryEntry le = dirList.get((int) i);
                 String name = le.getName();
-                FsInode ef = le.getInode();
+                Inode ef = le.getInode();
 
                 currentEntry.fileid = new fileid3(new uint64(ef.id()));
                 currentEntry.name = new filename3(name);
@@ -1159,15 +1157,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
 
         try {
-            FsInode inode = NFSHandle.toFsInode(_fs, arg1.symlink.data);
+            Inode inode = _fs.inodeOf(arg1.symlink.data);
 
             res.resok = new READLINK3resok();
-            res.resok.data = new nfspath3(new String(inode.readlink()));
+            res.resok.data = new nfspath3(_fs.readlink(inode));
             res.resok.symlink_attributes = new post_op_attr();
 
             res.resok.symlink_attributes.attributes_follow = true;
             res.resok.symlink_attributes.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(_fs.stat(inode), res.resok.symlink_attributes.attributes);
+            HimeraNfsUtils.fill_attributes(inode.stat(), res.resok.symlink_attributes.attributes);
 
             res.status = nfsstat3.NFS3_OK;
 
@@ -1192,7 +1190,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         READ3res res = new READ3res();
 
-        FsInode inode = NFSHandle.toFsInode(_fs, arg1.file.data);
+        Inode inode = _fs.inodeOf(arg1.file.data);
         long offset = arg1.offset.value.value;
         int count = arg1.count.value.value;
 
@@ -1212,7 +1210,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.count.value = new uint32();
 
             byte[] b = new byte[count];
-            res.resok.count.value.value = inode.read(offset, b, 0, count);
+            res.resok.count.value.value = _fs.read(inode, b, offset, count);
             if (res.resok.count.value.value < 0) {
                 throw new IOHimeraFsException("IO not allowed");
             }
@@ -1261,7 +1259,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         REMOVE3res res = new REMOVE3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.object.dir.data);
+        Inode parent = _fs.inodeOf(arg1.object.dir.data);
 
         String name = arg1.object.name.value;
 
@@ -1270,7 +1268,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat inodeStat = null;
             Stat parentStat = null;
             try {
-                FsInode inode = _fs.inodeOf(parent, name);
+                Inode inode = _fs.inodeOf(parent, name);
                 inodeStat = inode.statCache();
                 parentStat = parent.statCache();
             } catch (ChimeraFsException hfe) {
@@ -1284,7 +1282,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
             }
 
-            parent.remove(name);
+            _fs.remove(parent, name);
 
             res.resok = new REMOVE3resok();
             res.status = nfsstat3.NFS3_OK;
@@ -1333,10 +1331,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         RENAME3res res = new RENAME3res();
 
-        FsInode from = NFSHandle.toFsInode(_fs, arg1.from.dir.data);
+        Inode from = _fs.inodeOf(arg1.from.dir.data);
         String file1 = arg1.from.name.value;
 
-        FsInode to = NFSHandle.toFsInode(_fs, arg1.to.dir.data);
+        Inode to = _fs.inodeOf(arg1.to.dir.data);
         String file2 = arg1.to.name.value;
 
         try {
@@ -1404,12 +1402,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         RMDIR3res res = new RMDIR3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.object.dir.data);
+        Inode parent = _fs.inodeOf(arg1.object.dir.data);
         String file = arg1.object.name.value;
 
         try {
 
-            FsInode inode = _fs.inodeOf(parent, file);
+            Inode inode = _fs.inodeOf(parent, file);
             Stat inodeStat = inode.statCache();
             Stat parentStat = parent.statCache();
 
@@ -1421,7 +1419,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
             }
 
-            if (!parent.remove(file)) {
+            if (!_fs.remove(parent, file)) {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOTEMPTY, "Directory is not empty.");
             }
 
@@ -1470,7 +1468,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         SETATTR3res res = new SETATTR3res();
 
-        FsInode inode = NFSHandle.toFsInode(_fs, arg1.object.data);
+        Inode inode = _fs.inodeOf(arg1.object.data);
         sattr3 newAttr = arg1.new_attributes;
 
         try {
@@ -1525,7 +1523,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         SYMLINK3res res = new SYMLINK3res();
 
-        FsInode parent = NFSHandle.toFsInode(_fs, arg1.where.dir.data);
+        Inode parent = _fs.inodeOf(arg1.where.dir.data);
         String file = arg1.where.name.value;
 
         String link = arg1.symlink.symlink_data.value;
@@ -1534,7 +1532,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         try {
 
 
-            FsInode inode = null;
+            Inode inode = null;
             boolean exists = true;
             try {
                 inode = _fs.inodeOf(parent, file);
@@ -1552,7 +1550,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
             }
 
-            inode = _fs.createLink(parent, file, link);
+            inode = _fs.symlink(parent, file, link, user.getUID(), user.getGID(), 777);
 
             HimeraNfsUtils.set_sattr(inode, linkAttr);
 
@@ -1566,7 +1564,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
-            res.resok.obj.handle.data = inode.toFullString().getBytes();
+            res.resok.obj.handle.data = inode.toFileHandle();
 
             res.resok.dir_wcc = new wcc_data();
             res.resok.dir_wcc.after = new post_op_attr();
@@ -1608,7 +1606,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         WRITE3res res = new WRITE3res();
 
-        FsInode inode = NFSHandle.toFsInode(_fs, arg1.file.data);
+        Inode inode = _fs.inodeOf(arg1.file.data);
         long offset = arg1.offset.value.value;
         int count = arg1.count.value.value;
 
@@ -1624,7 +1622,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new WRITE3resok();
             res.status = nfsstat3.NFS3_OK;
 
-            int ret = inode.write(offset, arg1.data, 0, count);
+            int ret = _fs.write(inode, arg1.data, offset, count);
             if (ret < 0) {
                 throw new IOHimeraFsException("IO not allowed");
             }

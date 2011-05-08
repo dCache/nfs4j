@@ -37,7 +37,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
@@ -87,14 +87,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 case open_claim_type4.CLAIM_NULL:
 
-                    if (!context.currentInode().isDirectory()) {
+                    if (context.currentInode().type() != Inode.Type.DIRECTORY) {
                         throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
                     }
 
                     String name = NameFilter.convert(_args.opopen.claim.file.value.value.value);
                     _log.debug("regular open for : {}", name);
 
-                    FsInode inode;
+                    Inode inode;
                     if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
 
                         boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4) ||
@@ -102,7 +102,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         try {
 
-                            inode = context.currentInode().inodeOf(name);
+                            inode = context.getFs().inodeOf(context.currentInode(), name);
 
                             if (exclusive) {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_EXIST, "file already exist");
@@ -132,7 +132,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             }
 
                             _log.debug("Creating a new file: {}", name);
-                            inode = context.currentInode().create(name, context.getUser().getUID(),
+                            inode = context.getFs().create(context.currentInode(), Inode.Type.REGULAR,
+                                    name, context.getUser().getUID(),
                                     context.getUser().getGID(), 0600);
 
                             // FIXME: proper implemtation required
@@ -148,7 +149,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                     } else {
 
-                        inode = context.currentInode().inodeOf(name);
+                        inode = context.getFs().inodeOf(context.currentInode(), name);
 
                         Stat inodeStat = inode.statCache();
                         UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
@@ -156,11 +157,11 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
                         }
 
-                        if (inode.isDirectory()) {
+                        if (inode.type() == Inode.Type.DIRECTORY) {
                             throw new ChimeraNFSException(nfsstat4.NFS4ERR_ISDIR, "path is a directory");
                         }
 
-                        if (inode.isLink()) {
+                        if (inode.type() == Inode.Type.SYMLINK) {
                             throw new ChimeraNFSException(nfsstat4.NFS4ERR_SYMLINK, "path is a symlink");
                         }
                     }

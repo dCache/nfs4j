@@ -22,7 +22,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LOOKUPP4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +40,12 @@ public class OperationLOOKUPP extends AbstractNFSv4Operation {
 
         try {
 
-        	if( !context.currentInode().isDirectory() ) {
+        	if( context.currentInode().type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "parent not a directory");
         	}
 
-            FsInode parent = context.currentInode().getParent();
-            if( (parent == null) || context.currentInode().toString().equals(FsInode.getRoot(context.getFs()).toString()) ) {
+            Inode parent = context.getFs().parentOf(context.currentInode());
+            if( (parent == null) || context.currentInode().equals(context.getFs().getRootInode() ) ) {
                 res.status = nfsstat4.NFS4ERR_NOENT;
             }else{
                 context.currentInode( parent );

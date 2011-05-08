@@ -14,37 +14,38 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.chimera.nfs;
+package org.dcache.chimera.nfs.vfs;
 
-import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.ChimeraFsException;
+import org.dcache.chimera.posix.Stat;
 
-/**
- * An inode entry with verifier.
- *
- * @param <T>
- */
-public class InodeCacheEntry<T> {
+public class DirectoryEntry {
 
+    private final String _name;
+    private final Stat _stat;
     private final Inode _inode;
-    private final T _verifier;
 
-    public InodeCacheEntry(Inode inode, T verifier) {
+
+    public DirectoryEntry(String name, Inode inode) throws ChimeraFsException {
+        this(name, inode, inode.statCache());
+    }
+
+    public DirectoryEntry(String name, Inode inode, Stat stat) {
         _inode = inode;
-        _verifier = verifier;
+        _name = name;
+        _stat = stat;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-
-        if(obj == this) return true;
-
-        if( !obj.getClass().equals(this.getClass()) ) return false;
-        InodeCacheEntry<T> other = (InodeCacheEntry<T>)obj;
-        return _inode.equals(other._inode) && _verifier.equals(other._verifier);
+    public Inode getInode() {
+        return _inode;
     }
 
-    @Override
-    public int hashCode() {
-        return _inode.hashCode() ^ _verifier.hashCode();
+    public String getName() {
+        return _name;
     }
+
+    public Stat getStat() {
+        return _stat;
+    }
+
 }

@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.rpcsec_gss_info;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -25,6 +26,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.chimera.nfs.v4.xdr.SECINFO4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.xdr.RpcAuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +46,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
 
         try {
 
-            if (!context.currentInode().isDirectory()) {
+            if (context.currentInode().type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
             }
 

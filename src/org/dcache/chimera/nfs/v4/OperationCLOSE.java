@@ -24,7 +24,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.CLOSE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         try {
 
-            FsInode inode = context.currentInode();
+            Inode inode = context.currentInode();
 
             if (context.getSession() == null) {
                 context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);

@@ -17,13 +17,13 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.nfs.v4.xdr.device_addr4;
 import org.dcache.chimera.nfs.v4.xdr.deviceid4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 
 import java.io.IOException;
 import java.util.List;
+import org.dcache.chimera.nfs.vfs.Inode;
 
 public interface NFSv41DeviceManager {
 
@@ -41,7 +41,7 @@ public interface NFSv41DeviceManager {
      * @return
      * @throws IOException
      */
-    public Layout layoutGet(FsInode inode, int ioMode, NFS4Client client, stateid4 stateid)
+    public Layout layoutGet(Inode inode, int ioMode, NFS4Client client, stateid4 stateid)
             throws IOException;
 
     /**

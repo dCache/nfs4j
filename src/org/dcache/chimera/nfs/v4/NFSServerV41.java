@@ -17,7 +17,6 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.FileSystemProvider;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4args;
@@ -37,10 +36,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
-    private final FileSystemProvider _fs;
+    private final VirtualFileSystem _fs;
     private final ExportFile _exportFile;
     private static final Logger _log = LoggerFactory.getLogger(NFSServerV41.class);
     private final NFSv4OperationFactory _operationFactory;
@@ -50,7 +50,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final NfsIdMapping _idMapping;
 
     public NFSServerV41(NFSv4OperationFactory operationFactory,
-            NFSv41DeviceManager deviceManager, AclHandler aclHandler, FileSystemProvider fs,
+            NFSv41DeviceManager deviceManager, AclHandler aclHandler, VirtualFileSystem fs,
             NfsIdMapping idMapping,
             ExportFile exportFile) throws OncRpcException, IOException {
 
