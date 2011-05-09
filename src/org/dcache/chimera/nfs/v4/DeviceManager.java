@@ -88,7 +88,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         device_addr4 deviceAddr;
         deviceid4 deviceId;
 
-        if (inode.type() != Inode.Type.LEGACY) {
+        if (inode.type() == Inode.Type.LEGACY) {
             deviceId = MDS_ID;
         } else {
 
