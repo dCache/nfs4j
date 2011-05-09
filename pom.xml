@@ -11,7 +11,7 @@
     <groupId>org.dcache.chimera</groupId>
     <artifactId>jpNFS</artifactId>
     <version>0.0.4-SNAPSHOT</version>
-    <name>Grizzly Based ONC RPC implementation</name>
+    <name>Java based NFSv4.1 implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
     <scm>
