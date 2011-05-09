@@ -35,9 +35,6 @@ import org.dcache.chimera.nfs.v4.xdr.READDIR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
 
-import org.dcache.chimera.DirectoryStreamHelper;
-import org.dcache.chimera.FsInode;
-import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.nfs.InodeCacheEntry;
 import org.dcache.chimera.nfs.vfs.DirectoryEntry;
 import org.dcache.chimera.nfs.vfs.Inode;
@@ -133,7 +130,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOENT, "Path Do not exist."  );
             }
 
-            if(  dir.type() == Inode.Type.DIRECTORY ) {
+            if(  dir.type() != Inode.Type.DIRECTORY ) {
                 throw new ChimeraNFSException( nfsstat4.NFS4ERR_NOTDIR, "Path is not a directory."  );
             }
 
