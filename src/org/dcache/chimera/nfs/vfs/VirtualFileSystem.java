@@ -40,7 +40,7 @@ public interface VirtualFileSystem {
 
     void move(Inode src, String oldName, Inode dest, String newName) throws ChimeraFsException;
 
-    Inode parentOf(Inode inode);
+    Inode parentOf(Inode inode) throws ChimeraFsException;
 
     int read(Inode inode, byte[] data, long offset, int count) throws ChimeraFsException;
 
