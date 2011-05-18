@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_numlinks;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_hidden;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_system;
@@ -89,7 +90,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
@@ -193,7 +193,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
     }
 
-    private static FsStat getFsStat(FsStat fsStat, VirtualFileSystem fs) throws ChimeraFsException {
+    private static FsStat getFsStat(FsStat fsStat, VirtualFileSystem fs) throws IOException {
         if (fsStat != null) {
             return fsStat;
         }

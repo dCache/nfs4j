@@ -825,7 +825,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
      * @throws IllegalArgumentException
      * @throws ChimeraFsException
      */
-    private cookieverf3 generateDirectoryVerifier(Inode dir) throws IllegalArgumentException, ChimeraFsException {
+    private cookieverf3 generateDirectoryVerifier(Inode dir) throws IllegalArgumentException, IOException {
         byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
         Bytes.putLong(verifier, 0, dir.statCache().getMTime());
         return new cookieverf3(verifier);
@@ -839,7 +839,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
      * @throws ChimeraNFSException
      * @throws ChimeraFsException
      */
-    private void checkVerifier(Inode dir, cookieverf3 verifier) throws ChimeraNFSException, ChimeraFsException {
+    private void checkVerifier(Inode dir, cookieverf3 verifier) throws ChimeraNFSException, IOException {
         long mtime = Bytes.getLong(verifier.value, 0);
         if (mtime > dir.statCache().getMTime()) {
             throw new ChimeraNFSException(nfsstat3.NFS3ERR_BAD_COOKIE, "bad cookie");

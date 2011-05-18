@@ -16,39 +16,39 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
+import java.io.IOException;
 import java.util.List;
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FsStat;
 
 public interface VirtualFileSystem {
 
-    Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws ChimeraFsException;
+    Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException;
 
-    FsStat getFsStat() throws ChimeraFsException;
+    FsStat getFsStat() throws IOException;
 
-    Inode getRootInode() throws ChimeraFsException;
+    Inode getRootInode() throws IOException;
 
     Inode inodeOf(final byte[] fh);
 
-    Inode inodeOf(Inode parent, String path) throws ChimeraFsException;
+    Inode inodeOf(Inode parent, String path) throws IOException;
 
-    Inode link(Inode parent, Inode link, String path, int uid, int gid) throws ChimeraFsException;
+    Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException;
 
-    List<DirectoryEntry> list(Inode inode) throws ChimeraFsException;
+    List<DirectoryEntry> list(Inode inode) throws IOException;
 
-    Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws ChimeraFsException;
+    Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException;
 
-    void move(Inode src, String oldName, Inode dest, String newName) throws ChimeraFsException;
+    void move(Inode src, String oldName, Inode dest, String newName) throws IOException;
 
-    Inode parentOf(Inode inode) throws ChimeraFsException;
+    Inode parentOf(Inode inode) throws IOException;
 
-    int read(Inode inode, byte[] data, long offset, int count) throws ChimeraFsException;
+    int read(Inode inode, byte[] data, long offset, int count) throws IOException;
 
-    String readlink(Inode inode) throws ChimeraFsException;
+    String readlink(Inode inode) throws IOException;
 
-    boolean remove(Inode parent, String path) throws ChimeraFsException;
+    boolean remove(Inode parent, String path) throws IOException;
 
-    Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws ChimeraFsException;
+    Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException;
 
-    int write(Inode inode, byte[] data, long offset, int count) throws ChimeraFsException;
+    int write(Inode inode, byte[] data, long offset, int count) throws IOException;
 }

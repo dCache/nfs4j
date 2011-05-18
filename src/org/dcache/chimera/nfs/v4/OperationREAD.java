@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -24,7 +25,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.READ4resok;
 import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
@@ -106,8 +106,8 @@ public class OperationREAD extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
             _log.debug("READ: {}", he.getMessage() );
             res.status = he.getStatus();
-        }catch(ChimeraFsException hfe) {
-            res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;
+        }catch(IOException hfe) {
+            res.status = nfsstat4.NFS4ERR_IO;
         }
 
 

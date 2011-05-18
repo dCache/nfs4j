@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
@@ -29,7 +30,6 @@ import org.dcache.chimera.nfs.v4.xdr.WRITE4resok;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
@@ -106,8 +106,8 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         }catch(ChimeraNFSException he) {
             _log.debug("WRITE: {}", he.getMessage() );
             res.status = he.getStatus();
-    	}catch(ChimeraFsException hfe) {
-    		res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;
+    	}catch(IOException hfe) {
+    		res.status = nfsstat4.NFS4ERR_IO;
     	}
 
        _result.opwrite = res;

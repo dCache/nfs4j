@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -26,9 +27,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.RENAME4res;
 import org.dcache.chimera.nfs.v4.xdr.RENAME4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
@@ -121,12 +120,12 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
     	}catch(FileNotFoundHimeraFsException fnf) {
     		res.status = nfsstat4.NFS4ERR_NOENT;
-    	}catch(ChimeraFsException hfe) {
-    		res.status = nfsstat4.NFS4ERR_SERVERFAULT;
-                _log.error("RENAME: {}", hfe.getMessage());
         }catch(ChimeraNFSException he) {
             _log.error("RENAME: {}", he.getMessage());
             res.status = he.getStatus();
+        } catch (IOException hfe) {
+            res.status = nfsstat4.NFS4ERR_SERVERFAULT;
+            _log.error("RENAME: {}", hfe.getMessage());
         }
 
 

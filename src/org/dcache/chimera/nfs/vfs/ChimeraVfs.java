@@ -21,7 +21,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsStat;
@@ -45,7 +44,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode getRootInode() throws ChimeraFsException {
+    public Inode getRootInode() throws IOException {
         return toInode(FsInode.getRoot(_fs));
     }
 
@@ -55,28 +54,28 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(Inode parent, String path) throws ChimeraFsException {
+    public Inode inodeOf(Inode parent, String path) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode fsInode = parentFsInode.inodeOf(path);
         return toInode(fsInode);
     }
 
     @Override
-    public Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws ChimeraFsException {
+    public Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode, typeToChimera(type));
         return toInode(fsInode);
     }
 
     @Override
-    public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws ChimeraFsException {
+    public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode fsInode = parentFsInode.mkdir(path, uid, gid, mode);
         return toInode(fsInode);
     }
 
     @Override
-    public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws ChimeraFsException {
+    public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode linkInode = toFsInode(link);
         FsInode fsInode = _fs.createHLink(parentFsInode, linkInode, path);
@@ -84,57 +83,57 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws ChimeraFsException {
+    public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode fsInode = _fs.createLink(parentFsInode, path, link);
         return toInode(fsInode);
     }
 
     @Override
-    public int read(Inode inode, byte[] data, long offset, int count) throws ChimeraFsException {
+    public int read(Inode inode, byte[] data, long offset, int count) throws IOException {
         FsInode fsInode = toFsInode(inode);
         return _fs.read(fsInode, offset, data, 0, count);
     }
 
     @Override
-    public void move(Inode src, String oldName, Inode dest, String newName) throws ChimeraFsException {
+    public void move(Inode src, String oldName, Inode dest, String newName) throws IOException {
         FsInode from = toFsInode(src);
         FsInode to = toFsInode(dest);
         _fs.move(from, oldName, to, newName);
     }
 
     @Override
-    public String readlink(Inode inode) throws ChimeraFsException {
+    public String readlink(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
         int count = (int) inode.statCache().getSize();
         byte[] data = new byte[count];
         int n = _fs.read(fsInode, 0, data, 0, count);
         if (n < 0) {
-            throw new ChimeraFsException("Can't read symlink");
+            throw new IOException("Can't read symlink");
         }
         return new String(data, 0, n);
     }
 
     @Override
-    public boolean remove(Inode parent, String path) throws ChimeraFsException {
+    public boolean remove(Inode parent, String path) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         return _fs.remove(parentFsInode, path);
     }
 
     @Override
-    public int write(Inode inode, byte[] data, long offset, int count) throws ChimeraFsException {
+    public int write(Inode inode, byte[] data, long offset, int count) throws IOException {
         FsInode fsInode = toFsInode(inode);
         return _fs.write(fsInode, offset, data, 0, count);
     }
 
     @Override
-    public List<DirectoryEntry> list(Inode inode) throws ChimeraFsException {
+    public List<DirectoryEntry> list(Inode inode) throws IOException {
         FsInode parentFsInode = toFsInode(inode);
         try {
             List<HimeraDirectoryEntry> list = DirectoryStreamHelper.listOf(parentFsInode);
             return Lists.transform(list, new ChimeraDirectoryEntryToVfs());
         } catch (IOException e) {
-            throw new ChimeraFsException(e.getMessage());
+            throw new IOException(e.getMessage());
         }
     }
 
@@ -144,7 +143,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public FsStat getFsStat() throws ChimeraFsException {
+    public FsStat getFsStat() throws IOException {
         return _fs.getFsStat();
     }
 
@@ -167,12 +166,12 @@ public class ChimeraVfs implements VirtualFileSystem {
             }
 
             @Override
-            public Stat stat() throws ChimeraFsException {
+            public Stat stat() throws IOException {
                 return inode.stat();
             }
 
             @Override
-            public Stat statCache() throws ChimeraFsException {
+            public Stat statCache() throws IOException {
                 return inode.statCache();
             }
 
@@ -182,47 +181,47 @@ public class ChimeraVfs implements VirtualFileSystem {
             }
 
             @Override
-            public void setATime(long time) throws ChimeraFsException {
+            public void setATime(long time) throws IOException {
                 inode.setATime(time);
             }
 
             @Override
-            public void setCTime(long time) throws ChimeraFsException {
+            public void setCTime(long time) throws IOException {
                 inode.setCTime(time);
             }
 
             @Override
-            public void setGID(int id) throws ChimeraFsException {
+            public void setGID(int id) throws IOException {
                 inode.setGID(id);
             }
 
             @Override
-            public void setMTime(long time) throws ChimeraFsException {
+            public void setMTime(long time) throws IOException {
                 inode.setMTime(time);
             }
 
             @Override
-            public void setMode(int size) throws ChimeraFsException {
+            public void setMode(int size) throws IOException {
                 inode.setMode(size);
             }
 
             @Override
-            public void setSize(long size) throws ChimeraFsException {
+            public void setSize(long size) throws IOException {
                 inode.setSize(size);
             }
 
             @Override
-            public void setUID(int id) throws ChimeraFsException {
+            public void setUID(int id) throws IOException {
                 inode.setUID(id);
             }
 
             @Override
-            public nfsace4[] getAcl() throws ChimeraFsException {
+            public nfsace4[] getAcl() throws IOException {
                 return new nfsace4[0];
             }
 
             @Override
-            public void setAcl(nfsace4[] acl) throws ChimeraFsException {
+            public void setAcl(nfsace4[] acl) throws IOException {
                 /* NOP */
             }
 

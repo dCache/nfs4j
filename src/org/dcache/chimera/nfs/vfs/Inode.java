@@ -16,7 +16,7 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import org.dcache.chimera.ChimeraFsException;
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 import org.dcache.chimera.posix.Stat;
 
@@ -38,29 +38,29 @@ public interface Inode {
 
     public boolean exists();
 
-    Stat stat() throws ChimeraFsException;
+    Stat stat() throws IOException;
 
-    Stat statCache() throws ChimeraFsException;
+    Stat statCache() throws IOException;
 
     int id();
 
-    void setSize(long size) throws ChimeraFsException;
+    void setSize(long size) throws IOException;
 
-    void setUID(int id) throws ChimeraFsException;
+    void setUID(int id) throws IOException;
 
-    void setGID(int id) throws ChimeraFsException;
+    void setGID(int id) throws IOException;
 
-    void setATime(long time) throws ChimeraFsException;
+    void setATime(long time) throws IOException;
 
-    void setMTime(long time) throws ChimeraFsException;
+    void setMTime(long time) throws IOException;
 
-    void setCTime(long time) throws ChimeraFsException;
+    void setCTime(long time) throws IOException;
 
-    void setMode(int size) throws ChimeraFsException;
+    void setMode(int size) throws IOException;
 
-    nfsace4[] getAcl() throws ChimeraFsException;
+    nfsace4[] getAcl() throws IOException;
 
-    void setAcl(nfsace4[] acl) throws ChimeraFsException;
+    void setAcl(nfsace4[] acl) throws IOException;
 
     Type type();
 }

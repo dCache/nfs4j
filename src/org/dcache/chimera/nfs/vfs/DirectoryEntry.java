@@ -16,7 +16,7 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import org.dcache.chimera.ChimeraFsException;
+import java.io.IOException;
 import org.dcache.chimera.posix.Stat;
 
 public class DirectoryEntry {
@@ -26,7 +26,7 @@ public class DirectoryEntry {
     private final Inode _inode;
 
 
-    public DirectoryEntry(String name, Inode inode) throws ChimeraFsException {
+    public DirectoryEntry(String name, Inode inode) throws IOException {
         this(name, inode, inode.statCache());
     }
 

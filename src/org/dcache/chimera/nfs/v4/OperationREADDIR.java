@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import java.util.List;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.entry4;
@@ -288,7 +289,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      * @throws IllegalArgumentException
      * @throws ChimeraFsException
      */
-    private verifier4 generateDirectoryVerifier(Inode dir) throws IllegalArgumentException, ChimeraFsException {
+    private verifier4 generateDirectoryVerifier(Inode dir) throws IllegalArgumentException, IOException {
         byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
         Bytes.putLong(verifier, 0, dir.statCache().getMTime());
         return new verifier4(verifier);
@@ -302,7 +303,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      * @throws ChimeraNFSException
      * @throws ChimeraFsException
      */
-    private void checkVerifier(Inode dir, verifier4 verifier) throws ChimeraNFSException, ChimeraFsException {
+    private void checkVerifier(Inode dir, verifier4 verifier) throws ChimeraNFSException, IOException {
         long mtime = Bytes.getLong(verifier.value, 0);
         if( mtime > dir.statCache().getMTime() )
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_COOKIE, "bad cookie");
