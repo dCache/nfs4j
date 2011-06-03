@@ -60,7 +60,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         res.gdlr_resok4.gdlr_cookieverf = new verifier4();
         res.gdlr_resok4.gdlr_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        List<deviceid4> deviceIDs = context.getDeviceManager().getDeviceList(context.getSession().getClient());
+        List<deviceid4> deviceIDs = context.getDeviceManager().getDeviceList(context);
 
         int deviceListSize = Math.min(deviceIDs.size(), _args.opgetdevicelist.gdla_maxdevices.value.value);
 

@@ -82,7 +82,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      *      int, java.net.InetAddress)
      */
     @Override
-    public Layout layoutGet(Inode inode, int ioMode, NFS4Client client, stateid4 stateid)
+	public Layout layoutGet(CompoundContext context, Inode inode, int ioMode, stateid4 stateid)
             throws IOException {
 
         device_addr4 deviceAddr;
@@ -123,12 +123,12 @@ public class DeviceManager implements NFSv41DeviceManager {
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#layoutGet(int)
      */
     @Override
-    public device_addr4 getDeviceInfo(NFS4Client client, deviceid4 deviceId) {
+    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) {
 
         _log.debug("lookup for device: {}", deviceId );
         /* in case of MDS access we return the same interface which client already connected to */
         if(deviceId.equals(MDS_ID)) {
-            return deviceAddrOf(_stripingPattern, client.getLocalAddress());
+            return deviceAddrOf(_stripingPattern, context.getRpcCall().getTransport().getLocalSocketAddress());
         }
 
         return  _deviceMap.get(deviceId);
@@ -140,7 +140,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#getDeviceList()
      */
     @Override
-    public List<deviceid4> getDeviceList(NFS4Client client) {
+    public List<deviceid4> getDeviceList(CompoundContext context) {
         return new ArrayList<deviceid4>(_deviceMap.keySet());
     }
 
@@ -150,7 +150,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#layoutReturn()
      */
     @Override
-    public void layoutReturn(NFS4Client client, stateid4 stateid) {
+    public void layoutReturn(CompoundContext context, stateid4 stateid) {
         // I'am fine
         _log.debug( "release device for stateid {}", stateid );
     }

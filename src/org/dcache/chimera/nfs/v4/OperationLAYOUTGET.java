@@ -84,9 +84,8 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         res.logr_resok4 = new LAYOUTGET4resok();
 
-        Layout ioLayout = context.getDeviceManager().layoutGet(context.currentInode(),
+        Layout ioLayout = context.getDeviceManager().layoutGet(context, context.currentInode(),
                 _args.oplayoutget.loga_iomode,
-                context.getSession().getClient(),
                 _args.oplayoutget.loga_stateid);
 
         res.logr_resok4.logr_layout = ioLayout.getLayoutSegments();

@@ -51,8 +51,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
             }
 
             try {
-                context.getDeviceManager().layoutReturn(context.getSession().getClient(),
-                        _args.opclose.open_stateid);
+                context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
             } catch (IOException e) {
                 _log.error("Failed to return a layout: {}", e.getMessage());
             }

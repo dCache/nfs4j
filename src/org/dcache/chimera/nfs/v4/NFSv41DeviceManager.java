@@ -32,16 +32,16 @@ public interface NFSv41DeviceManager {
      * The layout is considered to be in use until <code>layoutReturn</code>
      * method is not called.
      *
+     * @param context of the nfs request
      * @param inode
      * @param ioMode the value of the returned layout iomode. A ioMode of either
      *      LAYOUTIOMODE4_READ or LAYOUTIOMODE4_RW MUST be returned.
-     * @param client associated with LAYOUTGET call
      * @param stateid reflecting the corresponding valid open, byte-range lock,
      *      or delegation stateid.
      * @return
      * @throws IOException
      */
-    public Layout layoutGet(Inode inode, int ioMode, NFS4Client client, stateid4 stateid)
+    public Layout layoutGet(CompoundContext context, Inode inode, int ioMode, stateid4 stateid)
             throws IOException;
 
     /**
@@ -51,21 +51,21 @@ public interface NFSv41DeviceManager {
      * @param deviceId
      * @return device address
      */
-    public device_addr4 getDeviceInfo(NFS4Client client, deviceid4 deviceId) throws IOException;
+    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) throws IOException;
 
     /**
      * Get list of all device IDs used bu server.
      *
-     * @param client
+     * @param context of the nfs request
      * @return list of devices
      */
-    public List<deviceid4> getDeviceList(NFS4Client client) throws IOException;
+    public List<deviceid4> getDeviceList(CompoundContext context) throws IOException;
 
     /**
      * Release layout associated with state id.
      *
-     * @param client
+     * @param context of the nfs request
      * @param stateid
      */
-    public void layoutReturn(NFS4Client client, stateid4 stateid) throws IOException;
+    public void layoutReturn(CompoundContext context, stateid4 stateid) throws IOException;
 }

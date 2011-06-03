@@ -49,7 +49,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
             res.gdir_resok4 = new GETDEVICEINFO4resok();
 
             device_addr4 deviceInfo = context.getDeviceManager()
-                    .getDeviceInfo(context.getSession().getClient(), deviceId);
+                    .getDeviceInfo(context, deviceId);
 
             if (deviceInfo == null) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid deviceInfo id");
