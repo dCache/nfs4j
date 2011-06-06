@@ -54,7 +54,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
                 context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
             }
 
-            res.open_stateid = stateid4.INVAL_STATEID;
+            res.open_stateid = Stateids.invalidStateId();
             res.status = nfsstat4.NFS4_OK;
 
         } catch (ChimeraNFSException he) {
