@@ -107,9 +107,6 @@ public class GssProtocolFilter implements ProtocolFilter {
                     if (gssContext.isEstablished()) {
                         // FIXME: hard coded number
                         _sequence = 2;
-                        call.getCredential().getSubject().getPrincipals().
-                                add(new KerberosPrincipal(gssContext.getSrcName().toString()));
-                        _log.log(Level.FINE, "RPCGSS_SEC: {0}", cred.getContext().getSrcName());
                         res.setSequence(_sequence);
                         byte[] crc = Ints.toByteArray(_sequence);
                         crc = gssContext.getMIC(crc, 0, 4, new MessageProp(false));
