@@ -70,6 +70,9 @@ public class RpcDispatcher implements ProtocolFilter {
         }else{
             try {
                 program.dispatchOncRpcCall(call);
+            } catch (RpcException e) {
+                call.reject(e.getStatus(), e.getRpcReply());
+                _log.log(Level.SEVERE, "Failed to process RPC request:", e);
             } catch (OncRpcException e) {
                 _log.log(Level.SEVERE, "Failed to process RPC request:", e);
             }

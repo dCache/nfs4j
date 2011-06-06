@@ -14,13 +14,12 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+package org.dcache.xdr.gss;
 
-package org.dcache.xdr;
+public interface GssProc {
 
-public interface  RpcAuthType {
-
-    static public final int NONE = 0;
-    static public final int UNIX = 1;
-    static public final int RPCGSS_SEC = 6;
-
+    public static final int RPCSEC_GSS_DATA = 0;
+    public static final int RPCSEC_GSS_INIT = 1;
+    public static final int RPCSEC_GSS_CONTINUE_INIT = 2;
+    public static final int RPCSEC_GSS_DESTROY = 3;
 }

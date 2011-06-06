@@ -14,13 +14,25 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+package org.dcache.xdr.gss;
 
-package org.dcache.xdr;
+import org.ietf.jgss.GSSContext;
 
-public interface  RpcAuthType {
+public class RpcGssContext {
 
-    static public final int NONE = 0;
-    static public final int UNIX = 1;
-    static public final int RPCGSS_SEC = 6;
+    private final byte[] _handle;
+    private final GSSContext _context;
 
+    public RpcGssContext(byte[] handle, GSSContext context) {
+        _handle = handle;
+        _context = context;
+    }
+
+    public GSSContext getContext() {
+        return _context;
+    }
+
+    public byte[] getHandle() {
+        return _handle;
+    }
 }
