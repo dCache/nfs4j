@@ -19,7 +19,6 @@ package org.dcache.chimera.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
-import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.CLOSE4res;
@@ -44,16 +43,15 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
             Inode inode = context.currentInode();
 
-            if (context.getSession() == null) {
-                context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
-            } else {
+            if (context.getMinorversion() > 0) {
                 context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-            }
-
-            try {
-                context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
-            } catch (IOException e) {
-                _log.error("Failed to return a layout: {}", e.getMessage());
+                try {
+                    context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
+                } catch (IOException e) {
+                    _log.error("Failed to return a layout: {}", e.getMessage());
+                }
+            } else {
+                context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
             }
 
             res.open_stateid = stateid4.INVAL_STATEID;
