@@ -59,9 +59,11 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         try {
 
             Long clientid = Long.valueOf(_args.opopen.owner.value.clientid.value.value);
-            NFS4Client client = null;
+            NFS4Client client;
 
-            if (context.getSession() == null) {
+            if (context.getMinorversion() > 0) {
+                client = context.getSession().getClient();
+            } else {
                 client = context.getStateHandler().getClientByID(clientid);
 
                 if (client == null || !client.isConfirmed()) {
@@ -71,9 +73,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
                 _log.debug("open request form clientid: {}, owner: {}",
                         new Object[]{client, new String(_args.opopen.owner.value.owner)});
-            } else {
-                client = context.getSession().getClient();
-            }
+            } 
 
             res.resok4 = new OPEN4resok();
             res.resok4.attrset = new bitmap4();
@@ -184,13 +184,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             /*
-             * if it's not session-based  request, then client have to confirm
+             * if it's v4.0, then client have to confirm
              */
-            if (context.getSession() == null) {
-                res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX
-                        | nfs4_prot.OPEN4_RESULT_CONFIRM);
-            } else {
+            if (context.getMinorversion() > 0) {
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
+            }else {
+                res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX
+                        | nfs4_prot.OPEN4_RESULT_CONFIRM);                
             }
 
             NFS4State nfs4state = client.createState();
