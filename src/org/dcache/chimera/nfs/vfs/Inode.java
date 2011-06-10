@@ -42,7 +42,7 @@ public interface Inode {
 
     Stat statCache() throws IOException;
 
-    int id();
+    long id();
 
     void setSize(long size) throws IOException;
 

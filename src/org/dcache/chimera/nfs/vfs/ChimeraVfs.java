@@ -176,8 +176,8 @@ public class ChimeraVfs implements VirtualFileSystem {
             }
 
             @Override
-            public int id() {
-                return (int) inode.id();
+            public long id() {
+                return inode.id();
             }
 
             @Override
