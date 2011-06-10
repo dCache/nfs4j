@@ -30,22 +30,7 @@ import org.dcache.xdr.XdrEncodingStream;
 public class RpcAuthGss implements RpcAuth, XdrAble {
 
     private final static Logger _log = Logger.getLogger(RpcAuthGss.class.getName());
-    /**
-     * Return value from either accept or init stating that
-     * the context creation phase is complete for this peer.
-     * @see #init
-     * @see #accept
-     */
-    public static final int COMPLETE = 0;
-    /**
-     * Return value from either accept or init stating that
-     * another token is required from the peer to continue context
-     * creation. This may be returned several times indicating
-     * multiple token exchanges.
-     * @see #init
-     * @see #accept
-     */
-    public static final int CONTINUE_NEEDED = 1;
+
     private final int _type = RpcAuthType.RPCGSS_SEC;
     private RpcAuthVerifier _verifier = new RpcAuthVerifier(_type, new byte[0]);
     private int _version;
