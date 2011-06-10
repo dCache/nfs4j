@@ -16,16 +16,23 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import java.security.Principal;
+import javax.security.auth.Subject;
+import org.dcache.auth.Subjects;
+
 /**
  * Simple implementation of {@link NfsIdMapping} which converts number into
  * string representation and vice versa.
  *
  * @since 0.0.4
  */
-public class SimpleIdMap implements NfsIdMapping {
+public class SimpleIdMap implements NfsIdMapping, NfsLoginService {
 
     private static final int NOBODY_UID = -1;
     private static final int NOBODY_GID = -1;
+
+    private static final int DEFAULT_UID = 1001;
+    private static final int DEFAULT_GID = 1001;
 
     @Override
     public int principalToGid(String principal) {
@@ -53,5 +60,10 @@ public class SimpleIdMap implements NfsIdMapping {
     @Override
     public String gidToPrincipal(int id) {
         return Integer.toString(id);
+    }
+
+    @Override
+    public Subject login(Principal principal) {
+        return Subjects.of(DEFAULT_UID, DEFAULT_GID, new int[0]);
     }
 }

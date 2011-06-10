@@ -22,7 +22,6 @@ import com.google.common.primitives.Ints;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.security.auth.kerberos.KerberosPrincipal;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuthError;
 import org.dcache.xdr.RpcAuthException;
@@ -118,9 +117,7 @@ public class GssProtocolFilter implements ProtocolFilter {
                     cred.getContext().dispose();
                     break;
                 case GssProc.RPCSEC_GSS_DATA:
-                    call.getCredential().getSubject().getPrincipals().
-                            add(new KerberosPrincipal(gssContext.getSrcName().toString()));
-                    _log.log(Level.FINE, "RPCGSS_SEC: {0}", cred.getContext().getSrcName());
+                    _log.log(Level.FINE, "RPCGSS_SEC: {0}",gssContext.getSrcName());
                     byte[] crc = Ints.toByteArray(authGss.getSequence());
                     crc = gssContext.getMIC(crc, 0, 4, new MessageProp(false));
                     authGss.setVerifier(new RpcAuthVerifier(authGss.type(), crc));

@@ -16,10 +16,13 @@
  */
 package org.dcache.xdr.gss;
 
+import java.security.Principal;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import javax.security.auth.kerberos.KerberosPrincipal;
+import org.dcache.chimera.nfs.v4.NfsLoginService;
 import org.dcache.utils.Opaque;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
@@ -32,14 +35,16 @@ public class GssSessionManager {
     private static final Logger _log = Logger.getLogger(GssSessionManager.class.getName());
     private final GSSManager gManager = GSSManager.getInstance();
     private final GSSCredential _serviceCredential;
+    private final NfsLoginService _loginService;
 
-    public GssSessionManager() throws GSSException {
+    public GssSessionManager(NfsLoginService loginService) throws GSSException {
         System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
 
         Oid krb5Mechanism = new Oid("1.2.840.113554.1.2.2");
         _serviceCredential = gManager.createCredential(null,
                 GSSCredential.INDEFINITE_LIFETIME,
                 krb5Mechanism, GSSCredential.ACCEPT_ONLY);
+        _loginService = loginService;
     }
     private final Map<Opaque, RpcGssContext> sessions = new ConcurrentHashMap<Opaque, RpcGssContext>();
 
@@ -66,6 +71,11 @@ public class GssSessionManager {
             case GssProc.RPCSEC_GSS_DATA:
                 _log.fine("RPCSEC_GSS_DATA");
                 cred = sessions.get(new Opaque(gssAuth.getHandle()));
+                if(cred == null) {
+                    throw new GSSException(GSSException.NO_CONTEXT);
+                }
+                Principal principal = new KerberosPrincipal(cred.getContext().getSrcName().toString());
+                gssAuth.getSubject().getPrincipals().addAll(_loginService.login(principal).getPrincipals());
                 break;
             default:
                 throw new RuntimeException("Invalid GssProc: " + gssAuth.getProc());
