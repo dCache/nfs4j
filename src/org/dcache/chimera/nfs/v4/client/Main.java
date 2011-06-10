@@ -44,6 +44,7 @@ import org.dcache.chimera.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.NFSv41Error;
+import org.dcache.chimera.nfs.v4.Stateids;
 import org.dcache.chimera.nfs.v4.xdr.clientid4;
 import org.dcache.chimera.nfs.v4.xdr.deviceid4;
 import org.dcache.chimera.nfs.v4.xdr.entry4;
@@ -120,6 +121,7 @@ public class Main {
             "lookup",
             "mkdir",
             "read",
+            "readatonce",
             "filebomb",
             "remove",
             "umount",
@@ -235,6 +237,19 @@ public class Main {
                     continue;
                 }
                 nfsClient.read(commandArgs[1]);
+
+            } else if (commandArgs[0].equals("readatonce")) {
+
+                if (nfsClient == null) {
+                    System.out.println("Not mounted");
+                    continue;
+                }
+
+                if (commandArgs.length != 2) {
+                    System.out.println("usage: readatonce <file>");
+                    continue;
+                }
+                nfsClient.readatonce(commandArgs[1]);
 
             } else if (commandArgs[0].equals("fs_locations")) {
 
@@ -815,6 +830,49 @@ public class Main {
         }
         close(or.fh(), or.stateid());
 
+    }
+
+    private void readatonce(String path) throws OncRpcException, IOException {
+
+        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+
+        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
+                _sequenceID.value.value, 12, 0));
+
+
+        if (path.charAt(0) == '/') {
+            ops.add(PutfhStub.generateRequest(_rootFh));
+        } else {
+            ops.add(PutfhStub.generateRequest(_cwd));
+        }
+
+        String[] pathElements = path.split("/");
+        for (int i = 0; i < pathElements.length - 1; i++) {
+            String p = pathElements[i];
+            if (p != null && p.length() > 0) {
+                if (p.equals("..")) {
+                    ops.add(LookuppStub.generateRequest());
+                } else {
+                    ops.add(LookupStub.generateRequest(p));
+                }
+            }
+        }
+
+        ops.add(OpenStub.normalREAD(pathElements[pathElements.length - 1], _sequenceID.value.value,
+                _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ));
+        ops.add(ReadStub.generateRequest(4096, 0, Stateids.currentStateId()));
+        ops.add(CloseStub.generateRequest(Stateids.currentStateId()));
+        COMPOUND4res compound4res = sendCompound(ops, "open_read_close");
+
+        if (compound4res.status == nfsstat4.NFS4_OK) {
+            int opss = ops.size();
+            byte[] data = new byte[compound4res.resarray.get(opss-2).opread.resok4.data.remaining()];
+            compound4res.resarray.get(opss-2).opread.resok4.data.get(data);
+            System.out.println("[" + new String(data) + "]");
+        } else {
+            System.out.println("open failed. Error = "
+                    + NFSv41Error.errcode2string(compound4res.status));
+        }
     }
 
     private void write(String source, String path) throws OncRpcException, IOException {
