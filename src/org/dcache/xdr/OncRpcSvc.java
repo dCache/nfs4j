@@ -41,7 +41,6 @@ import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
-import org.ietf.jgss.GSSException;
 
 public class OncRpcSvc {
 
