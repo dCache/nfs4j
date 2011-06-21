@@ -25,7 +25,7 @@ public class RpcException  extends OncRpcException {
     private final XdrAble _reply;
     private final int _rejectStatus;
     
-    RpcException(int status, String msg, XdrAble reply) {
+    public RpcException(int status, String msg, XdrAble reply) {
         super(msg);
         _rejectStatus = status;
         _reply = reply;
