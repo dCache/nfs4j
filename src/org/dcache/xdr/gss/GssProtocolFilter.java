@@ -20,11 +20,13 @@ import com.sun.grizzly.Context;
 import com.sun.grizzly.ProtocolFilter;
 import com.google.common.primitives.Ints;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuthError;
-import org.dcache.xdr.RpcAuthException;
 import org.dcache.xdr.RpcAuthStat;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthVerifier;
@@ -34,6 +36,7 @@ import org.dcache.xdr.RpcProtocolFilter;
 import org.dcache.xdr.RpcRejectStatus;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSName;
 import org.ietf.jgss.MessageProp;
 
 /**
@@ -82,30 +85,32 @@ public class GssProtocolFilter implements ProtocolFilter {
         boolean hasContext = false;
         try {
             RpcAuthGss authGss = (RpcAuthGss) call.getCredential();
-            RpcGssContext cred = _gssSessionManager.getCredential(authGss);
-            if (cred == null) {
-                throw new RpcAuthException("No context found",
-                        new RpcAuthError(RpcAuthStat.RPCSEC_GSS_CTXPROBLEM));
-            }
-
-            GSSContext gssContext = cred.getContext();
+            GSSContext gssContext = null;
             int _sequence = authGss.getSequence();
             switch (authGss.getProc()) {
                 case GssProc.RPCSEC_GSS_INIT:
+                    UUID uuid = UUID.randomUUID();
+                    byte[] handle = new byte[16];
+                    Bytes.putLong(handle, 0, uuid.getLeastSignificantBits());
+                    Bytes.putLong(handle, 8, uuid.getMostSignificantBits());
+                    gssContext = _gssSessionManager.createContext(handle);
+                    authGss.setHandle(handle);
+                    // fall through
                 case GssProc.RPCSEC_GSS_CONTINUE_INIT:
-
+                    if(gssContext == null)
+                        gssContext =  _gssSessionManager.getContext(authGss.getHandle());
                     GSSINITargs gssArgs = new GSSINITargs();
                     GSSINITres res = new GSSINITres();
                     call.retrieveCall(gssArgs);
                     byte[] inToken = gssArgs.getToken();
                     byte[] outToken = gssContext.acceptSecContext(inToken, 0, inToken.length);
-                    res.setHandle(cred.getHandle());
-                    res.setGssMajor(cred.getContext().isEstablished() ? COMPLETE : CONTINUE_NEEDED);
+                    res.setHandle(authGss.getHandle());
+                    res.setGssMajor(gssContext.isEstablished() ? COMPLETE : CONTINUE_NEEDED);
                     res.setGssMinor(0);
                     res.setToken(outToken);
                     if (gssContext.isEstablished()) {
                         // FIXME: hard coded number
-                        _sequence = 2;
+                        _sequence = 128;
                         res.setSequence(_sequence);
                         byte[] crc = Ints.toByteArray(_sequence);
                         crc = gssContext.getMIC(crc, 0, 4, new MessageProp(false));
@@ -114,15 +119,23 @@ public class GssProtocolFilter implements ProtocolFilter {
                     call.reply(res);
                     break;
                 case GssProc.RPCSEC_GSS_DESTROY:
-                    cred.getContext().dispose();
+                    gssContext = _gssSessionManager.destroyContext(authGss.getHandle());
+                    validateVerifier(authGss, gssContext);
+                    gssContext.dispose();
                     break;
                 case GssProc.RPCSEC_GSS_DATA:
-                    _log.log(Level.FINE, "RPCGSS_SEC: {0}",gssContext.getSrcName());
+                    gssContext =  _gssSessionManager.getEstablishedContext(authGss.getHandle());
+                    validateVerifier(authGss, gssContext);
+                    GSSName sourceName = gssContext.getSrcName();
+                    authGss.getSubject()
+                            .getPrincipals()
+                            .addAll(_gssSessionManager.subjectOf(sourceName).getPrincipals());
+                    _log.log(Level.FINE, "RPCGSS_SEC: {0}",sourceName);
                     byte[] crc = Ints.toByteArray(authGss.getSequence());
                     crc = gssContext.getMIC(crc, 0, 4, new MessageProp(false));
                     authGss.setVerifier(new RpcAuthVerifier(authGss.type(), crc));
                     context.setAttribute(RpcProtocolFilter.RPC_CALL,
-                            new RpcGssCall(call, cred.getContext(), new MessageProp(false)));
+                            new RpcGssCall(call, gssContext, new MessageProp(false)));
                     hasContext = true;
             }
 
@@ -140,6 +153,22 @@ public class GssProtocolFilter implements ProtocolFilter {
             _log.log(Level.INFO, "GSS mechanism failed {0}", e.getMessage());
         }
         return hasContext;
+    }
+
+    /**
+     * According to rfc2203 verifier should contain the checksum of the RPC header
+     * up to and including the credential.
+     *
+     * @param auth
+     * @param context gss context
+     * @throws GSSException if cant validate the checksum
+     */
+    private void validateVerifier(RpcAuthGss auth, GSSContext context) throws GSSException {
+        ByteBuffer header = auth.getHeader();
+        byte[] bb = new byte[header.remaining()];
+        header.get(bb);
+        context.verifyMIC(auth.getVerifier().getBody(), 0, auth.getVerifier().getBody().length,
+                bb, 0, bb.length, new MessageProp(false));
     }
 
     @Override

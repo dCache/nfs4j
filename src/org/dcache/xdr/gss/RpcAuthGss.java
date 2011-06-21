@@ -17,12 +17,18 @@
 package org.dcache.xdr.gss;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcAuthError;
+import org.dcache.xdr.RpcAuthException;
+import org.dcache.xdr.RpcAuthStat;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthVerifier;
+import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
@@ -38,6 +44,8 @@ public class RpcAuthGss implements RpcAuth, XdrAble {
     private int _sequence;
     private int _service;
     private byte[] _handle;
+    private ByteBuffer _header;
+
     private Subject _subject = new Subject();
 
     public byte[] getHandle() {
@@ -95,13 +103,51 @@ public class RpcAuthGss implements RpcAuth, XdrAble {
         return _sequence;
     }
 
+    /**
+     * Get a read-only ByteBuffer containing RPC header including credential.
+     */
+    ByteBuffer getHeader() {
+        return _header.asReadOnlyBuffer();
+    }
+
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
         int len = xdr.xdrDecodeInt();
+        _header = ((Xdr) xdr).body().duplicate();
+
+        /*
+         * header size is RPC header + credential.
+         *
+         * rpc header is 7 int32: xid type rpcversion prog vers proc auth_flavour
+         * credential is 1 int32 + it's value : len + opaque
+         *
+         * set position to the beginning of rpc message and limit to the end of credential.
+         */
+        _header.limit( _header.position() + len);
+        _header.position( _header.position() - 8*4);
+
         _version = xdr.xdrDecodeInt();
         _proc = xdr.xdrDecodeInt();
         _sequence = xdr.xdrDecodeInt();
         _service = xdr.xdrDecodeInt();
         _handle = xdr.xdrDecodeDynamicOpaque();
+
+        {
+            /*
+             * workaround bug in linux kernel implementation:
+             * sometimes linux ( as of 3.0.0-rc3 ) sends crap instead of verifier.
+             */
+
+            ByteBuffer b = ((Xdr) xdr).body().slice();
+            b.order(ByteOrder.BIG_ENDIAN);
+
+            if (b.remaining() < 4) {
+                throw new RpcAuthException("bad verifier (seal broken)", new RpcAuthError(RpcAuthStat.AUTH_BADVERF));
+            }
+            int verifierSize = b.getInt();
+            if (verifierSize < 0 || verifierSize > b.remaining()) {
+                throw new RpcAuthException("bad verifier (seal broken)", new RpcAuthError(RpcAuthStat.AUTH_BADVERF));
+            }
+        }
         _verifier.xdrDecode(xdr);
     }
 
