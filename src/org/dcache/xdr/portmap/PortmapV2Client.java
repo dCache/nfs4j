@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcache.utils.net.InetSocketAddresses;
-import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
@@ -61,13 +60,13 @@ public class PortmapV2Client implements OncPortmapClient {
         return pong;
     }
 
-    public boolean setPort(int program, int version, String netid, String addr, String owner) throws OncRpcException, IOException {
+    public boolean setPort(int program, int version, String netids, String addr, String owner) throws OncRpcException, IOException {
         _log.log(Level.FINEST, "portmap set port: prog: {0} vers: {1}, netid: {2} addr: {3}, owner: {4}",
-                new Object[]{program, version, netid, addr, owner});
+                new Object[]{program, version, netids, addr, owner});
 
         InetSocketAddress address = org.dcache.xdr.netid.toInetSocketAddress(addr);
         // FIXME : nettype detection
-        mapping m1 = new mapping(program, version, IpProtocolType.TCP, address.getPort());
+        mapping m1 = new mapping(program, version, netid.idOf(netids), address.getPort());
 
         XdrBoolean isSet = new XdrBoolean();
         _call.call(OncRpcPortmap.PMAPPROC_SET, m1, isSet);
