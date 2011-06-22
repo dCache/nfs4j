@@ -65,7 +65,6 @@ public class PortmapV2Client implements OncPortmapClient {
                 new Object[]{program, version, netids, addr, owner});
 
         InetSocketAddress address = org.dcache.xdr.netid.toInetSocketAddress(addr);
-        // FIXME : nettype detection
         mapping m1 = new mapping(program, version, netid.idOf(netids), address.getPort());
 
         XdrBoolean isSet = new XdrBoolean();
