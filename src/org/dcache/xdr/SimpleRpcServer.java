@@ -19,8 +19,9 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import org.dcache.xdr.portmap.GenericPortmapClient;
+import org.dcache.xdr.portmap.OncPortmapClient;
 
-import org.acplt.oncrpc.OncRpcPortmapClient;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 public class SimpleRpcServer {
@@ -43,18 +44,22 @@ public class SimpleRpcServer {
 
         new OncRpcEmbeddedPortmap();
 
-        OncRpcPortmapClient portmap = new OncRpcPortmapClient(InetAddress
-                    .getByName("127.0.0.1"));
-        portmap.getOncRpcClient().setTimeout(2000);
-        portmap.setPort(PROG_NUMBER, PROG_VERS, IpProtocolType.TCP, port);
+        OncRpcClient rpcClient = new OncRpcClient(
+                InetAddress.getByName("127.0.0.1"),
+                IpProtocolType.UDP, 111);
+        XdrTransport transport = rpcClient.connect();
+
+        OncPortmapClient portmapClient = new GenericPortmapClient(transport);
+        portmapClient.setPort(100003, 4, "udp", "127.0.0.2.8.4", System.getProperty("user.name"));
 
         RpcDispatchable dummy = new RpcDispatchable() {
 
+            @Override
             public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
                 call.reply(XdrVoid.XDR_VOID);
             }
 
-        };        
+        };
 
         OncRpcSvc service = new OncRpcSvc(port);
         service.register(new OncRpcProgram(PROG_NUMBER, PROG_VERS), dummy);
