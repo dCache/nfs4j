@@ -64,7 +64,7 @@ public class RpcGssCall extends RpcCall {
                     super.retrieveCall(args);
                     break;
                 case RpcGssService.RPC_GSS_SVC_INTEGRITY:
-                    DataBodyInteg integData = new DataBodyInteg();
+                    DataBodyIntegrity integData = new DataBodyIntegrity();
                     super.retrieveCall(integData);
                     byte[] integBytes = integData.getData();
                     byte[] checksum = integData.getChecksum();
@@ -117,7 +117,7 @@ public class RpcGssCall extends RpcCall {
                     b.get(integBytes);
 
                     byte[] checksum = _gssContext.getMIC(integBytes, 0, integBytes.length, _mop);
-                    DataBodyInteg integData = new DataBodyInteg(integBytes, checksum);
+                    DataBodyIntegrity integData = new DataBodyIntegrity(integBytes, checksum);
                     super.acceptedReply(state, integData);
                     break;
                 case RpcGssService.RPC_GSS_SVC_PRIVACY:

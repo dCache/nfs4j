@@ -28,66 +28,66 @@ import org.dcache.xdr.XdrEncodingStream;
  */
 public class GSSINITres implements  XdrAble {
 
-    private byte[] handle;
-    private int gssMajor;
-    private int gssMinor;
-    private int sequence;
-    private byte[] token;
+    private byte[] _handle;
+    private int _gssMajor;
+    private int _gssMinor;
+    private int _sequence;
+    private byte[] _token;
 
     public int getGssMajor() {
-        return gssMajor;
+        return _gssMajor;
     }
 
     public void setGssMajor(int gssMajor) {
-        this.gssMajor = gssMajor;
+        this._gssMajor = gssMajor;
     }
 
     public int getGssMinor() {
-        return gssMinor;
+        return _gssMinor;
     }
 
     public void setGssMinor(int gssMinor) {
-        this.gssMinor = gssMinor;
+        this._gssMinor = gssMinor;
     }
 
     public byte[] getHandle() {
-        return handle;
+        return _handle;
     }
 
     public void setHandle(byte[] handle) {
-        this.handle = handle;
+        this._handle = handle;
     }
 
     public int getSequence() {
-        return sequence;
+        return _sequence;
     }
 
     public void setSequence(int sequence) {
-        this.sequence = sequence;
+        this._sequence = sequence;
     }
 
     public byte[] getToken() {
-        return token;
+        return _token;
     }
 
     public void setToken(byte[] token) {
-        this.token = token;
+        this._token = token;
     }
 
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
-        handle = xdr.xdrDecodeDynamicOpaque();
-        gssMajor = xdr.xdrDecodeInt();
-        gssMinor = xdr.xdrDecodeInt();
-        sequence = xdr.xdrDecodeInt();
-        token = xdr.xdrDecodeDynamicOpaque();
+        _handle = xdr.xdrDecodeDynamicOpaque();
+        _gssMajor = xdr.xdrDecodeInt();
+        _gssMinor = xdr.xdrDecodeInt();
+        _sequence = xdr.xdrDecodeInt();
+        _token = xdr.xdrDecodeDynamicOpaque();
     }
 
     public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
-        xdr.xdrEncodeDynamicOpaque(handle);
-        xdr.xdrEncodeInt(gssMajor);
-        xdr.xdrEncodeInt(gssMinor);
-        xdr.xdrEncodeInt(sequence);
-        xdr.xdrEncodeDynamicOpaque(token);
+        xdr.xdrEncodeDynamicOpaque(_handle);
+        xdr.xdrEncodeInt(_gssMajor);
+        xdr.xdrEncodeInt(_gssMinor);
+        xdr.xdrEncodeInt(_sequence);
+        xdr.xdrEncodeDynamicOpaque(_token);
     }
 
 }

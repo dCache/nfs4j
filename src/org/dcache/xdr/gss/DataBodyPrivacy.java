@@ -27,27 +27,27 @@ import org.dcache.xdr.XdrEncodingStream;
  */
 public class DataBodyPrivacy implements XdrAble {
 
-    byte[] data;
+    byte[] _data;
 
     public DataBodyPrivacy() {
     }
 
     public DataBodyPrivacy(byte[] data) {
-        this.data = data;
+        this._data = data;
     }
 
     @Override
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
-        data = xdr.xdrDecodeDynamicOpaque();
+        _data = xdr.xdrDecodeDynamicOpaque();
     }
 
     @Override
     public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
 
-        xdr.xdrEncodeDynamicOpaque(data);
+        xdr.xdrEncodeDynamicOpaque(_data);
     }
 
     public byte[] getData() {
-        return data;
+        return _data;
     }
 }

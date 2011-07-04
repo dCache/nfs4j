@@ -27,29 +27,29 @@ import org.dcache.xdr.XdrEncodingStream;
  */
 public class GSSINITargs implements XdrAble {
 
-    private byte[] token;
+    private byte[] _token;
 
     public byte[] getToken() {
-        return token;
+        return _token;
     }
 
     public void setToken(byte[] token) {
-        this.token = token;
+        this._token = token;
     }
 
     public GSSINITargs() {
     }
 
     public GSSINITargs(byte[] token) {
-        this.token = token;
+        this._token = token;
     }
 
     public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
-        token = xdr.xdrDecodeDynamicOpaque();
+        _token = xdr.xdrDecodeDynamicOpaque();
     }
 
     public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
-        xdr.xdrEncodeDynamicOpaque(token);
+        xdr.xdrEncodeDynamicOpaque(_token);
     }
 
 }
