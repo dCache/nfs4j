@@ -168,9 +168,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_ACL :
                 fattr4_acl acl = new fattr4_acl();
                 acl.xdrDecode(xdr);
-                for(int i = 0; i < acl.value.length; i++ ) {
-                	_log.info("newacl: " + HimeraNFS4Utils.aceToString(acl.value[i]));
-                }
 
                 inode.setAcl(acl.value);
                 inode.setMTime(System.currentTimeMillis());
