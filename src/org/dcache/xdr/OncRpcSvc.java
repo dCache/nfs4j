@@ -212,9 +212,16 @@ public class OncRpcSvc {
         }
     }
 
+    /**
+     * Set {@link GssSessionManager} to handle GSS context if RPCSEG_GSS is used.
+     * If {@code gssSessionManager} is <i>null</i> GSS authentication will be
+     * disabled.
+     * @param gssSessionManager
+     */
     public void setGssSessionManager( GssSessionManager gssSessionManager) {
         _gssSessionManager = gssSessionManager;
     }
+
     /**
      * Start service.
      */

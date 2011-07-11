@@ -60,6 +60,4 @@ public class XdrBuffer extends Xdr {
         _body.flip();
     }
 
-
-
 }

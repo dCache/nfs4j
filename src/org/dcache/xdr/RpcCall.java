@@ -104,6 +104,11 @@ public class RpcCall {
         _rpcvers = RPCVERS;
     }
 
+    /**
+     * Accept message. Have to be called prior processing RPC call.
+     * @throws IOException
+     * @throws OncRpcException
+     */
     public void accept() throws IOException, OncRpcException {
          _rpcvers = _xdr.xdrDecodeInt();
          if (_rpcvers != RPCVERS) {
@@ -151,10 +156,17 @@ public class RpcCall {
         return _transport;
     }
 
+    /**
+     * Get xid associated with this rpc message.
+     */
     public int getXid() {
         return _xid;
     }
 
+    /**
+     * Get {@link Xdr} stream used by this message.
+     * @return xdr stream
+     */
     public Xdr getXdr() {
         return _xdr;
     }

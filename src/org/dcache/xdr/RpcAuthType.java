@@ -17,10 +17,25 @@
 
 package org.dcache.xdr;
 
+/**
+ * RPC message authentication flavor.
+ * @author tigran
+ */
 public interface  RpcAuthType {
 
+    /**
+     * No authentication.
+     */
     static public final int NONE = 0;
+
+    /**
+     * UNIX based authentication.
+     */
     static public final int UNIX = 1;
+
+    /**
+     * GSS API based authentication.
+     */
     static public final int RPCGSS_SEC = 6;
 
 }
