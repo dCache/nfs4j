@@ -52,9 +52,14 @@ public class OncRpcProgram {
         return _version;
     }
 
+    /**
+     * Construct a new OncRpcProgram for with a given program number and version.
+     * @param number
+     * @param version 
+     */
     public OncRpcProgram(int number, int version) {
-        this._number = number;
-        this._version = version;
+        _number = number;
+        _version = version;
     }
 
     @Override
@@ -72,7 +77,7 @@ public class OncRpcProgram {
 
     @Override
     public int hashCode() {
-        return _number;
+        return _number ^ _version;
     }
 
 }
