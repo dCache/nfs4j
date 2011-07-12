@@ -18,7 +18,10 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.io.IOException;
+import com.google.common.collect.MapMaker;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.entry4;
 import org.dcache.chimera.nfs.v4.xdr.dirlist4;
@@ -42,7 +45,6 @@ import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
-import org.dcache.chimera.util.DirectoryListCache;
 import org.dcache.utils.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,15 +90,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
     private static final int DIRLIST4_SIZE = 4 + nfs4_prot.NFS4_VERIFIER_SIZE + 4 + ENTRY4_SIZE + 4;
     private static final int READDIR4RESOK_SIZE = DIRLIST4_SIZE + ENTRY4_SIZE;
 
-
-    private static final DirectoryListCache<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
-        new DirectoryListCache<InodeCacheEntry<verifier4>, List<DirectoryEntry>>();
-
-    /**
-     * for each 100 entries cache lifetime will be increased by 1 second
-     */
-    private final static int READDIR_CACHE_FACTOR = 100;
-
+    private static final ConcurrentMap<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
+            new MapMaker()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .softValues()
+            .maximumSize(512)
+            .makeMap();
 	OperationREADDIR(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_READDIR);
 	}
@@ -168,8 +167,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             if (dirList == null) {
                 _log.debug("No cached list found for {}", dir);
                 dirList = context.getFs().list(dir);
-                _dlCache.add(cacheKey, dirList, dirList.size() / READDIR_CACHE_FACTOR);
+                _dlCache.put(cacheKey, dirList);
+            }else {
+                _log.debug("Cached list found for {}", dir);
             }
+ 
 
             // the cookie==1,2 is reserved
             if( (startValue > dirList.size()+COOKIE_OFFSET) || (startValue < COOKIE_OFFSET) ) {
