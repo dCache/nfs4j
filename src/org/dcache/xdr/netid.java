@@ -32,7 +32,7 @@ public class netid {
         return "0.0.0.0." + (0xFF & port_part[0]) + "." + (0xFF & port_part[1]);
     }
 
-    public static final InetSocketAddress toInetSocketAddress(String str)
+    public static InetSocketAddress toInetSocketAddress(String str)
             throws UnknownHostException {
 
         String[] cb_addr = str.trim().split("[.]");
@@ -54,7 +54,7 @@ public class netid {
 
     }
 
-    public static final int getPort(String str) {
+    public static int getPort(String str) {
 
         String[] cb_addr = str.trim().split("[.]");
 

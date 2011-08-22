@@ -28,7 +28,7 @@ public class SpringRunner {
         // this class it used only to bootstrap the Spring IoC
     }
 
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+    public static void main(String[] args) throws IOException {
         if( args.length != 1 ) {
             System.err.println("Usage: SpringRunner <config>");
             System.exit(1);

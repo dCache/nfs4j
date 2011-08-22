@@ -182,7 +182,7 @@ public class OncRpcSvc {
      * @throws IOException
      * @throws UnknownHostException
      */
-    private void publishToPortmap() throws IOException, UnknownHostException {
+    private void publishToPortmap() throws IOException {
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getLocalHost(),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);

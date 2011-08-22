@@ -36,11 +36,11 @@ public class OncRpcEmbeddedPortmap {
 
     private static final RpcAuth _auth = new RpcAuthTypeNone();
 
-    public  OncRpcEmbeddedPortmap() throws UnknownHostException, IOException {
+    public  OncRpcEmbeddedPortmap() throws IOException {
         this(2000);
     }
 
-    public  OncRpcEmbeddedPortmap(int timeout) throws UnknownHostException, IOException {
+    public  OncRpcEmbeddedPortmap(int timeout) throws IOException {
 
         // we start embedded portmap only if there no other one is running
 

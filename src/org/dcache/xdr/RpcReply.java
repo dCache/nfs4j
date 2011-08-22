@@ -41,7 +41,7 @@ public class RpcReply {
     private RpcAuthVerifier _verf;
     private final XdrTransport _transport;
 
-    public RpcReply(int xid, Xdr xdr, XdrTransport transport) throws RpcException, OncRpcException, IOException {
+    public RpcReply(int xid, Xdr xdr, XdrTransport transport) throws OncRpcException, IOException {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;
