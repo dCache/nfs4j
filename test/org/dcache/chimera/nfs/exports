@@ -10,3 +10,4 @@
 /subnet_b       192.168.2.1/24
 /subnet_c       192.168.2.1/16
 /subnet_bad     192.168.2.1/16/32
+/subnet_ipv6    fe80::21c:c0ff:fea0:caf4/64

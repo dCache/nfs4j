@@ -100,4 +100,22 @@ public class FsExportTest {
         assertFalse("Deny host not recognized", export.isAllowed(deny2));
     }
 
+    @Test
+    public void testSubnets_IPv6() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/subnet_ipv6");
+
+        InetAddress allow = InetAddress.getByName("fe80::21c:c0ff:fea0:caf4");
+
+        assertTrue("Ipv6 Allowed not recognized", export.isAllowed(allow));
+    }
+
+    @Test
+    public void testSubnets_IPv6Bad() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/subnet_ipv6");
+
+        InetAddress deny = InetAddress.getByName("ae80::21c:c0ff:fea0:caf4");
+
+        assertFalse("Deny ipv6 not recognized", export.isAllowed(deny));
+    }
+
 }
