@@ -155,4 +155,12 @@ public class IPMatcherTest {
         assertTrue("failed to match localhost", match);
     }
 
+    @Test
+    public void testIpV6SuccessfulIpNetMatchingFractionedMask() throws UnknownHostException {
+
+        boolean match = IPMatcher.match( InetAddress.getByName("fe80::3FF:F00D:BAD:F00D"),
+                InetAddress.getByName("fe80::0:0:0:0"),70);
+
+        assertTrue("Failed to match host with netmask.", match);
+    }
 }

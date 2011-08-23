@@ -81,31 +81,29 @@ public class IPMatcher {
 
         byte[] ipBytes = ip.getAddress();
         byte[] netBytes = subnet.getAddress();
-        int ipLong = 0;
-        int netLong = 0;
 
-        // create an integer from address bytes
-        ipLong |= (255 & ipBytes[0]);
-        ipLong <<= 8;
-        ipLong |= (255 & ipBytes[1]);
-        ipLong <<= 8;
-        ipLong |= (255 & ipBytes[2]);
-        ipLong <<= 8;
-        ipLong |= (255 & ipBytes[3]);
+        int maskLen = ipBytes.length * 8;
+        if(mask > maskLen || mask < 0)
+            throw new IllegalArgumentException("Invalid mask: " + mask);
 
-        netLong |= (255 & netBytes[0]);
-        netLong <<= 8;
-        netLong |= (255 & netBytes[1]);
-        netLong <<= 8;
-        netLong |= (255 & netBytes[2]);
-        netLong <<= 8;
-        netLong |= (255 & netBytes[3]);
+        /*
+         * check that all full bytes matching and then compare last bits, e.g.
+         * for netmask /25 compare that first 3 bytes are equal and then check
+         * last bit.
+         */
+        int fullBytes = (mask / 8);
+        for(int i = 0; i < fullBytes; i++) {
+            if(ipBytes[i] != netBytes[i])
+                return false;
+        }
 
-        // first mask bits from left should be the same
-        ipLong  = ipLong >> (32 - mask);
-        netLong = netLong >> (32 - mask);
+        int lastBits = mask % 8;
 
-        return ipLong ==  netLong ;
+        /*
+         * if there are no partial defined bytes we are done, other vise check them.
+         */
+        return lastBits == 0 ? true :
+                (ipBytes[fullBytes] >> (8 - lastBits)) == (netBytes[fullBytes] >> (8 - lastBits));
     }
 
 
