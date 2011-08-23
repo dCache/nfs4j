@@ -110,10 +110,29 @@ public class IPMatcherTest {
 
 
         boolean match = IPMatcher.match( InetAddress.getByName("131.169.214.0") ,
-                InetAddress.getByName("131.169.40.255") ,
-                16);
+                InetAddress.getByName("131.169.40.255"), 16);
 
         assertTrue("failed to match host by netmask", match);
+    }
+
+    @Test
+    public void testIpBased2() throws UnknownHostException {
+
+
+        boolean match = IPMatcher.match( InetAddress.getByName("131.169.40.16") ,
+                InetAddress.getByName("131.169.40.0"), 28);
+
+        assertFalse("Wrong subnet matched", match);
+    }
+
+    @Test
+    public void testIpBased3() throws UnknownHostException {
+
+
+        boolean match = IPMatcher.match( InetAddress.getByName("131.169.40.15") ,
+                InetAddress.getByName("131.169.40.0"), 28);
+
+        assertTrue("subnet not matched", match);
     }
 
     @Test
