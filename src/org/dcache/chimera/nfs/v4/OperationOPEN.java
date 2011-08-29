@@ -108,14 +108,15 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_EXIST, "file already exist");
                             }
 
-                            _log.debug("Opening existing file: {}", name);
-
-                            _log.trace("Check permission");
-                            // check file permissions
                             Stat fileStat = inode.statCache();
-                            _log.debug("UID  : {}", fileStat.getUid());
-                            _log.debug("GID  : {}", fileStat.getGid());
-                            _log.debug("Mode : 0{}", Integer.toOctalString(fileStat.getMode() & 0777));
+                            _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
+                                    new Object[] {
+                                        name,
+                                        fileStat.getUid(),
+                                        fileStat.getGid(),
+                                        Integer.toOctalString(fileStat.getMode() & 0777)
+                                    } );
+
                             UnixAcl fileAcl = new UnixAcl(fileStat.getUid(), fileStat.getGid(), fileStat.getMode() & 0777);
                             if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
                                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
@@ -136,7 +137,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                     name, context.getUser().getUID(),
                                     context.getUser().getGID(), 0600);
 
-                            // FIXME: proper implemtation required
+                            // FIXME: proper implementation required
                             switch (_args.opopen.openhow.how.mode) {
                                 case createmode4.UNCHECKED4:
                                 case createmode4.GUARDED4:
