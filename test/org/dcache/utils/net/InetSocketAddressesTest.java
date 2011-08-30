@@ -1,5 +1,6 @@
 package org.dcache.utils.net;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -31,7 +32,26 @@ public class InetSocketAddressesTest {
         String uaddr = "127.0.0.1.203.81";
         InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("127.0.0.1"),52049);
 
-        assertEquals("reverce convertion failed", uaddr,
+        assertEquals("reverse conversion failed", uaddr,
                 InetSocketAddresses.uaddrOf(socketAddress));
     }
+
+    @Test
+    public void testHostAndPortIpv4() throws Exception {
+        String hostAndPort = "127.0.0.1:1111";
+        InetSocketAddress address = InetSocketAddresses.inetAddressOf(hostAndPort);
+
+        assertEquals(InetAddress.getByName("127.0.0.1"), address.getAddress());
+        assertEquals(1111, address.getPort());
+    }
+
+    @Test
+    public void testHostAndPortIpv6() throws Exception {
+        String hostAndPort = "[fe80::21c:c0ff:fea0:caf4]:1111";
+        InetSocketAddress address = InetSocketAddresses.inetAddressOf(hostAndPort);
+
+        assertEquals( InetAddress.getByName("fe80::21c:c0ff:fea0:caf4"), address.getAddress());
+        assertEquals(1111, address.getPort());
+    }
+
 }

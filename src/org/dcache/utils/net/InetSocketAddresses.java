@@ -21,6 +21,9 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.google.common.net.InetAddresses;
 /**
  * Utility class for InetSocketAddress manipulations.
@@ -30,6 +33,9 @@ public class InetSocketAddresses {
 
     /* utility class. No instances are allowed */
     private InetSocketAddresses() {}
+
+    // TODO: switch to guava r10 when it released
+    private static final Pattern BRACKET_PATTERN = Pattern.compile("^\\[(.*:.*)\\](?::(\\d*))?$");
 
     /**
      * Convert UADDR string into {@link InetSocketAddress} as defined in rfc5665.
@@ -87,17 +93,46 @@ public class InetSocketAddresses {
     /**
      * Convert a {@link String} in a form <code>host:port</code>
      * into corresponding {@link InetSocketAddress}.
+     * The host can be in the one following notations:
+     * <pre>
+     *     ipv4:port
+     *     [ipv6]:port
+     *     hostname:port
+     * </pre>
      * @param address
      * @return socketAddress
+     * @throws IllegalArgumentException if <code>address</code> doesn't match expected format.
      */
-    public static InetSocketAddress inetAddressOf(String address) {
-        int colom = address.indexOf(":");
-        if (colom < 0) {
+    public static InetSocketAddress inetAddressOf(String address) throws IllegalArgumentException {
+
+        String host;
+        String portStr;
+        int port;
+        if( address.charAt(0) == '[' ){
+            Matcher matcher = BRACKET_PATTERN.matcher(address);
+            if( !matcher.matches() || matcher.groupCount() != 2 ){
+                throw new IllegalArgumentException("invalid host:port format");
+            }
+            host = matcher.group(1);
+            portStr = matcher.group(2);
+        }else{
+
+            int colom = address.indexOf(":");
+            if( colom < 0 ){
+                throw new IllegalArgumentException("invalid host:port format");
+            }
+
+            host = address.substring(0, colom);
+            portStr = address.substring(colom + 1);
+        }
+
+        try{
+            port = Integer.parseInt(portStr);
+        }catch( NumberFormatException e ){
             throw new IllegalArgumentException("invalid host:port format");
         }
 
-        return new InetSocketAddress(address.substring(0, colom),
-                Integer.parseInt(address.substring(colom + 1)));
+        return new InetSocketAddress(host, port);
     }
 
     /**
