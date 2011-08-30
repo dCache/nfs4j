@@ -17,6 +17,8 @@
 package org.dcache.utils.net;
 
 import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import com.google.common.net.InetAddresses;
@@ -56,7 +58,7 @@ public class InetSocketAddresses {
      * Additionally, the two alternative forms specified in Section 2.2
      * of RFC 4291 are also acceptable.
      * </pre>
-     * @param address
+     * @param uaddr
      * @return socket address
      * @throws UnknownHostException
      */
@@ -123,4 +125,21 @@ public class InetSocketAddresses {
     public static String uaddrOf(String host, int port) {
         return uaddrOf( new InetSocketAddress(host, port));
     }
+
+    /**
+     * Get netid type for given {@link InetAddress}.
+     *
+     * @param address
+     * @return string corresponding to netid.
+     * @throws IllegalArgumentException in case of address type is unsupported.
+     */
+    public static String tcpNetidOf(InetAddress address) {
+        if( address instanceof Inet4Address ){
+            return "tcp";
+        }else if( address instanceof Inet6Address ){
+            return "tcp6";
+        }
+        throw new IllegalArgumentException("unsupported inet type: " + address.getClass().getName());
+    }
+
 }
