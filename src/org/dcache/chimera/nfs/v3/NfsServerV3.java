@@ -292,18 +292,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
         _log.debug("NFS Request CREATE3 uid: {}", user);
 
         CREATE3res res = new CREATE3res();
-
-        Inode parent = _fs.inodeOf(arg1.where.dir.data);
         String path = arg1.where.name.value;
-
-        sattr3 newAttr = null;
-        int mode = arg1.how.mode;
-
-        if ((mode == createmode3.UNCHECKED) || (mode == createmode3.GUARDED)) {
-            newAttr = arg1.how.obj_attributes;
-        }
-
         try {
+            Inode parent = _fs.inodeOf(arg1.where.dir.data);
+
+            sattr3 newAttr = null;
+            int mode = arg1.how.mode;
+
+            if ((mode == createmode3.UNCHECKED) || (mode == createmode3.GUARDED)) {
+                newAttr = arg1.how.obj_attributes;
+            }
 
             Inode inode = null;
             Stat inodeStat = new Stat();
@@ -410,9 +408,9 @@ public class NfsServerV3 extends nfs3_protServerStub {
         _log.debug("NFS Request FSINFO from: {}", user);
 
         FSINFO3res res = new FSINFO3res();
-        Inode inode = _fs.inodeOf(arg1.fsroot.data);
-        try {
 
+        try {
+            Inode inode = _fs.inodeOf(arg1.fsroot.data);
             res.status = nfsstat3.NFS3_OK;
             res.resok = new FSINFO3resok();
 
@@ -528,10 +526,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         GETATTR3res res = new GETATTR3res();
 
-        Inode inode = _fs.inodeOf(arg1.object.data);
-        _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
+        try{
+            Inode inode = _fs.inodeOf(arg1.object.data);
+            _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
 
-        try {
             res.status = nfsstat3.NFS3_OK;
             res.resok = new GETATTR3resok();
 
@@ -562,14 +560,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
 
         LINK3res res = new LINK3res();
-
-        Inode parent = _fs.inodeOf(arg1.link.dir.data);
-        String name = arg1.link.name.value;
-
-        Inode hlink = _fs.inodeOf(arg1.file.data);
-
         try {
 
+            Inode parent = _fs.inodeOf(arg1.link.dir.data);
+            String name = arg1.link.name.value;
+
+            Inode hlink = _fs.inodeOf(arg1.file.data);
 
             Inode inode = null;
             boolean exists = true;
@@ -638,12 +634,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         LOOKUP3res res = new LOOKUP3res();
 
-        Inode parent = _fs.inodeOf(arg1.what.dir.data);
-        String name = arg1.what.name.value;
-
-        Inode inode = null;
-
         try {
+            Inode parent = _fs.inodeOf(arg1.what.dir.data);
+            String name = arg1.what.name.value;
+
+            Inode inode = null;
 
             try {
                 inode = _fs.inodeOf(parent, name);
@@ -686,9 +681,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
 
-        _log.debug("LOOKUP for {} in {}: {}",
-                new Object[]{name, parent.toString(), inode});
-
         if ((res.status != nfsstat3.NFS3_OK) && (res.status != nfsstat3.NFS3ERR_NOENT)) {
             _log.error("lookup {}", HimeraNfsUtils.nfsErr2String(res.status));
         }
@@ -702,13 +694,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
         _log.debug("NFS Request MKDIR3 uid: {}", user);
 
         MKDIR3res res = new MKDIR3res();
-
-        Inode parent = _fs.inodeOf(arg1.where.dir.data);
-
-        String name = arg1.where.name.value;
-        sattr3 attr = arg1.attributes;
-
         try {
+            Inode parent = _fs.inodeOf(arg1.where.dir.data);
+
+            String name = arg1.where.name.value;
+            sattr3 attr = arg1.attributes;
 
             Stat parentStat = parent.statCache();
 
@@ -1192,11 +1182,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         READ3res res = new READ3res();
 
-        Inode inode = _fs.inodeOf(arg1.file.data);
-        long offset = arg1.offset.value.value;
-        int count = arg1.count.value.value;
-
         try {
+            Inode inode = _fs.inodeOf(arg1.file.data);
+            long offset = arg1.offset.value.value;
+            int count = arg1.count.value.value;
 
             UnixUser user = NfsUser.remoteUser(call$, _exports);
             Stat inodeStat = inode.statCache();
@@ -1258,14 +1247,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
         UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request REMOVE3 uid: {}", user);
 
-
         REMOVE3res res = new REMOVE3res();
 
-        Inode parent = _fs.inodeOf(arg1.object.dir.data);
-
-        String name = arg1.object.name.value;
-
         try {
+            Inode parent = _fs.inodeOf(arg1.object.dir.data);
+
+            String name = arg1.object.name.value;
 
             Stat inodeStat = null;
             Stat parentStat = null;
@@ -1333,13 +1320,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         RENAME3res res = new RENAME3res();
 
-        Inode from = _fs.inodeOf(arg1.from.dir.data);
-        String file1 = arg1.from.name.value;
-
-        Inode to = _fs.inodeOf(arg1.to.dir.data);
-        String file2 = arg1.to.name.value;
-
         try {
+            Inode from = _fs.inodeOf(arg1.from.dir.data);
+            String file1 = arg1.from.name.value;
+
+            Inode to = _fs.inodeOf(arg1.to.dir.data);
+            String file2 = arg1.to.name.value;
 
             Stat fromStat = from.stat();
             Stat toStat = to.stat();
@@ -1401,13 +1387,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
         UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request RMDIR3 uid: {}", user);
 
-
         RMDIR3res res = new RMDIR3res();
 
-        Inode parent = _fs.inodeOf(arg1.object.dir.data);
-        String file = arg1.object.name.value;
-
         try {
+            Inode parent = _fs.inodeOf(arg1.object.dir.data);
+            String file = arg1.object.name.value;
 
             Inode inode = _fs.inodeOf(parent, file);
             Stat inodeStat = inode.statCache();
@@ -1467,13 +1451,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
         UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request SETATTR3 uid: {}", user);
 
-
         SETATTR3res res = new SETATTR3res();
 
-        Inode inode = _fs.inodeOf(arg1.object.data);
-        sattr3 newAttr = arg1.new_attributes;
-
         try {
+            Inode inode = _fs.inodeOf(arg1.object.data);
+            sattr3 newAttr = arg1.new_attributes;
 
             Stat stat = null;
             try {
@@ -1525,14 +1507,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         SYMLINK3res res = new SYMLINK3res();
 
-        Inode parent = _fs.inodeOf(arg1.where.dir.data);
-        String file = arg1.where.name.value;
-
-        String link = arg1.symlink.symlink_data.value;
-        sattr3 linkAttr = arg1.symlink.symlink_attributes;
-
         try {
 
+            Inode parent = _fs.inodeOf(arg1.where.dir.data);
+            String file = arg1.where.name.value;
+
+            String link = arg1.symlink.symlink_data.value;
+            sattr3 linkAttr = arg1.symlink.symlink_attributes;
 
             Inode inode = null;
             boolean exists = true;
@@ -1608,11 +1589,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         WRITE3res res = new WRITE3res();
 
-        Inode inode = _fs.inodeOf(arg1.file.data);
-        long offset = arg1.offset.value.value;
-        int count = arg1.count.value.value;
-
         try {
+            Inode inode = _fs.inodeOf(arg1.file.data);
+            long offset = arg1.offset.value.value;
+            int count = arg1.count.value.value;
+
             Stat inodeStat = inode.statCache();
 
             UnixUser user = NfsUser.remoteUser(call$, _exports);
