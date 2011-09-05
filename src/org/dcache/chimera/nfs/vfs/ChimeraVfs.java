@@ -28,7 +28,6 @@ import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
-import org.dcache.chimera.nfs.NFSHandle;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 import org.dcache.chimera.posix.Stat;
 
@@ -49,8 +48,8 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(final byte[] fh) {
-        return toInode(NFSHandle.toFsInode(_fs, fh));
+    public Inode inodeOf(final byte[] fh) throws IOException {
+        return toInode(_fs.inodeFromBytes(fh));
     }
 
     @Override
@@ -138,7 +137,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode parentOf(Inode inode) {
+    public Inode parentOf(Inode inode) throws IOException {
         return toInode(toFsInode(inode).getParent());
     }
 
@@ -147,8 +146,8 @@ public class ChimeraVfs implements VirtualFileSystem {
         return _fs.getFsStat();
     }
 
-    private FsInode toFsInode(Inode inode) {
-        return NFSHandle.toFsInode(_fs, inode.toFileHandle());
+    private FsInode toFsInode(Inode inode) throws IOException {
+        return _fs.inodeFromBytes(inode.toFileHandle());
     }
 
     private Inode toInode(final FsInode inode) {
@@ -156,8 +155,8 @@ public class ChimeraVfs implements VirtualFileSystem {
         return new Inode() {
 
             @Override
-            public byte[] toFileHandle() {
-                return inode.toFullString().getBytes();
+            public byte[] toFileHandle() throws IOException {
+                return _fs.inodeToBytes(inode);
             }
 
             @Override
@@ -245,7 +244,11 @@ public class ChimeraVfs implements VirtualFileSystem {
                     return false;
                 }
                 Inode other = (Inode) obj;
-                return Arrays.equals(this.toFileHandle(), other.toFileHandle());
+                try {
+                    return Arrays.equals(this.toFileHandle(), other.toFileHandle());
+                }catch(IOException e) {
+                    return false;
+                }
             }
 
             @Override

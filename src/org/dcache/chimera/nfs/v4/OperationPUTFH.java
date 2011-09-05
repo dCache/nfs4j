@@ -21,7 +21,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.PUTFH4res;
-import org.dcache.chimera.nfs.NFSHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

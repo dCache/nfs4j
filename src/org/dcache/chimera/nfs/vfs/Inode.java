@@ -34,7 +34,7 @@ public interface Inode {
         SOCK
     }
 
-    public byte[] toFileHandle();
+    public byte[] toFileHandle() throws IOException;
 
     public boolean exists();
 
