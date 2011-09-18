@@ -28,7 +28,7 @@ public class NFSv4StateHandlerTest {
     }
 
     static NFS4Client createClient() throws UnknownHostException {
-        InetSocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), 123);
+        InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("www.google.com"), 123);
         NFS4Client client = new NFS4Client(address, address, "123".getBytes(),
             new verifier4("123".getBytes()), null);
         return client;
