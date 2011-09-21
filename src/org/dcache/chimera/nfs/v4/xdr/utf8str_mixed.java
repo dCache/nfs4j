@@ -33,5 +33,9 @@ public class utf8str_mixed implements XdrAble {
         value = new utf8string(xdr);
     }
 
+    @Override
+    public String toString() {
+        return value.toString();
+    }
 }
 // End of utf8str_mixed.java
