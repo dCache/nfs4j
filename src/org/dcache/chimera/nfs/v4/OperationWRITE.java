@@ -31,6 +31,7 @@ import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 
 import org.dcache.chimera.IOHimeraFsException;
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
@@ -47,7 +48,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 	}
 
 	@Override
-	public boolean process(CompoundContext context) {
+	public nfs_resop4 process(CompoundContext context) {
 
 		WRITE4res res = new WRITE4res();
 
@@ -111,9 +112,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
     	}
 
        _result.opwrite = res;
-
-            context.processedOperations().add(_result);
-            return res.status == nfsstat4.NFS4_OK;
+            return _result;
 
 	}
 

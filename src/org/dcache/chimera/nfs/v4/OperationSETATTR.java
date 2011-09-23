@@ -37,6 +37,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
@@ -56,7 +57,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 	}
 
 	@Override
-	public boolean process(CompoundContext context) {
+	public nfs_resop4 process(CompoundContext context) {
 
 
     	SETATTR4res res = new SETATTR4res();
@@ -86,9 +87,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
 
         _result.opsetattr = res;
-
-            context.processedOperations().add(_result);
-            return res.status == nfsstat4.NFS4_OK;
+            return _result;
 
 	}
 

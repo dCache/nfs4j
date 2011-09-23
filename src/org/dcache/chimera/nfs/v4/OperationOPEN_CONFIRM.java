@@ -24,7 +24,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4resok;
 import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.FsInode;
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 	}
 
 	@Override
-	public boolean process(CompoundContext context) {
+	public nfs_resop4 process(CompoundContext context) {
 
 
         OPEN_CONFIRM4res res = new OPEN_CONFIRM4res();
@@ -85,9 +85,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         }
 
         _result.opopen_confirm = res;
-
-            context.processedOperations().add(_result);
-            return res.status == nfsstat4.NFS4_OK;
+            return _result;
 
 	}
 

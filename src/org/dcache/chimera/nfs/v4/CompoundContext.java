@@ -44,7 +44,6 @@ public class CompoundContext {
     private final int _minorversion;
 
     private NFSv41Session _session = null;
-    private final List<nfs_resop4> _processedOps;
 
     private final VirtualFileSystem _fs;
     private final RpcCall _callInfo;
@@ -54,6 +53,10 @@ public class CompoundContext {
     private final AclHandler _aclHandler;
     private final NFSv4StateHandler _stateHandler;
     private final NfsIdMapping _idMapping;
+    private int _slotId;
+    private boolean _cacheThis;
+    private final int _totalOperationsCount;
+    private int _curretOpPosition = -1;
 
     /**
      * Create context of COUMPOUND request.
@@ -64,12 +67,11 @@ public class CompoundContext {
      * @param call RPC call
      * @param exportFile list of servers exports.
      */
-    public CompoundContext(List<nfs_resop4> processedOps, int minorversion, VirtualFileSystem fs,
+    public CompoundContext(int minorversion, VirtualFileSystem fs,
             NFSv4StateHandler stateHandler,
             NFSv41DeviceManager deviceManager, AclHandler aclHandler, RpcCall call,
             NfsIdMapping idMapping,
-            ExportFile exportFile) {
-        _processedOps = processedOps;
+            ExportFile exportFile, int opCount) {
         _minorversion = minorversion;
         _fs = fs;
         _deviceManager = deviceManager;
@@ -79,6 +81,7 @@ public class CompoundContext {
         _user = NfsUser.remoteUser(_callInfo, _exportFile);
         _stateHandler = stateHandler;
         _idMapping = idMapping;
+        _totalOperationsCount = opCount;
     }
 
     public RpcCall getRpcCall() {
@@ -202,19 +205,50 @@ public class CompoundContext {
         return _session;
     }
 
-    /**
-     * Get list of currently processed operations.
-     * @return list of operations.
-     */
-    public List<nfs_resop4> processedOperations() {
-        return _processedOps;
-    }
-
     public NFSv4StateHandler getStateHandler() {
         return _stateHandler;
     }
 
     public NfsIdMapping getIdMapping() {
         return _idMapping;
+    }
+
+    public int getSlotId() {
+        return _slotId;
+    }
+
+    public void setSlotId(int slotId) {
+        _slotId = slotId;
+    }
+
+    public boolean cacheThis() {
+        return _cacheThis;
+    }
+
+    public void setCacheThis(boolean cacheThis) {
+        _cacheThis = cacheThis;
+    }
+
+    private List<nfs_resop4> _cache;
+
+    public List<nfs_resop4> getCache() {
+        return _cache;
+    }
+
+    public void setCache(List<nfs_resop4> cache) {
+        _cache = cache;
+    }
+
+    public int getOperationPosition() {
+        return _curretOpPosition;
+    }
+
+    public int getTotalOperationCount() {
+        return _totalOperationsCount;
+    }
+
+    public void nextOperation() {
+        assert _curretOpPosition < _totalOperationsCount;
+        _curretOpPosition ++;
     }
 }

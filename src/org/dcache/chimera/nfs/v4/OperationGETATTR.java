@@ -95,9 +95,9 @@ import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.chimera.FsStat;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
-import org.dcache.chimera.nfs.v4.acl.Ace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +110,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 	}
 
 	@Override
-	public boolean process(CompoundContext context) {
+	public nfs_resop4 process(CompoundContext context) {
 
         GETATTR4res res = new GETATTR4res();
 
@@ -131,9 +131,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
 
         _result.opgetattr = res;
-
-            context.processedOperations().add(_result);
-            return res.status == nfsstat4.NFS4_OK;
+            return _result;
 
 	}
 

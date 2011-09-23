@@ -43,6 +43,7 @@ import java.security.ProtectionDomain;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +107,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
     }
 
     @Override
-    public boolean process(CompoundContext context) {
+    public nfs_resop4 process(CompoundContext context) {
 
         EXCHANGE_ID4res res = new EXCHANGE_ID4res();
 
@@ -274,8 +275,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
 
        _result.opexchange_id = res;
-        context.processedOperations().add(_result);
-        return res.eir_status == nfsstat4.NFS4_OK;
+        return _result;
     }
 
 }
