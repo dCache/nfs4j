@@ -76,17 +76,17 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
         try {
 
-            _log.debug("NFS COMPOUND client: {}, tag: [{}]",
-                    call$.getTransport().getRemoteSocketAddress(),
-                    new String(arg1.tag.value.value));
-
             /*
-             * here we have to checkfor utf8, but it's too much work to keep
+             * here we have to checkfor utf8, but it's too much overhead to keep
              * spec happy.
              */
             String tag = new String(arg1.tag.value.value);
             MDC.put(NfsMdc.TAG, tag);
             MDC.put(NfsMdc.CLIENT, call$.getTransport().getRemoteSocketAddress().toString());
+
+            _log.debug("NFS COMPOUND client: {}, tag: [{}]",
+                    call$.getTransport().getRemoteSocketAddress(),
+                    tag);
 
             int minorversion = arg1.minorversion.value;
             if ( minorversion > 1) {
