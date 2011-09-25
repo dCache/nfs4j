@@ -202,11 +202,6 @@
     -->
     <dependencies>
         <dependency>
-            <groupId>com.sun.grizzly</groupId>
-            <artifactId>grizzly-framework</artifactId>
-            <version>1.9.19</version>
-        </dependency>
-        <dependency>
             <groupId>com.jolbox</groupId>
             <artifactId>bonecp</artifactId>
             <version>0.7.1.RELEASE</version>
@@ -257,6 +252,11 @@
             <artifactId>liquibase-core</artifactId>
             <version>2.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.dcache</groupId>
+            <artifactId>nio-jrpc</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!--
             LOCAL JARS
         -->
@@ -265,16 +265,6 @@
             <artifactId>chimera-core</artifactId>
             <version>0.0.12-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.dcache.common</groupId>
-            <artifactId>dcache-auth</artifactId>
-            <version>0.0.10-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>3.0.9</version>
-          </dependency>
     </dependencies>
 
     <!--
