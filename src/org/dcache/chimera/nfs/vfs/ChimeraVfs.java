@@ -255,6 +255,11 @@ public class ChimeraVfs implements VirtualFileSystem {
             public int hashCode() {
                 return inode.hashCode();
             }
+
+            @Override
+            public String toString() {
+                return inode.toString();
+            }
         };
     }
 
