@@ -94,10 +94,15 @@
         <constructor-arg value="mds"/>
     </bean>
 
+    <!-- create data directory for DS -->
+    <bean id="ds-data-dir" class="java.io.File" init-method="mkdirs">
+        <constructor-arg value="${ds.base}" />
+    </bean>
     <!--
         NFSv4.1 Operation factory
     -->
-    <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.mover.DSOperationFactory">
+    <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.mover.DSOperationFactory"
+        depends-on="ds-data-dir">
         <description>DS operation factory</description>
         <constructor-arg value="${ds.base}" />
     </bean>
