@@ -200,7 +200,6 @@
         <description>Onc RPC service FOR DS</description>
         <constructor-arg type="int" value="${ds.port}"/>
         <constructor-arg type="boolean" value="false"/>
-        <constructor-arg type="String" value="oncrpcsvc-ds"/>
         <property name="programs">
             <map>
                 <entry key-ref="nfsv4-programm" value-ref="ds"/>
