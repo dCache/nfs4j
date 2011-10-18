@@ -98,9 +98,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         int[] mask = new int[attributes.attrmask.value.length];
         for( int i = 0; i < mask.length; i++) {
             mask[i] = attributes.attrmask.value[i].value;
-            _log.debug("setAttributes[{}]: {}",
-                    new Object[] {i, Integer.toBinaryString(mask[i])}
-            );
+            _log.debug("setAttributes[{}]: {}", i, Integer.toBinaryString(mask[i]));
         }
 
         XdrDecodingStream xdr = new XdrBuffer( ByteBuffer.wrap(attributes.attr_vals.value));
@@ -114,15 +112,11 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 int newmask = (mask[i/32] >> (i-(32*(i/32))) );
                 if( (newmask & 1L) != 0 ) {
                     if( xdr2fattr(i, inode, context, xdr) ) {
-                        _log.debug("   setAttributes : {} ({}) OK",
-                            new Object[] {i, OperationGETATTR.attrMask2String(i)}
-                        );
+                        _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
                         int attrmask = 1 << (i-(32*(i/32)));
                         retMask[i/32] |= attrmask;
                     }else{
-                        _log.debug("   setAttributes : {} ({}) NOT SUPPORTED",
-                            new Object[] {i, OperationGETATTR.attrMask2String(i)}
-                        );
+                        _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
                         throw new ChimeraNFSException( nfsstat4.NFS4ERR_ATTRNOTSUPP, "attribute "+ OperationGETATTR.attrMask2String(i) +" not supported");
                     }
                 }

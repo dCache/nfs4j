@@ -140,8 +140,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         int[] mask = new int[bitmap.value.length];
         for( int i = 0; i < mask.length; i++) {
             mask[i] = bitmap.value[i].value;
-            _log.debug("getAttributes[{}]: {}",
-                    new Object[] { i, Integer.toBinaryString(mask[i])} );
+            _log.debug("getAttributes[{}]: {}", i, Integer.toBinaryString(mask[i]) );
         }
 
         int[] retMask = new int[mask.length];
@@ -157,14 +156,12 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 if( (newmask & 1) > 0 ) {
                         XdrAble attrXdr = fattr2xdr(i, fs, inode, context);
                         if( attrXdr != null) {
-                            _log.debug("   getAttributes : {} ({}) OK.",
-                                    new Object[] { i, attrMask2String(i)} );
+                            _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i) );
                             attrXdr.xdrEncode(xdr);
                             int attrmask = 1 << (i-(32*(i/32)));
                             retMask[i/32] |= attrmask;
                         }else{
-                            _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.",
-                                    new Object[] { i, attrMask2String(i)} );
+                            _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.", i, attrMask2String(i) );
                         }
                 }
 
@@ -181,8 +178,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         attributes.attrmask.value = new uint32_t[retMask.length];
         for( int i = 0; i < retMask.length; i++) {
             attributes.attrmask.value[i] = new uint32_t(retMask[i]);
-            _log.debug("getAttributes[{}] reply : {}",
-                    new Object[] { i, Integer.toBinaryString(retMask[i])} );
+            _log.debug("getAttributes[{}] reply : {}", i, Integer.toBinaryString(retMask[i]) );
 
         }
         attributes.attr_vals = new attrlist4(retBytes);
@@ -753,7 +749,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = nfs_ftype4.NF4FIFO;
                 break;
             default:
-                _log.info("Unknown mode [" + Integer.toOctalString(type) +"]");
+                _log.info("Unknown mode [{}]",  Integer.toOctalString(type));
                 ret = 0;
 
         }

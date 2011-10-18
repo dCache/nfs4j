@@ -70,9 +70,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_BADNAME, "bad name '.' or '..'");
         }
 
-        _log.debug("REMOVE: {} : {}",
-                new Object[] {parentInode.toString(), name}
-        );
+        _log.debug("REMOVE: {} : {}", parentInode.toString(), name);
 
 
 	    Stat inodeStat = context.getFs().inodeOf(context.currentInode(), name).statCache();
