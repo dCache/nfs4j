@@ -47,7 +47,7 @@ public class CreateSessionStub {
 
         op.opcreate_session.csa_clientid = eir_clientid;
         op.opcreate_session.csa_sequence = eir_sequenceid;
-        op.opcreate_session.csa_flags = new uint32_t(0);
+        op.opcreate_session.csa_flags = new uint32_t(nfs4_prot.CREATE_SESSION4_FLAG_PERSIST);
         op.opcreate_session.csa_fore_chan_attrs = chan_attrs;
         op.opcreate_session.csa_back_chan_attrs = chan_attrs;
         op.opcreate_session.csa_cb_program = new uint32_t(123);

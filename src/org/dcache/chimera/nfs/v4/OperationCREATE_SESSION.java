@@ -31,6 +31,12 @@ import org.slf4j.LoggerFactory;
 
 public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
+    /*
+     * no nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
+     * no nfs4_prot.CREATE_SESSION4_FLAG_PERSIST;
+     * no nfs4_prot.CREATE_SESSION4_FLAG_CONN_RDMA;
+     */
+    private final static int SUPPORTED_SESSION_FLAGS = 0;
 
         private static final Logger _log = LoggerFactory.getLogger(OperationCREATE_SESSION.class);
 
@@ -110,8 +116,14 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 res.csr_resok4.csr_sessionid = session.id();
 	    	res.csr_resok4.csr_sequence = _args.opcreate_session.csa_sequence;
 
-	    	/* we do not support callback connections on the same line*/
-	    	res.csr_resok4.csr_flags = new uint32_t( _args.opcreate_session.csa_flags.value ^ nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN);
+                /*
+                 * no callback connections on the same line,
+                 * no persistent sessions
+                 * no RDMA
+                 */
+	    	res.csr_resok4.csr_flags = new uint32_t(
+                        _args.opcreate_session.csa_flags.value & SUPPORTED_SESSION_FLAGS);
+
 	    	/*res.csr_resok4.csr_headerpadsize = _args.opcreate_session.csa_headerpadsize;
 
 	    	res.csr_resok4.csr_conn_binding_opts = new conn_binding4res();
