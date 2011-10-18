@@ -189,6 +189,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 case nfs_opnum4.OP_CREATE_SESSION:
                 case nfs_opnum4.OP_EXCHANGE_ID:
                 case nfs_opnum4.OP_DESTROY_SESSION:
+                case nfs_opnum4.OP_DESTROY_CLIENTID:
                     break;
                 default:
                     throw new ChimeraNFSException(nfsstat4.NFS4ERR_OP_NOT_IN_SESSION, "not in session");

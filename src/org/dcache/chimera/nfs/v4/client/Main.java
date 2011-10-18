@@ -318,6 +318,7 @@ public class Main {
 
                 if (nfsClient != null) {
                     nfsClient.destroy_session();
+                    nfsClient.destroy_clientid();
                 }
                 timer.purge();
                 System.exit(0);
@@ -435,6 +436,7 @@ public class Main {
 
     public void umount() throws OncRpcException, IOException {
         destroy_session();
+        destroy_clientid();
     }
 
     private void exchange_id() throws OncRpcException, IOException {
@@ -509,6 +511,15 @@ public class Main {
         ops.add(DestroySessionStub.standard(_sessionid));
         @SuppressWarnings("unused")
         COMPOUND4res compound4res = sendCompound(ops, "destroy_session");
+    }
+
+    private void destroy_clientid() throws OncRpcException, IOException {
+
+        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+
+        ops.add(DestroyClientidStub.generate(_clientIdByServer));
+        @SuppressWarnings("unused")
+        COMPOUND4res compound4res = sendCompound(ops, "destroy_clientid");
         _nfsClient.close();
 
     }
