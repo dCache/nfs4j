@@ -246,10 +246,9 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             res.eir_resok4.eir_sequenceid = new sequenceid4( new uint32_t(client.currentSeqID() ));
             res.eir_resok4.eir_flags = new uint32_t(_flag);
 
-            res.eir_resok4.eir_server_owner = new server_owner4();
-            res.eir_resok4.eir_server_owner.so_minor_id = new uint64_t(17);
-            res.eir_resok4.eir_server_owner.so_major_id = "Chimera".getBytes();
-            res.eir_resok4.eir_server_scope = "Chimera".getBytes();
+            ServerIdProvider serverIdProvider = context.getServerIdProvider();
+            res.eir_resok4.eir_server_owner = serverIdProvider.getOwner();
+            res.eir_resok4.eir_server_scope = serverIdProvider.getScope();
 
             res.eir_resok4.eir_server_impl_id = new nfs_impl_id4[1];
             res.eir_resok4.eir_server_impl_id[0] = new nfs_impl_id4();

@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.NfsUser;
+import org.dcache.chimera.nfs.v4.xdr.server_owner4;
+import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 
 
@@ -250,5 +252,28 @@ public class CompoundContext {
     public void nextOperation() {
         assert _curretOpPosition < _totalOperationsCount;
         _curretOpPosition ++;
+    }
+
+    public ServerIdProvider getServerIdProvider() {
+        // FIXME: bond to file system and DS
+        return new ServerIdProvider() {
+
+            @Override
+            public server_owner4 getOwner() {
+                server_owner4 owner = new server_owner4();
+                owner.so_minor_id = new uint64_t(0);
+                owner.so_major_id = _callInfo.
+                        getTransport().
+                        getLocalSocketAddress().
+                        getAddress().
+                        getAddress();
+                return owner;
+            }
+
+            @Override
+            public byte[] getScope() {
+                return "".getBytes();
+            }
+        };
     }
 }
