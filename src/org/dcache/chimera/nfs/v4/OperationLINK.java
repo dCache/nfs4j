@@ -35,45 +35,42 @@ import org.slf4j.LoggerFactory;
 
 public class OperationLINK extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationLINK.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationLINK.class);
 
-	OperationLINK(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_LINK);
-	}
+    OperationLINK(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_LINK);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public nfs_resop4 process(CompoundContext context) {
 
-		_result.oplink = new LINK4res();
+        _result.oplink = new LINK4res();
 
-		String newName = new String(_args.oplink.newname.value.value.value);
-
-		try {
+        try {
+            String newName = NameFilter.convert(_args.oplink.newname.value.value.value);
 
             Stat parentStat = context.currentInode().statCache();
-            UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(),parentStat.getMode() & 0777 );
-            if ( ! context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT ) ) {
-                throw new ChimeraNFSException( nfsstat4.NFS4ERR_ACCESS, "Permission denied."  );
+            UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
+            if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT)) {
+                throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
             }
 
-			context.getFs().link(context.currentInode(), context.savedInode(), newName,
-                                context.getUser().getUID(), context.getUser().getGID());
+            context.getFs().link(context.currentInode(), context.savedInode(), newName,
+                    context.getUser().getUID(), context.getUser().getGID());
 
-			_result.oplink.resok4 = new LINK4resok();
-			_result.oplink.resok4.cinfo = new change_info4();
-			_result.oplink.resok4.cinfo.atomic = true;
-			_result.oplink.resok4.cinfo.before = new changeid4( new uint64_t( context.savedInode().statCache().getMTime()));
-			_result.oplink.resok4.cinfo.after = new changeid4( new uint64_t( System.currentTimeMillis()) );
+            _result.oplink.resok4 = new LINK4resok();
+            _result.oplink.resok4.cinfo = new change_info4();
+            _result.oplink.resok4.cinfo.atomic = true;
+            _result.oplink.resok4.cinfo.before = new changeid4(new uint64_t(context.savedInode().statCache().getMTime()));
+            _result.oplink.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
-			_result.oplink.status = nfsstat4.NFS4_OK;
-        }catch(ChimeraNFSException hne){
-			_result.oplink.status = hne.getStatus();
-		}catch(Exception e) {
-			_log.error("LINK: ", e);
-		    _result.oplink.status = nfsstat4.NFS4ERR_RESOURCE;
-		}
-            return _result;
-
-	}
-
+            _result.oplink.status = nfsstat4.NFS4_OK;
+        } catch (ChimeraNFSException hne) {
+            _result.oplink.status = hne.getStatus();
+        } catch (Exception e) {
+            _log.error("LINK: ", e);
+            _result.oplink.status = nfsstat4.NFS4ERR_RESOURCE;
+        }
+        return _result;
+    }
 }

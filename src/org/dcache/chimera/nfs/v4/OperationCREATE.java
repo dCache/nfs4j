@@ -49,21 +49,17 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
         CREATE4res res = new CREATE4res();
 
-
         fattr4 objAttr = _args.opcreate.createattrs;
-        int type = _args.opcreate.objtype.type;
-        String name = new String(_args.opcreate.objname.value.value.value);
+        int type = _args.opcreate.objtype.type;        
         Inode inode = null;
-
-
 
         try {
 
+            String name = NameFilter.convert(_args.opcreate.objname.value.value.value);
+
             Stat parentStat = context.currentInode().statCache();
 
-
             UnixAcl fileAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-
 
             if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)) {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_ACCESS, "Permission denied.");
