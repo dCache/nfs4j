@@ -17,25 +17,30 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import org.dcache.chimera.nfs.v4.xdr.*;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 
 class NameFilter {
 
+    private static final Charset UTF8 = Charset.forName("UTF-8");
+
     /* utility calls */
     private NameFilter(){}
 
     /**
+     * Validate name and convert into UTB8 {@link String}.
      *
-     * validate name and return an instance of string or throw exception
-     *
-     * @param bytes
-     * @return
-     * @throws ChimeraNFSException
+     * @param bytes to convert
+     * @return string
+     * @throws ChimeraNFSException if provided {@code bytes} are not a UTF8 encoded.
      */
     public static String convert(byte[] bytes) throws ChimeraNFSException {
-
-        String ret = null;
 
         if (bytes.length == 0) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "zero-length name");
@@ -46,11 +51,13 @@ class NameFilter {
         }
 
         try {
-            ret = new String(bytes, "UTF-8");
-        } catch (Exception e) {
+            CharsetDecoder cd = UTF8.newDecoder();
+            cd.onMalformedInput(CodingErrorAction.REPORT);
+            ByteBuffer uniBuf = ByteBuffer.wrap(bytes);
+            CharBuffer charBuf = cd.decode(uniBuf);
+            return new String(charBuf.array(), 0, charBuf.length());
+        } catch (CharacterCodingException e) {
             throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid utf8 name");
         }
-
-        return ret;
     }
 }
