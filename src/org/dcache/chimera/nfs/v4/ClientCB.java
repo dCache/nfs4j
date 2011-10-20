@@ -17,48 +17,121 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import org.dcache.utils.net.InetSocketAddresses;
+import java.io.IOException;
+import org.dcache.chimera.nfs.v4.xdr.*;
+import org.dcache.xdr.*;
 
+/**
+ * A class to provide callbacks to the client.
+ */
 class ClientCB {
 
-    private final InetSocketAddress _socketAddress;
-    private String _type = null;
-    private int _program = 0;
-    private int _version = 0;
+    /**
+     * call-back rpc program version number.
+     * cross-vendor agreed to have '1'.
+     */
+    private static final int CB_VERSION = 1;
+    private final sessionid4 _session;
 
-    // TODO: make it nicer and faster
-    ClientCB(String address, String type, int program) throws UnknownHostException {
-        _socketAddress = InetSocketAddresses.forUaddrString(address);
-        _type = type;
-        _program = program;
-    }
+    /**
+     * authentication flavor to be used for call-backs
+     */
+    private final RpcAuth _auth;
 
-    public int port() {
-        return _socketAddress.getPort();
-    }
+    /**
+     * highest slot id to use
+     */
+    private final int _highestSlotId;
 
-    public int program() {
-        return _program;
-    }
+    /**
+     * requests sequence id
+     */
+    private int _sequenceid = 0;
 
-    public int version() {
-        return _version;
-    }
+    /**
+     * rpc call to use to communicate with client
+     */
+    private final RpcCall _rpc;
 
-    public InetAddress address() {
-        return _socketAddress.getAddress();
-    }
+    /**
+     * @param transport for call-back communication
+     * @param session associated with the client
+     * @param highestSlotId highest slot id to use
+     * @param program RPC program number to use
+     * @param sec_parms supported security flavors
+     */
+    ClientCB(XdrTransport transport, int program, sessionid4 session, int highestSlotId,
+            callback_sec_parms4[] sec_parms) {
+        _session = session;
 
-    public int protocol() {
-        // TODO: parse type
-        return 6; //TCP
+        switch (sec_parms[0].cb_secflavor) {
+            case RpcAuthType.NONE:
+                _auth = new RpcAuthTypeNone();
+                break;
+            case RpcAuthType.UNIX:
+                _auth = new RpcAuthTypeUnix(
+                        sec_parms[0].cbsp_sys_cred.uid,
+                        sec_parms[0].cbsp_sys_cred.gid,
+                        sec_parms[0].cbsp_sys_cred.gids,
+                        sec_parms[0].cbsp_sys_cred.stamp,
+                        sec_parms[0].cbsp_sys_cred.machinename);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsuppotred security flavor");
+        }
+        _highestSlotId = highestSlotId -1;
+        _rpc = new RpcCall(program, CB_VERSION, _auth, transport);
     }
 
     @Override
     public String toString() {
-        return _type + "://" + _socketAddress.getHostName()+ ":" + _socketAddress.getPort() + "/" + _program;
+        return "tcp:///" + _rpc;
+    }
+
+    private XdrAble generateCompound(nfs_cb_argop4 cbOperation, String tag) {
+
+        _sequenceid++;
+        CB_SEQUENCE4args cbSequence = new CB_SEQUENCE4args();
+        cbSequence.csa_cachethis = false;
+        cbSequence.csa_highest_slotid = new slotid4(new uint32_t(_highestSlotId));
+        cbSequence.csa_sequenceid = new sequenceid4(new uint32_t(_sequenceid));
+        cbSequence.csa_slotid = new slotid4(new uint32_t(0));
+        cbSequence.csa_sessionid = _session;
+        cbSequence.csa_referring_call_lists = new referring_call_list4[0];
+
+        CB_COMPOUND4args cbCompound = new CB_COMPOUND4args();
+        cbCompound.argarray = new nfs_cb_argop4[2];
+
+        cbCompound.argarray[0] = new nfs_cb_argop4();
+        cbCompound.argarray[0].argop = nfs_cb_opnum4.OP_CB_SEQUENCE;
+        cbCompound.argarray[0].opcbsequence = cbSequence;
+
+        cbCompound.argarray[1] = cbOperation;
+
+        cbCompound.minorversion = new uint32_t(1);
+        cbCompound.callback_ident = new uint32_t(0);
+        cbCompound.tag = new utf8str_cs(new utf8string(tag.getBytes()));
+
+        return cbCompound;
+    }
+
+    public void cbLauoutrecallAll() throws OncRpcException, IOException {
+
+        CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
+        cbLayoutrecall.clora_changed = true;
+        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        cbLayoutrecall.clora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
+        cbLayoutrecall.clora_recall = new layoutrecall4();
+        cbLayoutrecall.clora_recall.lor_recalltype = layoutrecall_type4.LAYOUTRECALL4_FSID;
+        cbLayoutrecall.clora_recall.lor_fsid = new fsid4();
+        cbLayoutrecall.clora_recall.lor_fsid.major = new uint64_t(17);
+        cbLayoutrecall.clora_recall.lor_fsid.minor = new uint64_t(17);
+
+        nfs_cb_argop4 opArgs = new nfs_cb_argop4();
+        opArgs.argop = nfs_cb_opnum4.OP_CB_LAYOUTRECALL;
+        opArgs.opcblayoutrecall = cbLayoutrecall;
+
+        XdrAble args = generateCompound(opArgs, "cb_layout_recall");
+        _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
     }
 }

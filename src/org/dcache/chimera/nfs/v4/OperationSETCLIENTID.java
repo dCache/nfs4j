@@ -60,22 +60,9 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "Client Id In use");
             }
 
-            String r_addr = _args.opsetclientid.callback.cb_location.na_r_addr;
-            String r_netid = _args.opsetclientid.callback.cb_location.na_r_netid;
-            int program = _args.opsetclientid.callback.cb_program.value;
-
             client = new NFS4Client(context.getRpcCall().getTransport().getRemoteSocketAddress(),
                     context.getRpcCall().getTransport().getLocalSocketAddress(),
                     _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, null);
-            try {
-                ClientCB cb = new ClientCB(r_addr, r_netid, program);
-                //	TODO: work around. client should send correct IP
-                cb = new ClientCB(InetSocketAddresses.uaddrOf(context.getRpcCall().getTransport().getRemoteSocketAddress()), r_netid, program);
-                _log.debug("Client callback: {}", cb);
-                client.setCB(cb);
-            } catch (Exception ignode_call_back) {
-                _log.debug("no callback defined for: {}", context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress());
-            }
 
             context.getStateHandler().addClient(client);
 

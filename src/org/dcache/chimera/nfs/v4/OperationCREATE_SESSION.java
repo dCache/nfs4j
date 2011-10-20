@@ -32,11 +32,10 @@ import org.slf4j.LoggerFactory;
 public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
     /*
-     * no nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
      * no nfs4_prot.CREATE_SESSION4_FLAG_PERSIST;
      * no nfs4_prot.CREATE_SESSION4_FLAG_CONN_RDMA;
      */
-    private final static int SUPPORTED_SESSION_FLAGS = 0;
+    private final static int SUPPORTED_SESSION_FLAGS = nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
 
         private static final Logger _log = LoggerFactory.getLogger(OperationCREATE_SESSION.class);
 
@@ -107,6 +106,20 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                         _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value);
                 _log.debug("adding new session [{}]", session);
                 context.getStateHandler().sessionById(session.id(), session);
+
+                /*
+                 * if client supports call backs on the same channel make use of it.
+                 */
+                if( (_args.opcreate_session.csa_flags.value & nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN) != 0) {
+
+                    ClientCB cb = new ClientCB(
+                            context.getRpcCall().getTransport().getPeerTransport(),
+                            _args.opcreate_session.csa_cb_program.value,
+                            session.id(),
+                            _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value.value,
+                            _args.opcreate_session.csa_sec_parms);
+                    client.setCB(cb);
+                }
 
     		client.refreshLeaseTime();
     		//client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
