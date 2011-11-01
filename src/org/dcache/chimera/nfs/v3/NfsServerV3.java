@@ -131,7 +131,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
-import org.dcache.chimera.FsStat;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
@@ -158,6 +157,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.dcache.chimera.nfs.v3.HimeraNfsUtils.defaultPostOpAttr;
 import static org.dcache.chimera.nfs.v3.HimeraNfsUtils.defaultWccData;
+import org.dcache.chimera.nfs.vfs.FsStat;
 
 public class NfsServerV3 extends nfs3_protServerStub {
 

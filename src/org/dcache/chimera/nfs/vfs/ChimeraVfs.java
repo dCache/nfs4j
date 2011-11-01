@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
-import org.dcache.chimera.FsStat;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
@@ -143,7 +142,11 @@ public class ChimeraVfs implements VirtualFileSystem {
 
     @Override
     public FsStat getFsStat() throws IOException {
-        return _fs.getFsStat();
+        org.dcache.chimera.FsStat fsStat = _fs.getFsStat();
+        return new FsStat(fsStat.getTotalSpace(),
+                fsStat.getTotalFiles(),
+                fsStat.getUsedSpace(),
+                fsStat.getUsedFiles());
     }
 
     private FsInode toFsInode(Inode inode) throws IOException {

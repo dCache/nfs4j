@@ -18,7 +18,6 @@ package org.dcache.chimera.nfs.vfs;
 
 import java.io.IOException;
 import java.util.List;
-import org.dcache.chimera.FsStat;
 
 public interface VirtualFileSystem {
 
