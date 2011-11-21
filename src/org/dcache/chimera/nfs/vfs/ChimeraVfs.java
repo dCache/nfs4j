@@ -127,12 +127,8 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public List<DirectoryEntry> list(Inode inode) throws IOException {
         FsInode parentFsInode = toFsInode(inode);
-        try {
-            List<HimeraDirectoryEntry> list = DirectoryStreamHelper.listOf(parentFsInode);
-            return Lists.transform(list, new ChimeraDirectoryEntryToVfs());
-        } catch (IOException e) {
-            throw new IOException(e.getMessage());
-        }
+        List<HimeraDirectoryEntry> list = DirectoryStreamHelper.listOf(parentFsInode);
+        return Lists.transform(list, new ChimeraDirectoryEntryToVfs());
     }
 
     @Override
