@@ -43,7 +43,6 @@ import jline.SimpleCompletor;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.chimera.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.nfs.v4.NFSv41Error;
 import org.dcache.chimera.nfs.v4.Stateids;
 import org.dcache.chimera.nfs.v4.xdr.clientid4;
 import org.dcache.chimera.nfs.v4.xdr.deviceid4;
@@ -59,7 +58,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
@@ -450,7 +449,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "exchange_id");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
                 String serverId = new String(
@@ -478,7 +477,7 @@ public class Main {
 
         } else {
             System.out.println("exchangeId failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -491,7 +490,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "create_session");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
             // FIXME: no idea why, but other wise server reply MISORDER
@@ -499,7 +498,7 @@ public class Main {
 
         } else {
             System.out.println("create session failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -541,7 +540,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "get_root_fh");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             _rootFh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
             _cwd = _rootFh;
@@ -549,7 +548,7 @@ public class Main {
 
         } else {
             System.out.println("getRootFh failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -593,7 +592,7 @@ public class Main {
 
             COMPOUND4res compound4res = sendCompound(ops, "readdir");
 
-            if (compound4res.status == nfsstat4.NFS4_OK) {
+            if (compound4res.status == nfsstat.NFS_OK) {
                 verifier = compound4res.resarray.get(2).opreaddir.resok4.cookieverf;
                 done = compound4res.resarray.get(2).opreaddir.resok4.reply.eof;
 
@@ -606,9 +605,9 @@ public class Main {
 
             } else {
                 System.out.println("readdir failed. Error = "
-                        + NFSv41Error.errcode2string(compound4res.status));
+                        + nfsstat.toString(compound4res.status));
                 done = true;
-                throw new ChimeraNFSException(compound4res.status, NFSv41Error.errcode2string(compound4res.status));
+                throw new ChimeraNFSException(compound4res.status, nfsstat.toString(compound4res.status));
             }
 
         } while (!done);
@@ -653,7 +652,7 @@ public class Main {
 
             COMPOUND4res compound4res = sendCompound(ops, "readdir");
 
-            if (compound4res.status == nfsstat4.NFS4_OK) {
+            if (compound4res.status == nfsstat.NFS_OK) {
 
                 verifier = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.cookieverf;
                 done = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.reply.eof;
@@ -667,9 +666,9 @@ public class Main {
 
             } else {
                 System.out.println("readdir failed. Error = "
-                        + NFSv41Error.errcode2string(compound4res.status));
+                        + nfsstat.toString(compound4res.status));
                 done = true;
-                throw new ChimeraNFSException(compound4res.status, NFSv41Error.errcode2string(compound4res.status));
+                throw new ChimeraNFSException(compound4res.status, nfsstat.toString(compound4res.status));
             }
 
         } while (!done);
@@ -698,9 +697,9 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "mkdir");
 
-        if (compound4res.status != nfsstat4.NFS4_OK) {
+        if (compound4res.status != nfsstat.NFS_OK) {
             System.out.println("mkdir failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -717,7 +716,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "get_fs_locations");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(ops.size() - 1).opgetattr.resok4.obj_attributes);
 
@@ -731,7 +730,7 @@ public class Main {
 
         } else {
             System.out.println("get_fs_locations failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -763,14 +762,14 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "lookup (cwd)");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             _cwd = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
             System.out.println("CWD fh = " + toHexString(_cwd.value));
 
         } else {
             System.out.println("cwd failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
         return new nfs_fh4(_cwd.value);
@@ -790,7 +789,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "getattr (stat)");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
 
             Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
@@ -809,7 +808,7 @@ public class Main {
 
         } else {
             System.out.println("getAttr failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
 
@@ -875,14 +874,14 @@ public class Main {
         ops.add(CloseStub.generateRequest(Stateids.currentStateId()));
         COMPOUND4res compound4res = sendCompound(ops, "open_read_close");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
             int opss = ops.size();
             byte[] data = new byte[compound4res.resarray.get(opss-2).opread.resok4.data.remaining()];
             compound4res.resarray.get(opss-2).opread.resok4.data.get(data);
             System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("open failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
     }
 
@@ -981,7 +980,7 @@ public class Main {
 
         int opCount = ops.size();
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             nfs_fh4 fh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
             stateid4 stateid = compound4res.resarray.get(ops.size() - 2).opopen.resok4.stateid;
@@ -991,7 +990,7 @@ public class Main {
 
         } else {
             System.out.println("open failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
         return null;
@@ -1031,7 +1030,7 @@ public class Main {
 
         int opCount = ops.size();
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             nfs_fh4 fh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
             stateid4 stateid = compound4res.resarray.get(ops.size() - 2).opopen.resok4.stateid;
@@ -1041,7 +1040,7 @@ public class Main {
 
         } else {
             System.out.println("open failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
         return null;
@@ -1060,10 +1059,10 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "close");
 
-        if (compound4res.status != nfsstat4.NFS4_OK) {
+        if (compound4res.status != nfsstat.NFS_OK) {
 
             System.out.println("close failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -1083,7 +1082,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "layoutget");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
             System.out.println("Layoutget for fh: " + toHexString(fh.value));
@@ -1131,7 +1130,7 @@ public class Main {
 
         } else {
             System.out.println("layoutget failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
         return null;
@@ -1150,9 +1149,9 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "layoutreturn");
 
-        if (compound4res.status != nfsstat4.NFS4_OK) {
+        if (compound4res.status != nfsstat.NFS_OK) {
             System.out.println("layoutreturn failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -1170,10 +1169,10 @@ public class Main {
         do {
             compound4res = _nfsClient.NFSPROC4_COMPOUND_4(compound4args);
             processSequence(compound4res);
-            if (compound4res.status == nfsstat4.NFS4ERR_GRACE) {
+            if (compound4res.status == nfsstat.NFSERR_GRACE) {
                 System.out.println("Server in GRACE period....retry");
             }
-        } while (compound4res.status == nfsstat4.NFS4ERR_GRACE);
+        } while (compound4res.status == nfsstat.NFSERR_GRACE);
 
         return compound4res;
     }
@@ -1189,7 +1188,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "get_deviceinfo");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub.decodeFileDevice(compound4res.resarray.get(ops.size() - 1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
@@ -1197,7 +1196,7 @@ public class Main {
 
         } else {
             System.out.println("getdeviceinfo failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
     }
 
@@ -1212,7 +1211,7 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "get_devicelist");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
 
@@ -1223,7 +1222,7 @@ public class Main {
 
         } else {
             System.out.println("get_devicelist failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
             _isMDS = false;
             _isDS = false;
         }
@@ -1243,14 +1242,14 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "pNFS read");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
             compound4res.resarray.get(2).opread.resok4.data.get(data);
             System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("read failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -1267,14 +1266,14 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "nfs read");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
 
             byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
             compound4res.resarray.get(2).opread.resok4.data.get(data);
             System.out.println("[" + new String(data) + "]");
         } else {
             System.out.println("read failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -1292,8 +1291,8 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "pNFS write");
 
-        if (compound4res.status != nfsstat4.NFS4_OK) {
-            throw new IOException(NFSv41Error.errcode2string(compound4res.status));
+        if (compound4res.status != nfsstat.NFS_OK) {
+            throw new IOException(nfsstat.toString(compound4res.status));
         }
 
 
@@ -1313,9 +1312,9 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "nfs write");
 
-        if (compound4res.status != nfsstat4.NFS4_OK) {
+        if (compound4res.status != nfsstat.NFS_OK) {
             System.out.println("write failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         } else {
 
             System.out.println(compound4res.resarray.get(2).opwrite.resok4.count.value.value
@@ -1333,10 +1332,10 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "sequence");
 
-        if (compound4res.status != nfsstat4.NFS4_OK) {
+        if (compound4res.status != nfsstat.NFS_OK) {
 
             System.out.println("sequence failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
 
         } else {
             // ok
@@ -1355,13 +1354,13 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "get_supported_attributes");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
             //    uint32_t supported = compound4res.resarray[1].opgetattr.resok4.obj_attributes.attrmask.value[0];
             //    System.out.println(supported);
             // TODO:
         } else {
             System.out.println("get_supported_attributes failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -1377,11 +1376,11 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "remove");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
             // ok
         } else {
             System.out.println("remove failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
@@ -1405,18 +1404,18 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(ops, "lookup-sun");
 
-        if (compound4res.status == nfsstat4.NFS4_OK) {
+        if (compound4res.status == nfsstat.NFS_OK) {
             // ok
         } else {
             System.out.println("lookup-sun failed. Error = "
-                    + NFSv41Error.errcode2string(compound4res.status));
+                    + nfsstat.toString(compound4res.status));
         }
 
     }
 
     public void processSequence(COMPOUND4res compound4res) {
 
-        if (compound4res.resarray.get(0).resop == nfs_opnum4.OP_SEQUENCE && compound4res.resarray.get(0).opsequence.sr_status == nfsstat4.NFS4_OK) {
+        if (compound4res.resarray.get(0).resop == nfs_opnum4.OP_SEQUENCE && compound4res.resarray.get(0).opsequence.sr_status == nfsstat.NFS_OK) {
             _lastUpdate = System.currentTimeMillis();
             ++_sequenceID.value.value;
         }

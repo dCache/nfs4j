@@ -17,7 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LOOKUPP4res;
@@ -42,15 +42,15 @@ public class OperationLOOKUPP extends AbstractNFSv4Operation {
         try {
 
         	if( context.currentInode().type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "parent not a directory");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
         	}
 
             Inode parent = context.getFs().parentOf(context.currentInode());
             if( (parent == null) || context.currentInode().equals(context.getFs().getRootInode() ) ) {
-                res.status = nfsstat4.NFS4ERR_NOENT;
+                res.status = nfsstat.NFSERR_NOENT;
             }else{
                 context.currentInode( parent );
-                res.status = nfsstat4.NFS4_OK;
+                res.status = nfsstat.NFS_OK;
             }
 
         }catch(ChimeraNFSException he) {
@@ -58,7 +58,7 @@ public class OperationLOOKUPP extends AbstractNFSv4Operation {
             res.status = he.getStatus();
         }catch(Exception e) {
             _log.error("Error: ", e);
-            res.status = nfsstat4.NFS4ERR_RESOURCE;
+            res.status = nfsstat.NFSERR_RESOURCE;
         }
 
         _result.oplookupp = res;

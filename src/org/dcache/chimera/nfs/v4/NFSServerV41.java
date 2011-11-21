@@ -24,7 +24,7 @@ import org.dcache.chimera.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot_NFS4_PROGRAM_ServerStub;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
@@ -90,7 +90,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
             int minorversion = arg1.minorversion.value;
             if ( minorversion > 1) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_MINOR_VERS_MISMATCH,
+                throw new ChimeraNFSException(nfsstat.NFSERR_MINOR_VERS_MISMATCH,
                     String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
             }
 
@@ -98,7 +98,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 _fs, _statHandler, _deviceManager, _aclHandler, call$, _idMapping,
                     _exportFile, arg1.argarray.length);
 
-            res.status = nfsstat4.NFS4_OK;
+            res.status = nfsstat.NFS_OK;
             res.resarray = new ArrayList<nfs_resop4>(arg1.argarray.length);
             res.tag = arg1.tag;
 
@@ -125,7 +125,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 nfs_resop4 opResult = _operationFactory.getOperation(op).process(context);
                 res.resarray.add(opResult);
                 res.status = opResult.getStatus();
-                if (res.status != nfsstat4.NFS4_OK) {
+                if (res.status != nfsstat.NFS_OK) {
                     break;
                 }
             }
@@ -144,7 +144,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         } catch (Exception e) {
             _log.error("Unhandled exception:", e);
             res.resarray = Collections.EMPTY_LIST;
-            res.status = nfsstat4.NFS4ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.tag = arg1.tag;
         }finally{
             MDC.remove(NfsMdc.TAG);
@@ -192,12 +192,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 case nfs_opnum4.OP_DESTROY_CLIENTID:
                     break;
                 default:
-                    throw new ChimeraNFSException(nfsstat4.NFS4ERR_OP_NOT_IN_SESSION, "not in session");
+                    throw new ChimeraNFSException(nfsstat.NFSERR_OP_NOT_IN_SESSION, "not in session");
             }            
         } else {
             switch (opCode) {
                 case nfs_opnum4.OP_SEQUENCE:
-                    throw new ChimeraNFSException(nfsstat4.NFS4ERR_SEQUENCE_POS, "not a first operation");
+                    throw new ChimeraNFSException(nfsstat.NFSERR_SEQUENCE_POS, "not a first operation");
             }
         }
     }

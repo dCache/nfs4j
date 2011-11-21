@@ -33,7 +33,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.stable_how4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
@@ -68,7 +68,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
                 throw new IOHimeraFsException("IO not allowd");
             }
 
-            res.status = nfsstat4.NFS4_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok4 = new WRITE4resok();
             res.resok4.count = new count4(new uint32_t(bytesWritten));
             res.resok4.committed = stable_how4.FILE_SYNC4;
@@ -81,15 +81,15 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             out.close();
 
         } catch (IOHimeraFsException hioe) {
-            res.status = nfsstat4.NFS4ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         } catch (ChimeraNFSException he) {
             res.status = he.getStatus();
         } catch (IOException ioe) {
             _log.error("WRITE: ", ioe);
-            res.status = nfsstat4.NFS4ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         } catch (Exception e) {
             _log.error("WRITE: ", e);
-            res.status = nfsstat4.NFS4ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         }
 
         _result.opwrite = res;

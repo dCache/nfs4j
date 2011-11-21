@@ -17,7 +17,7 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.net.Inet6Address;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -55,9 +55,9 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                 addr.na_r_netid = client.getRemoteAddress().getAddress() instanceof Inet6Address
                         ? "tcp6" : "tcp";
                 addr.na_r_addr = InetSocketAddresses.uaddrOf(client.getRemoteAddress());
-                res.status = nfsstat4.NFS4ERR_CLID_INUSE;
+                res.status = nfsstat.NFSERR_CLID_INUSE;
                 res.client_using = new clientaddr4(addr);
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_CLID_INUSE, "Client Id In use");
+                throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Client Id In use");
             }
 
             client = new NFS4Client(context.getRpcCall().getTransport().getRemoteSocketAddress(),
@@ -70,7 +70,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
             res.resok4.clientid = new clientid4();
             res.resok4.clientid.value = new uint64_t(client.getId());
             res.resok4.setclientid_confirm = client.verifier();
-            res.status = nfsstat4.NFS4_OK;
+            res.status = nfsstat.NFS_OK;
 
 
         } catch (ChimeraNFSException he) {
@@ -78,7 +78,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
             res.status = he.getStatus();
         } catch (Exception e) {
             _log.error("SETCLIENTID: ", e);
-            res.status = nfsstat4.NFS4ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
         }
 
         _result.opsetclientid = res;

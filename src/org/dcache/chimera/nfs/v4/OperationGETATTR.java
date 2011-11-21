@@ -75,7 +75,7 @@ import org.dcache.chimera.nfs.v4.xdr.fattr4_time_metadata;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_mode;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_maxfilesize;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_acl;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_fsid;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_time_access;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_supported_attrs;
@@ -121,12 +121,12 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                         context.getFs(),
                         context.currentInode(), context);
 
-	        res.status = nfsstat4.NFS4_OK;
+	        res.status = nfsstat.NFS_OK;
         }catch(ChimeraNFSException he) {
         	res.status = he.getStatus();
         }catch(Exception e) {
             _log.error("GETATTR:", e);
-            res.status = nfsstat4.NFS4ERR_RESOURCE;
+            res.status = nfsstat.NFSERR_RESOURCE;
         }
 
 
@@ -484,7 +484,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "getattr of write-only attributes");
+                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "getattr of write-only attributes");
             default:
                 _log.debug("GETATTR for #{}", fattr);
 

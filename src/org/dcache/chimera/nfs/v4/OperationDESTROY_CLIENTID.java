@@ -16,6 +16,7 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
 
@@ -35,7 +36,7 @@ public class OperationDESTROY_CLIENTID extends AbstractNFSv4Operation {
             NFSv4StateHandler stateHandler = context.getStateHandler();
             NFS4Client client = stateHandler.getClientByID(clientId);
             stateHandler.removeClient(client);
-            res.dcr_status = nfsstat4.NFS4_OK;
+            res.dcr_status = nfsstat.NFS_OK;
 
         } catch (ChimeraNFSException e) {
             res.dcr_status = e.getStatus();

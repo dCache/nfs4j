@@ -32,7 +32,7 @@ import org.dcache.chimera.nfs.v4.xdr.READ4resok;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.posix.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +69,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
                 bytesReaded = 0;
             }
 
-            res.status = nfsstat4.NFS4_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok4 = new READ4resok();
             res.resok4.data = bb;
 
@@ -84,17 +84,17 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
         } catch (IOHimeraFsException hioe) {
             _log.error("READ : ", hioe);
-            res.status = nfsstat4.NFS4ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         } catch (ChimeraNFSException he) {
             res.status = he.getStatus();
         } catch (ChimeraFsException hfe) {
-            res.status = nfsstat4.NFS4ERR_NOFILEHANDLE;
+            res.status = nfsstat.NFSERR_NOFILEHANDLE;
         } catch (IOException ioe) {
             _log.error("READ : ", ioe);
-            res.status = nfsstat4.NFS4ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         } catch (Exception e) {
             _log.error("READ : ", e);
-            res.status = nfsstat4.NFS4ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         }
 
         _result.opread = res;

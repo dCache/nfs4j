@@ -25,17 +25,12 @@ public class ChimeraNFSException extends java.io.IOException {
     private static final long serialVersionUID = 4319461664218810541L;
     private final int nfsStatus;
 
-    public ChimeraNFSException(int newStatus, String msg) {
-        super(msg);
-        nfsStatus = newStatus;
+    public ChimeraNFSException(int status ,String msg) {
+        super(nfsstat.toString(status) +  " : " + msg);
+        nfsStatus = status;
     }
 
     public int getStatus() {
         return nfsStatus;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " NFS status: " + nfsStatus;
     }
 }

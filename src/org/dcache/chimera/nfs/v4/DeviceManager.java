@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.net.InetSocketAddresses;
@@ -93,7 +94,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         } else {
 
             if(_knownDataServers.length == 0) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_LAYOUTUNAVAILABLE,
+                throw new ChimeraNFSException(nfsstat.NFSERR_LAYOUTUNAVAILABLE,
                         "No dataservers available");
             }
             int id = _deviceIdGenerator.nextInt(256);

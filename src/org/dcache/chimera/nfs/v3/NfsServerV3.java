@@ -41,7 +41,6 @@ import org.dcache.chimera.nfs.v3.xdr.SYMLINK3resok;
 import org.dcache.chimera.nfs.v3.xdr.READDIR3resok;
 import org.dcache.chimera.nfs.v3.xdr.entry3;
 import org.dcache.chimera.nfs.v3.xdr.READ3args;
-import org.dcache.chimera.nfs.v3.xdr.nfsstat3;
 import org.dcache.chimera.nfs.v3.xdr.LOOKUP3args;
 import org.dcache.chimera.nfs.v3.xdr.PATHCONF3res;
 import org.dcache.chimera.nfs.v3.xdr.uid3;
@@ -133,10 +132,7 @@ import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.UnixPermission;
-import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.nfs.ExportFile;
-import org.dcache.chimera.nfs.InodeCacheEntry;
-import org.dcache.chimera.nfs.NfsUser;
+import org.dcache.chimera.nfs.*;
 import org.dcache.chimera.nfs.v3.xdr.COMMIT3resfail;
 import org.dcache.chimera.nfs.v3.xdr.FSSTAT3resfail;
 import org.dcache.chimera.nfs.v3.xdr.MKNOD3resfail;
@@ -193,7 +189,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new ACCESS3resok();
 
             int reqAccess = arg1.access.value;
@@ -205,7 +201,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = _fs.inodeOf(arg1.object.data);
 
             if (!inode.exists()) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_STALE, "Path do not exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_STALE, "Path do not exist.");
             }
             Stat objStat = inode.statCache();
 
@@ -258,13 +254,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new ACCESS3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new ACCESS3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
             _log.error("ACCESS", e);
         } catch (Exception e) {
             _log.error("ACCESS", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new ACCESS3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         }
@@ -275,7 +271,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     @Override
     public COMMIT3res NFSPROC3_COMMIT_3(RpcCall call$, COMMIT3args arg1) {
         COMMIT3res res = new COMMIT3res();
-        res.status = nfsstat3.NFS3ERR_NOTSUPP;
+        res.status = nfsstat.NFSERR_NOTSUPP;
         res.resfail = new COMMIT3resfail();
         res.resfail.file_wcc = defaultWccData();
         return res;
@@ -313,13 +309,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             if (exists && (mode != createmode3.UNCHECKED)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_EXIST, "File alredy exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "File alredy exist.");
             }
 
             parentStat = parent.statCache();
             UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_INSERT)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             try {
@@ -343,10 +339,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 inodeStat.setMode(fmode);
 
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new CREATE3resok();
             res.resok.obj_attributes = new post_op_attr();
             res.resok.obj_attributes.attributes_follow = true;
@@ -381,12 +377,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.error("Create {}", path);
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new CREATE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("create", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new CREATE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         }
@@ -404,7 +400,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
             Inode inode = _fs.inodeOf(arg1.fsroot.data);
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new FSINFO3resok();
 
             // max size of READ request supported by server
@@ -444,11 +440,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
         } catch (ChimeraFsException e) {
             res.resfail = new FSINFO3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             _log.error("FSINFO", e);
         } catch (Exception e) {
             _log.error("FSINFO", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new FSINFO3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         }
@@ -463,7 +459,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new FSSTAT3resok();
 
             FsStat fsStat = _fs.getFsStat();
@@ -487,12 +483,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (ChimeraFsException e) {
             _log.error("FSSTAT", e);
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new FSSTAT3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.error("FSSTAT", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new FSSTAT3resfail();
             res.resfail.obj_attributes = defaultPostOpAttr();
         }
@@ -512,7 +508,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = _fs.inodeOf(arg1.object.data);
             _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new GETATTR3resok();
 
             res.resok.obj_attributes = new fattr3();
@@ -520,13 +516,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         } catch (FileNotFoundHimeraFsException fnf) {
             _log.debug("GETATTR: file does not exists: {}", fnf.toString());
-            res.status = nfsstat3.NFS3ERR_NOENT;
+            res.status = nfsstat.NFSERR_NOENT;
         } catch (ChimeraFsException e) {
             _log.error("GETATTR", e);
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
         } catch (Exception e) {
             _log.error("GETATTR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
         }
 
         return res;
@@ -555,13 +551,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             if (exists) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_EXIST, "File " + name + " already exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "File " + name + " already exist.");
             }
 
             Stat parentStat = parent.statCache();
             UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_INSERT)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             _fs.link(parent, hlink, name, user.getUID(), user.getGID());
@@ -586,7 +582,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.linkdir_wcc.before = new pre_op_attr();
             res.resok.linkdir_wcc.before.attributes_follow = false;
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
@@ -595,12 +591,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.linkdir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
             _log.error("LINK", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail.file_attributes = defaultPostOpAttr();
             res.resfail.linkdir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("LINK", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail.file_attributes = defaultPostOpAttr();
             res.resfail.linkdir_wcc = defaultWccData();
         }
@@ -622,10 +618,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
             try {
                 inode = _fs.inodeOf(parent, name);
             } catch (ChimeraFsException hfse) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path do not exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
             }
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new LOOKUP3resok();
 
             nfs_fh3 fh3 = new nfs_fh3();
@@ -651,12 +647,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
             _log.error("LOOKUP", e);
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new LOOKUP3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.error("LOOKUP", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new LOOKUP3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
@@ -680,14 +676,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_INSERT)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             Inode inode = null;
             try {
                 inode = _fs.mkdir(parent, name, 0, 0, 777);
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_EXIST, "Directory already exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "Directory already exist.");
             }
 
             if (attr != null) {
@@ -727,7 +723,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = false;
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new MKDIR3resfail();
@@ -735,12 +731,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.error("MKDIR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new MKDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("MKDIR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new MKDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
         }
@@ -752,7 +748,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     public MKNOD3res NFSPROC3_MKNOD_3(RpcCall call$, MKNOD3args arg1) {
 
         MKNOD3res res = new MKNOD3res();
-        res.status = nfsstat3.NFS3ERR_NOTSUPP;
+        res.status = nfsstat.NFSERR_NOTSUPP;
         res.resfail = new MKNOD3resfail();
         res.resfail.dir_wcc = defaultWccData();
         return res;
@@ -779,7 +775,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         res.resok.obj_attributes = new post_op_attr();
         res.resok.obj_attributes.attributes_follow = false;
 
-        res.status = nfsstat3.NFS3_OK;
+        res.status = nfsstat.NFS_OK;
 
         return res;
 
@@ -810,11 +806,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private void checkVerifier(Inode dir, cookieverf3 verifier) throws ChimeraNFSException, IOException {
         long mtime = Bytes.getLong(verifier.value, 0);
         if (mtime > dir.statCache().getMTime()) {
-            throw new ChimeraNFSException(nfsstat3.NFS3ERR_BAD_COOKIE, "bad cookie");
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie");
         }
 
         /*
-         * To be spec compliant we have to fail with nfsstat3.NFS3ERR_BAD_COOKIE in case
+         * To be spec compliant we have to fail with nfsstat.NFSERR_BAD_COOKIE in case
          * if mtime  < dir.statCache().getMTime(). But this can produce an infinite loop if
          * the directory changes too fast.
          *
@@ -844,16 +840,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_LOOKUP)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
 
             if (!dir.exists()) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path Do not exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
             }
 
             if (dir.type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOTDIR, "Path is not a directory.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
             }
 
             long startValue = arg1.cookie.value.value;
@@ -886,7 +882,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             if (startValue > dirList.size()) {
-                res.status = nfsstat3.NFS3ERR_BAD_COOKIE;
+                res.status = nfsstat.NFSERR_BAD_COOKIE;
                 res.resfail = new READDIRPLUS3resfail();
                 res.resfail.dir_attributes = new post_op_attr();
                 res.resfail.dir_attributes.attributes_follow = false;
@@ -894,7 +890,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new READDIRPLUS3resok();
             res.resok.reply = new dirlistplus3();
             res.resok.dir_attributes = new post_op_attr();
@@ -966,12 +962,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.error("READDIRPLUS3", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READDIRPLUS3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.error("READDIRPLUS3", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READDIRPLUS3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
@@ -993,15 +989,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_LOOKUP)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             if (!dir.exists()) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path Do not exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
             }
 
             if (dir.type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOTDIR, "Path is not a directory.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
             }
 
 
@@ -1034,14 +1030,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             if (startValue > dirList.size()) {
-                res.status = nfsstat3.NFS3ERR_BAD_COOKIE;
+                res.status = nfsstat.NFSERR_BAD_COOKIE;
                 res.resfail = new READDIR3resfail();
                 res.resfail.dir_attributes = new post_op_attr();
                 res.resfail.dir_attributes.attributes_follow = false;
                 return res;
             }
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
             res.resok = new READDIR3resok();
             res.resok.reply = new dirlist3();
             res.resok.dir_attributes = new post_op_attr();
@@ -1100,12 +1096,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
             _log.error("READDIR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READDIR3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.error("READDIR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READDIR3resfail();
             res.resfail.dir_attributes = defaultPostOpAttr();
         }
@@ -1130,16 +1126,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.symlink_attributes.attributes = new fattr3();
             HimeraNfsUtils.fill_attributes(inode.stat(), res.resok.symlink_attributes.attributes);
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
         } catch (ChimeraFsException e) {
             _log.error("READLINK", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READLINK3resfail();
             res.resfail.symlink_attributes = defaultPostOpAttr();
         } catch (Exception e) {
             _log.error("READLINK", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READLINK3resfail();
             res.resfail.symlink_attributes = defaultPostOpAttr();
         }
@@ -1162,7 +1158,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat inodeStat = inode.statCache();
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(fileAcl, user, AclHandler.ACL_READ)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             res.resok = new READ3resok();
@@ -1194,17 +1190,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new READ3resfail();
             res.resfail.file_attributes = defaultPostOpAttr();
         } catch (IOHimeraFsException hfe) {
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new READ3resfail();
             res.resfail.file_attributes = defaultPostOpAttr();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new READ3resfail();
             res.resfail.file_attributes = defaultPostOpAttr();
             _log.error("READ", e);
         } catch (Exception e) {
             _log.error("READ", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new READ3resfail();
             res.resfail.file_attributes = defaultPostOpAttr();
         }
@@ -1232,20 +1228,20 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 inodeStat = inode.statCache();
                 parentStat = parent.statCache();
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path do not exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
             }
 
             UnixAcl parentAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
             if (!(_permissionHandler.isAllowed(fileAcl, user, AclHandler.ACL_DELETE) ||
                     _permissionHandler.isAllowed(parentAcl, user, AclHandler.ACL_DELETE))) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             _fs.remove(parent, name);
 
             res.resok = new REMOVE3resok();
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
             res.resok.dir_wcc = new wcc_data();
 
@@ -1270,12 +1266,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.dir_wcc = defaultWccData();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new REMOVE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("REMOVE", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new REMOVE3resfail();
             res.resfail.dir_wcc = defaultWccData();
         }
@@ -1305,7 +1301,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             UnixAcl toAcl = new UnixAcl(toStat.getUid(), toStat.getGid(), toStat.getMode() & 0777);
             if (!(_permissionHandler.isAllowed(fromAcl, user, AclHandler.ACL_DELETE)
                     && _permissionHandler.isAllowed(toAcl, user, AclHandler.ACL_INSERT))) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             _fs.move(from, file1, to, file2);
@@ -1330,20 +1326,20 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.todir_wcc.before = new pre_op_attr();
             res.resok.todir_wcc.before.attributes_follow = false;
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new RENAME3resfail();
             res.resfail.fromdir_wcc = defaultWccData();
             res.resfail.todir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new RENAME3resfail();
             res.resfail.fromdir_wcc = defaultWccData();
             res.resfail.todir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("RENAME", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new RENAME3resfail();
             res.resfail.fromdir_wcc = defaultWccData();
             res.resfail.todir_wcc = defaultWccData();
@@ -1373,15 +1369,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
             if (!(_permissionHandler.isAllowed(fileAcl, user, AclHandler.ACL_DELETE) ||
                     _permissionHandler.isAllowed(parentAcl, user, AclHandler.ACL_DELETE))) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             if (!_fs.remove(parent, file)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOTEMPTY, "Directory is not empty.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "Directory is not empty.");
             }
 
             res.resok = new RMDIR3resok();
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
             res.resok.dir_wcc = new wcc_data();
             res.resok.dir_wcc.after = new post_op_attr();
@@ -1404,12 +1400,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail.dir_wcc = defaultWccData();
             res.status = hne.getStatus();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new RMDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("RMDIR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new RMDIR3resfail();
             res.resfail.dir_wcc = defaultWccData();
         }
@@ -1432,12 +1428,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             try {
                 stat = inode.statCache();
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_NOENT, "Path do not exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
             }
 
             UnixAcl acl = new UnixAcl(stat.getUid(), stat.getGid(), stat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_ADMINISTER)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             HimeraNfsUtils.set_sattr(inode, newAttr);
@@ -1451,18 +1447,18 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_wcc.before = new pre_op_attr();
             res.resok.obj_wcc.before.attributes_follow = false;
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new SETATTR3resfail();
             res.resfail.obj_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new SETATTR3resfail();
             res.resfail.obj_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("SETATTR", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new SETATTR3resfail();
             res.resfail.obj_wcc = defaultWccData();
         }
@@ -1495,13 +1491,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             if (exists) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_EXIST, "File " + file + " already exist.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "File " + file + " already exist.");
             }
 
             Stat parentStat = parent.statCache();
             UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_INSERT)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             inode = _fs.symlink(parent, file, link, user.getUID(), user.getGID(), 777);
@@ -1534,19 +1530,19 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = false;
 
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new SYMLINK3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new SYMLINK3resfail();
             res.resfail.dir_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("SYMLINK", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new SYMLINK3resfail();
             res.resfail.dir_wcc = defaultWccData();
         }
@@ -1570,11 +1566,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             UnixUser user = NfsUser.remoteUser(call$, _exports);
             UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(fileAcl, user, AclHandler.ACL_WRITE)) {
-                throw new ChimeraNFSException(nfsstat3.NFS3ERR_ACCES, "Permission denied.");
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
             res.resok = new WRITE3resok();
-            res.status = nfsstat3.NFS3_OK;
+            res.status = nfsstat.NFS_OK;
 
             int ret = _fs.write(inode, arg1.data, offset, count);
             if (ret < 0) {
@@ -1598,16 +1594,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resfail = new WRITE3resfail();
             res.resfail.file_wcc = defaultWccData();
         } catch (IOHimeraFsException hfe) {
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new WRITE3resfail();
             res.resfail.file_wcc = defaultWccData();
         } catch (ChimeraFsException e) {
-            res.status = nfsstat3.NFS3ERR_IO;
+            res.status = nfsstat.NFSERR_IO;
             res.resfail = new WRITE3resfail();
             res.resfail.file_wcc = defaultWccData();
         } catch (Exception e) {
             _log.error("WRITE", e);
-            res.status = nfsstat3.NFS3ERR_SERVERFAULT;
+            res.status = nfsstat.NFSERR_SERVERFAULT;
             res.resfail = new WRITE3resfail();
             res.resfail.file_wcc = defaultWccData();
         }

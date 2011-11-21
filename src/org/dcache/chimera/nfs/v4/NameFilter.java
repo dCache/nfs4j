@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import org.dcache.chimera.nfs.nfsstat;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -43,11 +44,11 @@ class NameFilter {
     public static String convert(byte[] bytes) throws ChimeraNFSException {
 
         if (bytes.length == 0) {
-            throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "zero-length name");
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
         }
 
         if (bytes.length > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new ChimeraNFSException(nfsstat4.NFS4ERR_NAMETOOLONG, "file name too long");
+            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "file name too long");
         }
 
         try {
@@ -57,7 +58,7 @@ class NameFilter {
             CharBuffer charBuf = cd.decode(uniBuf);
             return new String(charBuf.array(), 0, charBuf.length());
         } catch (CharacterCodingException e) {
-            throw new ChimeraNFSException(nfsstat4.NFS4ERR_INVAL, "invalid utf8 name");
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid utf8 name");
         }
     }
 }

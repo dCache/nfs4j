@@ -17,7 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.rpcsec_gss_info;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.secinfo4;
@@ -47,7 +47,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
         try {
 
             if (context.currentInode().type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat4.NFS4ERR_NOTDIR, "not a directory");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
             }
 
             res.resok4 = new SECINFO4resok();
@@ -57,7 +57,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
             res.resok4.value[0].flavor = RpcAuthType.UNIX;
             res.resok4.value[0].flavor_info = new rpcsec_gss_info();
             context.clearCurrentInode();
-            res.status = nfsstat4.NFS4_OK;
+            res.status = nfsstat.NFS_OK;
         } catch (ChimeraNFSException he) {
             _log.debug("SECINFO:", he.getMessage());
             res.status = he.getStatus();

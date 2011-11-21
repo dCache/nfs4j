@@ -18,7 +18,7 @@ package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
-import org.dcache.chimera.nfs.v4.xdr.nfsstat4;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 
 public class Stateids {
@@ -44,11 +44,11 @@ public class Stateids {
 
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
         if (expected.seqid.value > stateid.seqid.value) {
-            throw new ChimeraNFSException(nfsstat4.NFS4ERR_OLD_STATEID, "old stateid");
+            throw new ChimeraNFSException(nfsstat.NFSERR_OLD_STATEID, "old stateid");
         }
 
         if (expected.seqid.value < stateid.seqid.value) {
-            throw new ChimeraNFSException(nfsstat4.NFS4ERR_BAD_STATEID, "bad stateid");
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "bad stateid");
         }
     }
 }
