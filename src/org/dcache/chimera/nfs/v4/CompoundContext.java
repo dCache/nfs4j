@@ -58,7 +58,7 @@ public class CompoundContext {
     private int _slotId;
     private boolean _cacheThis;
     private final int _totalOperationsCount;
-    private int _curretOpPosition = -1;
+    private int _currentOpPosition = -1;
 
     /**
      * Create context of COUMPOUND request.
@@ -242,7 +242,7 @@ public class CompoundContext {
     }
 
     public int getOperationPosition() {
-        return _curretOpPosition;
+        return _currentOpPosition;
     }
 
     public int getTotalOperationCount() {
@@ -250,8 +250,8 @@ public class CompoundContext {
     }
 
     public void nextOperation() {
-        assert _curretOpPosition < _totalOperationsCount;
-        _curretOpPosition ++;
+        assert _currentOpPosition < _totalOperationsCount;
+        _currentOpPosition ++;
     }
 
     public ServerIdProvider getServerIdProvider() {

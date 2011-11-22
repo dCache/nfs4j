@@ -167,12 +167,14 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
      *
      * from NFSv4.1 spec:
      *
-     * This operation MUST appear as the first operation of any COMPOUND in which it appears.
-     * The error NFS4ERR_SEQUENCE_POS will be returned when if it is found in any position in
-     * a COMPOUND beyond the first. Operations other than SEQUENCE, BIND_CONN_TO_SESSION,
-     * EXCHANGE_ID, CREATE_SESSION, and DESTROY_SESSION, may not appear as the first operation
-     * in a COMPOUND. Such operations will get the error NFS4ERR_OP_NOT_IN_SESSION if they do
-     * appear at the start of a COMPOUND.
+     * SEQUENCE MUST appear as the first operation of any COMPOUND in which
+     * it appears.  The error NFS4ERR_SEQUENCE_POS will be returned when it
+     * is found in any position in a COMPOUND beyond the first.  Operations
+     * other than SEQUENCE, BIND_CONN_TO_SESSION, EXCHANGE_ID,
+     * CREATE_SESSION, and DESTROY_SESSION, MUST NOT appear as the first
+     * operation in a COMPOUND.  Such operations MUST yield the error
+     * NFS4ERR_OP_NOT_IN_SESSION if they do appear at the start of a
+     * COMPOUND.
      *
      */
     private static void checkOpPosition(int opCode, int position) throws ChimeraNFSException {
