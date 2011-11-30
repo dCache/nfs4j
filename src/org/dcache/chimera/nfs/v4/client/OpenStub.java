@@ -94,8 +94,7 @@ public class OpenStub {
 
         open_claim4 claim = new open_claim4();
         claim.claim = open_claim_type4.CLAIM_NULL;
-        claim.file = new component4(new utf8str_cs(new utf8string(path
-                .getBytes())));
+        claim.file = new component4(new utf8str_cs(path));
         claim.delegate_type = nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
         claim.file_delegate_prev = null;
         claim.oc_delegate_stateid = null;
@@ -137,8 +136,7 @@ public class OpenStub {
 
         open_claim4 claim = new open_claim4();
         claim.claim = open_claim_type4.CLAIM_NULL;
-        claim.file = new component4(new utf8str_cs(new utf8string(path
-                .getBytes())));
+        claim.file = new component4(new utf8str_cs(path));
         claim.delegate_type = nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
         claim.file_delegate_prev = null;
         claim.oc_delegate_stateid = null;

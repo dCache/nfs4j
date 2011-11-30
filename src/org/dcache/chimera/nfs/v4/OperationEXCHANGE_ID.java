@@ -17,22 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.nfs.v4.xdr.state_protect4_r;
-import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
-import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
-import org.dcache.chimera.nfs.v4.xdr.clientid4;
-import org.dcache.chimera.nfs.v4.xdr.state_protect_how4;
-import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
 import org.dcache.chimera.nfs.nfsstat;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
-import org.dcache.chimera.nfs.v4.xdr.nfstime4;
-import org.dcache.chimera.nfs.v4.xdr.server_owner4;
-import org.dcache.chimera.nfs.v4.xdr.uint64_t;
-import org.dcache.chimera.nfs.v4.xdr.int64_t;
-import org.dcache.chimera.nfs.v4.xdr.nfs_impl_id4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4res;
-import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,15 +28,12 @@ import java.security.ProtectionDomain;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
 import static org.dcache.chimera.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
-import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cis;
-import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cs;
+import org.dcache.chimera.nfs.v4.xdr.*;
 
 public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
@@ -252,8 +234,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
             res.eir_resok4.eir_server_impl_id = new nfs_impl_id4[1];
             res.eir_resok4.eir_server_impl_id[0] = new nfs_impl_id4();
-            res.eir_resok4.eir_server_impl_id[0].nii_domain = string2utf8str_cis( NFS4_IMPLEMENTATION_DOMAIN );
-            res.eir_resok4.eir_server_impl_id[0].nii_name = string2utf8str_cs( NFS4_IMPLEMENTATION_ID + " build-time " + COMPILTE_TIME );
+            res.eir_resok4.eir_server_impl_id[0].nii_domain = new utf8str_cis( NFS4_IMPLEMENTATION_DOMAIN );
+            res.eir_resok4.eir_server_impl_id[0].nii_name = new utf8str_cs( NFS4_IMPLEMENTATION_ID + " build-time " + COMPILTE_TIME );
             nfstime4 releaseDate = new nfstime4();
             releaseDate.nseconds = new uint32_t(0);
             releaseDate.seconds = new int64_t (System.currentTimeMillis() / 1000 );

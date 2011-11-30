@@ -110,7 +110,7 @@ class ClientCB {
 
         cbCompound.minorversion = new uint32_t(1);
         cbCompound.callback_ident = new uint32_t(0);
-        cbCompound.tag = new utf8str_cs(new utf8string(tag.getBytes()));
+        cbCompound.tag = new utf8str_cs(tag);
 
         return cbCompound;
     }

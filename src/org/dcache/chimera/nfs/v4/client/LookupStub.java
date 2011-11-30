@@ -22,7 +22,6 @@ import org.dcache.chimera.nfs.v4.xdr.component4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
-import org.dcache.chimera.nfs.v4.xdr.utf8string;
 
 public class LookupStub {
 
@@ -31,8 +30,7 @@ public class LookupStub {
         op.argop = nfs_opnum4.OP_LOOKUP;
         op.oplookup = new LOOKUP4args();
 
-        op.oplookup.objname = new component4(new utf8str_cs(new utf8string(path
-                .getBytes())));
+        op.oplookup.objname = new component4(new utf8str_cs(path));
 
         return op;
     }

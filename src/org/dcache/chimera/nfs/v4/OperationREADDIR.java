@@ -33,7 +33,6 @@ import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.READDIR4resok;
 import org.dcache.chimera.nfs.v4.xdr.READDIR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
@@ -213,7 +212,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
                 Inode ei = le.getInode();
 
-                currentEntry.name = new component4( new utf8str_cs( new utf8string(name.getBytes()) ));
+                currentEntry.name = new component4( new utf8str_cs(name));
                 // keep offset
                 currentEntry.cookie = new nfs_cookie4( new uint64_t(i) );
 

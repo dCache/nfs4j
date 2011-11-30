@@ -68,7 +68,6 @@ import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
-import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.utils.net.InetSocketAddresses;
@@ -96,7 +95,7 @@ public class Main {
             List<nfs_argop4> opList) {
 
         COMPOUND4args compound4args = new COMPOUND4args();
-        compound4args.tag = new utf8str_cs(new utf8string(tag.getBytes()));
+        compound4args.tag = new utf8str_cs(tag);
         compound4args.minorversion = new uint32_t(1);
 
         compound4args.argarray = opList.toArray(new nfs_argop4[opList.size()]);

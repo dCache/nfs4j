@@ -36,7 +36,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
-import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
@@ -49,8 +48,7 @@ public class MkdirStub {
 
         CREATE4args args = new CREATE4args();
 
-        args.objname = new component4(new utf8str_cs(new utf8string(path
-                .getBytes())));
+        args.objname = new component4(new utf8str_cs(path));
         args.objtype = new createtype4();
         args.objtype.type = nfs_ftype4.NF4DIR;
         args.createattrs = new fattr4();

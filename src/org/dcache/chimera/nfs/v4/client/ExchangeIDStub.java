@@ -17,20 +17,8 @@
 
 package org.dcache.chimera.nfs.v4.client;
 
-import org.dcache.chimera.nfs.v4.xdr.EXCHANGE_ID4args;
-import org.dcache.chimera.nfs.v4.xdr.client_owner4;
-import org.dcache.chimera.nfs.v4.xdr.int64_t;
-import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
-import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_impl_id4;
-import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.nfstime4;
-import org.dcache.chimera.nfs.v4.xdr.state_protect4_a;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
-import org.dcache.chimera.nfs.v4.xdr.verifier4;
 
-import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cis;
-import static org.dcache.chimera.nfs.v4.HimeraNFS4Utils.string2utf8str_cs;
+import org.dcache.chimera.nfs.v4.xdr.*;
 
 public class ExchangeIDStub {
 
@@ -43,8 +31,8 @@ public class ExchangeIDStub {
         op.opexchange_id = new EXCHANGE_ID4args();
         op.opexchange_id.eia_client_impl_id = new nfs_impl_id4[1];
         nfs_impl_id4 n4 = new nfs_impl_id4();
-        n4.nii_domain = string2utf8str_cis(nii_domain);
-        n4.nii_name = string2utf8str_cs(nii_name);
+        n4.nii_domain = new utf8str_cis(nii_domain);
+        n4.nii_name = new utf8str_cs(nii_name);
         op.opexchange_id.eia_client_impl_id[0] = n4;
 
         nfstime4 releaseDate = new nfstime4();

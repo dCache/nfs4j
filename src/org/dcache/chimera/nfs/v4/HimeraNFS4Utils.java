@@ -50,31 +50,4 @@ public class HimeraNFS4Utils {
         }
 
     }
-
-    /**
-     * Convert String to a case sensitive string of UTF-8 characters.
-     * @param str
-     * @return utf8str_cs representation of <i>str</i>
-     */
-    public static utf8str_cs string2utf8str_cs(String str) {
-        return new utf8str_cs(new utf8string(str.getBytes()));
-    }
-
-    /**
-     * Convert String to a case insensitive string of UTF-8 characters.
-     * @param str
-     * @return utf8str_cis representation of <i>str</i>
-     */
-    public static utf8str_cis string2utf8str_cis(String str) {
-        return new utf8str_cis(new utf8string(str.getBytes()));
-    }
-
-    /**
-     * Convert String to a case insensitive string of UTF-8 characters.
-     * @param str
-     * @return utf8str_mixed representation of <i>str</i>
-     */
-    public static utf8str_mixed string2utf8str_mixed(String str) {
-        return new utf8str_mixed(new utf8string(str.getBytes()));
-    }
 }

@@ -375,13 +375,13 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_OWNER :
                 String owner_s = context.getIdMapping().uidToPrincipal(inode.statCache().getUid());
-                utf8str_mixed user = new utf8str_mixed ( new utf8string( owner_s.getBytes()) );
+                utf8str_mixed user = new utf8str_mixed(owner_s);
                 fattr4_owner owner = new fattr4_owner(user);
                 ret = owner;
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
                 String group_s = context.getIdMapping().gidToPrincipal(inode.statCache().getGid());
-                utf8str_mixed group = new utf8str_mixed ( new utf8string( group_s.getBytes()) );
+                utf8str_mixed group = new utf8str_mixed(group_s);
                 fattr4_owner owner_group = new fattr4_owner(group);
                 ret = owner_group;
                 break;
