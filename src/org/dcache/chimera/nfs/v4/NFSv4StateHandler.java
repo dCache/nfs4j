@@ -52,7 +52,7 @@ public class NFSv4StateHandler {
 
     private final Map<Opaque, NFS4Client> _clientByOwner = new HashMap<Opaque, NFS4Client>();
 
-    public void removeClient(NFS4Client client) {
+    public synchronized void removeClient(NFS4Client client) {
 
         for(NFSv41Session session: client.sessions() ) {
             _sessionById.remove( session.id() );
@@ -65,14 +65,14 @@ public class NFSv4StateHandler {
 
     }
 
-    public void addClient(NFS4Client newClient) {
+    public synchronized void addClient(NFS4Client newClient) {
         _clients.add(newClient);
         _clientsByServerId.put(newClient.getId(), newClient);
         _clientsByVerifier.put(newClient.verifier(), newClient);
         _clientByOwner.put( newClient.getOwner(), newClient);
     }
 
-    public NFS4Client getClientByID( Long id) throws ChimeraNFSException {
+    public synchronized NFS4Client getClientByID( Long id) throws ChimeraNFSException {
         NFS4Client client = _clientsByServerId.get(id);
         if(client == null) {
             throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "bad client id.");
@@ -84,20 +84,20 @@ public class NFSv4StateHandler {
         return getClientByID(Long.valueOf(Bytes.getLong(stateId.other, 0)));
     }
 
-    public NFS4Client getClientByVerifier(verifier4 verifier) {
+    public synchronized NFS4Client getClientByVerifier(verifier4 verifier) {
         return _clientsByVerifier.get(verifier);
     }
 
 
-    public NFSv41Session sessionById( sessionid4 id) {
+    public synchronized NFSv41Session sessionById( sessionid4 id) {
        return _sessionById.get(id);
     }
 
-    public void sessionById( sessionid4 id, NFSv41Session session) {
+    public synchronized void sessionById( sessionid4 id, NFSv41Session session) {
         _sessionById.put(id, session);
     }
 
-    public NFS4Client clientByOwner( byte[] ownerid) {
+    public synchronized NFS4Client clientByOwner( byte[] ownerid) {
         return _clientByOwner.get(new Opaque(ownerid));
     }
 
@@ -113,7 +113,7 @@ public class NFSv4StateHandler {
         client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
     }
 
-    public List<NFS4Client> getClients() {
+    public synchronized List<NFS4Client> getClients() {
         return new CopyOnWriteArrayList<NFS4Client>(_clients);
     }
 }
