@@ -17,13 +17,14 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.fattr4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.NVERIFY4res;
-import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,36 +37,24 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException, OncRpcException {
 
-        NVERIFY4res res = new NVERIFY4res();
+        final NVERIFY4res res = result.opnverify;
 
-        try {
+        fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opnverify.obj_attributes.attrmask,
+                context.getFs(),
+                context.currentInode(), context);
 
-            fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opnverify.obj_attributes.attrmask,
-                    context.getFs(),
-                    context.currentInode(), context);
+        res.status = nfsstat.NFSERR_SAME;
 
-            res.status = nfsstat.NFSERR_SAME;
+        for (int i = 0; i < _args.opnverify.obj_attributes.attr_vals.value.length; i++) {
 
-            for (int i = 0; i < _args.opnverify.obj_attributes.attr_vals.value.length; i++) {
-
-                if (_args.opnverify.obj_attributes.attr_vals.value[i] != currentAttr.attr_vals.value[i]) {
-                    res.status = nfsstat.NFS_OK;
-                    break;
-                }
+            if (_args.opnverify.obj_attributes.attr_vals.value[i] != currentAttr.attr_vals.value[i]) {
+                res.status = nfsstat.NFS_OK;
+                break;
             }
-
-            _log.debug("{} is !same = {}", context.currentInode(), res.status);
-        } catch (ChimeraNFSException he) {
-            res.status = he.getStatus();
-        } catch (Exception e) {
-            _log.error("NVERIFY :", e);
-            res.status = nfsstat.NFSERR_SERVERFAULT;
         }
 
-        _result.opnverify = res;
-        return _result;
-
+        _log.debug("{} is !same = {}", context.currentInode(), res.status);
     }
 }

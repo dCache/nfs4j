@@ -105,24 +105,37 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             boolean retransmit = false;
             for (nfs_argop4 op : arg1.argarray) {
                 context.nextOperation();
-
                 int position = context.getOperationPosition();
-                if (minorversion > 0) {
-                    checkOpPosition(op.argop, position);
-                    if (position == 1) {
-                        /*
-                         * at this point we already have to have a session
-                         */
-                        List<nfs_resop4> cache = context.getCache();
-                        if (cache != null) {
-                            res.resarray.addAll(cache.subList(position, cache.size()));
-                            res.status = statusOfLastOperation(cache);
-                            retransmit = true;
-                            break;
+                nfs_resop4 opResult = nfs_resop4.resopFor(op.argop);
+                try {
+                    if (minorversion != 0) {
+                        checkOpPosition(position, position);
+                        if (position == 1) {
+                            /*
+                             * at this point we already have to have a session
+                             */
+                            List<nfs_resop4> cache = context.getCache();
+                            if (cache != null) {
+                                res.resarray.addAll(cache.subList(position, cache.size()));
+                                res.status = statusOfLastOperation(cache);
+                                retransmit = true;
+                                break;
+                            }
                         }
                     }
+                    _operationFactory.getOperation(op).process(context, opResult);
+                } catch (ChimeraNFSException e) {
+                    opResult.setStatus(e.getStatus());
+                } catch (OncRpcException e) {
+                    opResult.setStatus(nfsstat.NFSERR_BADXDR);
+                    _log.warn("Bad xdr: {}: ", e.getMessage());
+                } catch (IOException e) {
+                    opResult.setStatus(nfsstat.NFSERR_IO);
+                    _log.warn("IO error: {}", e.getMessage());
+                } catch (Throwable e) {
+                    opResult.setStatus(nfsstat.NFSERR_SERVERFAULT);
+                    _log.error("General error: ", e);
                 }
-                nfs_resop4 opResult = _operationFactory.getOperation(op).process(context);
                 res.resarray.add(opResult);
                 res.status = opResult.getStatus();
                 if (res.status != nfsstat.NFS_OK) {

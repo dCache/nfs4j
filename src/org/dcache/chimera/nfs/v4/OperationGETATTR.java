@@ -28,7 +28,6 @@ import org.dcache.chimera.nfs.v4.xdr.fattr4_case_insensitive;
 import org.dcache.chimera.nfs.v4.xdr.nfs_lease4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_rawdev;
-import org.dcache.chimera.nfs.v4.xdr.utf8string;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_maxname;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_owner;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_space_used;
@@ -98,6 +97,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.FsStat;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
+import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,33 +109,22 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 		super(args, nfs_opnum4.OP_GETATTR);
 	}
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException, OncRpcException {
 
-        GETATTR4res res = new GETATTR4res();
+        final GETATTR4res res = result.opgetattr;
 
-        try {
+        res.resok4 = new GETATTR4resok();
+        res.resok4.obj_attributes = getAttributes(_args.opgetattr.attr_request,
+                context.getFs(),
+                context.currentInode(), context);
 
-	        res.resok4 = new GETATTR4resok();
-	        res.resok4.obj_attributes = getAttributes(_args.opgetattr.attr_request,
-                        context.getFs(),
-                        context.currentInode(), context);
+        res.status = nfsstat.NFS_OK;
 
-	        res.status = nfsstat.NFS_OK;
-        }catch(ChimeraNFSException he) {
-        	res.status = he.getStatus();
-        }catch(Exception e) {
-            _log.error("GETATTR:", e);
-            res.status = nfsstat.NFSERR_RESOURCE;
-        }
+    }
 
-
-        _result.opgetattr = res;
-            return _result;
-
-	}
-
-    static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context) throws Exception {
+    static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context)
+            throws IOException, OncRpcException {
 
         int[] mask = new int[bitmap.value.length];
         for( int i = 0; i < mask.length; i++) {
@@ -206,7 +195,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
      */
 
     // read/read-write
-    private static XdrAble fattr2xdr( int fattr , VirtualFileSystem fs, Inode inode, CompoundContext context) throws Exception {
+    private static XdrAble fattr2xdr( int fattr , VirtualFileSystem fs, Inode inode, CompoundContext context) throws IOException {
 
         XdrAble ret = null;
         FsStat fsStat = null;

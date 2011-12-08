@@ -37,32 +37,24 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        CLOSE4res res = new CLOSE4res();
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+        final CLOSE4res res = result.opclose;
 
-        try {
+        Inode inode = context.currentInode();
 
-            Inode inode = context.currentInode();
-
-            if (context.getMinorversion() > 0) {
-                context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-                try {
-                    context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
-                } catch (IOException e) {
-                    _log.error("Failed to return a layout: {}", e.getMessage());
-                }
-            } else {
-                context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
+        if (context.getMinorversion() > 0) {
+            context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+            try {
+                context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
+            } catch (IOException e) {
+                _log.error("Failed to return a layout: {}", e.getMessage());
             }
-
-            res.open_stateid = Stateids.invalidStateId();
-            res.status = nfsstat.NFS_OK;
-
-        } catch (ChimeraNFSException he) {
-            _log.debug("CLOSE: {}", he.getMessage());
-            res.status = he.getStatus();
+        } else {
+            context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
         }
-        _result.opclose = res;
-        return _result;
+
+        res.open_stateid = Stateids.invalidStateId();
+        res.status = nfsstat.NFS_OK;
+
     }
 }

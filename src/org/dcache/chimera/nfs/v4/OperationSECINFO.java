@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.nfsstat;
@@ -40,31 +39,20 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-        SECINFO4res res = new SECINFO4res();
-
-        try {
-
-            if (context.currentInode().type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
-            }
-
-            res.resok4 = new SECINFO4resok();
-            res.resok4.value = new secinfo4[1];
-
-            res.resok4.value[0] = new secinfo4();
-            res.resok4.value[0].flavor = RpcAuthType.UNIX;
-            res.resok4.value[0].flavor_info = new rpcsec_gss_info();
-            context.clearCurrentInode();
-            res.status = nfsstat.NFS_OK;
-        } catch (ChimeraNFSException he) {
-            _log.debug("SECINFO:", he.getMessage());
-            res.status = he.getStatus();
+        final SECINFO4res res = result.opsecinfo;
+        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
         }
 
-        _result.opsecinfo = res;
-        return _result;
+        res.resok4 = new SECINFO4resok();
+        res.resok4.value = new secinfo4[1];
 
+        res.resok4.value[0] = new secinfo4();
+        res.resok4.value[0].flavor = RpcAuthType.UNIX;
+        res.resok4.value[0].flavor_info = new rpcsec_gss_info();
+        context.clearCurrentInode();
+        res.status = nfsstat.NFS_OK;
     }
 }

@@ -27,21 +27,15 @@ public class OperationDESTROY_CLIENTID extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-        DESTROY_CLIENTID4res res = new DESTROY_CLIENTID4res();
-        try {
-            Long clientId = Long.valueOf(_args.opdestroy_clientid.dca_clientid.value.value);
+        final DESTROY_CLIENTID4res res = result.opdestroy_clientid;
 
-            NFSv4StateHandler stateHandler = context.getStateHandler();
-            NFS4Client client = stateHandler.getClientByID(clientId);
-            stateHandler.removeClient(client);
-            res.dcr_status = nfsstat.NFS_OK;
+        Long clientId = Long.valueOf(_args.opdestroy_clientid.dca_clientid.value.value);
 
-        } catch (ChimeraNFSException e) {
-            res.dcr_status = e.getStatus();
-        }
-        _result.opdestroy_clientid = res;
-        return _result;
+        NFSv4StateHandler stateHandler = context.getStateHandler();
+        NFS4Client client = stateHandler.getClientByID(clientId);
+        stateHandler.removeClient(client);
+        res.dcr_status = nfsstat.NFS_OK;
     }
 }

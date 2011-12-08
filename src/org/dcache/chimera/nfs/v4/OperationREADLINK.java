@@ -16,6 +16,7 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.linktext4;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
@@ -39,33 +40,20 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        READLINK4res res = new READLINK4res();
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final READLINK4res res = result.opreadlink;
 
-        try {
-
-            if (context.currentInode().type() != Inode.Type.SYMLINK) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "not a symlink");
-            }
-
-            String link = context.getFs().readlink(context.currentInode());
-            _log.debug("NFS Request  READLINK4 link: {}", link);
-            res.resok4 = new READLINK4resok();
-            res.resok4.link = new linktext4();
-            res.resok4.link.value = new utf8str_cs();
-            res.resok4.link.value.value = new utf8string();
-            res.resok4.link.value.value.value = link.getBytes();
-            res.status = nfsstat.NFS_OK;
-
-        } catch (ChimeraNFSException he) {
-            _log.debug("READLINK: {}", he.getMessage());
-            res.status = he.getStatus();
-        } catch (Exception e) {
-            _log.error("READLINK4", e);
-            res.status = nfsstat.NFSERR_SERVERFAULT;
+        if (context.currentInode().type() != Inode.Type.SYMLINK) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "not a symlink");
         }
 
-        _result.opreadlink = res;
-        return _result;
+        String link = context.getFs().readlink(context.currentInode());
+        _log.debug("NFS Request  READLINK4 link: {}", link);
+        res.resok4 = new READLINK4resok();
+        res.resok4.link = new linktext4();
+        res.resok4.link.value = new utf8str_cs();
+        res.resok4.link.value.value = new utf8string();
+        res.resok4.link.value.value.value = link.getBytes();
+        res.status = nfsstat.NFS_OK;
     }
 }

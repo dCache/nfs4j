@@ -42,47 +42,32 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-        SETCLIENTID4res res = new SETCLIENTID4res();
+        final SETCLIENTID4res res = result.opsetclientid;
 
-        try {
-
-            verifier4 verifier = _args.opsetclientid.client.verifier;
-            NFS4Client client = context.getStateHandler().getClientByVerifier(verifier);
-            if (client != null) {
-                netaddr4 addr = new netaddr4();
-                addr.na_r_netid = client.getRemoteAddress().getAddress() instanceof Inet6Address
-                        ? "tcp6" : "tcp";
-                addr.na_r_addr = InetSocketAddresses.uaddrOf(client.getRemoteAddress());
-                res.status = nfsstat.NFSERR_CLID_INUSE;
-                res.client_using = new clientaddr4(addr);
-                throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Client Id In use");
-            }
-
-            client = new NFS4Client(context.getRpcCall().getTransport().getRemoteSocketAddress(),
-                    context.getRpcCall().getTransport().getLocalSocketAddress(),
-                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, null);
-
-            context.getStateHandler().addClient(client);
-
-            res.resok4 = new SETCLIENTID4resok();
-            res.resok4.clientid = new clientid4();
-            res.resok4.clientid.value = new uint64_t(client.getId());
-            res.resok4.setclientid_confirm = client.verifier();
-            res.status = nfsstat.NFS_OK;
-
-
-        } catch (ChimeraNFSException he) {
-            _log.debug("SETCLIENTID: ", he.getMessage());
-            res.status = he.getStatus();
-        } catch (Exception e) {
-            _log.error("SETCLIENTID: ", e);
-            res.status = nfsstat.NFSERR_SERVERFAULT;
+        verifier4 verifier = _args.opsetclientid.client.verifier;
+        NFS4Client client = context.getStateHandler().getClientByVerifier(verifier);
+        if (client != null) {
+            netaddr4 addr = new netaddr4();
+            addr.na_r_netid = client.getRemoteAddress().getAddress() instanceof Inet6Address
+                    ? "tcp6" : "tcp";
+            addr.na_r_addr = InetSocketAddresses.uaddrOf(client.getRemoteAddress());
+            res.status = nfsstat.NFSERR_CLID_INUSE;
+            res.client_using = new clientaddr4(addr);
+            throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Client Id In use");
         }
 
-        _result.opsetclientid = res;
-        return _result;
+        client = new NFS4Client(context.getRpcCall().getTransport().getRemoteSocketAddress(),
+                context.getRpcCall().getTransport().getLocalSocketAddress(),
+                _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, null);
 
+        context.getStateHandler().addClient(client);
+
+        res.resok4 = new SETCLIENTID4resok();
+        res.resok4.clientid = new clientid4();
+        res.resok4.clientid.value = new uint64_t(client.getId());
+        res.resok4.setclientid_confirm = client.verifier();
+        res.status = nfsstat.NFS_OK;
     }
 }

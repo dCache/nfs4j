@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -34,79 +35,67 @@ import org.slf4j.LoggerFactory;
 
 public class OperationACCESS extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationACCESS.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationACCESS.class);
 
-	OperationACCESS(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_ACCESS);
-	}
+    OperationACCESS(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_ACCESS);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result)
+            throws ChimeraNFSException, IOException {
 
-        ACCESS4res res = new ACCESS4res();
+        final ACCESS4res res = result.opaccess;
 
-        _log.debug("NFS Request ACCESS uid: {}", context.getUser() );
+        _log.debug("NFS Request ACCESS uid: {}", context.getUser());
 
-        try {
-            int reqAccess = _args.opaccess.access.value;
-            Stat objStat = context.currentInode().statCache();
-            UnixAcl acl = new UnixAcl(objStat.getUid(), objStat.getGid(),objStat.getMode() & 0777 );
+        int reqAccess = _args.opaccess.access.value;
+        Stat objStat = context.currentInode().statCache();
+        UnixAcl acl = new UnixAcl(objStat.getUid(), objStat.getGid(), objStat.getMode() & 0777);
 
-            int realAccess = 0;
+        int realAccess = 0;
 
 
-            if( (reqAccess & nfs4_prot.ACCESS4_EXECUTE) == nfs4_prot.ACCESS4_EXECUTE ) {
-                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_EXECUTE ) ) {
-                    realAccess |= nfs4_prot.ACCESS4_EXECUTE;
-                }
+        if ((reqAccess & nfs4_prot.ACCESS4_EXECUTE) == nfs4_prot.ACCESS4_EXECUTE) {
+            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_EXECUTE)) {
+                realAccess |= nfs4_prot.ACCESS4_EXECUTE;
             }
-
-            if( (reqAccess & nfs4_prot.ACCESS4_EXTEND) == nfs4_prot.ACCESS4_EXTEND ) {
-                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT ) ) {
-                    realAccess |= nfs4_prot.ACCESS4_EXTEND;
-                }
-            }
-
-            if( (reqAccess & nfs4_prot.ACCESS4_LOOKUP) == nfs4_prot.ACCESS4_LOOKUP ) {
-                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP ) ) {
-                    realAccess |= nfs4_prot.ACCESS4_LOOKUP;
-                }
-            }
-
-            if( (reqAccess & nfs4_prot.ACCESS4_DELETE) == nfs4_prot.ACCESS4_DELETE ) {
-                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE ) ) {
-                    realAccess |= nfs4_prot.ACCESS4_DELETE;
-                }
-            }
-
-            if( (reqAccess & nfs4_prot.ACCESS4_MODIFY) == nfs4_prot.ACCESS4_MODIFY ) {
-                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_WRITE ) ){
-                    realAccess |= nfs4_prot.ACCESS4_MODIFY;
-                }
-            }
-
-            if( (reqAccess & nfs4_prot.ACCESS4_READ) == nfs4_prot.ACCESS4_READ ) {
-                if (  context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_READ ) ) {
-                    realAccess |= nfs4_prot.ACCESS4_READ;
-                }
-            }
-
-            res.resok4 = new ACCESS4resok();
-            res.resok4.access = new uint32_t( realAccess );
-            res.resok4.supported = new uint32_t( realAccess );
-
-            res.status = nfsstat.NFS_OK;
-        }catch(ChimeraNFSException he) {
-            _log.debug("ACCESS: {}", he.getMessage() );
-            res.status = he.getStatus();
-        }catch(Exception e) {
-            _log.error("ACCESS:", e);
-            res.status = nfsstat.NFSERR_RESOURCE;
         }
 
-        _result.opaccess = res;
-            return _result;
+        if ((reqAccess & nfs4_prot.ACCESS4_EXTEND) == nfs4_prot.ACCESS4_EXTEND) {
+            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT)) {
+                realAccess |= nfs4_prot.ACCESS4_EXTEND;
+            }
+        }
 
-	}
+        if ((reqAccess & nfs4_prot.ACCESS4_LOOKUP) == nfs4_prot.ACCESS4_LOOKUP) {
+            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP)) {
+                realAccess |= nfs4_prot.ACCESS4_LOOKUP;
+            }
+        }
 
+        if ((reqAccess & nfs4_prot.ACCESS4_DELETE) == nfs4_prot.ACCESS4_DELETE) {
+            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
+                realAccess |= nfs4_prot.ACCESS4_DELETE;
+            }
+        }
+
+        if ((reqAccess & nfs4_prot.ACCESS4_MODIFY) == nfs4_prot.ACCESS4_MODIFY) {
+            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_WRITE)) {
+                realAccess |= nfs4_prot.ACCESS4_MODIFY;
+            }
+        }
+
+        if ((reqAccess & nfs4_prot.ACCESS4_READ) == nfs4_prot.ACCESS4_READ) {
+            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_READ)) {
+                realAccess |= nfs4_prot.ACCESS4_READ;
+            }
+        }
+
+        res.resok4 = new ACCESS4resok();
+        res.resok4.access = new uint32_t(realAccess);
+        res.resok4.supported = new uint32_t(realAccess);
+
+        res.status = nfsstat.NFS_OK;
+    }
 }

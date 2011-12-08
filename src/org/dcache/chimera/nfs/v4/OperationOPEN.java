@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.open_delegation_type4;
 import org.dcache.chimera.nfs.v4.xdr.change_info4;
 import org.dcache.chimera.nfs.v4.xdr.bitmap4;
@@ -42,6 +43,7 @@ import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +56,10 @@ public class OperationOPEN extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        OPEN4res res = new OPEN4res();
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+        final OPEN4res res = result.opopen;
 
         try {
-
             Long clientid = Long.valueOf(_args.opopen.owner.value.clientid.value.value);
             NFS4Client client;
 
@@ -202,25 +203,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             res.status = nfsstat.NFS_OK;
 
-        } catch (ChimeraNFSException he) {
-            _log.debug("OPEN:", he.getMessage());
-            res.status = he.getStatus();
         } catch (FileExistsChimeraFsException e) {
             _log.debug("OPEN: {}", e.getMessage());
             res.status = nfsstat.NFSERR_EXIST;
         } catch (FileNotFoundHimeraFsException fnf) {
             _log.debug("OPEN: {}", fnf.getMessage());
             res.status = nfsstat.NFSERR_NOENT;
-        } catch (ChimeraFsException hfe) {
-            _log.error("OPEN:", hfe);
-            res.status = nfsstat.NFSERR_SERVERFAULT;
-        } catch (Exception e) {
-            _log.error("OPEN:", e);
-            res.status = nfsstat.NFSERR_SERVERFAULT;
         }
-
-        _result.opopen = res;
-        return _result;
-
     }
 }

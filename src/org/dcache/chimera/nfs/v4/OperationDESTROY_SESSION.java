@@ -34,38 +34,26 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-        DESTROY_SESSION4res res = new DESTROY_SESSION4res();
+        final DESTROY_SESSION4res res = result.opdestroy_session;
 
-        try {
-
-            NFSv41Session session = context.getStateHandler().sessionById(_args.opdestroy_session.dsa_sessionid);
-            if (session == null) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
-            }
-
-            NFS4Client client = session.getClient();
-            client.removeSession(session);
-
-            /*
-             * remove client if there is not sessions any more
-             */
-            if (client.sessions().isEmpty()) {
-                _log.debug("remove client: no sessions any more");
-                context.getStateHandler().removeClient(client);
-            }
-
-            res.dsr_status = nfsstat.NFS_OK;
-
-        } catch (ChimeraNFSException hne) {
-            res.dsr_status = hne.getStatus();
-        } catch (Exception e) {
-            _log.error("DESTROY_SESSION: ", e);
-            res.dsr_status = nfsstat.NFSERR_SERVERFAULT;
+        NFSv41Session session = context.getStateHandler().sessionById(_args.opdestroy_session.dsa_sessionid);
+        if (session == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
         }
 
-        _result.opdestroy_session = res;
-        return _result;
+        NFS4Client client = session.getClient();
+        client.removeSession(session);
+
+        /*
+         * remove client if there is not sessions any more
+         */
+        if (client.sessions().isEmpty()) {
+            _log.debug("remove client: no sessions any more");
+            context.getStateHandler().removeClient(client);
+        }
+
+        res.dsr_status = nfsstat.NFS_OK;
     }
 }

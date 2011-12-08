@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4;
 
 import java.io.IOException;
@@ -41,79 +40,62 @@ import org.slf4j.LoggerFactory;
 
 public class OperationWRITE extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationWRITE.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationWRITE.class);
 
-	public OperationWRITE(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_WRITE);
-	}
+    public OperationWRITE(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_WRITE);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-		WRITE4res res = new WRITE4res();
+        final WRITE4res res = result.opwrite;
 
-    	try {
-
-
-            if (_args.opwrite.offset.value.value + _args.opwrite.data.remaining() > 0x3ffffffe){
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Arbitrary value");
-			 }
+        if (_args.opwrite.offset.value.value + _args.opwrite.data.remaining() > 0x3ffffffe) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Arbitrary value");
+        }
 
 
-            if( context.currentInode().type() == Inode.Type.DIRECTORY ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
-    		}
+        if (context.currentInode().type() == Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+        }
 
-            if( context.currentInode().type() == Inode.Type.SYMLINK ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
-            }
+        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
+        }
 
-    		Stat inodeStat = context.currentInode().statCache();
+        Stat inodeStat = context.currentInode().statCache();
 
-            UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)  ) {
-                throw new ChimeraNFSException( nfsstat.NFSERR_ACCESS, "Permission denied."  );
-            }
+        UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
+        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+        }
 
 
-            if (context.getMinorversion() > 0) {
-                context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-            }else{                
-                context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
-            }
+        if (context.getMinorversion() > 0) {
+            context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+        } else {
+            context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
+        }
 
-	    	long offset = _args.opwrite.offset.value.value;
-	    	int count = _args.opwrite.data.remaining();
-                byte[] data = new byte[count];
-                _args.opwrite.data.get(data);
+        long offset = _args.opwrite.offset.value.value;
+        int count = _args.opwrite.data.remaining();
+        byte[] data = new byte[count];
+        _args.opwrite.data.get(data);
 
-	        int bytesWritten = context.getFs().write(context.currentInode(),
-                    data, offset, count);
+        int bytesWritten = context.getFs().write(context.currentInode(),
+                data, offset, count);
 
-	        if( bytesWritten < 0 ) {
-	            throw new IOHimeraFsException("IO not allowed");
-	        }
+        if (bytesWritten < 0) {
+            throw new IOHimeraFsException("IO not allowed");
+        }
 
-	        res.status = nfsstat.NFS_OK;
-	        res.resok4 = new WRITE4resok();
-	        res.resok4.count = new count4( new uint32_t(bytesWritten) );
-	        res.resok4.committed = stable_how4.FILE_SYNC4;
-	        res.resok4.writeverf = new verifier4();
-	        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new WRITE4resok();
+        res.resok4.count = new count4(new uint32_t(bytesWritten));
+        res.resok4.committed = stable_how4.FILE_SYNC4;
+        res.resok4.writeverf = new verifier4();
+        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-    	}catch(IOHimeraFsException hioe) {
-            _log.debug("WRITE: {}", hioe.getMessage() );
-            res.status = nfsstat.NFSERR_IO;
-        }catch(ChimeraNFSException he) {
-            _log.debug("WRITE: {}", he.getMessage() );
-            res.status = he.getStatus();
-    	}catch(IOException hfe) {
-    		res.status = nfsstat.NFSERR_IO;
-    	}
-
-       _result.opwrite = res;
-            return _result;
-
-	}
-
+    }
 }

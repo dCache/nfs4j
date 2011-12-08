@@ -17,6 +17,8 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
+import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -34,8 +36,8 @@ public class OperationPUTFH extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        PUTFH4res res = new PUTFH4res();
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final PUTFH4res res = result.opputfh;
 
         try {
             context.currentInode(context.getFs().inodeOf(_args.opputfh.object.value));
@@ -43,12 +45,6 @@ public class OperationPUTFH extends AbstractNFSv4Operation {
             res.status = nfsstat.NFS_OK;
         } catch (IllegalArgumentException iae) {
             res.status = nfsstat.NFSERR_BADHANDLE;
-        } catch (Exception e) {
-            _log.error("PUTFH4:", e);
-            res.status = nfsstat.NFSERR_RESOURCE;
         }
-
-        _result.opputfh = res;
-        return _result;
     }
 }

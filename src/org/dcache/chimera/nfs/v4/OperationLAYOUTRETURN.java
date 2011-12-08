@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
@@ -37,39 +38,31 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 		super(args, nfs_opnum4.OP_LAYOUTRETURN);
 	}
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
-	    LAYOUTRETURN4res res = new LAYOUTRETURN4res();
+        final LAYOUTRETURN4res res = result.oplayoutreturn;
 
         _log.debug("LAYOUTRETURN4args :        type: {}", _args.oplayoutreturn.lora_layout_type);
         _log.debug("LAYOUTRETURN4args :        mode: {}", _args.oplayoutreturn.lora_iomode);
         _log.debug("LAYOUTRETURN4args : return type: {}", _args.oplayoutreturn.lora_layoutreturn.lr_returntype);
         _log.debug("LAYOUTRETURN4args :     reclaim: {}", _args.oplayoutreturn.lora_reclaim);
 
-        try {
+        if (_args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
 
-                if( _args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
-
-                context.getDeviceManager().
-                        layoutReturn(context,
-                                _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid);
-    		}
-
-        	res.lorr_stateid = new layoutreturn_stateid();
-        	res.lorr_stateid.lrs_present = false;
-        	res.lorr_stateid.lrs_stateid = new stateid4();
-        	res.lorr_stateid.lrs_stateid.seqid = new uint32_t(0);
-        	res.lorr_stateid.lrs_stateid.other = new byte[12];
-
-        	res.lorr_status = nfsstat.NFS_OK;
-
-        }catch(Exception e) {
-            res.lorr_status = nfsstat.NFSERR_SERVERFAULT;
-            _log.error("LAYOUTRETURN: ", e);
+            context.getDeviceManager().
+                    layoutReturn(context,
+                    _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid);
         }
-      _result.oplayoutreturn = res;
-            return _result;
-	}
+
+        res.lorr_stateid = new layoutreturn_stateid();
+        res.lorr_stateid.lrs_present = false;
+        res.lorr_stateid.lrs_stateid = new stateid4();
+        res.lorr_stateid.lrs_stateid.seqid = new uint32_t(0);
+        res.lorr_stateid.lrs_stateid.other = new byte[12];
+
+        res.lorr_status = nfsstat.NFS_OK;
+
+    }
 
 }

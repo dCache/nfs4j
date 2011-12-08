@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -31,59 +32,48 @@ import org.slf4j.LoggerFactory;
 public class OperationLOOKUP extends AbstractNFSv4Operation {
 
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUP.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUP.class);
 
-	OperationLOOKUP(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_LOOKUP);
-	}
+    OperationLOOKUP(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_LOOKUP);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
-        LOOKUP4res res = new LOOKUP4res();
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final LOOKUP4res res = result.oplookup;
 
-        try {
+        String name = NameFilter.convert(_args.oplookup.objname.value.value.value);
 
-            String name = NameFilter.convert(_args.oplookup.objname.value.value.value);
-
-            if( context.currentInode().type() == Inode.Type.SYMLINK ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "parent not a symbolic link");
-            }
-
-        	if( context.currentInode().type() != Inode.Type.DIRECTORY ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
-        	}
-
-            if (name.length() < 1 ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid path");
-            }
-
-            if( name.length() > NFSv4Defaults.NFS4_MAXFILENAME ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "path too long");
-            }
-
-            if( name.equals(".") || name.equals("..") ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-            }
-
-            Inode newInode = context.getFs().inodeOf(context.currentInode(), name);
-	        if( !newInode.exists() ) {
-	          	res.status = nfsstat.NFSERR_NOENT;
-	         }
-
-             context.currentInode( newInode );
-	         res.status = nfsstat.NFS_OK;
-
-        }catch(FileNotFoundHimeraFsException he) {
-        	res.status = nfsstat.NFSERR_NOENT;
-        }catch(ChimeraNFSException he) {
-            res.status = he.getStatus();
-        }catch(Exception e) {
-            _log.error("Error: ", e);
-        	res.status = nfsstat.NFSERR_RESOURCE;
+        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "parent not a symbolic link");
         }
 
-       _result.oplookup = res;
-            return _result;
-	}
+        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+        }
 
+        if (name.length() < 1) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid path");
+        }
+
+        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "path too long");
+        }
+
+        if (name.equals(".") || name.equals("..")) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
+        }
+
+        try {
+            Inode newInode = context.getFs().inodeOf(context.currentInode(), name);
+            if (!newInode.exists()) {
+                res.status = nfsstat.NFSERR_NOENT;
+            } else {
+                context.currentInode(newInode);
+            }
+        } catch (FileNotFoundHimeraFsException e) {
+            res.status = nfsstat.NFSERR_NOENT;
+        }
+        res.status = nfsstat.NFS_OK;
+    }
 }

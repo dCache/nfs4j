@@ -51,50 +51,32 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
-        WRITE4res res = new WRITE4res();
+        final WRITE4res res = result.opwrite;
 
-        try {
+        long offset = _args.opwrite.offset.value.value;
+        int count = _args.opwrite.data.remaining();
 
-            long offset = _args.opwrite.offset.value.value;
-            int count = _args.opwrite.data.remaining();
+        IOWriteFile out = new IOWriteFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
 
-            IOWriteFile out = new IOWriteFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
+        int bytesWritten = out.write(_args.opwrite.data, offset, count);
 
-            int bytesWritten = out.write(_args.opwrite.data, offset, count);
-
-            if (bytesWritten < 0) {
-                throw new IOHimeraFsException("IO not allowd");
-            }
-
-            res.status = nfsstat.NFS_OK;
-            res.resok4 = new WRITE4resok();
-            res.resok4.count = new count4(new uint32_t(bytesWritten));
-            res.resok4.committed = stable_how4.FILE_SYNC4;
-            res.resok4.writeverf = new verifier4();
-            res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
-
-            context.currentInode().setSize(out.size());
-            _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
-                    new Object[]{bytesWritten, offset, _args.opwrite.data, out.size()});
-            out.close();
-
-        } catch (IOHimeraFsException hioe) {
-            res.status = nfsstat.NFSERR_IO;
-        } catch (ChimeraNFSException he) {
-            res.status = he.getStatus();
-        } catch (IOException ioe) {
-            _log.error("WRITE: ", ioe);
-            res.status = nfsstat.NFSERR_IO;
-        } catch (Exception e) {
-            _log.error("WRITE: ", e);
-            res.status = nfsstat.NFSERR_IO;
+        if (bytesWritten < 0) {
+            throw new IOHimeraFsException("IO not allowd");
         }
 
-        _result.opwrite = res;
-        return _result;
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new WRITE4resok();
+        res.resok4.count = new count4(new uint32_t(bytesWritten));
+        res.resok4.committed = stable_how4.FILE_SYNC4;
+        res.resok4.writeverf = new verifier4();
+        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
+        context.currentInode().setSize(out.size());
+        _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
+                new Object[]{bytesWritten, offset, _args.opwrite.data, out.size()});
+        out.close();
     }
 
     private static class IOWriteFile {

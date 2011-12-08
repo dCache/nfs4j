@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.nfsstat;
@@ -28,37 +27,25 @@ import org.slf4j.LoggerFactory;
 
 public class OperationRENEW extends AbstractNFSv4Operation {
 
+    private static final Logger _log = LoggerFactory.getLogger(OperationRENEW.class);
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationRENEW.class);
+    OperationRENEW(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_RENEW);
+    }
 
-	OperationRENEW(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_RENEW);
-	}
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+        final RENEW4res res = result.oprenew;
 
-        RENEW4res res = new RENEW4res();
+        Long clientid = Long.valueOf(_args.oprenew.clientid.value.value);
 
-        try {
-            Long clientid = Long.valueOf(_args.oprenew.clientid.value.value);
-
-            NFS4Client client = context.getStateHandler().getClientByID( clientid );
-            if( client == null ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "Bad client id");
-            }
-
-            client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-            res.status = nfsstat.NFS_OK;
-
-        }catch(ChimeraNFSException he) {
-            _log.debug("RENEW: {}", he.getMessage() );
-            res.status = he.getStatus();
+        NFS4Client client = context.getStateHandler().getClientByID(clientid);
+        if (client == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "Bad client id");
         }
 
-
-       _result.oprenew = res;
-            return _result;
-	}
-
+        client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+        res.status = nfsstat.NFS_OK;
+    }
 }

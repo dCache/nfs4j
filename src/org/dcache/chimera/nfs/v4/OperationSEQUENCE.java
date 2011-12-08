@@ -17,7 +17,6 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import java.util.List;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
@@ -41,59 +40,44 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-       SEQUENCE4res res = new SEQUENCE4res();
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+        final SEQUENCE4res res = result.opsequence;
 
-        try {
+        res.sr_resok4 = new SEQUENCE4resok();
 
-            res.sr_resok4 = new SEQUENCE4resok();
+        res.sr_resok4.sr_highest_slotid = new slotid4(_args.opsequence.sa_highest_slotid.value);
+        res.sr_resok4.sr_slotid = new slotid4(_args.opsequence.sa_slotid.value);
+        res.sr_resok4.sr_target_highest_slotid = new slotid4(_args.opsequence.sa_slotid.value);
+        res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
 
-            res.sr_resok4.sr_highest_slotid = new slotid4(_args.opsequence.sa_highest_slotid.value);
-            res.sr_resok4.sr_slotid = new slotid4(_args.opsequence.sa_slotid.value);
-            res.sr_resok4.sr_target_highest_slotid = new slotid4(_args.opsequence.sa_slotid.value);
-            res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
+        NFSv41Session session = context.getStateHandler().sessionById(_args.opsequence.sa_sessionid);
 
-            NFSv41Session session = context.getStateHandler().sessionById(_args.opsequence.sa_sessionid);
-
-            if(session == null ) {
-                _log.debug("no session for id [{}]",  _args.opsequence.sa_sessionid );
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
-            }
-
-            NFS4Client client = session.getClient();
-
-            if( client.sessionsEmpty(session)) {
-                _log.debug("no client for session for id [{}]",  _args.opsequence.sa_sessionid );
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
-            }
-
-            int opCount = context.getTotalOperationCount();
-            context.setCache( session.checkCacheSlot(_args.opsequence.sa_slotid.value.value,
-                    _args.opsequence.sa_sequenceid.value.value, opCount > 1)
-                );
-
-            context.setCacheThis(_args.opsequence.sa_cachethis);
-            session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
-
-            context.setSession(session);
-            context.setSlotId(_args.opsequence.sa_slotid.value.value);
-
-            //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
-            res.sr_resok4.sr_sequenceid = _args.opsequence.sa_sequenceid;
-            res.sr_resok4.sr_status_flags = new uint32_t(0);
-
-
-            res.sr_status = nfsstat.NFS_OK;
-        }catch(ChimeraNFSException ne) {
-            _log.debug("SEQUENCE : {}", ne.getMessage());
-            res.sr_status = ne.getStatus();
-        }catch(Exception e) {
-            _log.error("SEQUENCE :", e);
-            res.sr_status = nfsstat.NFSERR_SERVERFAULT;
+        if (session == null) {
+            _log.debug("no session for id [{}]", _args.opsequence.sa_sessionid);
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
         }
 
-        _result.opsequence = res;
-        return _result;
-    }
+        NFS4Client client = session.getClient();
 
+        if (client.sessionsEmpty(session)) {
+            _log.debug("no client for session for id [{}]", _args.opsequence.sa_sessionid);
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
+        }
+
+        int opCount = context.getTotalOperationCount();
+        context.setCache(session.checkCacheSlot(_args.opsequence.sa_slotid.value.value,
+                _args.opsequence.sa_sequenceid.value.value, opCount > 1));
+
+        context.setCacheThis(_args.opsequence.sa_cachethis);
+        session.getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+
+        context.setSession(session);
+        context.setSlotId(_args.opsequence.sa_slotid.value.value);
+
+        //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
+        res.sr_resok4.sr_sequenceid = _args.opsequence.sa_sequenceid;
+        res.sr_resok4.sr_status_flags = new uint32_t(0);
+
+        res.sr_status = nfsstat.NFS_OK;
+    }
 }

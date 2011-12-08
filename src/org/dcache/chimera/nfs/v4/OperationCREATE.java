@@ -16,6 +16,7 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4;
@@ -33,6 +34,7 @@ import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,109 +47,96 @@ public class OperationCREATE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
 
-        CREATE4res res = new CREATE4res();
+        final CREATE4res res = result.opcreate;
 
         fattr4 objAttr = _args.opcreate.createattrs;
-        int type = _args.opcreate.objtype.type;        
+        int type = _args.opcreate.objtype.type;
         Inode inode = null;
 
-        try {
+        String name = NameFilter.convert(_args.opcreate.objname.value.value.value);
 
-            String name = NameFilter.convert(_args.opcreate.objname.value.value.value);
+        Stat parentStat = context.currentInode().statCache();
 
-            Stat parentStat = context.currentInode().statCache();
+        UnixAcl fileAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
 
-            UnixAcl fileAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-
-            if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-            }
-
-            if (name.length() == 0) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");
-            }
-
-            if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
-            }
-
-            if (context.currentInode().type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
-            }
-
-
-            if (name.equals(".") || name.equals("..")) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-            }
-
-            // TODO: this check have to be moved into JdbcFs
-            try {
-                inode = context.getFs().inodeOf(context.currentInode(), name);
-                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "path already exist");
-            } catch (ChimeraFsException hfe) {
-            }
-
-            switch (type) {
-
-                case nfs_ftype4.NF4DIR:
-                    inode = context.getFs().mkdir(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(), 777);
-                    break;
-                case nfs_ftype4.NF4LNK:
-                    String linkDest = new String(_args.opcreate.objtype.linkdata.value.value.value);
-                    inode = context.getFs().symlink(context.currentInode(), name, linkDest, 
-                            context.getUser().getUID(), context.getUser().getGID(), 777);
-                    break;
-                case nfs_ftype4.NF4BLK:
-                    inode = context.getFs().create(context.currentInode(), Inode.Type.BLOCK, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 777);
-                    break;
-                case nfs_ftype4.NF4CHR:
-                    inode = context.getFs().create(context.currentInode(), Inode.Type.CHAR, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 777);
-                    break;
-                case nfs_ftype4.NF4FIFO:
-                    inode = context.getFs().create(context.currentInode(), Inode.Type.FIFO, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 777);
-                    break;
-                case nfs_ftype4.NF4SOCK:
-                    inode = context.getFs().create(context.currentInode(), Inode.Type.SOCK, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 777);
-                    break;
-                case nfs_ftype4.NF4ATTRDIR:
-                case nfs_ftype4.NF4NAMEDATTR:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_NOTSUPP, "create of this type not supported");
-                // regular files handled by OPEN
-                case nfs_ftype4.NF4REG:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "create of regular files handled by OPEN");
-                default:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "bad file type");
-            }
-
-            inode.setGID(context.getUser().getGID());
-            inode.setUID(context.getUser().getUID());
-
-            res.status = nfsstat.NFS_OK;
-            res.resok4 = new CREATE4resok();
-            res.resok4.attrset = OperationSETATTR.setAttributes(objAttr, inode, context);
-            res.resok4.cinfo = new change_info4();
-            res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
-            res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
-
-            context.currentInode(inode);
-
-        } catch (ChimeraNFSException he) {
-            _log.debug("CREATE: {}", he.getMessage());
-            res.status = he.getStatus();
-        } catch (Exception e) {
-            _log.error("CREATE: ", e);
-            res.status = nfsstat.NFSERR_SERVERFAULT;
+        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
         }
 
-        _result.opcreate = res;
-        return _result;
+        if (name.length() == 0) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");
+        }
+
+        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
+        }
+
+        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
+        }
+
+
+        if (name.equals(".") || name.equals("..")) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
+        }
+
+        // TODO: this check have to be moved into JdbcFs
+        try {
+            inode = context.getFs().inodeOf(context.currentInode(), name);
+            throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "path already exist");
+        } catch (ChimeraFsException hfe) {
+        }
+
+        switch (type) {
+
+            case nfs_ftype4.NF4DIR:
+                inode = context.getFs().mkdir(context.currentInode(), name,
+                        context.getUser().getUID(), context.getUser().getGID(), 777);
+                break;
+            case nfs_ftype4.NF4LNK:
+                String linkDest = new String(_args.opcreate.objtype.linkdata.value.value.value);
+                inode = context.getFs().symlink(context.currentInode(), name, linkDest,
+                        context.getUser().getUID(), context.getUser().getGID(), 777);
+                break;
+            case nfs_ftype4.NF4BLK:
+                inode = context.getFs().create(context.currentInode(), Inode.Type.BLOCK, name,
+                        context.getUser().getUID(), context.getUser().getGID(), 777);
+                break;
+            case nfs_ftype4.NF4CHR:
+                inode = context.getFs().create(context.currentInode(), Inode.Type.CHAR, name,
+                        context.getUser().getUID(), context.getUser().getGID(), 777);
+                break;
+            case nfs_ftype4.NF4FIFO:
+                inode = context.getFs().create(context.currentInode(), Inode.Type.FIFO, name,
+                        context.getUser().getUID(), context.getUser().getGID(), 777);
+                break;
+            case nfs_ftype4.NF4SOCK:
+                inode = context.getFs().create(context.currentInode(), Inode.Type.SOCK, name,
+                        context.getUser().getUID(), context.getUser().getGID(), 777);
+                break;
+            case nfs_ftype4.NF4ATTRDIR:
+            case nfs_ftype4.NF4NAMEDATTR:
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTSUPP, "create of this type not supported");
+            // regular files handled by OPEN
+            case nfs_ftype4.NF4REG:
+                throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "create of regular files handled by OPEN");
+            default:
+                throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "bad file type");
+        }
+
+        inode.setGID(context.getUser().getGID());
+        inode.setUID(context.getUser().getUID());
+
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new CREATE4resok();
+        res.resok4.attrset = OperationSETATTR.setAttributes(objAttr, inode, context);
+        res.resok4.cinfo = new change_info4();
+        res.resok4.cinfo.atomic = true;
+        res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
+        res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
+
+        context.currentInode(inode);
     }
 }

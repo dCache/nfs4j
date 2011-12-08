@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
@@ -32,11 +33,9 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
-    LAYOUTGET4res res = new LAYOUTGET4res();
-
-    try {
+        final LAYOUTGET4res res = result.oplayoutget;
 
         /*
          * dCache supports FILE layout
@@ -65,13 +64,13 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 //            }
         }
 
-        if ( !(_args.oplayoutget.loga_iomode  == layoutiomode4.LAYOUTIOMODE4_RW ||
-				_args.oplayoutget.loga_iomode  == layoutiomode4.LAYOUTIOMODE4_READ)) {
+        if (!(_args.oplayoutget.loga_iomode == layoutiomode4.LAYOUTIOMODE4_RW
+                || _args.oplayoutget.loga_iomode == layoutiomode4.LAYOUTIOMODE4_READ)) {
             throw new ChimeraNFSException(nfsstat.NFSERR_BADIOMODE, "invalid loga_iomode");
         }
 
         if (_args.oplayoutget.loga_layout_type > 3) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADLAYOUT, "layouts supported but no matching found ("+ _args.oplayoutget.loga_layout_type +")");
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADLAYOUT, "layouts supported but no matching found (" + _args.oplayoutget.loga_layout_type + ")");
         } else if (_args.oplayoutget.loga_layout_type != layouttype4.LAYOUT4_NFSV4_1_FILES) {
             throw new ChimeraNFSException(nfsstat.NFSERR_LAYOUTUNAVAILABLE, "layout not supported");
         }
@@ -94,18 +93,5 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         res.logr_resok4.logr_return_on_close = ioLayout.returnOnClose();
 
         res.logr_status = nfsstat.NFS_OK;
-
-    } catch (ChimeraNFSException he) {
-        _log.debug("LAYOUTGET: {}",  he.getMessage());
-        res.logr_status = he.getStatus();
-    } catch (Exception e) {
-        _log.error("LAYOUTGET:", e);
-        res.logr_status = nfsstat.NFSERR_SERVERFAULT;
     }
-
-    _result.oplayoutget = res;
-        return _result;
-
-    }
-
 }

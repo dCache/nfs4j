@@ -25,7 +25,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.READ4resok;
 import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
@@ -36,84 +35,66 @@ import org.slf4j.LoggerFactory;
 
 public class OperationREAD extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationREAD.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationREAD.class);
 
-	public OperationREAD(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_READ);
-	}
+    public OperationREAD(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_READ);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
-        READ4res res = new READ4res();
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+        final READ4res res = result.opread;
 
+        if (context.currentInode().type() == Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+        }
 
-        try {
+        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
+        }
 
-            if( context.currentInode().type() == Inode.Type.DIRECTORY ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
-            }
+        Stat inodeStat = context.currentInode().statCache();
 
-            if( context.currentInode().type() == Inode.Type.SYMLINK) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
-            }
+        UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
+        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+        }
 
-            Stat inodeStat = context.currentInode().statCache();
-
-            UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)  ) {
-                throw new ChimeraNFSException( nfsstat.NFSERR_ACCESS, "Permission denied."  );
-            }
-
-            if(context.getMinorversion() == 0) {
-                /*
-                 * The NFSv4.0 spec requires to update lease time as long as
-                 * client needs the file. This is done through  READ, WRITE
-                 * and RENEW opertations. With introduction of sessions in
-                 * v4.1 update of the lease time done through SEQUENCE operation.
-                 */
-                context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
-            }
-
-
-            long offset = _args.opread.offset.value.value;
-            int count = _args.opread.count.value.value;
-
-            ByteBuffer buf = ByteBuffer.allocate(count);
-
-            int bytesReaded = context.getFs().read(context.currentInode(),
-                    buf.array(), offset, count);
-            if( bytesReaded < 0 ) {
-                throw new IOHimeraFsException("IO not allowd");
-            }
-
+        if (context.getMinorversion() == 0) {
             /*
-             * While we have written directly into back-end byte array
-             * tell the byte buffer the actual position.
+             *  The NFSv4.0 spec requires to update lease time as long as client
+             * needs the file. This is done through READ, WRITE and RENEW
+             * opertations. With introduction of sessions in v4.1 update of the
+             * lease time done through SEQUENCE operation.
              */
-            buf.position(bytesReaded);
-
-            res.status = nfsstat.NFS_OK;
-            res.resok4 = new READ4resok();
-
-            res.resok4.data = buf;
-
-            if( offset + bytesReaded >= inodeStat.getSize() ) {
-                res.resok4.eof = true;
-            }
-
-        }catch(IOHimeraFsException hioe) {
-            _log.debug("READ: {}", hioe.getMessage() );
-            res.status = nfsstat.NFSERR_IO;
-        }catch(ChimeraNFSException he) {
-            _log.debug("READ: {}", he.getMessage() );
-            res.status = he.getStatus();
-        }catch(IOException hfe) {
-            res.status = nfsstat.NFSERR_IO;
+            context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
         }
 
 
-       _result.opread = res;
-            return _result;
-	}
+        long offset = _args.opread.offset.value.value;
+        int count = _args.opread.count.value.value;
 
+        ByteBuffer buf = ByteBuffer.allocate(count);
+
+        int bytesReaded = context.getFs().read(context.currentInode(),
+                buf.array(), offset, count);
+        if (bytesReaded < 0) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_IO, "IO not allowd");
+        }
+
+        /*
+         * While we have written directly into back-end byte array tell the byte
+         * buffer the actual position.
+         */
+        buf.position(bytesReaded);
+
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new READ4resok();
+
+        res.resok4.data = buf;
+
+        if (offset + bytesReaded >= inodeStat.getSize()) {
+            res.resok4.eof = true;
+        }
+    }
 }

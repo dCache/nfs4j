@@ -20,7 +20,6 @@ package org.dcache.chimera.nfs.v4;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.ILLEGAL4res;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,13 +33,7 @@ public class OperationILLEGAL extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-
-        _log.info("ILLEGAL OPCODE: {}", _args.argop);
-
-        ILLEGAL4res opResILLEGAL = new ILLEGAL4res();
-        opResILLEGAL.status = nfsstat.NFSERR_OP_ILLEGAL;
-        _result.opillegal = opResILLEGAL;
-        return _result;
+    public void process(CompoundContext context, nfs_resop4 result) {
+        result.opillegal.status = nfsstat.NFSERR_OP_ILLEGAL;
     }
 }

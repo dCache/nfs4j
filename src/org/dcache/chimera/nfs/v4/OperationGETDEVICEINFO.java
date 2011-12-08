@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
@@ -32,49 +33,34 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         /*
-         * GETDEVICEINFO.
-         * returns the mapping of device ID to storage device address.
+         * GETDEVICEINFO. returns the mapping of device ID to storage device
+         * address.
          */
-        GETDEVICEINFO4res res = new GETDEVICEINFO4res();
+        final GETDEVICEINFO4res res = result.opgetdeviceinfo;
 
         deviceid4 deviceId = _args.opgetdeviceinfo.gdia_device_id;
 
         _log.debug("             Info for #{}", deviceId);
         _log.debug("             type for #{}",
-                    _args.opgetdeviceinfo.gdia_layout_type);
-        try {
+                _args.opgetdeviceinfo.gdia_layout_type);
 
-            res.gdir_resok4 = new GETDEVICEINFO4resok();
+        res.gdir_resok4 = new GETDEVICEINFO4resok();
 
-            device_addr4 deviceInfo = context.getDeviceManager()
-                    .getDeviceInfo(context, deviceId);
+        device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId);
 
-            if (deviceInfo == null) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid deviceInfo id");
-            }
-
-            res.gdir_resok4.gdir_device_addr = deviceInfo;
-            res.gdir_resok4.gdir_device_addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
-            res.gdir_resok4.gdir_notification = new bitmap4();
-            res.gdir_resok4.gdir_notification.value = new uint32_t[1];
-            res.gdir_resok4.gdir_notification.value[0] = new uint32_t(0);
-
-            res.gdir_status = nfsstat.NFS_OK;
-
-        } catch (ChimeraNFSException he) {
-            _log.debug("GETDEVICEINFO: {}", he.getMessage());
-            res.gdir_status = he.getStatus();
-        } catch (Exception e) {
-            _log.error("GETDEVICEINFO4: ", e);
-            res.gdir_status = nfsstat.NFSERR_SERVERFAULT;
+        if (deviceInfo == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid deviceInfo id");
         }
 
-        _result.opgetdeviceinfo = res;
-        return _result;
+        res.gdir_resok4.gdir_device_addr = deviceInfo;
+        res.gdir_resok4.gdir_device_addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        res.gdir_resok4.gdir_notification = new bitmap4();
+        res.gdir_resok4.gdir_notification.value = new uint32_t[1];
+        res.gdir_resok4.gdir_notification.value[0] = new uint32_t(0);
 
+        res.gdir_status = nfsstat.NFS_OK;
     }
-
 }

@@ -611,5 +611,364 @@ public class nfs_resop4 implements XdrAble {
         }
         return status;
     }
+
+    public void setStatus(int status) {
+
+        switch (resop) {
+            case nfs_opnum4.OP_ACCESS:
+                opaccess.status = status;
+                break;
+            case nfs_opnum4.OP_CLOSE:
+                opclose.status = status;
+                break;
+            case nfs_opnum4.OP_COMMIT:
+                opcommit.status = status;
+                break;
+            case nfs_opnum4.OP_CREATE:
+                opcreate.status = status;
+                break;
+            case nfs_opnum4.OP_DELEGPURGE:
+                opdelegpurge.status = status;
+                break;
+            case nfs_opnum4.OP_DELEGRETURN:
+                opdelegreturn.status = status;
+                break;
+            case nfs_opnum4.OP_GETATTR:
+                opgetattr.status = status;
+                break;
+            case nfs_opnum4.OP_GETFH:
+                opgetfh.status = status;
+                break;
+            case nfs_opnum4.OP_LINK:
+                oplink.status = status;
+                break;
+            case nfs_opnum4.OP_LOCK:
+                oplock.status = status;
+                break;
+            case nfs_opnum4.OP_LOCKT:
+                oplockt.status = status;
+                break;
+            case nfs_opnum4.OP_LOCKU:
+                oplocku.status = status;
+                break;
+            case nfs_opnum4.OP_LOOKUP:
+                oplookup.status = status;
+                break;
+            case nfs_opnum4.OP_LOOKUPP:
+                oplookupp.status = status;
+                break;
+            case nfs_opnum4.OP_NVERIFY:
+                opnverify.status = status;
+                break;
+            case nfs_opnum4.OP_OPEN:
+                opopen.status = status;
+                break;
+            case nfs_opnum4.OP_OPENATTR:
+                opopenattr.status = status;
+                break;
+            case nfs_opnum4.OP_OPEN_CONFIRM:
+                opopen_confirm.status = status;
+                break;
+            case nfs_opnum4.OP_OPEN_DOWNGRADE:
+                opopen_downgrade.status = status;
+                break;
+            case nfs_opnum4.OP_PUTFH:
+                opputfh.status = status;
+                break;
+            case nfs_opnum4.OP_PUTPUBFH:
+                opputpubfh.status = status;
+                break;
+            case nfs_opnum4.OP_PUTROOTFH:
+                opputrootfh.status = status;
+                break;
+            case nfs_opnum4.OP_READ:
+                opread.status = status;
+                break;
+            case nfs_opnum4.OP_READDIR:
+                opreaddir.status = status;
+                break;
+            case nfs_opnum4.OP_READLINK:
+                opreadlink.status = status;
+                break;
+            case nfs_opnum4.OP_REMOVE:
+                opremove.status = status;
+                break;
+            case nfs_opnum4.OP_RENAME:
+                oprename.status = status;
+                break;
+            case nfs_opnum4.OP_RENEW:
+                oprenew.status = status;
+                break;
+            case nfs_opnum4.OP_RESTOREFH:
+                oprestorefh.status = status;
+                break;
+            case nfs_opnum4.OP_SAVEFH:
+                opsavefh.status = status;
+                break;
+            case nfs_opnum4.OP_SECINFO:
+                opsecinfo.status = status;
+                break;
+            case nfs_opnum4.OP_SETATTR:
+                opsetattr.status = status;
+                break;
+            case nfs_opnum4.OP_SETCLIENTID:
+                opsetclientid.status = status;
+                break;
+            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
+                opsetclientid_confirm.status = status;
+                break;
+            case nfs_opnum4.OP_VERIFY:
+                opverify.status = status;
+                break;
+            case nfs_opnum4.OP_WRITE:
+                opwrite.status = status;
+                break;
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
+                oprelease_lockowner.status = status;
+                break;
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                opbackchannel_ctl.bcr_status = status;
+                break;
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                opbind_conn_to_session.bctsr_status = status;
+                break;
+            case nfs_opnum4.OP_EXCHANGE_ID:
+                opexchange_id.eir_status = status;
+                break;
+            case nfs_opnum4.OP_CREATE_SESSION:
+                opcreate_session.csr_status = status;
+                break;
+            case nfs_opnum4.OP_DESTROY_SESSION:
+                opdestroy_session.dsr_status = status;
+                break;
+            case nfs_opnum4.OP_FREE_STATEID:
+                opfree_stateid.fsr_status = status;
+                break;
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
+                opget_dir_delegation.gddr_status = status;
+                break;
+            case nfs_opnum4.OP_GETDEVICEINFO:
+                opgetdeviceinfo.gdir_status = status;
+                break;
+            case nfs_opnum4.OP_GETDEVICELIST:
+                opgetdevicelist.gdlr_status = status;
+                break;
+            case nfs_opnum4.OP_LAYOUTCOMMIT:
+                oplayoutcommit.locr_status = status;
+                break;
+            case nfs_opnum4.OP_LAYOUTGET:
+                oplayoutget.logr_status = status;
+                break;
+            case nfs_opnum4.OP_LAYOUTRETURN:
+                oplayoutreturn.lorr_status = status;
+                break;
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                opsecinfo_no_name.value.status = status;
+                break;
+            case nfs_opnum4.OP_SEQUENCE:
+                opsequence.sr_status = status;
+                break;
+            case nfs_opnum4.OP_SET_SSV:
+                opset_ssv.ssr_status = status;
+                break;
+            case nfs_opnum4.OP_TEST_STATEID:
+                optest_stateid.tsr_status = status;
+                break;
+            case nfs_opnum4.OP_WANT_DELEGATION:
+                opwant_delegation.wdr_status = status;
+                break;
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                opdestroy_clientid.dcr_status = status;
+                break;
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                opreclaim_complete.rcr_status = status;
+                break;
+            case nfs_opnum4.OP_ILLEGAL:
+                opillegal.status = status;
+                break;
+        }
+    }
+
+    public static nfs_resop4 resopFor(int opcode) {
+        nfs_resop4 resop = new nfs_resop4();
+        resop.resop = opcode;
+
+        switch (resop.resop) {
+            case nfs_opnum4.OP_ACCESS:
+                resop.opaccess = new ACCESS4res();
+                break;
+            case nfs_opnum4.OP_CLOSE:
+                resop.opclose = new CLOSE4res();
+                break;
+            case nfs_opnum4.OP_COMMIT:
+                resop.opcommit = new COMMIT4res();
+                break;
+            case nfs_opnum4.OP_CREATE:
+                resop.opcreate = new CREATE4res();
+                break;
+            case nfs_opnum4.OP_DELEGPURGE:
+                resop.opdelegpurge = new DELEGPURGE4res();
+                break;
+            case nfs_opnum4.OP_DELEGRETURN:
+                resop.opdelegreturn = new DELEGRETURN4res();
+                break;
+            case nfs_opnum4.OP_GETATTR:
+                resop.opgetattr = new GETATTR4res();
+                break;
+            case nfs_opnum4.OP_GETFH:
+                resop.opgetfh = new GETFH4res();
+                break;
+            case nfs_opnum4.OP_LINK:
+                resop.oplink = new LINK4res();
+                break;
+            case nfs_opnum4.OP_LOCK:
+                resop.oplock = new LOCK4res();
+                break;
+            case nfs_opnum4.OP_LOCKT:
+                resop.oplockt = new LOCKT4res();
+                break;
+            case nfs_opnum4.OP_LOCKU:
+                resop.oplocku = new LOCKU4res();
+                break;
+            case nfs_opnum4.OP_LOOKUP:
+                resop.oplookup = new LOOKUP4res();
+                break;
+            case nfs_opnum4.OP_LOOKUPP:
+                resop.oplookupp = new LOOKUPP4res();
+                break;
+            case nfs_opnum4.OP_NVERIFY:
+                resop.opnverify = new NVERIFY4res();
+                break;
+            case nfs_opnum4.OP_OPEN:
+                resop.opopen = new OPEN4res();
+                break;
+            case nfs_opnum4.OP_OPENATTR:
+                resop.opopenattr = new OPENATTR4res();
+                break;
+            case nfs_opnum4.OP_OPEN_CONFIRM:
+                resop.opopen_confirm = new OPEN_CONFIRM4res();
+                break;
+            case nfs_opnum4.OP_OPEN_DOWNGRADE:
+                resop.opopen_downgrade = new OPEN_DOWNGRADE4res();
+                break;
+            case nfs_opnum4.OP_PUTFH:
+                resop.opputfh = new PUTFH4res();
+                break;
+            case nfs_opnum4.OP_PUTPUBFH:
+                resop.opputpubfh = new PUTPUBFH4res();
+                break;
+            case nfs_opnum4.OP_PUTROOTFH:
+                resop.opputrootfh = new PUTROOTFH4res();
+                break;
+            case nfs_opnum4.OP_READ:
+                resop.opread = new READ4res();
+                break;
+            case nfs_opnum4.OP_READDIR:
+                resop.opreaddir = new READDIR4res();
+                break;
+            case nfs_opnum4.OP_READLINK:
+                resop.opreadlink = new READLINK4res();
+                break;
+            case nfs_opnum4.OP_REMOVE:
+                resop.opremove = new REMOVE4res();
+                break;
+            case nfs_opnum4.OP_RENAME:
+                resop.oprename = new RENAME4res();
+                break;
+            case nfs_opnum4.OP_RENEW:
+                resop.oprenew = new RENEW4res();
+                break;
+            case nfs_opnum4.OP_RESTOREFH:
+                resop.oprestorefh = new RESTOREFH4res();
+                break;
+            case nfs_opnum4.OP_SAVEFH:
+                resop.opsavefh = new SAVEFH4res();
+                break;
+            case nfs_opnum4.OP_SECINFO:
+                resop.opsecinfo = new SECINFO4res();
+                break;
+            case nfs_opnum4.OP_SETATTR:
+                resop.opsetattr = new SETATTR4res();
+                break;
+            case nfs_opnum4.OP_SETCLIENTID:
+                resop.opsetclientid = new SETCLIENTID4res();
+                break;
+            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
+                resop.opsetclientid_confirm = new SETCLIENTID_CONFIRM4res();
+                break;
+            case nfs_opnum4.OP_VERIFY:
+                resop.opverify = new VERIFY4res();
+                break;
+            case nfs_opnum4.OP_WRITE:
+                resop.opwrite = new WRITE4res();
+                break;
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
+                resop.oprelease_lockowner = new RELEASE_LOCKOWNER4res();
+                break;
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                resop.opbackchannel_ctl = new BACKCHANNEL_CTL4res();
+                break;
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                resop.opbind_conn_to_session = new BIND_CONN_TO_SESSION4res();
+                break;
+            case nfs_opnum4.OP_EXCHANGE_ID:
+                resop.opexchange_id = new EXCHANGE_ID4res();
+                break;
+            case nfs_opnum4.OP_CREATE_SESSION:
+                resop.opcreate_session = new CREATE_SESSION4res();
+                break;
+            case nfs_opnum4.OP_DESTROY_SESSION:
+                resop.opdestroy_session = new DESTROY_SESSION4res();
+                break;
+            case nfs_opnum4.OP_FREE_STATEID:
+                resop.opfree_stateid = new FREE_STATEID4res();
+                break;
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
+                resop.opget_dir_delegation = new GET_DIR_DELEGATION4res();
+                break;
+            case nfs_opnum4.OP_GETDEVICEINFO:
+                resop.opgetdeviceinfo = new GETDEVICEINFO4res();
+                break;
+            case nfs_opnum4.OP_GETDEVICELIST:
+                resop.opgetdevicelist = new GETDEVICELIST4res();
+                break;
+            case nfs_opnum4.OP_LAYOUTCOMMIT:
+                resop.oplayoutcommit = new LAYOUTCOMMIT4res();
+                break;
+            case nfs_opnum4.OP_LAYOUTGET:
+                resop.oplayoutget = new LAYOUTGET4res();
+                break;
+            case nfs_opnum4.OP_LAYOUTRETURN:
+                resop.oplayoutreturn = new LAYOUTRETURN4res();
+                break;
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                resop.opsecinfo_no_name = new SECINFO_NO_NAME4res();
+                break;
+            case nfs_opnum4.OP_SEQUENCE:
+                resop.opsequence = new SEQUENCE4res();
+                break;
+            case nfs_opnum4.OP_SET_SSV:
+                resop.opset_ssv = new SET_SSV4res();
+                break;
+            case nfs_opnum4.OP_TEST_STATEID:
+                resop.optest_stateid = new TEST_STATEID4res();
+                break;
+            case nfs_opnum4.OP_WANT_DELEGATION:
+                resop.opwant_delegation = new WANT_DELEGATION4res();
+                break;
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                resop.opdestroy_clientid = new DESTROY_CLIENTID4res();
+                break;
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                resop.opreclaim_complete = new RECLAIM_COMPLETE4res();
+                break;
+            case nfs_opnum4.OP_ILLEGAL:
+                resop.opillegal = new ILLEGAL4res();
+                break;
+            default:
+                resop.opillegal = new ILLEGAL4res();
+        }
+        return resop;
+    }
 }
 // End of nfs_resop4.java

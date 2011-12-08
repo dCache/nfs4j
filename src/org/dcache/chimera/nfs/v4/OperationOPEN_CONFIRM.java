@@ -31,62 +31,46 @@ import org.slf4j.LoggerFactory;
 
 public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_CONFIRM.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_CONFIRM.class);
 
-	OperationOPEN_CONFIRM(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_OPEN_CONFIRM);
-	}
+    OperationOPEN_CONFIRM(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_OPEN_CONFIRM);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
+        final OPEN_CONFIRM4res res = result.opopen_confirm;
 
-        OPEN_CONFIRM4res res = new OPEN_CONFIRM4res();
+        Inode inode = context.currentInode();
 
-        try {
-
-        	Inode inode = context.currentInode();
-
-            if( inode.type() == Inode.Type.DIRECTORY ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
-            }
-
-            if( inode.type() == Inode.Type.SYMLINK ) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
-            }
-
-                stateid4 stateid = _args.opopen_confirm.open_stateid;
-                _log.debug("confirmed stateID: {}", stateid );
-
-            NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
-            if(client == null ) {
-                throw new ChimeraNFSException( nfsstat.NFSERR_BAD_STATEID, "bad client id."  );
-            }
-
-            NFS4State state = client.state(stateid);
-            if( state.stateid().seqid.value != _args.opopen_confirm.seqid.value.value ) {
-                throw new ChimeraNFSException( nfsstat.NFSERR_BAD_SEQID, "bad seqid."  );
-            }
-
-            state.bumpSeqid();
-            state.confirm();
-
-            res.resok4 = new OPEN_CONFIRM4resok();
-            res.resok4.open_stateid = state.stateid();
-
-            res.status = nfsstat.NFS_OK;
-
-        }catch(ChimeraNFSException he) {
-            _log.debug("open_confirm failed: {}", he.getMessage());
-            res.status = he.getStatus();
-        }catch(Exception e) {
-        	_log.error("open_confirm failed:", e);
-        	res.status = nfsstat.NFSERR_SERVERFAULT;
+        if (inode.type() == Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
         }
 
-        _result.opopen_confirm = res;
-            return _result;
+        if (inode.type() == Inode.Type.SYMLINK) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
+        }
 
-	}
+        stateid4 stateid = _args.opopen_confirm.open_stateid;
+        _log.debug("confirmed stateID: {}", stateid);
 
+        NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
+        if (client == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "bad client id.");
+        }
+
+        NFS4State state = client.state(stateid);
+        if (state.stateid().seqid.value != _args.opopen_confirm.seqid.value.value) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_SEQID, "bad seqid.");
+        }
+
+        state.bumpSeqid();
+        state.confirm();
+
+        res.resok4 = new OPEN_CONFIRM4resok();
+        res.resok4.open_stateid = state.stateid();
+
+        res.status = nfsstat.NFS_OK;
+    }
 }

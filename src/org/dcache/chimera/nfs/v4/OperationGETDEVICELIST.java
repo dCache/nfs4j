@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.*;
@@ -34,11 +35,9 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
-    GETDEVICELIST4res res = new GETDEVICELIST4res();
-
-    try {
+        final GETDEVICELIST4res res = result.opgetdevicelist;
 
         /*
          * GETDEVICELIST This operation returns an array of items
@@ -48,11 +47,11 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
          */
 
         if (_args.opgetdevicelist.gdla_maxdevices.value.value < 0) {
-        throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "negative maxcount");
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "negative maxcount");
         }
 
         if (_args.opgetdevicelist.gdla_maxdevices.value.value < 1) {
-        throw new ChimeraNFSException(nfsstat.NFSERR_TOOSMALL, "device list too small");
+            throw new ChimeraNFSException(nfsstat.NFSERR_TOOSMALL, "device list too small");
         }
 
         res.gdlr_resok4 = new GETDEVICELIST4resok();
@@ -73,23 +72,13 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         }
 
         _log.debug("GETDEVICELIST4: new list of #{}, maxcount {}",
-            res.gdlr_resok4.gdlr_deviceid_list.length,
-            _args.opgetdevicelist.gdla_maxdevices.value.value);
+                res.gdlr_resok4.gdlr_deviceid_list.length,
+                _args.opgetdevicelist.gdla_maxdevices.value.value);
 
-        /* we reply only one dummy entry. The rest is dynamic */
+        /*
+         * we reply only one dummy entry. The rest is dynamic
+         */
         res.gdlr_resok4.gdlr_eof = true;
         res.gdlr_status = nfsstat.NFS_OK;
-
-    } catch (ChimeraNFSException he) {
-        _log.debug("GETDEVICELIST4: {}", he.getMessage());
-        res.gdlr_status = he.getStatus();
-    } catch (Exception e) {
-        _log.error("GETDEVICELIST4:", e);
-        res.gdlr_status = nfsstat.NFSERR_SERVERFAULT;
-    }
-
-    _result.opgetdevicelist = res;
-        return _result;
-
     }
 }

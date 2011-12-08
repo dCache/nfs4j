@@ -14,7 +14,6 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v4;
 
 import org.dcache.chimera.nfs.nfsstat;
@@ -35,29 +34,21 @@ public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-        SETCLIENTID_CONFIRM4res res = new SETCLIENTID_CONFIRM4res();
+        final SETCLIENTID_CONFIRM4res res = result.opsetclientid_confirm;
 
-        try {
-            Long clientid = Long.valueOf(_args.opsetclientid_confirm.clientid.value.value);
+        Long clientid = Long.valueOf(_args.opsetclientid_confirm.clientid.value.value);
 
-            NFS4Client client = context.getStateHandler().getClientByID(clientid);
-            if (client == null) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "Bad client id");
-            }
-
-            res.status = nfsstat.NFSERR_INVAL;
-            if ( client.verifierEquals(_args.opsetclientid_confirm.setclientid_confirm)) {
-                res.status = nfsstat.NFS_OK;
-                client.setConfirmed();
-            }
-        } catch (ChimeraNFSException he) {
-            _log.debug("SETCLIENTID_CONFIRM: {}", he.getMessage());
-            res.status = he.getStatus();
+        NFS4Client client = context.getStateHandler().getClientByID(clientid);
+        if (client == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "Bad client id");
         }
 
-        _result.opsetclientid_confirm = res;
-        return _result;
+        res.status = nfsstat.NFSERR_INVAL;
+        if (client.verifierEquals(_args.opsetclientid_confirm.setclientid_confirm)) {
+            res.status = nfsstat.NFS_OK;
+            client.setConfirmed();
+        }
     }
 }

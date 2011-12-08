@@ -48,57 +48,37 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        READ4res res = new READ4res();
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final READ4res res = result.opread;
 
-        try {
+        Stat inodeStat = context.currentInode().statCache();
+        boolean eof = false;
 
-            Stat inodeStat = context.currentInode().statCache();
-            boolean eof = false;
+        long offset = _args.opread.offset.value.value;
+        int count = _args.opread.count.value.value;
 
-            long offset = _args.opread.offset.value.value;
-            int count = _args.opread.count.value.value;
+        ByteBuffer bb = ByteBuffer.allocateDirect(count);
 
-            ByteBuffer bb = ByteBuffer.allocateDirect(count);
+        IOReadFile in = new IOReadFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize());
 
-            IOReadFile in = new IOReadFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize());
-
-            int bytesReaded = in.read(bb, offset, count);
-            if (bytesReaded < 0) {
-                eof = true;
-                bytesReaded = 0;
-            }
-
-            res.status = nfsstat.NFS_OK;
-            res.resok4 = new READ4resok();
-            res.resok4.data = bb;
-
-            if (offset + bytesReaded == inodeStat.getSize()) {
-                eof = true;
-            }
-            res.resok4.eof = eof;
-
-            in.close();
-            _log.debug("MOVER: {}@{} readed, {} requested.",
-                    new Object[]{bytesReaded, offset, _args.opread.count.value.value});
-
-        } catch (IOHimeraFsException hioe) {
-            _log.error("READ : ", hioe);
-            res.status = nfsstat.NFSERR_IO;
-        } catch (ChimeraNFSException he) {
-            res.status = he.getStatus();
-        } catch (ChimeraFsException hfe) {
-            res.status = nfsstat.NFSERR_NOFILEHANDLE;
-        } catch (IOException ioe) {
-            _log.error("READ : ", ioe);
-            res.status = nfsstat.NFSERR_IO;
-        } catch (Exception e) {
-            _log.error("READ : ", e);
-            res.status = nfsstat.NFSERR_IO;
+        int bytesReaded = in.read(bb, offset, count);
+        if (bytesReaded < 0) {
+            eof = true;
+            bytesReaded = 0;
         }
 
-        _result.opread = res;
-        return _result;
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new READ4resok();
+        res.resok4.data = bb;
+
+        if (offset + bytesReaded == inodeStat.getSize()) {
+            eof = true;
+        }
+        res.resok4.eof = eof;
+
+        in.close();
+        _log.debug("MOVER: {}@{} readed, {} requested.",
+                new Object[]{bytesReaded, offset, _args.opread.count.value.value});
     }
 
     private static class IOReadFile {

@@ -20,7 +20,6 @@ package org.dcache.chimera.nfs.v4;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.COMMIT4res;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 
 public class OperationCOMMIT extends AbstractNFSv4Operation {
@@ -30,9 +29,7 @@ public class OperationCOMMIT extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        _result.opcommit = new COMMIT4res();
-        _result.opcommit.status = nfsstat.NFSERR_NOTSUPP;
-        return _result;
+    public void process(CompoundContext context, nfs_resop4 result) {
+        result.opcommit.status = nfsstat.NFSERR_NOTSUPP;
     }
 }

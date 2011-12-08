@@ -17,8 +17,11 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
+import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.xdr.OncRpcException;
 
 /**
  *
@@ -27,11 +30,9 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
  */
 public abstract class AbstractNFSv4Operation {
 
-    protected final nfs_resop4 _result = new nfs_resop4();
     protected final nfs_argop4 _args;
 
     public AbstractNFSv4Operation(nfs_argop4 args, int opCode) {
-        _result.resop = opCode;
         _args = args;
     }
 
@@ -39,5 +40,6 @@ public abstract class AbstractNFSv4Operation {
      * Process current operation.
      * @return result of operation
      */
-    public abstract nfs_resop4 process(CompoundContext context);
+    public abstract void  process(CompoundContext context, nfs_resop4 result)
+            throws ChimeraNFSException, IOException, OncRpcException;
 }

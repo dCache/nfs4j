@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.int32_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
@@ -43,6 +44,7 @@ import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
 import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,48 +52,39 @@ import org.slf4j.LoggerFactory;
 public class OperationSETATTR extends AbstractNFSv4Operation {
 
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationSETATTR.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationSETATTR.class);
 
-	OperationSETATTR(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_SETATTR);
-	}
+    OperationSETATTR(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_SETATTR);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
 
+        final SETATTR4res res = result.opsetattr;
 
-    	SETATTR4res res = new SETATTR4res();
+        try {
 
-    	try {
+            Stat inodeStat = context.currentInode().statCache();
 
-    		Stat inodeStat = context.currentInode().statCache();
-
-            UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(),inodeStat.getMode() & 0777 );
-            if ( ! context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER) ) {
-                throw new ChimeraNFSException( nfsstat.NFSERR_ACCESS, "Permission denied."  );
+            UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
+            if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER)) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
-           res.status = nfsstat.NFS_OK;
-           res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode(), context);
+            res.status = nfsstat.NFS_OK;
+            res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode(), context);
 
-        }catch(ChimeraNFSException hfe) {
-    		res.status = hfe.getStatus();
-    		res.attrsset = new bitmap4();
-    		res.attrsset.value = new uint32_t[2];
-    		res.attrsset.value[0] = new uint32_t(0);
-    		res.attrsset.value[1] = new uint32_t(0);
-    	}catch(Exception e) {
-            _log.error("SETATTR4:", e);
-    		res.status = nfsstat.NFSERR_SERVERFAULT;
-    	}
+        } catch (ChimeraNFSException e) {
+            res.attrsset = new bitmap4();
+            res.attrsset.value = new uint32_t[2];
+            res.attrsset.value[0] = new uint32_t(0);
+            res.attrsset.value[1] = new uint32_t(0);
+            throw e;
+        }
+    }
 
-
-        _result.opsetattr = res;
-            return _result;
-
-	}
-
-    static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws Exception {
+    static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException, OncRpcException {
 
         _log.debug("set Attribute length: {}", attributes.attrmask.value.length);
 
@@ -135,7 +128,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         return bitmap;
     }
 
-    static boolean xdr2fattr( int fattr , Inode inode, CompoundContext context, XdrDecodingStream xdr) throws Exception {
+    static boolean xdr2fattr( int fattr , Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
 
         boolean isApplied = false;
 

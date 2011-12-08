@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -29,40 +30,27 @@ import org.slf4j.LoggerFactory;
 
 public class OperationLOOKUPP extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUPP.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUPP.class);
 
-	OperationLOOKUPP(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_LOOKUPP);
-	}
+    OperationLOOKUPP(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_LOOKUPP);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
-        LOOKUPP4res res = new LOOKUPP4res();
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final LOOKUPP4res res = result.oplookupp;
 
-        try {
-
-        	if( context.currentInode().type() != Inode.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
-        	}
-
-            Inode parent = context.getFs().parentOf(context.currentInode());
-            if( (parent == null) || context.currentInode().equals(context.getFs().getRootInode() ) ) {
-                res.status = nfsstat.NFSERR_NOENT;
-            }else{
-                context.currentInode( parent );
-                res.status = nfsstat.NFS_OK;
-            }
-
-        }catch(ChimeraNFSException he) {
-            _log.debug("LOOKUPP: {}", he.getMessage());
-            res.status = he.getStatus();
-        }catch(Exception e) {
-            _log.error("Error: ", e);
-            res.status = nfsstat.NFSERR_RESOURCE;
+        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
         }
 
-        _result.oplookupp = res;
-            return _result;
-	}
+        Inode parent = context.getFs().parentOf(context.currentInode());
+        if ((parent == null) || context.currentInode().equals(context.getFs().getRootInode())) {
+            res.status = nfsstat.NFSERR_NOENT;
+        } else {
+            context.currentInode(parent);
+            res.status = nfsstat.NFS_OK;
+        }
 
+    }
 }

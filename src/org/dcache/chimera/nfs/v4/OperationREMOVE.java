@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -40,74 +41,64 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
     private static final Logger _log = LoggerFactory.getLogger(OperationREMOVE.class);
 
     OperationREMOVE(nfs_argop4 args) {
-	super(args, nfs_opnum4.OP_REMOVE);
+        super(args, nfs_opnum4.OP_REMOVE);
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-	REMOVE4res res = new REMOVE4res();
+        final REMOVE4res res = result.opremove;
 
-	try {
+        try {
 
-	    Inode parentInode = context.currentInode();
+            Inode parentInode = context.currentInode();
 
-        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
-        }
+            if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+            }
 
-        String name = NameFilter.convert(_args.opremove.target.value.value.value);
+            String name = NameFilter.convert(_args.opremove.target.value.value.value);
 
-        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
-        }
+            if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
+            }
 
-        if (name.length() == 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
-        }
+            if (name.length() == 0) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
+            }
 
-        if (name.equals(".") || name.equals("..")) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-        }
+            if (name.equals(".") || name.equals("..")) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
+            }
 
-        _log.debug("REMOVE: {} : {}", parentInode.toString(), name);
+            _log.debug("REMOVE: {} : {}", parentInode.toString(), name);
 
 
-	    Stat inodeStat = context.getFs().inodeOf(context.currentInode(), name).statCache();
-	    Stat parentStat = parentInode.statCache();
+            Stat inodeStat = context.getFs().inodeOf(context.currentInode(), name).statCache();
+            Stat parentStat = parentInode.statCache();
 
-	    UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
+            UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
 //	    if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
 //      throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
 //	    }
-	    acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
+            acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
             if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-	    }
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+            }
 
-	    boolean rc = context.getFs().remove(parentInode, name);
-	    if (!rc && context.currentInode().type() == Inode.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory not empty");
-	    }
+            boolean rc = context.getFs().remove(parentInode, name);
+            if (!rc && context.currentInode().type() == Inode.Type.DIRECTORY) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory not empty");
+            }
 
-	    res.status = nfsstat.NFS_OK;
-	    res.resok4 = new REMOVE4resok();
-	    res.resok4.cinfo = new change_info4();
-	    res.resok4.cinfo.atomic = true;
-	    res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
-	    res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
-	}catch(FileNotFoundHimeraFsException e){
-	    res.status = nfsstat.NFSERR_NOENT;
-    } catch (ChimeraNFSException he) {
-        _log.debug("REMOVE: {}", he.getMessage());
-	    res.status = he.getStatus();
-	} catch (Exception e) {
-        _log.error("REMOVE: ", e);
-	    res.status = nfsstat.NFSERR_SERVERFAULT;
-	}
-
-	_result.opremove = res;
-        return _result;
-
+            res.status = nfsstat.NFS_OK;
+            res.resok4 = new REMOVE4resok();
+            res.resok4.cinfo = new change_info4();
+            res.resok4.cinfo.atomic = true;
+            res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
+            res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
+        } catch (FileNotFoundHimeraFsException e) {
+            res.status = nfsstat.NFSERR_NOENT;
+        }
     }
 }

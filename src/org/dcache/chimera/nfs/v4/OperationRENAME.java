@@ -38,46 +38,46 @@ import org.slf4j.LoggerFactory;
 
 public class OperationRENAME extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationRENAME.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationRENAME.class);
 
-	OperationRENAME(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_RENAME);
-	}
+    OperationRENAME(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_RENAME);
+    }
 
-	@Override
-	public nfs_resop4 process(CompoundContext context) {
-    	RENAME4res res = new RENAME4res();
+    @Override
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final RENAME4res res = result.oprename;
 
-    	try {
+        try {
 
-    		Inode sourceDir = context.savedInode();
-    		Inode destDir = context.currentInode();
+            Inode sourceDir = context.savedInode();
+            Inode destDir = context.currentInode();
 
-            if( sourceDir.type() != Inode.Type.DIRECTORY ) {
+            if (sourceDir.type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "source path not a directory");
             }
 
-            if( destDir.type() != Inode.Type.DIRECTORY ) {
+            if (destDir.type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "destination path  not a directory");
             }
 
-            String oldName = NameFilter.convert (_args.oprename.oldname.value.value.value);
-            String newName = NameFilter.convert (_args.oprename.newname.value.value.value);
+            String oldName = NameFilter.convert(_args.oprename.oldname.value.value.value);
+            String newName = NameFilter.convert(_args.oprename.newname.value.value.value);
 
-            if( oldName.length() == 0 ) {
+            if (oldName.length() == 0) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
             }
 
-            if( newName.length() == 0 ) {
+            if (newName.length() == 0) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
             }
 
 
-            if( oldName.equals(".") || oldName.equals("..") ) {
+            if (oldName.equals(".") || oldName.equals("..")) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
             }
 
-            if( newName.equals(".") || newName.equals("..") ) {
+            if (newName.equals(".") || newName.equals("..")) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
             }
 
@@ -86,12 +86,12 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 //                throw new ChimeraNFSException(nfsstat.NFSERR_XDEV, "cross filesystem request");
 //            }
 
-            _log.debug("Rename: src={} name={} dest={} name={}", new Object[] {
-                    sourceDir,
-                    oldName,
-                    destDir,
-                    newName
-                });
+            _log.debug("Rename: src={} name={} dest={} name={}", new Object[]{
+                        sourceDir,
+                        oldName,
+                        destDir,
+                        newName
+                    });
 
             Stat fromStat = sourceDir.stat();
             Stat toStat = destDir.stat();
@@ -108,30 +108,19 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
             res.resok4.source_cinfo = new change_info4();
             res.resok4.source_cinfo.atomic = true;
-            res.resok4.source_cinfo.before = new changeid4( new uint64_t(sourceDir.statCache().getMTime()));
-            res.resok4.source_cinfo.after = new changeid4( new uint64_t( System.currentTimeMillis()) );
+            res.resok4.source_cinfo.before = new changeid4(new uint64_t(sourceDir.statCache().getMTime()));
+            res.resok4.source_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             res.resok4.target_cinfo = new change_info4();
             res.resok4.target_cinfo.atomic = true;
-            res.resok4.target_cinfo.before = new changeid4( new uint64_t(sourceDir.statCache().getMTime()));
-            res.resok4.target_cinfo.after = new changeid4( new uint64_t( System.currentTimeMillis()) );
-
+            res.resok4.target_cinfo.before = new changeid4(new uint64_t(sourceDir.statCache().getMTime()));
+            res.resok4.target_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             res.status = nfsstat.NFS_OK;
 
-    	}catch(FileNotFoundHimeraFsException fnf) {
-    		res.status = nfsstat.NFSERR_NOENT;
-        }catch(ChimeraNFSException he) {
-            _log.error("RENAME: {}", he.getMessage());
-            res.status = he.getStatus();
-        } catch (IOException hfe) {
-            res.status = nfsstat.NFSERR_SERVERFAULT;
-            _log.error("RENAME: {}", hfe.getMessage());
+        } catch (FileNotFoundHimeraFsException fnf) {
+            res.status = nfsstat.NFSERR_NOENT;
         }
-
-
-       _result.oprename = res;
-            return _result;
-	}
+    }
 
 }

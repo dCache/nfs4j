@@ -17,7 +17,6 @@
 
 package org.dcache.chimera.nfs.v4;
 
-import org.dcache.chimera.nfs.v4.xdr.RECLAIM_COMPLETE4res;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
@@ -34,9 +33,7 @@ public class OperationRECLAIM_COMPLETE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public nfs_resop4 process(CompoundContext context) {
-        _result.opreclaim_complete = new RECLAIM_COMPLETE4res();
-        _result.opreclaim_complete.rcr_status = nfsstat.NFSERR_NOTSUPP;
-        return _result;
+    public void process(CompoundContext context, nfs_resop4 result) {
+        result.opreclaim_complete.rcr_status = nfsstat.NFSERR_NOTSUPP;
     }
 }
