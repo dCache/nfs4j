@@ -44,6 +44,12 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         if (context.getMinorversion() > 0) {
             context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+
+            /*
+             * for now it's just a place holder for state processing.
+             * Nevertheless, NFSERR_BAD_STATEID is throws if state is invalid.
+             */
+            NFS4State state = context.getSession().getClient().state(_args.opclose.open_stateid);
             try {
                 context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
             } catch (IOException e) {
