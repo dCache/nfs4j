@@ -31,6 +31,7 @@ import java.util.List;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.v4.xdr.server_owner4;
+import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 
@@ -59,6 +60,8 @@ public class CompoundContext {
     private boolean _cacheThis;
     private final int _totalOperationsCount;
     private int _currentOpPosition = -1;
+    private stateid4 _currentStateid = null;
+    private stateid4 _savedStateid = null;
 
     /**
      * Create context of COUMPOUND request.
@@ -167,6 +170,7 @@ public class CompoundContext {
             throw new ChimeraNFSException(nfsstat.NFSERR_RESTOREFH, "no saved file handle");
         }
         _currentInode = _savedInode;
+        _currentStateid = _savedStateid;
         _log.debug("restored Inode: {}",  _currentInode );
     }
 
@@ -188,6 +192,7 @@ public class CompoundContext {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOFILEHANDLE, "no file handle");
         }
         _savedInode = _currentInode;
+        _savedStateid = _currentStateid;
         _log.debug("saved Inode: {}", _savedInode );
     }
 
@@ -252,6 +257,16 @@ public class CompoundContext {
     public void nextOperation() {
         assert _currentOpPosition < _totalOperationsCount;
         _currentOpPosition ++;
+    }
+
+    public stateid4 currentStateid() throws ChimeraNFSException {
+        if(_currentStateid == null)
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "no current stateid");
+        return _currentStateid;
+    }
+
+    public void currentStateid(stateid4 currentStateid) {
+        _currentStateid = currentStateid;
     }
 
     public ServerIdProvider getServerIdProvider() {
