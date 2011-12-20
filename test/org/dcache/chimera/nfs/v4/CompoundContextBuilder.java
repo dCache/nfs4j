@@ -41,12 +41,12 @@ public class CompoundContextBuilder {
 
         @Override
         public InetSocketAddress getLocalSocketAddress() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 2049);
+            return new InetSocketAddress(2049);
         }
 
         @Override
         public InetSocketAddress getRemoteSocketAddress() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 7777);
+            return new InetSocketAddress(7777);
         }
 
         @Override
