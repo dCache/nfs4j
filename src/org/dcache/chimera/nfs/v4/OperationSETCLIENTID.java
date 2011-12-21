@@ -58,11 +58,10 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Client Id In use");
         }
 
-        client = new NFS4Client(context.getRpcCall().getTransport().getRemoteSocketAddress(),
+        client = context.getStateHandler().createClient(
+                context.getRpcCall().getTransport().getRemoteSocketAddress(),
                 context.getRpcCall().getTransport().getLocalSocketAddress(),
                 _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, null);
-
-        context.getStateHandler().addClient(client);
 
         res.resok4 = new SETCLIENTID4resok();
         res.resok4.clientid = new clientid4();

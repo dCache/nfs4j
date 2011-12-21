@@ -22,19 +22,17 @@ public class NFSv4StateHandlerTest {
 
     @Test
     public void testGetByStateId() throws Exception {
-        NFS4Client client = createClient();
+        NFS4Client client = createClient(_stateHandler);
 
         stateid4 state = client.createState().stateid();
-        _stateHandler.addClient(client);
         _stateHandler.getClientIdByStateId(state);
     }
 
     @Test
     public void testGetByVerifier() throws Exception {
-        NFS4Client client = createClient();
+        NFS4Client client = createClient(_stateHandler);
 
         stateid4 state = client.createState().stateid();
-        _stateHandler.addClient(client);
         assertEquals(client, _stateHandler.getClientByVerifier(client.verifier()));
     }
 
@@ -50,42 +48,37 @@ public class NFSv4StateHandlerTest {
 
     @Test
     public void testGetClientExists() throws Exception {
-         NFS4Client client = createClient();
-        _stateHandler.addClient(client);
+         NFS4Client client = createClient(_stateHandler);
         assertEquals(client,  _stateHandler.getClientByID(client.getId()));
     }
 
     @Test
     public void testUpdateLeaseTime() throws Exception {
-        NFS4Client client = createClient();
+        NFS4Client client = createClient(_stateHandler);
         NFS4State state = client.createState();
         stateid4 stateid = state.stateid();
         state.confirm();
-        _stateHandler.addClient(client);
         _stateHandler.updateClientLeaseTime(stateid);
     }
 
     @Test(expected=ChimeraNFSException.class)
     public void testUpdateLeaseTimeNotConfirmed() throws Exception {
-        NFS4Client client = createClient();
+        NFS4Client client = createClient(_stateHandler);
         NFS4State state = client.createState();
         stateid4 stateid = state.stateid();
 
-        _stateHandler.addClient(client);
         _stateHandler.updateClientLeaseTime(stateid);
     }
 
     @Test(expected=ChimeraNFSException.class)
     public void testUpdateLeaseTimeNotExists() throws Exception {
-        NFS4Client client = createClient();
+        NFS4Client client = createClient(_stateHandler);
         stateid4 state = client.createState().stateid();
         _stateHandler.updateClientLeaseTime(state);
     }
 
-    static NFS4Client createClient() throws UnknownHostException {
+    static NFS4Client createClient(NFSv4StateHandler stateHandler) throws UnknownHostException {
         InetSocketAddress address = new InetSocketAddress(InetAddress.getByName("www.google.com"), 123);
-        NFS4Client client = new NFS4Client(address, address, "123".getBytes(),
-            new verifier4("123".getBytes()), null);
-        return client;
+        return stateHandler.createClient(address, address, "123".getBytes(), new verifier4("123".getBytes()), null);
     }
 }

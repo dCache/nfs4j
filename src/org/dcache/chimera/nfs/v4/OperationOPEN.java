@@ -72,7 +72,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "bad client id.");
                 }
 
-                client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+                client.updateLeaseTime();
                 _log.debug("open request form clientid: {}, owner: {}",
                         client, new String(_args.opopen.owner.value.owner));
             } 

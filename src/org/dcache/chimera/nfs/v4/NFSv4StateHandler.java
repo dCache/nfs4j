@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.net.InetSocketAddress;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.ChimeraNFSException;
@@ -52,6 +53,19 @@ public class NFSv4StateHandler {
 
     private final Map<Opaque, NFS4Client> _clientByOwner = new HashMap<Opaque, NFS4Client>();
 
+    /**
+     * Client's lease expiration time in milliseconds.
+     */
+    private final long _leaseTime;
+
+    public NFSv4StateHandler() {
+        this(NFSv4Defaults.NFS4_LEASE_TIME*1000);
+    }
+
+    NFSv4StateHandler(long leaseTime) {
+        _leaseTime = leaseTime;
+    }
+
     public synchronized void removeClient(NFS4Client client) {
 
         for(NFSv41Session session: client.sessions() ) {
@@ -65,7 +79,7 @@ public class NFSv4StateHandler {
 
     }
 
-    public synchronized void addClient(NFS4Client newClient) {
+    private synchronized void addClient(NFS4Client newClient) {
         _clients.add(newClient);
         _clientsByServerId.put(newClient.getId(), newClient);
         _clientsByVerifier.put(newClient.verifier(), newClient);
@@ -110,10 +124,17 @@ public class NFSv4StateHandler {
             throw new ChimeraNFSException( nfsstat.NFSERR_BAD_STATEID, "State is not confirmed"  );
         }
 
-        client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+        client.updateLeaseTime();
     }
 
     public synchronized List<NFS4Client> getClients() {
         return new CopyOnWriteArrayList<NFS4Client>(_clients);
+    }
+
+    public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress,
+            byte[] ownerID, verifier4 verifier, String principal) {
+        NFS4Client client = new NFS4Client(clientAddress, localAddress, ownerID, verifier, principal, _leaseTime);
+        addClient(client);
+        return client;
     }
 }

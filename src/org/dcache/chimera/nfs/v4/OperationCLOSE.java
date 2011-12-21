@@ -43,7 +43,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         Inode inode = context.currentInode();
 
         if (context.getMinorversion() > 0) {
-            context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+            context.getSession().getClient().updateLeaseTime();
 
             /*
              * for now it's just a place holder for state processing.

@@ -45,7 +45,7 @@ public class OperationRENEW extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "Bad client id");
         }
 
-        client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+        client.updateLeaseTime();
         res.status = nfsstat.NFS_OK;
     }
 }

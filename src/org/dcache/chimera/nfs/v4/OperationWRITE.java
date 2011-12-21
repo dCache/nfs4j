@@ -73,7 +73,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
 
         if (context.getMinorversion() > 0) {
-            context.getSession().getClient().updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
+            context.getSession().getClient().updateLeaseTime();
         } else {
             context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
         }
