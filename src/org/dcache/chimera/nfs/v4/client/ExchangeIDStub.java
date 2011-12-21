@@ -18,10 +18,13 @@
 package org.dcache.chimera.nfs.v4.client;
 
 
+import java.util.Random;
 import org.dcache.chimera.nfs.v4.xdr.*;
+import org.dcache.utils.Bytes;
 
 public class ExchangeIDStub {
 
+    private static final Random RANDOM = new Random(0);
 
     public static nfs_argop4 normal(String nii_domain, String nii_name,
             String co_ownerid, int flags, int how) {
@@ -46,11 +49,7 @@ public class ExchangeIDStub {
         op.opexchange_id.eia_clientowner.co_verifier = new verifier4();
         op.opexchange_id.eia_clientowner.co_verifier.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        byte[] locVerifier = Long.toHexString(releaseDate.seconds.value).getBytes();
-
-
-        int len = locVerifier.length > nfs4_prot.NFS4_VERIFIER_SIZE ? nfs4_prot.NFS4_VERIFIER_SIZE : locVerifier.length;
-        System.arraycopy(locVerifier, 0, op.opexchange_id.eia_clientowner.co_verifier.value, 0,len );
+        Bytes.putLong(op.opexchange_id.eia_clientowner.co_verifier.value, 0, RANDOM.nextLong());
 
         op.opexchange_id.eia_flags = new uint32_t(flags);
         op.opexchange_id.eia_state_protect = new state_protect4_a();
