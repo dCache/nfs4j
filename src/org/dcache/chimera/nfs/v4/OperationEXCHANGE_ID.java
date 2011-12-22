@@ -190,22 +190,23 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 if (client.isConfirmed()) {
                     if (client.verifierEquals(verifier) && principal.equals(client.principal())) {
                         _log.debug("Case 2: Non-Update on Existing Client ID");
+                        if (!client.hasState()) {
+                            client.refreshLeaseTime();
+                        }                        
                     } else if (principal.equals(client.principal())) {
-
                         _log.debug("case 5: Client Restart");
                         context.getStateHandler().removeClient(client);
                         client = context.getStateHandler().createClient(
                                 remoteSocketAddress, localSocketAddress,
                                 clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
                     } else {
-                        if ((!client.hasState()) || (System.currentTimeMillis() - client.leaseTime()) > (NFSv4Defaults.NFS4_LEASE_TIME * 1000)) {
-                            _log.debug("case 3a: Client Collision is equivalent to case 1 (the new Owner ID)");
+                        _log.debug("Case 3b: Client Collision");
+                        if ((!client.hasState()) || !client.isLeaseValid()) {
                             context.getStateHandler().removeClient(client);
                             client = context.getStateHandler().createClient(
                                     remoteSocketAddress, localSocketAddress,
                                     clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
                         } else {
-                            _log.debug("Case 3b: Client Collision");
                             throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Principal Missmatch");
                         }
                     }
