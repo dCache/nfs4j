@@ -103,7 +103,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             }
          */
 
-        byte[] clientOwner = _args.opexchange_id.eia_clientowner.co_ownerid;
+        final byte[] clientOwner = _args.opexchange_id.eia_clientowner.co_ownerid;
 
         /*
          * check the state
@@ -141,49 +141,41 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "SSV other than SP4NONE to use");
         }
 
-        //decision variable for case selection
-
         NFS4Client client = context.getStateHandler().clientByOwner(clientOwner);
-        String principal = Integer.toString(context.getUser().getUID());
-        verifier4 verifier = _args.opexchange_id.eia_clientowner.co_verifier;
+        final String principal = Integer.toString(context.getUser().getUID());
+        final verifier4 verifier = _args.opexchange_id.eia_clientowner.co_verifier;
 
-        boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
+        final boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
 
-        InetSocketAddress remoteSocketAddress = context.getRpcCall().getTransport().getRemoteSocketAddress();
-        InetSocketAddress localSocketAddress = context.getRpcCall().getTransport().getLocalSocketAddress();
+        final InetSocketAddress remoteSocketAddress = context.getRpcCall().getTransport().getRemoteSocketAddress();
+        final InetSocketAddress localSocketAddress = context.getRpcCall().getTransport().getLocalSocketAddress();
+        final NFSv4StateHandler stateHandler = context.getStateHandler();
 
-        if (client == null) {
-
-            if (update) {
-                _log.debug("Case 7a: Update but No Confirmed Record");
+        if (update) {
+            if (client == null || !client.isConfirmed()) {
+                _log.debug("Update of no existing/confirmed Record (case 7)");
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "no such client");
             }
 
-            // create a new client: case 1
-            _log.debug("Case 1: New Owner ID");
-            client = context.getStateHandler().createClient(
-                    remoteSocketAddress, localSocketAddress,
-                    clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
+            if (!client.verifierEquals(verifier)) {
+                _log.debug("case 8: Update but Wrong Verifier");
+                throw new ChimeraNFSException(nfsstat.NFSERR_NOT_SAME, "Update but Wrong Verifier");
+            }
 
+            if (!principal.equals(client.principal())) {
+                _log.debug("case 9: Update but Wrong Principal");
+                throw new ChimeraNFSException(nfsstat.NFSERR_PERM, "Principal Mismatch");
+            }
+
+            _log.debug("Case 6: Update");
+            client.refreshLeaseTime();
         } else {
-
-
-            if (update) {
-
-                if (client.isConfirmed()) {
-                    if (client.verifierEquals(verifier) && principal.equals(client.principal())) {
-                        _log.debug("Case 6: Update");
-                    } else if (!client.verifierEquals(verifier)) {
-                        _log.debug("case 8: Update but Wrong Verifier");
-                        throw new ChimeraNFSException(nfsstat.NFSERR_NOT_SAME, "Update but Wrong Verifier");
-                    } else {
-                        _log.debug("case 9: Update but Wrong Principal");
-                        throw new ChimeraNFSException(nfsstat.NFSERR_PERM, "Principal Mismatch");
-                    }
-                } else {
-                    _log.debug("Case 7b: Update but No Confirmed Record");
-                    throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "no such client");
-                }
+            if (client == null) {
+                // create a new client: case 1
+                _log.debug("Case 1: New Owner ID");
+                client = stateHandler.createClient(
+                        remoteSocketAddress, localSocketAddress,
+                        clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
 
             } else {
 
@@ -192,18 +184,18 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                         _log.debug("Case 2: Non-Update on Existing Client ID");
                         if (!client.hasState()) {
                             client.refreshLeaseTime();
-                        }                        
+                        }
                     } else if (principal.equals(client.principal())) {
                         _log.debug("case 5: Client Restart");
-                        context.getStateHandler().removeClient(client);
-                        client = context.getStateHandler().createClient(
+                        stateHandler.removeClient(client);
+                        client = stateHandler.createClient(
                                 remoteSocketAddress, localSocketAddress,
                                 clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
                     } else {
                         _log.debug("Case 3b: Client Collision");
                         if ((!client.hasState()) || !client.isLeaseValid()) {
-                            context.getStateHandler().removeClient(client);
-                            client = context.getStateHandler().createClient(
+                            stateHandler.removeClient(client);
+                            client = stateHandler.createClient(
                                     remoteSocketAddress, localSocketAddress,
                                     clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
                         } else {
@@ -212,16 +204,14 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                     }
                 } else {
                     _log.debug("case 4: Replacement of Unconfirmed Record");
-                    context.getStateHandler().removeClient(client);
-                    client = context.getStateHandler().createClient(
+                    stateHandler.removeClient(client);
+                    client = stateHandler.createClient(
                             remoteSocketAddress, localSocketAddress,
                             _args.opexchange_id.eia_clientowner.co_ownerid,
                             _args.opexchange_id.eia_clientowner.co_verifier,
                             principal);
                 }
-
             }
-
         }
 
         client.updateLeaseTime();
