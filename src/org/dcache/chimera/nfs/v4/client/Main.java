@@ -771,7 +771,7 @@ public class Main {
                                 0, 4096, stripe.getFirstStripeIndex());
             Main dsClient = _servers.get(deviceAddr);
 
-            dsClient.dsRead(dsClient, stripe.getFh(), or.stateid());
+            dsClient.nfsRead(stripe.getFh(), or.stateid());
 
             layoutreturn(or.fh(), 0, -1, new byte[0], or.stateid());
 
@@ -848,7 +848,7 @@ public class Main {
                             offset, data.length, stripe.getFirstStripeIndex());
                     Main dsClient = _servers.get(deviceAddr);
 
-                    dsClient.dsWrite(dsClient, stripe.getFh(), data, offset, or.stateid());
+                    dsClient.nfsWrite(stripe.getFh(), data, offset, or.stateid());
                     offset += n;
                 }
 
@@ -863,7 +863,7 @@ public class Main {
 
         } else {
             // not a pNFS server
-            nfsWrite(or.fh(), or.stateid());
+            nfsWrite(or.fh(), "hello world".getBytes(), 0, or.stateid());
         }
         close(or.fh(), or.stateid());
     }
@@ -1106,7 +1106,7 @@ public class Main {
 
     }
 
-    private void dsRead(Main client, nfs_fh4 fh, stateid4 stateid)
+    private void nfsRead(nfs_fh4 fh, stateid4 stateid)
             throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
@@ -1129,29 +1129,7 @@ public class Main {
 
     }
 
-    private void nfsRead(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
-
-        COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
-                .withPutfh(fh)
-                .withRead(4096, 0, stateid)
-                .withTag("nfs read")
-                .build();
-        COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status == nfsstat.NFS_OK) {
-
-            byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
-            compound4res.resarray.get(2).opread.resok4.data.get(data);
-            System.out.println("[" + new String(data) + "]");
-        } else {
-            System.out.println("read failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
-    }
-
-    private void dsWrite(Main client, nfs_fh4 fh, byte[] data, long offset, stateid4 stateid)
+    private void nfsWrite(nfs_fh4 fh, byte[] data, long offset, stateid4 stateid)
             throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
@@ -1169,27 +1147,6 @@ public class Main {
 
 
         // OK
-    }
-
-    private void nfsWrite(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
-
-        COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
-                .withPutfh(fh)
-                .withWrite(0, "hello world".getBytes(), stateid)
-                .withTag("nfs write")
-                .build();
-
-        COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status != nfsstat.NFS_OK) {
-            System.out.println("write failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        } else {
-
-            System.out.println(compound4res.resarray.get(2).opwrite.resok4.count.value.value
-                    + " bytes written.");
-        }
     }
 
     private void sequence() throws OncRpcException, IOException {
