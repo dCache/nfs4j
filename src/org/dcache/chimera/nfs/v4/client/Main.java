@@ -49,13 +49,10 @@ import org.dcache.chimera.nfs.v4.xdr.deviceid4;
 import org.dcache.chimera.nfs.v4.xdr.entry4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_fs_locations;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_type;
-import org.dcache.chimera.nfs.v4.xdr.fs_location4;
-import org.dcache.chimera.nfs.v4.xdr.fs_locations4;
 import org.dcache.chimera.nfs.v4.xdr.layout4;
 import org.dcache.chimera.nfs.v4.xdr.layoutiomode4;
 import org.dcache.chimera.nfs.v4.xdr.layouttype4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
-import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.nfsstat;
@@ -65,12 +62,9 @@ import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
 import org.dcache.chimera.nfs.v4.xdr.sessionid4;
 import org.dcache.chimera.nfs.v4.xdr.state_protect_how4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
-import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.posix.Stat;
-import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 
@@ -90,19 +84,6 @@ public class Main {
     private boolean _isMDS = false;
     private boolean _isDS = false;
     private static final String PROMPT = "NFSv41: ";
-
-    public static COMPOUND4args generateCompound(String tag,
-            List<nfs_argop4> opList) {
-
-        COMPOUND4args compound4args = new COMPOUND4args();
-        compound4args.tag = new utf8str_cs(tag);
-        compound4args.minorversion = new uint32_t(1);
-
-        compound4args.argarray = opList.toArray(new nfs_argop4[opList.size()]);
-
-        return compound4args;
-
-    }
 
     public static void main(String[] args) throws IOException, OncRpcException, InterruptedException {
 
@@ -439,14 +420,15 @@ public class Main {
 
     private void exchange_id() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
         String domain = "nairi.desy.de";
         String name = "dCache.ORG java based client";
 
-        ops.add(ExchangeIDStub.normal(domain, name, UUID.randomUUID().toString(), 0, state_protect_how4.SP4_NONE));
+        COMPOUND4args args = new CompoundBuilder()
+                .withExchangeId(domain, name, UUID.randomUUID().toString(), 0,state_protect_how4.SP4_NONE )
+                .withTag("exchange_id")
+                .build();
 
-        COMPOUND4res compound4res = sendCompound(ops, "exchange_id");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -483,11 +465,12 @@ public class Main {
 
     private void create_session() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withCreatesession(_clientIdByServer, _sequenceID)
+                .withTag("create_session")
+                .build();
 
-        ops.add(CreateSessionStub.standard(_clientIdByServer, _sequenceID));
-
-        COMPOUND4res compound4res = sendCompound(ops, "create_session");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -504,44 +487,42 @@ public class Main {
 
     private void destroy_session() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withDestroysession(_sessionid)
+                .withTag("destroy_session")
+                .build();
 
-        ops.add(DestroySessionStub.standard(_sessionid));
         @SuppressWarnings("unused")
-        COMPOUND4res compound4res = sendCompound(ops, "destroy_session");
+        COMPOUND4res compound4res = sendCompound(args);
     }
 
     private void destroy_clientid() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(DestroyClientidStub.generate(_clientIdByServer));
+        COMPOUND4args args = new CompoundBuilder()
+                .withDestroyclientid(_clientIdByServer)
+                .withTag("destroy_clientid")
+                .build();
         @SuppressWarnings("unused")
-        COMPOUND4res compound4res = sendCompound(ops, "destroy_clientid");
+        COMPOUND4res compound4res = sendCompound(args);
         _nfsClient.close();
 
     }
 
     private void getRootFh(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutrootfh()
+                .withLookup(path)
+                .withGetfh()
+                .withTag("get_rootfh")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutrootfhStub.generateRequest());
-        String[] pathElements = path.split("/");
-        for (String p : pathElements) {
-            if (p != null && p.length() > 0) {
-                ops.add(LookupStub.generateRequest(p));
-            }
-        }
-        ops.add(GetfhStub.generateRequest());
-
-        COMPOUND4res compound4res = sendCompound(ops, "get_root_fh");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
-            _rootFh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
+            _rootFh = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
             _cwd = _rootFh;
             System.out.println("root fh = " + toHexString(_rootFh.value));
 
@@ -576,20 +557,21 @@ public class Main {
 
     public String[] list(nfs_fh4 fh) throws OncRpcException, IOException, ChimeraNFSException {
 
-        boolean done = false;
+        boolean done;
         List<String> list = new ArrayList<String>();
         long cookie = 0;
         verifier4 verifier = new verifier4(new byte[nfs4_prot.NFS4_VERIFIER_SIZE]);
 
         do {
 
-            List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-            ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                    _sequenceID.value.value, 12, 0));
-            ops.add(PutfhStub.generateRequest(fh));
-            ops.add(ReaddirStub.generateRequest(cookie, verifier));
+            COMPOUND4args args = new CompoundBuilder()
+                    .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                    .withPutfh(fh)
+                    .withReaddir(cookie, verifier)
+                    .withTag("readdir")
+                    .build();
 
-            COMPOUND4res compound4res = sendCompound(ops, "readdir");
+            COMPOUND4res compound4res = sendCompound(args);
 
             if (compound4res.status == nfsstat.NFS_OK) {
                 verifier = compound4res.resarray.get(2).opreaddir.resok4.cookieverf;
@@ -618,45 +600,29 @@ public class Main {
 
     public String[] list(nfs_fh4 fh, String path) throws OncRpcException, IOException, ChimeraNFSException {
 
-        boolean done = false;
+        boolean done;
         List<String> list = new ArrayList<String>();
         long cookie = 0;
         verifier4 verifier = new verifier4(new byte[nfs4_prot.NFS4_VERIFIER_SIZE]);
 
         do {
 
-            List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-            ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                    _sequenceID.value.value, 12, 0));
+            COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh( path.charAt(0) == '/' ? _rootFh : fh)
+                .withLookup(path)
+                .withReaddir(cookie, verifier)
+                .withTag("readdir")
+                .build();
 
-            if (path.charAt(0) == '/') {
-                ops.add(PutfhStub.generateRequest(_rootFh));
-            } else {
-                ops.add(PutfhStub.generateRequest(fh));
-            }
-
-            String[] pathElements = path.split("/");
-            for (String p : pathElements) {
-
-                if (p != null && p.length() > 0) {
-                    if (p.equals("..")) {
-                        ops.add(LookuppStub.generateRequest());
-                    } else {
-                        ops.add(LookupStub.generateRequest(p));
-                    }
-                }
-            }
-
-            ops.add(ReaddirStub.generateRequest(cookie, verifier));
-
-            COMPOUND4res compound4res = sendCompound(ops, "readdir");
+            COMPOUND4res compound4res = sendCompound(args);
 
             if (compound4res.status == nfsstat.NFS_OK) {
 
-                verifier = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.cookieverf;
-                done = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.reply.eof;
+                verifier = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.cookieverf;
+                done = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.eof;
 
-                entry4 dirEntry = compound4res.resarray.get(ops.size() - 1).opreaddir.resok4.reply.entries;
+                entry4 dirEntry = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.entries;
                 while (dirEntry != null) {
                     cookie = dirEntry.cookie.value.value;
                     list.add(new String(dirEntry.name.value.value.value));
@@ -679,45 +645,38 @@ public class Main {
 
     private void mkdir(String path) throws OncRpcException, IOException {
 
-
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        ops.add(PutfhStub.generateRequest(_cwd));
-        ops.add(SavefhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
-        ops.add(MkdirStub.generateRequest(path));
-        ops.add(RestorefhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
-        ops.add(LookuppStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
-
-        COMPOUND4res compound4res = sendCompound(ops, "mkdir");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_cwd)
+                .withSavefh()
+                .withGetattr(nfs4_prot.FATTR4_CHANGE)
+                .withMakedir(path)
+                .withRestorefh()
+                .withGetattr(nfs4_prot.FATTR4_CHANGE)
+                .withTag("mkdir")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status != nfsstat.NFS_OK) {
             System.out.println("mkdir failed. Error = "
                     + nfsstat.toString(compound4res.status));
         }
-
     }
 
     private void get_fs_locations(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(_cwd));
-        ops.add(LookupStub.generateRequest(path));
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_FS_LOCATIONS));
-
-        COMPOUND4res compound4res = sendCompound(ops, "get_fs_locations");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_cwd)
+                .withLookup(path)
+                .withGetattr(nfs4_prot.FATTR4_FS_LOCATIONS)
+                .withTag("get_fs_locations")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
-            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(ops.size() - 1).opgetattr.resok4.obj_attributes);
+            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
             fattr4_fs_locations locations = (fattr4_fs_locations) attrMap.get(nfs4_prot.FATTR4_FS_LOCATIONS);
             if (locations != null) {
@@ -736,34 +695,18 @@ public class Main {
 
     nfs_fh4 cwd(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        if (path.charAt(0) == '/') {
-            ops.add(PutfhStub.generateRequest(_rootFh));
-        } else {
-            ops.add(PutfhStub.generateRequest(_cwd));
-        }
-
-        String[] pathElements = path.split("/");
-        for (String p : pathElements) {
-            if (p != null && p.length() > 0) {
-                if (p.equals("..")) {
-                    ops.add(LookuppStub.generateRequest());
-                } else {
-                    ops.add(LookupStub.generateRequest(p));
-                }
-            }
-        }
-        ops.add(GetfhStub.generateRequest());
-
-        COMPOUND4res compound4res = sendCompound(ops, "lookup (cwd)");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withLookup(path)
+                .withGetfh()
+                .withTag("lookup (cwd)")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
-            _cwd = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
+            _cwd = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
             System.out.println("CWD fh = " + toHexString(_cwd.value));
 
         } else {
@@ -776,17 +719,15 @@ public class Main {
 
     public Stat stat(nfs_fh4 fh) throws OncRpcException, IOException {
 
-
         Stat stat = new Stat();
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(fh));
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_SIZE,nfs4_prot.FATTR4_TYPE));
-
-        COMPOUND4res compound4res = sendCompound(ops, "getattr (stat)");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withGetattr(nfs4_prot.FATTR4_SIZE,nfs4_prot.FATTR4_TYPE)
+                .withTag("getattr (stat)")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -843,38 +784,20 @@ public class Main {
 
     private void readatonce(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withLookup(dirname(path))
+                .withOpen(basename(path), _sequenceID.value.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
+                .withRead(4096, 0, Stateids.currentStateId())
+                .withClose(Stateids.currentStateId())
+                .withTag("open+read+close")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-
-        if (path.charAt(0) == '/') {
-            ops.add(PutfhStub.generateRequest(_rootFh));
-        } else {
-            ops.add(PutfhStub.generateRequest(_cwd));
-        }
-
-        String[] pathElements = path.split("/");
-        for (int i = 0; i < pathElements.length - 1; i++) {
-            String p = pathElements[i];
-            if (p != null && p.length() > 0) {
-                if (p.equals("..")) {
-                    ops.add(LookuppStub.generateRequest());
-                } else {
-                    ops.add(LookupStub.generateRequest(p));
-                }
-            }
-        }
-
-        ops.add(OpenStub.normalREAD(pathElements[pathElements.length - 1], _sequenceID.value.value,
-                _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ));
-        ops.add(ReadStub.generateRequest(4096, 0, Stateids.currentStateId()));
-        ops.add(CloseStub.generateRequest(Stateids.currentStateId()));
-        COMPOUND4res compound4res = sendCompound(ops, "open_read_close");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
-            int opss = ops.size();
+            int opss = compound4res.resarray.size();
             byte[] data = new byte[compound4res.resarray.get(opss-2).opread.resok4.data.remaining()];
             compound4res.resarray.get(opss-2).opread.resok4.data.get(data);
             System.out.println("[" + new String(data) + "]");
@@ -947,42 +870,22 @@ public class Main {
 
     private OpenReply open(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withLookup(dirname(path))
+                .withOpen(basename(path), _sequenceID.value.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
+                .withGetfh()
+                .withTag("open_read")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-
-        if (path.charAt(0) == '/') {
-            ops.add(PutfhStub.generateRequest(_rootFh));
-        } else {
-            ops.add(PutfhStub.generateRequest(_cwd));
-        }
-
-        String[] pathElements = path.split("/");
-        for (int i = 0; i < pathElements.length - 1; i++) {
-            String p = pathElements[i];
-            if (p != null && p.length() > 0) {
-                if (p.equals("..")) {
-                    ops.add(LookuppStub.generateRequest());
-                } else {
-                    ops.add(LookupStub.generateRequest(p));
-                }
-            }
-        }
-
-        ops.add(OpenStub.normalREAD(pathElements[pathElements.length - 1], _sequenceID.value.value,
-                _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ));
-        ops.add(GetfhStub.generateRequest());
-
-        COMPOUND4res compound4res = sendCompound(ops, "open_read");
-
-        int opCount = ops.size();
+        int opCount = compound4res.resarray.size();
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
-            nfs_fh4 fh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
-            stateid4 stateid = compound4res.resarray.get(ops.size() - 2).opopen.resok4.stateid;
+            nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
+            stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
             System.out.println("open_read fh = " + toHexString(fh.value));
 
             return new OpenReply(fh, stateid);
@@ -998,41 +901,20 @@ public class Main {
 
     private OpenReply create(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        if (path.charAt(0) == '/') {
-            ops.add(PutfhStub.generateRequest(_rootFh));
-        } else {
-            ops.add(PutfhStub.generateRequest(_cwd));
-        }
-
-        String[] pathElements = path.split("/");
-        for (int i = 0; i < pathElements.length - 1; i++) {
-            String p = pathElements[i];
-            if (p != null && p.length() > 0) {
-                if (p.equals("..")) {
-                    ops.add(LookuppStub.generateRequest());
-                } else {
-                    ops.add(LookupStub.generateRequest(p));
-                }
-            }
-        }
-
-        ops.add(OpenStub.normalCREATE(pathElements[pathElements.length - 1], _sequenceID.value.value,
-                _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_BOTH));
-        ops.add(GetfhStub.generateRequest());
-
-        COMPOUND4res compound4res = sendCompound(ops, "open_create");
-
-        int opCount = ops.size();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withLookup(dirname(path))
+                .withOpenCreate(basename(path), _sequenceID.value.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_BOTH)
+                .withGetfh()
+                .withTag("open_create")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
-
-            nfs_fh4 fh = compound4res.resarray.get(ops.size() - 1).opgetfh.resok4.object;
-            stateid4 stateid = compound4res.resarray.get(ops.size() - 2).opopen.resok4.stateid;
+            int opCount = compound4res.resarray.size();
+            nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
+            stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
             System.out.println("open_read fh = " + toHexString(fh.value));
 
             return new OpenReply(fh, stateid);
@@ -1048,15 +930,13 @@ public class Main {
 
     private void close(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        ops.add(PutfhStub.generateRequest(fh));
-        ops.add(CloseStub.generateRequest(stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "close");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withClose(stateid)
+                .withTag("close")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status != nfsstat.NFS_OK) {
 
@@ -1069,17 +949,16 @@ public class Main {
     private StripeMap layoutget(nfs_fh4 fh, stateid4 stateid, int layoutiomode) throws OncRpcException,
             IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(fh));
-        ops.add(LayoutgetStub.generateRequest(false,
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withLayoutget(false,
                 layouttype4.LAYOUT4_NFSV4_1_FILES,
                 layoutiomode, 0, 0xffffffff, 0xff, 0xffff,
-                stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "layoutget");
+                stateid)
+                .withTag("layoutget")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -1139,14 +1018,14 @@ public class Main {
     private void layoutreturn(nfs_fh4 fh, long offset, long len, byte[] body, stateid4 stateid) throws OncRpcException,
             IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withLayoutreturn(offset, len, body, stateid)
+                .withTag("layoutreturn")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(fh));
-        ops.add(LayoutreturnStub.generateRequest(offset, len, body, stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "layoutreturn");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status != nfsstat.NFS_OK) {
             System.out.println("layoutreturn failed. Error = "
@@ -1155,11 +1034,10 @@ public class Main {
 
     }
 
-    private COMPOUND4res sendCompound(List<nfs_argop4> ops, String tag)
+    private COMPOUND4res sendCompound(COMPOUND4args compound4args)
             throws OncRpcException, IOException {
 
         COMPOUND4res compound4res;
-        COMPOUND4args compound4args = generateCompound(tag, ops);
         /*
          * wail if server is in the grace period.
          *
@@ -1179,17 +1057,17 @@ public class Main {
     private void get_deviceinfo(deviceid4 deviceId) throws OncRpcException,
             IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(GetdeviceinfoStub.generateRequest(deviceId));
-
-        COMPOUND4res compound4res = sendCompound(ops, "get_deviceinfo");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withGetdeviceinfo(deviceId)
+                .withTag("get_deviceinfo")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
-            nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub.decodeFileDevice(compound4res.resarray.get(ops.size() - 1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
+            nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub
+                    .decodeFileDevice(compound4res.resarray.get(1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
             _knowDevices.put(deviceId, new FileIoDevice(addr) );
 
@@ -1201,14 +1079,14 @@ public class Main {
 
     private void get_devicelist() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_rootFh)
+                .withGetdevicelist()
+                .withTag("get_devicelist")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(_rootFh));
-        ops.add(GetDeviceListStub.normal());
-
-        COMPOUND4res compound4res = sendCompound(ops, "get_devicelist");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -1231,15 +1109,13 @@ public class Main {
     private void dsRead(Main client, nfs_fh4 fh, stateid4 stateid)
             throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        ops.add(PutfhStub.generateRequest(fh));
-        ops.add(ReadStub.generateRequest(4096, 0, stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "pNFS read");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withRead(4096, 0, stateid)
+                .withTag("pNFS read")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -1255,15 +1131,13 @@ public class Main {
 
     private void nfsRead(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        ops.add(PutfhStub.generateRequest(fh));
-        ops.add(ReadStub.generateRequest(4096, 0, stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "nfs read");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withRead(4096, 0, stateid)
+                .withTag("nfs read")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
@@ -1280,15 +1154,14 @@ public class Main {
     private void dsWrite(Main client, nfs_fh4 fh, byte[] data, long offset, stateid4 stateid)
             throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withWrite(offset, data, stateid)
+                .withTag("pNFS write")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(fh));
-
-        ops.add(WriteStub.generateRequest(offset, data, stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "pNFS write");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status != nfsstat.NFS_OK) {
             throw new IOException(nfsstat.toString(compound4res.status));
@@ -1300,16 +1173,14 @@ public class Main {
 
     private void nfsWrite(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(fh)
+                .withWrite(0, "hello world".getBytes(), stateid)
+                .withTag("nfs write")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(fh));
-
-        byte[] data = "hello".getBytes();
-        ops.add(WriteStub.generateRequest(0, data, stateid));
-
-        COMPOUND4res compound4res = sendCompound(ops, "nfs write");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status != nfsstat.NFS_OK) {
             System.out.println("write failed. Error = "
@@ -1319,17 +1190,15 @@ public class Main {
             System.out.println(compound4res.resarray.get(2).opwrite.resok4.count.value.value
                     + " bytes written.");
         }
-
     }
 
     private void sequence() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        COMPOUND4res compound4res = sendCompound(ops, "sequence");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withTag("sequence")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status != nfsstat.NFS_OK) {
 
@@ -1343,15 +1212,14 @@ public class Main {
 
     private void get_supported_attributes() throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_rootFh)
+                .withGetattr(nfs4_prot.FATTR4_CHANGE)
+                .withTag("get_supported_attributes")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(_rootFh));
-        ops.add(GetfhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE));
-
-        COMPOUND4res compound4res = sendCompound(ops, "get_supported_attributes");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
             //    uint32_t supported = compound4res.resarray[1].opgetattr.resok4.obj_attributes.attrmask.value[0];
@@ -1366,14 +1234,13 @@ public class Main {
 
     public void remove(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
-
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-        ops.add(PutfhStub.generateRequest(_cwd));
-        ops.add(RemoveStub.generateRequest(path));
-
-        COMPOUND4res compound4res = sendCompound(ops, "remove");
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_cwd)
+                .withRemove(path)
+                .withTag("remove")
+                .build();
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
             // ok
@@ -1386,22 +1253,21 @@ public class Main {
 
     private void lookup(String path) throws OncRpcException, IOException {
 
-        List<nfs_argop4> ops = new LinkedList<nfs_argop4>();
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_cwd)
+                .withSavefh()
+                .withLookup(path)
+                .withGetfh()
+                .withGetattr(nfs4_prot.FATTR4_CHANGE,
+                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY)
+                .withRestorefh()
+                .withGetattr(nfs4_prot.FATTR4_CHANGE,
+                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY)
+                .withTag("lookup-sun")
+                .build();
 
-        ops.add(SequenceStub.generateRequest(false, _sessionid.value,
-                _sequenceID.value.value, 12, 0));
-
-        ops.add(PutfhStub.generateRequest(_cwd));
-        ops.add(SavefhStub.generateRequest());
-        ops.add(LookupStub.generateRequest(path));
-        ops.add(GetfhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE,
-                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY));
-        ops.add(RestorefhStub.generateRequest());
-        ops.add(GetattrStub.generateRequest(nfs4_prot.FATTR4_CHANGE,
-                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY));
-
-        COMPOUND4res compound4res = sendCompound(ops, "lookup-sun");
+        COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
             // ok
@@ -1466,4 +1332,14 @@ public class Main {
         }
     }
 
+    private static String basename(String path) {
+        File f = new File(path);
+        return f.getName();
+    }
+
+    private static String dirname(String path) {
+        File f = new File(path);
+        String parent = f.getParent();
+        return parent == null ? "/" : parent;
+    }
 }
