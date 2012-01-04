@@ -98,8 +98,8 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * that is one greater than last successfully used.
          */
 
-        if (!client.principal().equals(Integer.toString(context.getUser().getUID())) && !client.isConfirmed()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "client already in use: " + client.principal() + " " + context.getUser().getUID());
+        if (!client.principal().equals(context.getPrincipal()) && !client.isConfirmed()) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "client already in use: " + client.principal() + " " + context.getPrincipal());
         }
 
         NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value.value,

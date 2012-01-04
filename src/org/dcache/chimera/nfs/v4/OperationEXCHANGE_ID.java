@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.security.CodeSource;
+import java.security.Principal;
 import java.security.ProtectionDomain;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -142,7 +143,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
 
         NFS4Client client = context.getStateHandler().clientByOwner(clientOwner);
-        final String principal = Integer.toString(context.getUser().getUID());
+        final Principal principal = context.getPrincipal();
         final verifier4 verifier = _args.opexchange_id.eia_clientowner.co_verifier;
 
         final boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;

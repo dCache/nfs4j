@@ -18,6 +18,7 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.net.InetSocketAddress;
+import java.security.Principal;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.ChimeraNFSException;
@@ -132,7 +133,7 @@ public class NFSv4StateHandler {
     }
 
     public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress,
-            byte[] ownerID, verifier4 verifier, String principal) {
+            byte[] ownerID, verifier4 verifier, Principal principal) {
         NFS4Client client = new NFS4Client(clientAddress, localAddress, ownerID, verifier, principal, _leaseTime);
         addClient(client);
         return client;

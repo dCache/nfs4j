@@ -17,6 +17,7 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import java.security.Principal;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
@@ -62,6 +63,7 @@ public class CompoundContext {
     private int _currentOpPosition = -1;
     private stateid4 _currentStateid = null;
     private stateid4 _savedStateid = null;
+    private final Principal _principal;
 
     /**
      * Create context of COUMPOUND request.
@@ -87,6 +89,7 @@ public class CompoundContext {
         _stateHandler = stateHandler;
         _idMapping = idMapping;
         _totalOperationsCount = opCount;
+        _principal = principalOf(call);
     }
 
     public RpcCall getRpcCall() {
@@ -288,6 +291,38 @@ public class CompoundContext {
             @Override
             public byte[] getScope() {
                 return "".getBytes();
+            }
+        };
+    }
+
+    public Principal getPrincipal() {
+        return _principal;
+    }
+
+    private Principal principalOf(final RpcCall call) {
+
+        // FIXME: get RPCSEC_GSS principal from rpc header
+        return new Principal() {
+
+            private final String _name = "";
+
+            @Override
+            public String getName() {
+                return _name;
+            }
+
+            @Override
+            public int hashCode() {
+                return getName().hashCode();
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+
+                if (obj == this) return true;
+                if ( obj == null || !obj.getClass().isInstance(this)) return false;
+
+                return this._name.equals(((Principal)obj).getName());
             }
         };
     }
