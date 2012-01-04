@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Dictionary where value associated with the key may become unavailable due
@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 public class Cache<K, V> extends  TimerTask {
 
-    private static final Logger _log = Logger.getLogger(Cache.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(Cache.class);
 
     /**
      * {@link TimerTask} to periodically check and remove expired entries.
@@ -72,8 +72,8 @@ public class Cache<K, V> extends  TimerTask {
                 CacheElement<V> cacheElement = entry.getValue();
 
                 if (!cacheElement.validAt(now)) {
-                    _log.log(Level.FINEST, "Cleaning expired entry key = [{0}], value = [{1}]",
-                            new Object[]{entry.getKey(), cacheElement.getObject()});
+                    _log.debug("Cleaning expired entry key = [{}], value = [{}]",
+                            entry.getKey(), cacheElement.getObject());
                     entries.remove();
                     expiredEntries.add(cacheElement.getObject());
                 }
@@ -131,7 +131,7 @@ public class Cache<K, V> extends  TimerTask {
     private final CacheEventListener<K, V> _eventListener;
 
     /**
-     * The JMX interfate to this cache
+     * The JMX interface to this cache
      */
     private final CacheMXBean<V> _mxBean;
 
@@ -210,13 +210,12 @@ public class Cache<K, V> extends  TimerTask {
      * @throws MissingResourceException if Cache limit is reached.
      */
     public void put(K k, V v, long entryMaxLifeTime, long entryIdleTime) {
-        _log.log(Level.FINEST, "Adding new cache entry: key = [{0}], value = [{1}]",
-                new Object[]{k, v});
+        _log.debug("Adding new cache entry: key = [{}], value = [{}]", k, v);
 
         _accessLock.lock();
         try {
             if( _storage.size() >= _size && !_storage.containsKey(k)) {
-                _log.log(Level.INFO, "Cache limit reached: {0}", _size);
+                _log.warn("Cache limit reached: {}", _size);
                 throw new MissingResourceException("Cache limit reached", Cache.class.getName(), "");
             }
             _storage.put(k, new CacheElement<V>(v, entryMaxLifeTime, entryIdleTime));
@@ -243,7 +242,7 @@ public class Cache<K, V> extends  TimerTask {
             CacheElement<V> element = _storage.get(k);
 
             if (element == null) {
-                _log.log(Level.FINEST, "No cache hits for key = [{0}]", k);
+                _log.debug("No cache hits for key = [{}]", k);
                 return null;
             }
 
@@ -252,12 +251,10 @@ public class Cache<K, V> extends  TimerTask {
             v = element.getObject();
 
             if ( !valid ) {
-                _log.log(Level.FINEST, "Cache hits but entry expired for key = [{0}], value = [{1}]",
-                        new Object[]{k, v});
+                _log.debug("Cache hits but entry expired for key = [{}], value = [{}]", k, v);
                 _storage.remove(k);
             } else {
-                _log.log(Level.FINEST, "Cache hits for key = [{0}], value = [{1}]",
-                        new Object[]{k, v});
+                _log.debug("Cache hits for key = [{}], value = [{}]", k, v);
             }
         } finally {
             _accessLock.unlock();
@@ -293,7 +290,7 @@ public class Cache<K, V> extends  TimerTask {
             _accessLock.unlock();
         }
 
-        _log.log(Level.FINEST, "Removing entry: active = [{0}] key = [{1}], value = [{2}]",
+        _log.debug("Removing entry: active = [{}] key = [{}], value = [{}]",
                 new Object[]{valid, k, v});
 
          _eventListener.notifyRemove(this, v);
@@ -339,7 +336,7 @@ public class Cache<K, V> extends  TimerTask {
      */
     public void clear() {
 
-        _log.log(Level.FINEST, "Cleaning the cache");
+        _log.debug("Cleaning the cache");
 
         _accessLock.lock();
         try {
