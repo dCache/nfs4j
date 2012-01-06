@@ -17,12 +17,18 @@
 
 package org.dcache.chimera.nfs.v4;
 
+import org.dcache.xdr.Xdr;
+
 public interface NFSv4Defaults {
 
     public static final int NFS4_LEASE_TIME = 90;
     public final static int NFS4_MAXFILENAME = 255;
-    // maximal read/write buffer size
-    public static final long NFS4_MAXIOBUFFERSIZE = 32768;
+
+    /**
+     * maximal read/write buffer size. Set as maximal rpc packet size
+     * minus 4k RPC overhead.
+     */
+    public static final long NFS4_MAXIOBUFFERSIZE = Xdr.MAX_XDR_SIZE - 4096;
 
     // theoretically, there is no limit on file size
     public final static long NFS4_MAXFILESIZE = Long.MAX_VALUE;
