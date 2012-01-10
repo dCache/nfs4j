@@ -4,8 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <description>
-        Pure Java implementation of ONC RPC protocol specification
-        (http://www.ietf.org/rfc/rfc1831.txt)
+        Pure Java implementation NFSv3, v4 and v4.1
     </description>
 
     <groupId>org.dcache.chimera</groupId>
