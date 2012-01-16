@@ -29,17 +29,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
+import javax.security.auth.kerberos.KerberosPrincipal;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.v4.xdr.server_owner4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
+import org.dcache.xdr.RpcAuthType;
 
 
 public class CompoundContext {
 
     private static final Logger _log = LoggerFactory.getLogger(CompoundContext.class);
+
+    private static final Principal NO_PRINCIPAL = new Principal() {
+
+            private final String _name = "";
+
+            @Override
+            public String getName() {
+                return _name;
+            }
+
+            @Override
+            public int hashCode() {
+                return getName().hashCode();
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == this) return true;
+                return obj != null && obj.getClass().isInstance(this);
+            }
+        };
 
     private Inode _rootInode = null;
     private Inode _currentInode = null;
@@ -301,29 +325,11 @@ public class CompoundContext {
 
     private Principal principalOf(final RpcCall call) {
 
-        // FIXME: get RPCSEC_GSS principal from rpc header
-        return new Principal() {
+        if(call.getCredential().type() != RpcAuthType.RPCGSS_SEC)
+            return NO_PRINCIPAL;
 
-            private final String _name = "";
-
-            @Override
-            public String getName() {
-                return _name;
-            }
-
-            @Override
-            public int hashCode() {
-                return getName().hashCode();
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-
-                if (obj == this) return true;
-                if ( obj == null || !obj.getClass().isInstance(this)) return false;
-
-                return this._name.equals(((Principal)obj).getName());
-            }
-        };
+        Set<KerberosPrincipal> principals = call.getCredential()
+                .getSubject().getPrincipals(KerberosPrincipal.class);
+        return principals.isEmpty() ? NO_PRINCIPAL : principals.iterator().next();
     }
 }
