@@ -50,7 +50,7 @@ public class CompoundBuilder {
             op.argop = nfs_opnum4.OP_LOOKUP;
             op.oplookup = new LOOKUP4args();
 
-            op.oplookup.objname = new component4(new utf8str_cs(path));
+            op.oplookup.objname = new component4(new utf8str_cs(s));
             ops.add(op);
         }
 
