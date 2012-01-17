@@ -17,6 +17,9 @@
 
 package org.dcache.chimera.nfs;
 
+import static com.google.common.primitives.Ints.fromByteArray;
+import static com.google.common.primitives.Longs.fromBytes;
+import static com.google.common.base.Preconditions.checkArgument;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -29,7 +32,7 @@ public class IPMatcher {
 
     private static final int IPv4_FULL_MASK = 32;
     private static final int IPv6_FULL_MASK = 128;
-
+    private static final int IPv6_HALF_MASK = 64;
     /**
      * Match a String pattern with given IP address.
      * The provided pattern can be in the the following form:
@@ -105,35 +108,55 @@ public class IPMatcher {
      * @param mask netmask
      * @return true if ip matches subnet.
      */
-    public static boolean match( InetAddress ip, InetAddress subnet, int mask ) {
+    public static boolean match(InetAddress ip, InetAddress subnet, int mask) {
 
+        checkArgument(mask >= 0, "Netmask should be positive");
         byte[] ipBytes = ip.getAddress();
         byte[] netBytes = subnet.getAddress();
 
-        int maskLen = ipBytes.length * 8;
-        if(mask > maskLen || mask < 0)
-            throw new IllegalArgumentException("Invalid mask: " + mask);
-
-        /*
-         * check that all full bytes matching and then compare last bits, e.g.
-         * for netmask /25 compare that first 3 bytes are equal and then check
-         * last bit.
-         */
-        int fullBytes = (mask / 8);
-        for(int i = 0; i < fullBytes; i++) {
-            if(ipBytes[i] != netBytes[i])
-                return false;
+        if (ipBytes.length != netBytes.length) {
+            return false;
         }
 
-        int lastBits = mask % 8;
+        if (ipBytes.length == 4) {
+            checkArgument(mask <= IPv4_FULL_MASK,
+                    "Netmask for ipv4 can't be bigger than" + IPv4_FULL_MASK);
+            /*
+             * IPv4 can be represented as a 32 bit ints.
+             */
+            int ipAsInt = fromByteArray(ipBytes);
+            int netAsBytes = fromByteArray(netBytes);
 
-        /*
-         * if there are no partial defined bytes we are done, otherwise check them.
+            return (ipAsInt ^ netAsBytes) >> (IPv4_FULL_MASK - mask) == 0;
+        }
+
+        checkArgument(mask <= IPv6_FULL_MASK,
+                "Netmask for ipv6 can't be bigger than" + IPv6_FULL_MASK);
+
+        /**
+         * IPv6 can be represented as two 64 bit longs.
+         *
+         * We evaluate second long only if bitmask bigger than 64.
+         * The second longs are created only if needed as it turned to be
+         * the slowest part.
          */
-        return lastBits == 0 ||
-                (ipBytes[fullBytes] >> (8 - lastBits)) == (netBytes[fullBytes] >> (8 - lastBits));
-    }
+        long ipAsLong0 = fromBytes( ipBytes[0], ipBytes[1], ipBytes[2], ipBytes[3],
+                ipBytes[4], ipBytes[5], ipBytes[6], ipBytes[7]);
+        long netAsLong0 = fromBytes(netBytes[0], netBytes[1], netBytes[2], netBytes[3],
+                netBytes[4], netBytes[5], netBytes[6], netBytes[7]);
 
+        if(mask > 64) {
+            long ipAsLong1 = fromBytes(ipBytes[8], ipBytes[9], ipBytes[10], ipBytes[11],
+                ipBytes[12], ipBytes[13], ipBytes[14], ipBytes[15]);
+
+            long netAsLong1 = fromBytes(netBytes[8], netBytes[9], netBytes[10], netBytes[11],
+                    netBytes[12], netBytes[13], netBytes[14], netBytes[15]);
+
+            return (ipAsLong0 == netAsLong0) &
+            (ipAsLong1 ^ netAsLong1) >> (IPv6_FULL_MASK - mask) == 0;
+        }
+        return (ipAsLong0 ^ netAsLong0) >> (IPv6_HALF_MASK - mask) == 0;
+    }
 
     private static String toRegExp(String s) {
                 return s.replace(".", "\\.").replace("?", ".").replace("*", ".*");
