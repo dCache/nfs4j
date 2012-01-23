@@ -444,12 +444,12 @@ public class Main {
             _sequenceID = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_sequenceid;
 
             if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
-                    & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS) > 0) {
+                    & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS) != 0) {
                 _isMDS = true;
             }
 
             if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
-                    & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS) > 0) {
+                    & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS) != 0) {
                 _isDS = true;
             }
 
