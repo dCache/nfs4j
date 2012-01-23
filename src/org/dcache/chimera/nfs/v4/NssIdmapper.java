@@ -33,10 +33,10 @@ import org.dcache.auth.Subjects;
 public class NssIdmapper implements NfsIdMapping, NfsLoginService {
 
     private final String _domain;
-    private final int NOBODY_UID = -1;
-    private final int NOBODY_GID = -1;
-    private final String NOBODY_USER = "nobody";
-    private final String NOBODY_GROUP = "nobody";
+    private static final int NOBODY_UID = -1;
+    private static final int NOBODY_GID = -1;
+    private static final String NOBODY_USER = "nobody";
+    private static final String NOBODY_GROUP = "nobody";
 
     public NssIdmapper(String domain) {
         _domain = domain;
