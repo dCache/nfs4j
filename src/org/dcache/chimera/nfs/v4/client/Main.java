@@ -65,6 +65,7 @@ import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.posix.Stat;
+import org.dcache.utils.Bytes;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 
@@ -524,7 +525,7 @@ public class Main {
 
             _rootFh = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
             _cwd = _rootFh;
-            System.out.println("root fh = " + toHexString(_rootFh.value));
+            System.out.println("root fh = " + Bytes.toHexString(_rootFh.value));
 
         } else {
             System.out.println("getRootFh failed. Error = "
@@ -707,7 +708,7 @@ public class Main {
         if (compound4res.status == nfsstat.NFS_OK) {
 
             _cwd = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
-            System.out.println("CWD fh = " + toHexString(_cwd.value));
+            System.out.println("CWD fh = " + Bytes.toHexString(_cwd.value));
 
         } else {
             System.out.println("cwd failed. Error = "
@@ -886,7 +887,7 @@ public class Main {
 
             nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
             stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
-            System.out.println("open_read fh = " + toHexString(fh.value));
+            System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
 
             return new OpenReply(fh, stateid);
 
@@ -915,7 +916,7 @@ public class Main {
             int opCount = compound4res.resarray.size();
             nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
             stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
-            System.out.println("open_read fh = " + toHexString(fh.value));
+            System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
 
             return new OpenReply(fh, stateid);
 
@@ -963,7 +964,7 @@ public class Main {
         if (compound4res.status == nfsstat.NFS_OK) {
 
             layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
-            System.out.println("Layoutget for fh: " + toHexString(fh.value));
+            System.out.println("Layoutget for fh: " + Bytes.toHexString(fh.value));
             System.out.println("    roc   : " + compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_return_on_close);
 
             StripeMap stripeMap = new StripeMap();
@@ -975,7 +976,7 @@ public class Main {
                         + fileDevice.nfl_deviceid.value.length);
 
                 _ioFH = fileDevice.nfl_fh_list[0];
-                System.out.println("     io fh: " + toHexString(_ioFH.value));
+                System.out.println("     io fh: " + Bytes.toHexString(_ioFH.value));
                 System.out.println("    length: " + l.lo_length.value.value);
                 System.out.println("    offset: " + l.lo_offset.value.value);
                 System.out.println("    type  : " + l.lo_content.loc_type);
@@ -1262,16 +1263,6 @@ public class Main {
         }
     }
 
-    public String toHexString(byte[] data) {
-
-        StringBuilder sb = new StringBuilder();
-
-        for (byte b : data) {
-            sb.append(Integer.toHexString(b));
-        }
-
-        return sb.toString();
-    }
     private final ConcurrentMap<InetSocketAddress, Main> _servers =
             new MapMaker().makeComputingMap(new Connector());
 

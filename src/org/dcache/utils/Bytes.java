@@ -102,4 +102,20 @@ public final class Bytes {
                 | (bytes[offset + 2] & 0xFF) << 8
                 | (bytes[offset + 3] & 0xFF);
     }
+
+    /**
+     * Returns a hexadecimal representation of given byte array.
+     *
+     * @param bytes whose string representation to return
+     * @return a string representation of <tt>bytes</tt>
+     */
+    public static String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+
+        for (byte b : bytes) {
+            sb.append(Integer.toHexString(b));
+        }
+
+        return sb.toString();
+    }
 }
