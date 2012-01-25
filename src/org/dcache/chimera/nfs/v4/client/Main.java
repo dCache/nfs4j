@@ -17,8 +17,9 @@
 
 package org.dcache.chimera.nfs.v4.client;
 
-import com.google.common.base.Function;
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
 
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
@@ -382,7 +382,7 @@ public class Main {
     public Main(InetAddress host) throws OncRpcException, IOException {
         _nfsClient = new nfs4_prot_NFS4_PROGRAM_Client(host, IpProtocolType.TCP);
 
-        _servers.put(_nfsClient.getTransport().getRemoteSocketAddress(), this);
+        _servers.asMap().put(_nfsClient.getTransport().getRemoteSocketAddress(), this);
 
     }
 
@@ -391,7 +391,7 @@ public class Main {
         _nfsClient = new nfs4_prot_NFS4_PROGRAM_Client(address.getAddress(),
                 address.getPort(), IpProtocolType.TCP);
 
-        _servers.put(address, this);
+        _servers.asMap().put(address, this);
     }
 
     public void mount(String root) throws OncRpcException, IOException {
@@ -770,7 +770,7 @@ public class Main {
             InetSocketAddress deviceAddr =
                     ioDevice.of(stripe.getPatternOffset(), stripe.getUnit(),
                                 0, 4096, stripe.getFirstStripeIndex());
-            Main dsClient = _servers.get(deviceAddr);
+            Main dsClient = _servers.getUnchecked(deviceAddr);
 
             dsClient.nfsRead(stripe.getFh(), or.stateid());
 
@@ -847,7 +847,7 @@ public class Main {
                     InetSocketAddress deviceAddr = ioDevice.of(
                             stripe.getPatternOffset(), stripe.getUnit(),
                             offset, data.length, stripe.getFirstStripeIndex());
-                    Main dsClient = _servers.get(deviceAddr);
+                    Main dsClient = _servers.getUnchecked(deviceAddr);
 
                     dsClient.nfsWrite(stripe.getFh(), data, offset, or.stateid());
                     offset += n;
@@ -1263,13 +1263,13 @@ public class Main {
         }
     }
 
-    private final ConcurrentMap<InetSocketAddress, Main> _servers =
-            new MapMaker().makeComputingMap(new Connector());
+    private final Cache<InetSocketAddress, Main> _servers =
+            CacheBuilder.newBuilder().build(new Connector());
 
-    private static class Connector implements Function<InetSocketAddress, Main> {
+    private static class Connector extends CacheLoader<InetSocketAddress, Main> {
 
         @Override
-        public Main apply(InetSocketAddress f) {
+        public Main load(InetSocketAddress f) {
             try {
                 Main client = new Main(f);
                 client.dsMount();

@@ -16,9 +16,9 @@
  */
 package org.dcache.chimera.nfs.v4;
 
-import com.google.common.base.Function;
-import com.google.common.collect.MapMaker;
-import java.util.concurrent.ConcurrentMap;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,13 +36,13 @@ public class CachingIdmap implements NfsIdMapping {
     /*
      * forward mapping cache
      */
-    private final ConcurrentMap<String, Integer> _uidByNameCache;
-    private final ConcurrentMap<String, Integer> _gidByNameCache;
+    private final Cache<String, Integer> _uidByNameCache;
+    private final Cache<String, Integer> _gidByNameCache;
     /*
      * reverse mapping cache
      */
-    private final ConcurrentMap<Integer, String> _userNameByIdCache;
-    private final ConcurrentMap<Integer, String> _groupNameByIdCache;
+    private final Cache<Integer, String> _userNameByIdCache;
+    private final Cache<Integer, String> _groupNameByIdCache;
 
     /**
      * Construct caching {@link NfsIdMapping}.
@@ -54,66 +54,66 @@ public class CachingIdmap implements NfsIdMapping {
     public CachingIdmap(NfsIdMapping idmapd, int size, long timeout) {
         _inner = idmapd;
 
-        _uidByNameCache = new MapMaker().
+        _uidByNameCache = CacheBuilder.newBuilder().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
                 softValues().
                 maximumSize(size).
-                makeComputingMap( new ForwardUidMapping());
+                build( new ForwardUidMapping());
 
-        _gidByNameCache  = new MapMaker().
+        _gidByNameCache  = CacheBuilder.newBuilder().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
                 softValues().
                 maximumSize(size).
-                makeComputingMap( new ForwardGidMapping());
+                build( new ForwardGidMapping());
 
-         _userNameByIdCache = new MapMaker().
+         _userNameByIdCache = CacheBuilder.newBuilder().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
                 softValues().
                 maximumSize(size).
-                makeComputingMap(new ReverseUidMapping());
+                build(new ReverseUidMapping());
 
-        _groupNameByIdCache = new MapMaker().
+        _groupNameByIdCache = CacheBuilder.newBuilder().
                 expireAfterWrite(timeout, TimeUnit.SECONDS).
                 softValues().
                 maximumSize(size).
-                makeComputingMap(new ReverseGidMapping());
+                build(new ReverseGidMapping());
     }
 
     @Override
     public String uidToPrincipal(int id) {
-        return _userNameByIdCache.get(id);
+        return _userNameByIdCache.getUnchecked(id);
     }
 
     @Override
     public String gidToPrincipal(int id) {
-        return _groupNameByIdCache.get(id);
+        return _groupNameByIdCache.getUnchecked(id);
     }
 
     @Override
     public int principalToUid(String principal) {
-        return _uidByNameCache.get(principal);
+        return _uidByNameCache.getUnchecked(principal);
     }
 
     @Override
     public int principalToGid(String principal) {
-        return _gidByNameCache.get(principal);
+        return _gidByNameCache.getUnchecked(principal);
     }
 
     /*
      * Forward mapping functions which delegate to inner NfsIdMapping
      */
-    private class ForwardGidMapping implements Function<String, Integer> {
+    private class ForwardGidMapping extends CacheLoader<String, Integer> {
 
         @Override
-        public Integer apply(String s) {
+        public Integer load(String s) {
             return _inner.principalToGid(s);
         }
     }
 
-    private class ForwardUidMapping implements Function<String, Integer> {
+    private class ForwardUidMapping extends CacheLoader<String, Integer> {
 
         @Override
-        public Integer apply(String s) {
+        public Integer load(String s) {
             return _inner.principalToUid(s);
         }
     }
@@ -121,18 +121,18 @@ public class CachingIdmap implements NfsIdMapping {
     /*
      * Reverse mapping functions which delegate to inner NfsIdMapping
      */
-    private class ReverseUidMapping implements Function<Integer, String> {
+    private class ReverseUidMapping extends CacheLoader<Integer, String> {
 
         @Override
-        public String apply(Integer id) {
+        public String load(Integer id) {
             return _inner.uidToPrincipal(id);
         }
     }
 
-    private class ReverseGidMapping implements Function<Integer, String> {
+    private class ReverseGidMapping extends CacheLoader<Integer, String> {
 
         @Override
-        public String apply(Integer id) {
+        public String load(Integer id) {
             return _inner.gidToPrincipal(id);
         }
     }
