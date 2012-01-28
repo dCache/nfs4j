@@ -16,14 +16,10 @@
  */
 package org.dcache.chimera.nfs.v4.mover;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.chimera.nfs.v4.CompoundContext;
 import org.dcache.chimera.nfs.ChimeraNFSException;
@@ -33,6 +29,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.nfsstat;
+import org.dcache.chimera.nfs.vfs.FsCache;
 import org.dcache.chimera.posix.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +37,11 @@ import org.slf4j.LoggerFactory;
 public class DSOperationREAD extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
-    private final File _base;
+     private final FsCache _fsCache;
 
-    public DSOperationREAD(nfs_argop4 args, File base) {
+    public DSOperationREAD(nfs_argop4 args, FsCache fsCache) {
         super(args, nfs_opnum4.OP_READ);
-        _base = base;
+        _fsCache = fsCache;
     }
 
     @Override
@@ -59,9 +56,9 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
         ByteBuffer bb = ByteBuffer.allocateDirect(count);
 
-        IOReadFile in = new IOReadFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize());
+        FileChannel in = _fsCache.get(context.currentInode());
 
-        int bytesReaded = in.read(bb, offset, count);
+        int bytesReaded = in.read(bb, offset);
         if (bytesReaded < 0) {
             eof = true;
             bytesReaded = 0;
@@ -76,46 +73,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         }
         res.resok4.eof = eof;
 
-        in.close();
         _log.debug("MOVER: {}@{} readed, {} requested.",
                 new Object[]{bytesReaded, offset, _args.opread.count.value.value});
-    }
-
-    private static class IOReadFile {
-
-        private final RandomAccessFile _in;
-        private final FileChannel _fc;
-
-        public IOReadFile(File root, String path, long size) throws IOException {
-
-            File ioFile = new File(root, path);
-
-            if (!ioFile.exists() && !ioFile.createNewFile()) {
-                throw new IOException(path + " does't exist and failed to create");
-            }
-
-            /*
-             * while file size can be modified in namespace adjust file size to expected one.
-             */
-            _log.debug("MOVER: {} : filesize set to {}", new Object[]{path, size});
-            _in = new RandomAccessFile(ioFile, "rw");
-            _in.setLength(size);
-
-            _fc = _in.getChannel();
-        }
-
-        public int read(ByteBuffer bb, long off, long len) throws IOException {
-            bb.rewind();
-            return _fc.read(bb, off);
-        }
-
-        public void close() throws IOException {
-            _fc.close();
-            _in.close();
-        }
-
-        public long size() throws IOException {
-            return _fc.size();
-        }
     }
 }

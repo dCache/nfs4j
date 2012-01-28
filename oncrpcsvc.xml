@@ -98,13 +98,20 @@
     <bean id="ds-data-dir" class="java.io.File" init-method="mkdirs">
         <constructor-arg value="${ds.base}" />
     </bean>
+
+    <bean id="ds-data-pool" class="org.dcache.chimera.nfs.vfs.FsCache" init-method="init">
+        <property name="base" ref="ds-data-dir" />
+        <property name="maxSize" value="1024" />
+        <property name="lastAccess" value="30" />
+    </bean>
+
     <!--
         NFSv4.1 Operation factory
     -->
     <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.mover.DSOperationFactory"
-        depends-on="ds-data-dir">
+        depends-on="ds-data-pool">
         <description>DS operation factory</description>
-        <constructor-arg value="${ds.base}" />
+        <constructor-arg ref="ds-data-pool" />
     </bean>
 
     <bean id="acl-handler" class="org.dcache.chimera.posix.UnixPermissionHandler"

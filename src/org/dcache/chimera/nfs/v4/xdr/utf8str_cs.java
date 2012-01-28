@@ -39,7 +39,7 @@ public class utf8str_cs implements XdrAble {
 
     @Override
     public String toString() {
-        return new String(value.value);
+        return String.valueOf(value);
     }
 }
 // End of utf8str_cs.java

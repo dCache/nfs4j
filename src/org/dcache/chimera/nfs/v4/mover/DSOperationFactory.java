@@ -16,7 +16,6 @@
  */
 package org.dcache.chimera.nfs.v4.mover;
 
-import java.io.File;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.chimera.nfs.v4.NFSv4OperationFactory;
 import org.dcache.chimera.nfs.v4.OperationCOMMIT;
@@ -32,16 +31,14 @@ import org.dcache.chimera.nfs.v4.OperationSEQUENCE;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.chimera.nfs.vfs.FsCache;
 
 public class DSOperationFactory implements NFSv4OperationFactory {
 
-    private final File _base;
+    private final FsCache _fs;
 
-    public DSOperationFactory(String base) {
-        _base = new File(base);
-        if (!_base.exists()) {
-            throw new IllegalArgumentException(base + " : not exist or not a directory");
-        }
+    public DSOperationFactory(FsCache fs) {
+        _fs = fs;
     }
 
     @Override
@@ -57,9 +54,9 @@ public class DSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_PUTROOTFH:
                 return new OperationPUTROOTFH(op);
             case nfs_opnum4.OP_READ:
-                return new DSOperationREAD(op, _base);
+                return new DSOperationREAD(op, _fs);
             case nfs_opnum4.OP_WRITE:
-                return new DSOperationWRITE(op, _base);
+                return new DSOperationWRITE(op, _fs);
             case nfs_opnum4.OP_EXCHANGE_ID:
                 return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS);
             case nfs_opnum4.OP_CREATE_SESSION:

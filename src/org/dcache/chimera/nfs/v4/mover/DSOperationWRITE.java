@@ -16,16 +16,12 @@
  */
 package org.dcache.chimera.nfs.v4.mover;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.chimera.nfs.v4.CompoundContext;
-import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4res;
 import org.dcache.chimera.nfs.v4.xdr.WRITE4resok;
 import org.dcache.chimera.nfs.v4.xdr.count4;
@@ -37,17 +33,18 @@ import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.stable_how4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
+import org.dcache.chimera.nfs.vfs.FsCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DSOperationWRITE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(DSOperationWRITE.class);
-    private final File _base;
+    private final FsCache _fsCache;
 
-    public DSOperationWRITE(nfs_argop4 args, File base) {
+    public DSOperationWRITE(nfs_argop4 args, FsCache fsCache) {
         super(args, nfs_opnum4.OP_WRITE);
-        _base = base;
+        _fsCache = fsCache;
     }
 
     @Override
@@ -56,11 +53,11 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         final WRITE4res res = result.opwrite;
 
         long offset = _args.opwrite.offset.value.value;
-        int count = _args.opwrite.data.remaining();
 
-        IOWriteFile out = new IOWriteFile(_base, context.currentInode().toString(), context.currentInode().stat().getSize() == 0);
+        FileChannel out = _fsCache.get(context.currentInode());
 
-        int bytesWritten = out.write(_args.opwrite.data, offset, count);
+        _args.opwrite.data.rewind();
+        int bytesWritten = out.write(_args.opwrite.data, offset);
 
         if (bytesWritten < 0) {
             throw new IOHimeraFsException("IO not allowd");
@@ -76,38 +73,5 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         context.currentInode().setSize(out.size());
         _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
                 new Object[]{bytesWritten, offset, _args.opwrite.data, out.size()});
-        out.close();
-    }
-
-    private static class IOWriteFile {
-
-        private final RandomAccessFile _out;
-        private final FileChannel _fc;
-
-        public IOWriteFile(File root, String path, boolean truncate) throws IOException {
-
-            File ioFile = new File(root, path);
-
-            _out = new RandomAccessFile(ioFile, "rw");
-            _fc = _out.getChannel();
-            if (truncate) {
-                _log.error("truncate file {}", ioFile.getPath());
-                _fc.truncate(0);
-            }
-        }
-
-        public int write(ByteBuffer data, long off, long len) throws IOException {
-            data.rewind();
-            return _fc.write(data, off);
-        }
-
-        public void close() throws IOException {
-            _fc.close();
-            _out.close();
-        }
-
-        public long size() throws IOException {
-            return _fc.size();
-        }
     }
 }
