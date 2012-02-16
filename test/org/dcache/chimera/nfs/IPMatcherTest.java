@@ -1,24 +1,18 @@
 package org.dcache.chimera.nfs;
 
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.dcache.chimera.nfs.IPMatcher;
-
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 public class IPMatcherTest {
-
 
     @Test
     public void testHostWildcart() {
 
         boolean match = IPMatcher.match("*.desy.de", "nairi.desy.de");
         assertTrue("failed to match host by domain", match);
-
     }
 
     @Test
@@ -26,7 +20,6 @@ public class IPMatcherTest {
 
         boolean match = IPMatcher.match("*", "nairi.desy.de");
         assertTrue("failed to match host by domain", match);
-
     }
 
     @Test
@@ -34,16 +27,13 @@ public class IPMatcherTest {
 
         boolean match = IPMatcher.match("n*.desy.de", "nairi.desy.de");
         assertTrue("failed to match host by domain", match);
-
     }
-
 
     @Test
     public void testHostWildcart3() {
 
         boolean match = IPMatcher.match("b*.desy.de", "nairi.desy.de");
         assertFalse("Invalid match of host by domain", match);
-
     }
 
     @Test
@@ -51,27 +41,21 @@ public class IPMatcherTest {
 
         boolean match = IPMatcher.match("nairi.*.de", "nairi.desy.de");
         assertTrue("failed to match host by domain", match);
-
     }
-
 
     @Test
     public void testDomainWildcart2() {
 
         boolean match = IPMatcher.match("nairi.d*.de", "nairi.desy.de");
         assertTrue("failed to match host by domain", match);
-
     }
-
 
     @Test
     public void testDomainWildcart3() {
 
         boolean match = IPMatcher.match("nairi.b*.de", "nairi.desy.de");
         assertFalse("Invalid to match host by domain", match);
-
     }
-
 
     @Test
     public void testExactMatch() {
@@ -90,13 +74,11 @@ public class IPMatcherTest {
         assertTrue("failed to match host by domain", match);
     }
 
-
     @Test
     public void testHostWildcartOneChar() {
         boolean match = IPMatcher.match("h?.desy.de", "h1.desy.de");
         assertTrue("failed to match host by domain", match);
     }
-
 
     @Test
     public void testHostWildcartOneChar2() {
@@ -104,12 +86,10 @@ public class IPMatcherTest {
         assertFalse("one one character have to match", match);
     }
 
-
     @Test
     public void testIpBased() throws UnknownHostException {
 
-
-        boolean match = IPMatcher.match( InetAddress.getByName("131.169.214.0") ,
+        boolean match = IPMatcher.match(InetAddress.getByName("131.169.214.0"),
                 InetAddress.getByName("131.169.40.255"), 16);
 
         assertTrue("failed to match host by netmask", match);
@@ -118,8 +98,7 @@ public class IPMatcherTest {
     @Test
     public void testIpBased2() throws UnknownHostException {
 
-
-        boolean match = IPMatcher.match( InetAddress.getByName("131.169.40.16") ,
+        boolean match = IPMatcher.match(InetAddress.getByName("131.169.40.16"),
                 InetAddress.getByName("131.169.40.0"), 28);
 
         assertFalse("Wrong subnet matched", match);
@@ -128,8 +107,7 @@ public class IPMatcherTest {
     @Test
     public void testIpBased3() throws UnknownHostException {
 
-
-        boolean match = IPMatcher.match( InetAddress.getByName("131.169.40.15") ,
+        boolean match = IPMatcher.match(InetAddress.getByName("131.169.40.15"),
                 InetAddress.getByName("131.169.40.0"), 28);
 
         assertTrue("subnet not matched", match);
@@ -138,9 +116,8 @@ public class IPMatcherTest {
     @Test
     public void testIpBasedNegative() throws UnknownHostException {
 
-
-        boolean match = IPMatcher.match( InetAddress.getByName("131.169.214.0") ,
-                InetAddress.getByName("131.169.40.255") ,
+        boolean match = IPMatcher.match(InetAddress.getByName("131.169.214.0"),
+                InetAddress.getByName("131.169.40.255"),
                 24);
 
         assertFalse("Invalid ip to matched", match);
@@ -149,8 +126,8 @@ public class IPMatcherTest {
     @Test
     public void testMixed() throws UnknownHostException {
 
-        boolean match = IPMatcher.match( "localhost" ,
-                InetAddress.getByName("127.0.0.1") );
+        boolean match = IPMatcher.match("localhost",
+                InetAddress.getByName("127.0.0.1"));
 
         assertTrue("failed to match localhost", match);
     }
@@ -158,8 +135,8 @@ public class IPMatcherTest {
     @Test
     public void testIpV6SuccessfulIpNetMatchingFractionedMask() throws UnknownHostException {
 
-        boolean match = IPMatcher.match( InetAddress.getByName("fe80::3FF:F00D:BAD:F00D"),
-                InetAddress.getByName("fe80::0:0:0:0"),70);
+        boolean match = IPMatcher.match(InetAddress.getByName("fe80::3FF:F00D:BAD:F00D"),
+                InetAddress.getByName("fe80::0:0:0:0"), 70);
 
         assertTrue("Failed to match host with netmask.", match);
     }
