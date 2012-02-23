@@ -16,18 +16,7 @@
  */
 package org.dcache.chimera.nfs.v4.mover;
 
-import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
-import org.dcache.chimera.nfs.v4.NFSv4OperationFactory;
-import org.dcache.chimera.nfs.v4.OperationCOMMIT;
-import org.dcache.chimera.nfs.v4.OperationCREATE_SESSION;
-import org.dcache.chimera.nfs.v4.OperationDESTROY_SESSION;
-import org.dcache.chimera.nfs.v4.OperationEXCHANGE_ID;
-import org.dcache.chimera.nfs.v4.OperationGETATTR;
-import org.dcache.chimera.nfs.v4.OperationILLEGAL;
-import org.dcache.chimera.nfs.v4.OperationPUTFH;
-import org.dcache.chimera.nfs.v4.OperationPUTROOTFH;
-import org.dcache.chimera.nfs.v4.OperationRECLAIM_COMPLETE;
-import org.dcache.chimera.nfs.v4.OperationSEQUENCE;
+import org.dcache.chimera.nfs.v4.*;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
@@ -67,6 +56,8 @@ public class DSOperationFactory implements NFSv4OperationFactory {
                 return new OperationSEQUENCE(op);
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 return new OperationRECLAIM_COMPLETE(op);
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                return new OperationBIND_CONN_TO_SESSION(op);
         }
 
         return new OperationILLEGAL(op);

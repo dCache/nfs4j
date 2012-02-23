@@ -137,6 +137,8 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
                 return new OperationDESTROY_CLIENTID(op);
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 return new OperationRECLAIM_COMPLETE(op);
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                return new OperationBIND_CONN_TO_SESSION(op);
             case nfs_opnum4.OP_ILLEGAL:
 
         }
