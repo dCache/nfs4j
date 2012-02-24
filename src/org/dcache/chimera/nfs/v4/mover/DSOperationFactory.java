@@ -58,6 +58,8 @@ public class DSOperationFactory implements NFSv4OperationFactory {
                 return new OperationRECLAIM_COMPLETE(op);
             case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
                 return new OperationBIND_CONN_TO_SESSION(op);
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                return new OperationDESTROY_CLIENTID(op);
         }
 
         return new OperationILLEGAL(op);
