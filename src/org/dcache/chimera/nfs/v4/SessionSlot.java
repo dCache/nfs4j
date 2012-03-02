@@ -63,21 +63,8 @@ public class SessionSlot {
                         "Uncached reply retry");
             return null;
         }
-        /*
-         * According to spec.
-         *
-         * If the previous sequence id was 0xFFFFFFFF,
-         * then the next request for the slot MUST have
-         * the sequence id set to zero.
-         */
 
-        int validValue;
-        if (_sequence == 0xFFFFFFFF) {
-            validValue = 0;
-        } else {
-            validValue = _sequence + 1;
-        }
-
+        int validValue = _sequence + 1;
         if (sequence != validValue) {
             throw new ChimeraNFSException(nfsstat.NFSERR_SEQ_MISORDERED,
                     "disordered : v/n : " + Integer.toHexString(validValue) +
