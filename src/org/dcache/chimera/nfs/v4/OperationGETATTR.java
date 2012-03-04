@@ -98,6 +98,7 @@ import org.dcache.chimera.nfs.vfs.FsStat;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.OncRpcException;
+import org.glassfish.grizzly.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +135,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
         int[] retMask = new int[mask.length];
 
-        XdrEncodingStream xdr = new XdrBuffer(1024);
+        XdrBuffer xdr = new XdrBuffer(1024);
         xdr.beginEncoding();
 
         if( mask.length != 0 ) {
@@ -158,8 +159,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
         }
         xdr.endEncoding();
-        ByteBuffer body = xdr.body();
-        byte[] retBytes = new byte[body.limit()] ;
+        Buffer body = xdr.body();
+        byte[] retBytes = new byte[body.remaining()] ;
         body.get(retBytes);
 
         fattr4 attributes = new fattr4();

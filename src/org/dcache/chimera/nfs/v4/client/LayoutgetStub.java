@@ -32,6 +32,7 @@ import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 
 public class LayoutgetStub {
@@ -73,7 +74,7 @@ public class LayoutgetStub {
 
     static public nfsv4_1_file_layout4 decodeLayoutId(byte[] data) throws OncRpcException, IOException {
 
-        XdrDecodingStream xdr = new Xdr(ByteBuffer.wrap(data));
+        XdrDecodingStream xdr = new XdrBuffer(data);
         nfsv4_1_file_layout4 device = new nfsv4_1_file_layout4();
 
         xdr.beginDecoding();

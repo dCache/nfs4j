@@ -40,6 +40,7 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
+import org.glassfish.grizzly.Buffer;
 
 public class MkdirStub {
 
@@ -100,7 +101,7 @@ public class MkdirStub {
 
     private static byte[] openAttrs() {
 
-        XdrEncodingStream xdr = new XdrBuffer(1024);
+        XdrBuffer xdr = new XdrBuffer(1024);
         try {
             xdr.beginEncoding();
 
@@ -117,7 +118,7 @@ public class MkdirStub {
         }
 
         xdr.endEncoding();
-        ByteBuffer b = xdr.body();
+        Buffer b = xdr.body();
         byte[] retBytes = new byte[b.remaining()] ;
         b.get(retBytes);
 

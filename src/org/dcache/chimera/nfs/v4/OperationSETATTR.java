@@ -94,7 +94,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             _log.debug("setAttributes[{}]: {}", i, Integer.toBinaryString(mask[i]));
         }
 
-        XdrDecodingStream xdr = new XdrBuffer( ByteBuffer.wrap(attributes.attr_vals.value));
+        XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
         xdr.beginDecoding();
 
         int[] retMask = new int[mask.length];

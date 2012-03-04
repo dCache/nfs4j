@@ -25,6 +25,7 @@ import org.dcache.chimera.nfs.v4.xdr.*;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
+import org.glassfish.grizzly.Buffer;
 
 public class CompoundBuilder {
 
@@ -561,7 +562,7 @@ public class CompoundBuilder {
 
     private static byte[] openAttrs() {
 
-        XdrEncodingStream xdr = new XdrBuffer(1024);
+        XdrBuffer xdr = new XdrBuffer(1024);
         try {
             xdr.beginEncoding();
 
@@ -580,7 +581,7 @@ public class CompoundBuilder {
         }
 
         xdr.endEncoding();
-        ByteBuffer b = xdr.body();
+        Buffer b = xdr.body();
         byte[] retBytes = new byte[b.remaining()];
         b.get(retBytes);
 

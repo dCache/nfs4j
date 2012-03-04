@@ -37,6 +37,7 @@ import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.net.InetSocketAddresses;
+import org.glassfish.grizzly.Buffer;
 
 /**
  *
@@ -184,7 +185,7 @@ public class DeviceManager implements NFSv41DeviceManager {
 
         file_type.nflda_stripe_indices = stripingPattern.getPattern(deviceAddress);
 
-        XdrEncodingStream xdr = new XdrBuffer(128);
+        XdrBuffer xdr = new XdrBuffer(128);
         try {
             xdr.beginEncoding();
             file_type.xdrEncode(xdr);
@@ -197,8 +198,8 @@ public class DeviceManager implements NFSv41DeviceManager {
             throw new RuntimeException("Unexpected IOException:", e);
         }
 
-        ByteBuffer body = xdr.body();
-        byte[] retBytes = new byte[body.limit()] ;
+        Buffer body = xdr.body();
+        byte[] retBytes = new byte[body.remaining()] ;
         body.get(retBytes);
 
         device_addr4 addr = new device_addr4();

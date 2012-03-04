@@ -37,6 +37,7 @@ import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 
 public class GetattrStub {
@@ -77,7 +78,7 @@ public class GetattrStub {
             mask[i] = attributes.attrmask.value[i].value;
         }
 
-        XdrDecodingStream xdr = new Xdr(ByteBuffer.wrap(attributes.attr_vals.value));
+        XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
         xdr.beginDecoding();
 
         if( mask.length != 0 ) {

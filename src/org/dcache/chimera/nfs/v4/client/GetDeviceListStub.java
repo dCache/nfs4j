@@ -33,6 +33,7 @@ import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 
 public class GetDeviceListStub {
@@ -59,7 +60,7 @@ public class GetDeviceListStub {
 
     public static nfsv4_1_file_layout_ds_addr4 decodeFileDevice(byte[] data)
             throws OncRpcException, IOException {
-        XdrDecodingStream xdr = new Xdr(ByteBuffer.wrap(data));
+        XdrDecodingStream xdr = new XdrBuffer(data);
 
         nfsv4_1_file_layout_ds_addr4 device = new nfsv4_1_file_layout_ds_addr4();
 

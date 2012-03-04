@@ -51,6 +51,7 @@ import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrEncodingStream;
+import org.glassfish.grizzly.Buffer;
 
 public class OpenStub {
 
@@ -181,7 +182,7 @@ public class OpenStub {
 
     private static byte[] openAttrs() {
 
-        XdrEncodingStream xdr = new XdrBuffer(1024);
+        XdrBuffer xdr = new XdrBuffer(1024);
         try {
             xdr.beginEncoding();
 
@@ -200,7 +201,7 @@ public class OpenStub {
         }
 
         xdr.endEncoding();
-        ByteBuffer b = xdr.body();
+        Buffer b = xdr.body();
         byte[] retBytes = new byte[b.remaining()];
         b.get(retBytes);
 
