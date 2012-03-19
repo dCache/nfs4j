@@ -20,6 +20,7 @@ package org.dcache.chimera.nfs.v4.client;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.net.HostAndPort;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -118,11 +119,13 @@ public class Main {
 
 
         if (args.length > 0) {
-            String[] share = args[0].split(":");
-            String host = share[0];
-            String root = share.length == 2? share[1] : "/";
-            nfsClient = new Main(InetAddress.getByName(share[0]));
-            nfsClient.mount(root);
+            HostAndPort hp = HostAndPort.fromString(args[0])
+                    .withDefaultPort(2049)
+                    .requireBracketsForIPv6();
+
+            InetSocketAddress serverAddress = new InetSocketAddress(hp.getHostText(), hp.getPort());
+            nfsClient = new Main(serverAddress);
+            nfsClient.mount("/");
         }
 
         while ((line = reader.readLine(PROMPT)) != null) {
