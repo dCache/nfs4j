@@ -176,11 +176,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             file_type.nflda_multipath_ds_list[i] = new multipath_list4();
             file_type.nflda_multipath_ds_list[i].value = new netaddr4[1];
 
-            file_type.nflda_multipath_ds_list[i].value[0] = new netaddr4();
-            file_type.nflda_multipath_ds_list[i].value[0].na_r_addr =
-                                InetSocketAddresses.uaddrOf(deviceAddress[i]);
-            file_type.nflda_multipath_ds_list[i].value[0].na_r_netid =
-                                InetSocketAddresses.tcpNetidOf(deviceAddress[i].getAddress());
+            file_type.nflda_multipath_ds_list[i].value[0] = new netaddr4(deviceAddress[i]);
         }
 
         file_type.nflda_stripe_indices = stripingPattern.getPattern(deviceAddress);

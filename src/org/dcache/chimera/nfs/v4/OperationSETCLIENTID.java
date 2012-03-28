@@ -16,7 +16,6 @@
  */
 package org.dcache.chimera.nfs.v4;
 
-import java.net.Inet6Address;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
@@ -29,7 +28,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.clientaddr4;
 import org.dcache.chimera.nfs.v4.xdr.netaddr4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.utils.net.InetSocketAddresses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +47,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
         verifier4 verifier = _args.opsetclientid.client.verifier;
         NFS4Client client = context.getStateHandler().getClientByVerifier(verifier);
         if (client != null) {
-            netaddr4 addr = new netaddr4();
-            addr.na_r_netid = client.getRemoteAddress().getAddress() instanceof Inet6Address
-                    ? "tcp6" : "tcp";
-            addr.na_r_addr = InetSocketAddresses.uaddrOf(client.getRemoteAddress());
+            netaddr4 addr = new netaddr4(client.getRemoteAddress());
             res.status = nfsstat.NFSERR_CLID_INUSE;
             res.client_using = new clientaddr4(addr);
             throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Client Id In use");
