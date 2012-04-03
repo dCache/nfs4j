@@ -35,7 +35,6 @@ import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SETATTR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;

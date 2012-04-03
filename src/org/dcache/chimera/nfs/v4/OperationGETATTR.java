@@ -86,12 +86,10 @@ import org.dcache.chimera.nfs.v4.xdr.fsid4;
 import org.dcache.chimera.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.chimera.nfs.v4.xdr.GETATTR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.FsStat;

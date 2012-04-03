@@ -71,7 +71,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
             }
 
-            _log.debug("REMOVE: {} : {}", parentInode.toString(), name);
+            _log.debug("REMOVE: {} : {}", parentInode, name);
 
 
             Stat inodeStat = context.getFs().inodeOf(context.currentInode(), name).statCache();

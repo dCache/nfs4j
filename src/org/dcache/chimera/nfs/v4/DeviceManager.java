@@ -20,13 +20,11 @@ package org.dcache.chimera.nfs.v4;
 import org.dcache.chimera.nfs.v4.xdr.*;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrEncodingStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
