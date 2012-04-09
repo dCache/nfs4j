@@ -68,9 +68,14 @@
         <constructor-arg value="${chimera.db.dialect}" />
     </bean>
 
-    <bean id="vfs" class="org.dcache.chimera.nfs.vfs.ChimeraVfs">
+    <bean id="vfs-intern" class="org.dcache.chimera.nfs.vfs.ChimeraVfs">
         <description>Chimera Filesystem</description>
         <constructor-arg ref="fileSystem"/>
+    </bean>
+
+    <bean id="vfs" class="org.dcache.chimera.nfs.vfs.VfsCache">
+        <description>VFS Cache</description>
+        <constructor-arg ref="vfs-intern"/>
     </bean>
 
     <bean id="export" class="org.dcache.chimera.nfs.ExportFile">
