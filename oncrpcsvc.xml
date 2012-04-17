@@ -113,7 +113,7 @@
     <!--
         NFSv4.1 Operation factory
     -->
-    <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.mover.DSOperationFactory"
+    <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.ds.DSOperationFactory"
         depends-on="ds-data-pool">
         <description>DS operation factory</description>
         <constructor-arg ref="ds-data-pool" />

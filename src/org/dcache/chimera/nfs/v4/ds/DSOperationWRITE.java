@@ -14,7 +14,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.chimera.nfs.v4.mover;
+package org.dcache.chimera.nfs.v4.ds;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
