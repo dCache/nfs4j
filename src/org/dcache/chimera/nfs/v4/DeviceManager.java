@@ -192,7 +192,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             throw new RuntimeException("Unexpected IOException:", e);
         }
 
-        Buffer body = xdr.body();
+        Buffer body = xdr.asBuffer();
         byte[] retBytes = new byte[body.remaining()] ;
         body.get(retBytes);
 
