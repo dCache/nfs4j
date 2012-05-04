@@ -7,6 +7,7 @@ package org.dcache.chimera.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 public class utf8string implements XdrAble {
 
@@ -37,6 +38,23 @@ public class utf8string implements XdrAble {
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         value = xdr.xdrDecodeDynamicOpaque();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof utf8string)) {
+            return false;
+        }
+
+        return Arrays.equals(this.value, ((utf8string) obj).value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(value);
     }
 
     @Override

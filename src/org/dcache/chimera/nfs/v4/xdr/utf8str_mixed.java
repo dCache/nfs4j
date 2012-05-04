@@ -37,6 +37,19 @@ public class utf8str_mixed implements XdrAble {
         value = new utf8string(xdr);
     }
 
+     @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (!(obj instanceof utf8str_mixed)) return false;
+
+        return this.value.equals( ((utf8str_mixed)obj).value );
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
     @Override
     public String toString() {
         return value.toString();
