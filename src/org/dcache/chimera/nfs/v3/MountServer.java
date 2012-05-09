@@ -14,9 +14,10 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 package org.dcache.chimera.nfs.v3;
 
+import com.google.common.base.Splitter;
+import java.io.IOException;
 import org.dcache.chimera.nfs.v3.xdr.exportnode;
 import org.dcache.chimera.nfs.v3.xdr.mountbody;
 import org.dcache.chimera.nfs.v3.xdr.fhandle3;
@@ -33,17 +34,14 @@ import org.dcache.chimera.nfs.v3.xdr.mountres3_ok;
 import org.dcache.chimera.nfs.v3.xdr.mountstat3;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.FileSystemProvider;
-import org.dcache.chimera.FsInode;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
+import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcCall;
 import org.slf4j.Logger;
@@ -54,9 +52,9 @@ public class MountServer extends mount_protServerStub {
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
     private final ExportFile _exportFile;
     private final Map<String, Set<String>> _mounts = new HashMap<String, Set<String>>();
-    private final FileSystemProvider _fs;
+    private final VirtualFileSystem _fs;
 
-    public MountServer(ExportFile exportFile, FileSystemProvider fs) {
+    public MountServer(ExportFile exportFile, VirtualFileSystem fs) {
         super();
         _exportFile = exportFile;
         _fs = fs;
@@ -87,22 +85,13 @@ public class MountServer extends mount_protServerStub {
 
         try {
 
-            FsInode rootInode = null;
-            try {
-                _log.debug("asking chimera for the root inode");
-                rootInode = _fs.path2inode(mountPoint);
-                _log.debug("root inode: {}", rootInode);
-            } catch (ChimeraFsException e1) {
-                throw new ChimeraNFSException(mountstat3.MNT3ERR_NOENT, "Path not found");
-            }
+            Inode rootInode = path2Inode(_fs, mountPoint);
 
-            if (!rootInode.isDirectory()) {
+            if (rootInode.type() != Inode.Type.DIRECTORY) {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
             }
 
-            String handle = rootInode.toFullString();
-
-            byte[] b = handle.getBytes();
+            byte[] b = rootInode.toFileHandle();
 
             m.fhs_status = mountstat3.MNT3_OK;
             m.mountinfo.fhandle = new fhandle3(b);
@@ -122,6 +111,8 @@ public class MountServer extends mount_protServerStub {
 
         } catch (ChimeraNFSException e) {
             m.fhs_status = e.getStatus();
+        } catch (IOException e) {
+            m.fhs_status = mountstat3.MNT3ERR_SERVERFAULT;
         }
 
         return m;
@@ -163,7 +154,7 @@ public class MountServer extends mount_protServerStub {
     public void MOUNTPROC3_UMNT_3(RpcCall call$, dirpath arg1) {
 
         Set<String> s = _mounts.get(arg1.value);
-        if( s != null ) {
+        if (s != null) {
             s.remove(call$.getTransport().getRemoteSocketAddress().getHostName());
         }
     }
@@ -263,5 +254,20 @@ public class MountServer extends mount_protServerStub {
         }
 
         return rc;
+    }
+
+    private static Inode path2Inode(VirtualFileSystem fs, String path)
+            throws ChimeraNFSException, IOException {
+        try {
+            Splitter splitter = Splitter.on('/').omitEmptyStrings();
+            Inode inode = fs.getRootInode();
+
+            for (String pathElement : splitter.split(path)) {
+                inode = fs.inodeOf(inode, pathElement);
+            }
+            return inode;
+        } catch (ChimeraFsException e) {
+            throw new ChimeraNFSException(mountstat3.MNT3ERR_NOENT, e.getMessage());
+        }
     }
 }

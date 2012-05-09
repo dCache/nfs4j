@@ -155,7 +155,7 @@
     <bean id="mountd" class="org.dcache.chimera.nfs.v3.MountServer">
         <description>Mountd seriver</description>
         <constructor-arg ref="export" />
-        <constructor-arg ref="fileSystem" />
+        <constructor-arg ref="vfs" />
     </bean>
 
     <!--
