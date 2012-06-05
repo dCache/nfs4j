@@ -80,7 +80,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
              * here we have to checkfor utf8, but it's too much overhead to keep
              * spec happy.
              */
-            String tag = new String(arg1.tag.value.value);
+            String tag = arg1.tag.toString();
             MDC.put(NfsMdc.TAG, tag);
             MDC.put(NfsMdc.CLIENT, call$.getTransport().getRemoteSocketAddress().toString());
 

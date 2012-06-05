@@ -52,8 +52,7 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
         res.resok4 = new READLINK4resok();
         res.resok4.link = new linktext4();
         res.resok4.link.value = new utf8str_cs();
-        res.resok4.link.value.value = new utf8string();
-        res.resok4.link.value.value.value = link.getBytes();
+        res.resok4.link.value.value = new utf8string(link);
         res.status = nfsstat.NFS_OK;
     }
 }

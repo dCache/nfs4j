@@ -184,7 +184,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 // TODO: use princilat
                 utf8str_cs owner = new utf8str_cs ();
                 owner.xdrDecode(xdr);
-                String new_owner = new String(owner.value.value);
+                String new_owner = owner.toString();
                 inode.setUID(context.getIdMapping().principalToUid(new_owner));
                 isApplied = true;
                 break;
@@ -192,7 +192,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 // TODO: use princilat
                 utf8str_cs owner_group = new utf8str_cs ();
                 owner_group.xdrDecode(xdr);
-                String new_group = new String(owner_group.value.value);
+                String new_group = owner_group.toString();
                 inode.setGID(context.getIdMapping().principalToGid(new_group));
                 isApplied = true;
                 break;

@@ -56,7 +56,6 @@ public class CreateSessionStub {
         callback_sec_parms4 callb = new callback_sec_parms4();
         callb.cb_secflavor = nfs4_prot.AUTH_NONE;
         cb[0] = callb;
-        op.opcreate_session.csa_sec_parms = new callback_sec_parms4[1];
         op.opcreate_session.csa_sec_parms = cb;
         return op;
     }

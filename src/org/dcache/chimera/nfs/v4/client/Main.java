@@ -437,8 +437,7 @@ public class Main {
         if (compound4res.status == nfsstat.NFS_OK) {
 
             if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
-                String serverId = new String(
-                        compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.value.value);
+                String serverId = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.toString();
                 System.out.println("Connected to: " + serverId);
             } else {
                 System.out.println("Connected to: Mr. X");

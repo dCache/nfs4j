@@ -118,20 +118,21 @@ public class GetattrStub {
                 // TODO: use princilat
                 utf8str_cs owner = new utf8str_cs ();
                 owner.xdrDecode(xdr);
-                String new_owner = new String(owner.value.value);
+                String new_owner = owner.toString();
                 attr.put(fattr,new_owner );
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
                 // TODO: use princilat
                 utf8str_cs owner_group = new utf8str_cs ();
                 owner_group.xdrDecode(xdr);
-                String new_group = new String(owner_group.value.value);
+                String new_group = owner_group.toString();
                 attr.put(fattr,new_group );
                 break;
             case nfs4_prot.FATTR4_TYPE :
                 fattr4_type type = new fattr4_type();
                 type.xdrDecode(xdr);
                 attr.put(fattr,type );
+                break;
             case nfs4_prot.FATTR4_FS_LOCATIONS:
                 fattr4_fs_locations fs_locations = new fattr4_fs_locations();
                 fs_locations.xdrDecode(xdr);

@@ -24,7 +24,7 @@ public class HimeraNFS4Utils {
 
     public static String aceToString(nfsace4 ace) {
 
-        String who = new String(ace.who.value.value);
+        String who = ace.who.toString();
         int type = ace.type.value.value;
         int flag = ace.flag.value.value;
         int mask = ace.access_mask.value.value;
