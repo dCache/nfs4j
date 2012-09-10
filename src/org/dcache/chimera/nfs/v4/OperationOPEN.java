@@ -106,7 +106,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         try {
 
-                            inode = context.getFs().inodeOf(context.currentInode(), name);
+                            inode = context.getFs().lookup(context.currentInode(), name);
 
                             if (exclusive) {
                                 throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "file already exist");
@@ -154,7 +154,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                     } else {
 
-                        inode = context.getFs().inodeOf(context.currentInode(), name);
+                        inode = context.getFs().lookup(context.currentInode(), name);
 
                         Stat inodeStat = inode.statCache();
                         UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);

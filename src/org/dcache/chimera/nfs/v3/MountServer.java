@@ -266,7 +266,7 @@ public class MountServer extends mount_protServerStub {
             Inode inode = fs.getRootInode();
 
             for (String pathElement : splitter.split(path)) {
-                inode = fs.inodeOf(inode, pathElement);
+                inode = fs.lookup(inode, pathElement);
             }
             return inode;
         } catch (ChimeraFsException e) {

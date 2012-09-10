@@ -68,7 +68,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         try {
-            Inode newInode = context.getFs().inodeOf(context.currentInode(), name);
+            Inode newInode = context.getFs().lookup(context.currentInode(), name);
             if (!newInode.exists()) {
                 res.status = nfsstat.NFSERR_NOENT;
             } else {

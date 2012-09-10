@@ -305,7 +305,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             long now = System.currentTimeMillis();
 
             try {
-                inode = _fs.inodeOf(parent, path);
+                inode = _fs.lookup(parent, path);
             } catch (FileNotFoundHimeraFsException hfe) {
                 exists = false;
             }
@@ -547,7 +547,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = null;
             boolean exists = true;
             try {
-                inode = _fs.inodeOf(parent, name);
+                inode = _fs.lookup(parent, name);
             } catch (FileNotFoundHimeraFsException hfe) {
                 exists = false;
             }
@@ -618,7 +618,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = null;
 
             try {
-                inode = _fs.inodeOf(parent, name);
+                inode = _fs.lookup(parent, name);
             } catch (ChimeraFsException hfse) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
             }
@@ -1226,7 +1226,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat inodeStat = null;
             Stat parentStat = null;
             try {
-                Inode inode = _fs.inodeOf(parent, name);
+                Inode inode = _fs.lookup(parent, name);
                 inodeStat = inode.statCache();
                 parentStat = parent.statCache();
             } catch (ChimeraFsException hfe) {
@@ -1362,7 +1362,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode parent = _fs.inodeOf(arg1.object.dir.data);
             String file = arg1.object.name.value;
 
-            Inode inode = _fs.inodeOf(parent, file);
+            Inode inode = _fs.lookup(parent, file);
             Stat inodeStat = inode.statCache();
             Stat parentStat = parent.statCache();
 
@@ -1487,7 +1487,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = null;
             boolean exists = true;
             try {
-                inode = _fs.inodeOf(parent, file);
+                inode = _fs.lookup(parent, file);
             } catch (FileNotFoundHimeraFsException hfe) {
                 exists = false;
             }

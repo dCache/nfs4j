@@ -87,7 +87,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
         // TODO: this check have to be moved into JdbcFs
         try {
-            inode = context.getFs().inodeOf(context.currentInode(), name);
+            inode = context.getFs().lookup(context.currentInode(), name);
             throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "path already exist");
         } catch (ChimeraFsException hfe) {
         }

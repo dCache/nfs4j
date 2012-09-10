@@ -55,7 +55,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(Inode parent, String path) throws IOException {
+    public Inode lookup(Inode parent, String path) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode fsInode = parentFsInode.inodeOf(path);
         return toInode(fsInode);

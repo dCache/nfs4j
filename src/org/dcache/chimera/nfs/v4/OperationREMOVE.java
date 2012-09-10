@@ -76,7 +76,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             _log.debug("REMOVE: {} : {}", parentInode, name);
 
 
-            Stat inodeStat = context.getFs().inodeOf(context.currentInode(), name).statCache();
+            Stat inodeStat = context.getFs().lookup(context.currentInode(), name).statCache();
             Stat parentStat = parentInode.statCache();
 
             UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);

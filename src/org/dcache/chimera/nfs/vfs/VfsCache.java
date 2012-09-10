@@ -105,7 +105,7 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(Inode parent, String path) throws IOException {
+    public Inode lookup(Inode parent, String path) throws IOException {
         return getFromCache(parent, path);
     }
 
@@ -198,7 +198,7 @@ public class VfsCache implements VirtualFileSystem {
 
         @Override
         public Inode load(CacheKey k) throws Exception {
-            return _inner.inodeOf(k.getParent(), k.getName());
+            return _inner.lookup(k.getParent(), k.getName());
         }
     }
 }
