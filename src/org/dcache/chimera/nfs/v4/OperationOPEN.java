@@ -37,14 +37,11 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.OPEN4resok;
 import org.dcache.chimera.nfs.v4.xdr.OPEN4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,20 +118,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                         Integer.toOctalString(fileStat.getMode() & 0777)
                                     } );
 
-                            UnixAcl fileAcl = new UnixAcl(fileStat.getUid(), fileStat.getGid(), fileStat.getMode() & 0777);
-                            if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
+                            if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
                                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
                             }
 
                             OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
                         } catch (FileNotFoundHimeraFsException he) {
-
-                            // check parent permissions
-                            Stat parentStat = context.currentInode().statCache();
-                            UnixAcl parentAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-                            if (!context.getAclHandler().isAllowed(parentAcl, context.getUser(), AclHandler.ACL_INSERT)) {
-                                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-                            }
 
                             _log.debug("Creating a new file: {}", name);
                             inode = context.getFs().create(context.currentInode(), Inode.Type.REGULAR,
@@ -156,9 +145,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         inode = context.getFs().lookup(context.currentInode(), name);
 
-                        Stat inodeStat = inode.statCache();
-                        UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-                        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
+                        if ( context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0) {
                             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
                         }
 

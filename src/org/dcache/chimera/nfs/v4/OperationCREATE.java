@@ -34,9 +34,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,14 +56,6 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         Inode inode = null;
 
         String name = NameFilter.convert(_args.opcreate.objname.value.value.value);
-
-        Stat parentStat = context.currentInode().statCache();
-
-        UnixAcl fileAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-
-        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_INSERT)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-        }
 
         if (name.length() == 0) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");

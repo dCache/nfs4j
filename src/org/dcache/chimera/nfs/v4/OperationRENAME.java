@@ -32,9 +32,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,15 +91,6 @@ public class OperationRENAME extends AbstractNFSv4Operation {
                         destDir,
                         newName
                     });
-
-            Stat fromStat = sourceDir.stat();
-            Stat toStat = destDir.stat();
-            UnixAcl fromAcl = new UnixAcl(fromStat.getUid(), fromStat.getGid(), fromStat.getMode() & 0777);
-            UnixAcl toAcl = new UnixAcl(toStat.getUid(), toStat.getGid(), toStat.getMode() & 0777);
-            if (!(context.getAclHandler().isAllowed(fromAcl, context.getUser(), AclHandler.ACL_DELETE)
-                    && context.getAclHandler().isAllowed(toAcl, context.getUser(), AclHandler.ACL_INSERT))) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-            }
 
             context.getFs().move(sourceDir, oldName, destDir, newName);
 

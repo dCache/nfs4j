@@ -23,15 +23,11 @@ import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
-import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.ACCESS4res;
 import org.dcache.chimera.nfs.v4.xdr.ACCESS4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,48 +47,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
 
         _log.debug("NFS Request ACCESS uid: {}", context.getUser());
 
-        int reqAccess = _args.opaccess.access.value;
-        Stat objStat = context.currentInode().statCache();
-        UnixAcl acl = new UnixAcl(objStat.getUid(), objStat.getGid(), objStat.getMode() & 0777);
-
-        int realAccess = 0;
-
-
-        if ((reqAccess & nfs4_prot.ACCESS4_EXECUTE) == nfs4_prot.ACCESS4_EXECUTE) {
-            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_EXECUTE)) {
-                realAccess |= nfs4_prot.ACCESS4_EXECUTE;
-            }
-        }
-
-        if ((reqAccess & nfs4_prot.ACCESS4_EXTEND) == nfs4_prot.ACCESS4_EXTEND) {
-            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT)) {
-                realAccess |= nfs4_prot.ACCESS4_EXTEND;
-            }
-        }
-
-        if ((reqAccess & nfs4_prot.ACCESS4_LOOKUP) == nfs4_prot.ACCESS4_LOOKUP) {
-            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP)) {
-                realAccess |= nfs4_prot.ACCESS4_LOOKUP;
-            }
-        }
-
-        if ((reqAccess & nfs4_prot.ACCESS4_DELETE) == nfs4_prot.ACCESS4_DELETE) {
-            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_DELETE)) {
-                realAccess |= nfs4_prot.ACCESS4_DELETE;
-            }
-        }
-
-        if ((reqAccess & nfs4_prot.ACCESS4_MODIFY) == nfs4_prot.ACCESS4_MODIFY) {
-            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_WRITE)) {
-                realAccess |= nfs4_prot.ACCESS4_MODIFY;
-            }
-        }
-
-        if ((reqAccess & nfs4_prot.ACCESS4_READ) == nfs4_prot.ACCESS4_READ) {
-            if (context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_READ)) {
-                realAccess |= nfs4_prot.ACCESS4_READ;
-            }
-        }
+        int realAccess = context.getFs().access(context.currentInode(), _args.opaccess.access.value);
 
         res.resok4 = new ACCESS4resok();
         res.resok4.access = new uint32_t(realAccess);

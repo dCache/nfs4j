@@ -29,9 +29,7 @@ import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
 import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,11 +54,6 @@ public class OperationREAD extends AbstractNFSv4Operation {
         }
 
         Stat inodeStat = context.currentInode().statCache();
-
-        UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-        }
 
         if (context.getMinorversion() == 0) {
             /*

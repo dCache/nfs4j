@@ -42,9 +42,6 @@ import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.slf4j.Logger;
@@ -65,13 +62,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         final SETATTR4res res = result.opsetattr;
 
         try {
-
-            Stat inodeStat = context.currentInode().statCache();
-
-            UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-            if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER)) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-            }
 
             res.status = nfsstat.NFS_OK;
             res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode(), context);

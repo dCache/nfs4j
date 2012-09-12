@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.chimera.nfs.vfs.PseudoFs;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
@@ -96,8 +97,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
             }
 
+            VirtualFileSystem fs = new PseudoFs(_fs, call$);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
-                _fs, _statHandler, _deviceManager, _aclHandler, call$, _idMapping,
+                fs, _statHandler, _deviceManager, _aclHandler, call$, _idMapping,
                     _exportFile, arg1.argarray.length);
 
             res.status = nfsstat.NFS_OK;

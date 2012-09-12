@@ -265,6 +265,11 @@ public class ChimeraVfs implements VirtualFileSystem {
         };
     }
 
+    @Override
+    public int access(Inode inode, int mode) throws IOException {
+        return mode;
+    }
+
     private class ChimeraDirectoryEntryToVfs implements Function<HimeraDirectoryEntry, DirectoryEntry> {
 
         @Override

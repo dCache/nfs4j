@@ -152,6 +152,11 @@ public class VfsCache implements VirtualFileSystem {
         _lookupCache.asMap().put(new CacheKey(parent, path), inode);
     }
 
+    @Override
+    public int access(Inode inode, int mode) throws IOException {
+        return _inner.access(inode, mode);
+    }
+
     /**
      * Cache entry key based on parent id and name
      */

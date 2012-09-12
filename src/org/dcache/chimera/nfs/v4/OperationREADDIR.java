@@ -44,9 +44,6 @@ import org.dcache.chimera.nfs.InodeCacheEntry;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.DirectoryEntry;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
@@ -118,12 +115,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         final READDIR4res res = result.opreaddir;
 
         Inode dir = context.currentInode();
-
-        Stat dirStat = dir.statCache();
-        UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
-        if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_LOOKUP)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-        }
 
         if (!dir.exists()) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
