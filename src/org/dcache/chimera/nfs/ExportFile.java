@@ -22,7 +22,6 @@ package org.dcache.chimera.nfs;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
@@ -33,6 +32,8 @@ import org.dcache.chimera.nfs.FsExport.Root;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,32 +43,26 @@ public class ExportFile {
 
     private final Set<FsExport> _exports ;
 
-    /**
-     * Create a new empty exports list
-     */
-    public ExportFile()  {
-        _exports = new HashSet<FsExport>();
+    public ExportFile(File file) throws IOException {
+        _exports = parse(file.toURI().toURL());
     }
 
-    public ExportFile(File file) throws IOException  {
-        _exports = parse(file);
+    public ExportFile(URL url) throws IOException  {
+        _exports = parse(url);
     }
 
     public List<FsExport> getExports() {
         return Lists.newArrayList(_exports);
     }
 
-    private static Set<FsExport> parse(File exportFile) throws IOException {
+    private static Set<FsExport> parse(URL exportFile) throws IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(exportFile));
+        BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()));
         Set<FsExport> exports = new HashSet<FsExport>();
 
         String line;
         try {
-            int lineCount = 0;
             while ((line = br.readLine()) != null) {
-
-                ++lineCount;
 
                 line = line.trim();
                 if (line.length() == 0)
