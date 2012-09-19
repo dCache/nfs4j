@@ -37,8 +37,6 @@ public interface Inode {
         SOCK
     }
 
-    public byte[] toFileHandle() throws IOException;
-
     public boolean exists();
 
     Stat stat() throws IOException;

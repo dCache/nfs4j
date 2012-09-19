@@ -32,7 +32,9 @@ public interface VirtualFileSystem {
 
     Inode getRootInode() throws IOException;
 
-    Inode inodeOf(final byte[] fh) throws IOException;
+    Inode getInodeById(final byte[] fh) throws IOException;
+
+    byte[] getInodeId(Inode inode) throws IOException;
 
     Inode lookup(Inode parent, String path) throws IOException;
 

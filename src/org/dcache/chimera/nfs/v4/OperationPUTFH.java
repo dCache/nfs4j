@@ -42,7 +42,7 @@ public class OperationPUTFH extends AbstractNFSv4Operation {
         final PUTFH4res res = result.opputfh;
 
         try {
-            context.currentInode(context.getFs().inodeOf(_args.opputfh.object.value));
+            context.currentInode(context.getFs().getInodeById(_args.opputfh.object.value));
             _log.debug("NFS Request  PUTFH4 current: {}", context.currentInode());
             res.status = nfsstat.NFS_OK;
         } catch (IllegalArgumentException iae) {

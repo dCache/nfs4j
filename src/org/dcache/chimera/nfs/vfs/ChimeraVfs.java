@@ -22,7 +22,6 @@ package org.dcache.chimera.nfs.vfs;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
@@ -50,8 +49,14 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(final byte[] fh) throws IOException {
+    public Inode getInodeById(final byte[] fh) throws IOException {
         return toInode(_fs.inodeFromBytes(fh));
+    }
+
+    @Override
+    public byte[] getInodeId(Inode inode) throws IOException {
+        FsInode chimeraInode = toFsInode(inode);
+        return  _fs.inodeToBytes(chimeraInode);
     }
 
     @Override
@@ -149,120 +154,119 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     private FsInode toFsInode(Inode inode) throws IOException {
-        return _fs.inodeFromBytes(inode.toFileHandle());
+        ChimeraInode chimeraInode = (ChimeraInode)inode;
+        return chimeraInode.inode;
     }
 
     private Inode toInode(final FsInode inode) {
+        return new ChimeraInode(inode);
+    }
+ 
+    private class ChimeraInode implements Inode {
 
-        return new Inode() {
+        private final FsInode inode;
 
-            @Override
-            public byte[] toFileHandle() throws IOException {
-                return _fs.inodeToBytes(inode);
+        ChimeraInode(FsInode inode) {
+            this.inode = inode;
+        }
+
+        @Override
+        public boolean exists() {
+            return inode.exists();
+        }
+
+        @Override
+        public Stat stat() throws IOException {
+            return inode.stat();
+        }
+
+        @Override
+        public Stat statCache() throws IOException {
+            return inode.statCache();
+        }
+
+        @Override
+        public long id() {
+            return inode.id();
+        }
+
+        @Override
+        public void setATime(long time) throws IOException {
+            inode.setATime(time);
+        }
+
+        @Override
+        public void setCTime(long time) throws IOException {
+            inode.setCTime(time);
+        }
+
+        @Override
+        public void setGID(int id) throws IOException {
+            inode.setGID(id);
+        }
+
+        @Override
+        public void setMTime(long time) throws IOException {
+            inode.setMTime(time);
+        }
+
+        @Override
+        public void setMode(int size) throws IOException {
+            inode.setMode(size);
+        }
+
+        @Override
+        public void setSize(long size) throws IOException {
+            inode.setSize(size);
+        }
+
+        @Override
+        public void setUID(int id) throws IOException {
+            inode.setUID(id);
+        }
+
+        @Override
+        public nfsace4[] getAcl() throws IOException {
+            return new nfsace4[0];
+        }
+
+        @Override
+        public void setAcl(nfsace4[] acl) throws IOException {
+            /* NOP */
+        }
+
+        @Override
+        public Type type() {
+            if (inode.isDirectory()) {
+                return Type.DIRECTORY;
             }
-
-            @Override
-            public boolean exists() {
-                return inode.exists();
+            if (inode.isLink()) {
+                return Type.SYMLINK;
             }
+            return Type.REGULAR;
+        }
 
-            @Override
-            public Stat stat() throws IOException {
-                return inode.stat();
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
             }
+            if (!(obj instanceof ChimeraInode)) {
+                return false;
+            }
+            ChimeraInode other = (ChimeraInode) obj;
+            return this.inode.equals(other.inode);
+        }
 
-            @Override
-            public Stat statCache() throws IOException {
-                return inode.statCache();
-            }
+        @Override
+        public int hashCode() {
+            return inode.hashCode();
+        }
 
-            @Override
-            public long id() {
-                return inode.id();
-            }
-
-            @Override
-            public void setATime(long time) throws IOException {
-                inode.setATime(time);
-            }
-
-            @Override
-            public void setCTime(long time) throws IOException {
-                inode.setCTime(time);
-            }
-
-            @Override
-            public void setGID(int id) throws IOException {
-                inode.setGID(id);
-            }
-
-            @Override
-            public void setMTime(long time) throws IOException {
-                inode.setMTime(time);
-            }
-
-            @Override
-            public void setMode(int size) throws IOException {
-                inode.setMode(size);
-            }
-
-            @Override
-            public void setSize(long size) throws IOException {
-                inode.setSize(size);
-            }
-
-            @Override
-            public void setUID(int id) throws IOException {
-                inode.setUID(id);
-            }
-
-            @Override
-            public nfsace4[] getAcl() throws IOException {
-                return new nfsace4[0];
-            }
-
-            @Override
-            public void setAcl(nfsace4[] acl) throws IOException {
-                /* NOP */
-            }
-
-            @Override
-            public Type type() {
-                if (inode.isDirectory()) {
-                    return Type.DIRECTORY;
-                }
-                if (inode.isLink()) {
-                    return Type.SYMLINK;
-                }
-                return Type.REGULAR;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (obj == this) {
-                    return true;
-                }
-                if (!(obj instanceof Inode)) {
-                    return false;
-                }
-                Inode other = (Inode) obj;
-                try {
-                    return Arrays.equals(this.toFileHandle(), other.toFileHandle());
-                }catch(IOException e) {
-                    return false;
-                }
-            }
-
-            @Override
-            public int hashCode() {
-                return inode.hashCode();
-            }
-
-            @Override
-            public String toString() {
-                return inode.toString();
-            }
-        };
+        @Override
+        public String toString() {
+            return inode.toString();
+        }
     }
 
     @Override

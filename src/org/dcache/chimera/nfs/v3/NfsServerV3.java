@@ -200,7 +200,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            Inode inode = _fs.inodeOf(arg1.object.data);
+            Inode inode = _fs.getInodeById(arg1.object.data);
 
             if (!inode.exists()) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_STALE, "Path do not exist.");
@@ -289,7 +289,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         CREATE3res res = new CREATE3res();
         String path = arg1.where.name.value;
         try {
-            Inode parent = _fs.inodeOf(arg1.where.dir.data);
+            Inode parent = _fs.getInodeById(arg1.where.dir.data);
 
             sattr3 newAttr = null;
             int mode = arg1.how.mode;
@@ -354,7 +354,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
-            res.resok.obj.handle.data = inode.toFileHandle();
+            res.resok.obj.handle.data = _fs.getInodeId(inode);
 
             res.resok.dir_wcc = new wcc_data();
             res.resok.dir_wcc.after = new post_op_attr();
@@ -401,7 +401,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         FSINFO3res res = new FSINFO3res();
 
         try {
-            Inode inode = _fs.inodeOf(arg1.fsroot.data);
+            Inode inode = _fs.getInodeById(arg1.fsroot.data);
             res.status = nfsstat.NFS_OK;
             res.resok = new FSINFO3resok();
 
@@ -479,7 +479,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            Inode inode = _fs.inodeOf(arg1.fsroot.data);
+            Inode inode = _fs.getInodeById(arg1.fsroot.data);
 
             HimeraNfsUtils.fill_attributes(inode.stat(), res.resok.obj_attributes.attributes);
 
@@ -507,7 +507,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         GETATTR3res res = new GETATTR3res();
 
         try{
-            Inode inode = _fs.inodeOf(arg1.object.data);
+            Inode inode = _fs.getInodeById(arg1.object.data);
             _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
 
             res.status = nfsstat.NFS_OK;
@@ -539,10 +539,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
         LINK3res res = new LINK3res();
         try {
 
-            Inode parent = _fs.inodeOf(arg1.link.dir.data);
+            Inode parent = _fs.getInodeById(arg1.link.dir.data);
             String name = arg1.link.name.value;
 
-            Inode hlink = _fs.inodeOf(arg1.file.data);
+            Inode hlink = _fs.getInodeById(arg1.file.data);
 
             Inode inode = null;
             boolean exists = true;
@@ -612,7 +612,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         LOOKUP3res res = new LOOKUP3res();
 
         try {
-            Inode parent = _fs.inodeOf(arg1.what.dir.data);
+            Inode parent = _fs.getInodeById(arg1.what.dir.data);
             String name = arg1.what.name.value;
 
             Inode inode = null;
@@ -627,7 +627,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new LOOKUP3resok();
 
             nfs_fh3 fh3 = new nfs_fh3();
-            fh3.data = inode.toFileHandle();
+            fh3.data = _fs.getInodeId(inode);
             res.resok.object = fh3;
 
             res.resok.obj_attributes = new post_op_attr();
@@ -669,7 +669,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         MKDIR3res res = new MKDIR3res();
         try {
-            Inode parent = _fs.inodeOf(arg1.where.dir.data);
+            Inode parent = _fs.getInodeById(arg1.where.dir.data);
 
             String name = arg1.where.name.value;
             sattr3 attr = arg1.attributes;
@@ -704,7 +704,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
-            res.resok.obj.handle.data = inode.toFileHandle();
+            res.resok.obj.handle.data = _fs.getInodeId(inode);
 
             res.resok.obj_attributes = new post_op_attr();
             res.resok.obj_attributes.attributes_follow = true;
@@ -837,7 +837,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            Inode dir = _fs.inodeOf(arg1.dir.data);
+            Inode dir = _fs.getInodeById(arg1.dir.data);
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
@@ -921,7 +921,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 currentEntry.name_handle = new post_op_fh3();
                 currentEntry.name_handle.handle_follows = true;
                 currentEntry.name_handle.handle = new nfs_fh3();
-                currentEntry.name_handle.handle.data = ef.toFileHandle();
+                currentEntry.name_handle.handle.data = _fs.getInodeId(ef);
                 currentEntry.name_attributes = new post_op_attr();
                 currentEntry.name_attributes.attributes_follow = true;
                 currentEntry.name_attributes.attributes = new fattr3();
@@ -986,7 +986,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            Inode dir = _fs.inodeOf(arg1.dir.data);
+            Inode dir = _fs.getInodeById(arg1.dir.data);
 
             Stat dirStat = dir.statCache();
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
@@ -1118,7 +1118,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
 
         try {
-            Inode inode = _fs.inodeOf(arg1.symlink.data);
+            Inode inode = _fs.getInodeById(arg1.symlink.data);
 
             res.resok = new READLINK3resok();
             res.resok.data = new nfspath3(_fs.readlink(inode));
@@ -1152,7 +1152,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         READ3res res = new READ3res();
 
         try {
-            Inode inode = _fs.inodeOf(arg1.file.data);
+            Inode inode = _fs.getInodeById(arg1.file.data);
             long offset = arg1.offset.value.value;
             int count = arg1.count.value.value;
 
@@ -1219,7 +1219,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         REMOVE3res res = new REMOVE3res();
 
         try {
-            Inode parent = _fs.inodeOf(arg1.object.dir.data);
+            Inode parent = _fs.getInodeById(arg1.object.dir.data);
 
             String name = arg1.object.name.value;
 
@@ -1290,10 +1290,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
         RENAME3res res = new RENAME3res();
 
         try {
-            Inode from = _fs.inodeOf(arg1.from.dir.data);
+            Inode from = _fs.getInodeById(arg1.from.dir.data);
             String file1 = arg1.from.name.value;
 
-            Inode to = _fs.inodeOf(arg1.to.dir.data);
+            Inode to = _fs.getInodeById(arg1.to.dir.data);
             String file2 = arg1.to.name.value;
 
             Stat fromStat = from.stat();
@@ -1359,7 +1359,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         RMDIR3res res = new RMDIR3res();
 
         try {
-            Inode parent = _fs.inodeOf(arg1.object.dir.data);
+            Inode parent = _fs.getInodeById(arg1.object.dir.data);
             String file = arg1.object.name.value;
 
             Inode inode = _fs.lookup(parent, file);
@@ -1423,7 +1423,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         SETATTR3res res = new SETATTR3res();
 
         try {
-            Inode inode = _fs.inodeOf(arg1.object.data);
+            Inode inode = _fs.getInodeById(arg1.object.data);
             sattr3 newAttr = arg1.new_attributes;
 
             Stat stat = null;
@@ -1478,7 +1478,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            Inode parent = _fs.inodeOf(arg1.where.dir.data);
+            Inode parent = _fs.getInodeById(arg1.where.dir.data);
             String file = arg1.where.name.value;
 
             String link = arg1.symlink.symlink_data.value;
@@ -1516,7 +1516,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
-            res.resok.obj.handle.data = inode.toFileHandle();
+            res.resok.obj.handle.data = _fs.getInodeId(inode);
 
             res.resok.dir_wcc = new wcc_data();
             res.resok.dir_wcc.after = new post_op_attr();
@@ -1559,7 +1559,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         WRITE3res res = new WRITE3res();
 
         try {
-            Inode inode = _fs.inodeOf(arg1.file.data);
+            Inode inode = _fs.getInodeById(arg1.file.data);
             long offset = arg1.offset.value.value;
             int count = arg1.count.value.value;
 

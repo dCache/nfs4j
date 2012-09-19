@@ -95,7 +95,7 @@ public class MountServer extends mount_protServerStub {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
             }
 
-            byte[] b = rootInode.toFileHandle();
+            byte[] b = _fs.getInodeId(rootInode);
 
             m.fhs_status = mountstat3.MNT3_OK;
             m.mountinfo.fhandle = new fhandle3(b);
