@@ -79,12 +79,15 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode getInodeById(byte[] fh) throws IOException {
-        return _inner.getInodeById(fh);
+        FileHandle handle = new FileHandle(fh);
+        return _inner.getInodeById(handle.getFsOpaque());
     }
 
     @Override
-    public byte[] getInodeId(Inode inode) throws IOException {
-        return _inner.getInodeId(inode);
+    public byte[] getInodeId(Inode inode) throws IOException {        
+        byte[] opaque = _inner.getInodeId(inode);
+        FileHandle.FileHandleBuilder builder = new FileHandle.FileHandleBuilder();
+        return builder.build(opaque).bytes();
     }
 
     @Override
