@@ -63,7 +63,7 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode create(Inode parent, Type type, String path, int uid, int gid, int mode) throws IOException {
-        access(_subject, parent, ACE4_ADD_FILE);
+        checkAccess(parent, ACE4_ADD_FILE);
         return _inner.create(parent, type, path, uid, gid, mode);
     }
 
@@ -92,33 +92,33 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        access(_subject, parent, ACE4_EXECUTE);
+        checkAccess(parent, ACE4_EXECUTE);
         return _inner.lookup(parent, path);
     }
 
     @Override
     public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
-        access(_subject, parent, ACE4_ADD_FILE);
+        checkAccess(parent, ACE4_ADD_FILE);
         return _inner.link(parent, link, path, uid, gid);
 
     }
 
     @Override
     public List<DirectoryEntry> list(Inode inode) throws IOException {
-        access(_subject, inode, ACE4_LIST_DIRECTORY);
+        checkAccess(inode, ACE4_LIST_DIRECTORY);
         return _inner.list(inode);
     }
 
     @Override
     public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
-        access(_subject, parent, ACE4_ADD_SUBDIRECTORY);
+        checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
         return _inner.mkdir(parent, path, uid, gid, mode);
     }
 
     @Override
     public void move(Inode src, String oldName, Inode dest, String newName) throws IOException {
-        access(_subject, src, ACE4_DELETE_CHILD);
-        access(_subject, dest, ACE4_ADD_FILE | ACE4_DELETE_CHILD);
+        checkAccess(src, ACE4_DELETE_CHILD);
+        checkAccess(dest, ACE4_ADD_FILE | ACE4_DELETE_CHILD);
         _inner.move(src, oldName, dest, newName);
     }
 
@@ -129,24 +129,24 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public int read(Inode inode, byte[] data, long offset, int count) throws IOException {
-        access(_subject, inode, ACE4_READ_DATA);
+        checkAccess(inode, ACE4_READ_DATA);
         return _inner.read(inode, data, offset, count);
     }
 
     @Override
     public String readlink(Inode inode) throws IOException {
-        access(_subject, inode, ACE4_READ_DATA);
+        checkAccess(inode, ACE4_READ_DATA);
         return _inner.readlink(inode);
     }
 
     @Override
     public boolean remove(Inode parent, String path) throws IOException {
         try {
-            access(_subject, parent, ACE4_DELETE_CHILD);
+            checkAccess(parent, ACE4_DELETE_CHILD);
         } catch (ChimeraNFSException e) {
             if (e.getStatus() == nfsstat.NFSERR_ACCESS) {
                 Inode inode = _inner.lookup(parent, path);
-                access(_subject, inode, ACE4_DELETE);
+                checkAccess(inode, ACE4_DELETE);
             } else {
                 throw e;
             }
@@ -156,20 +156,20 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
-        access(_subject, parent, ACE4_ADD_FILE);
+        checkAccess(parent, ACE4_ADD_FILE);
         return _inner.symlink(parent, path, link, uid, gid, mode);
     }
 
     @Override
     public int write(Inode inode, byte[] data, long offset, int count) throws IOException {
-        access(_subject, inode, ACE4_WRITE_DATA);
+        checkAccess(inode, ACE4_WRITE_DATA);
         return _inner.write(inode, data, offset, count);
     }
 
-    private void access(Subject subject, Inode inode, int requestedMask) throws IOException {
+    private void checkAccess(Inode inode, int requestedMask) throws IOException {
         Stat stat = inode.stat();
 
-        if ((unixToAccessmask(subject, stat) & requestedMask) != requestedMask) {
+        if ((unixToAccessmask(_subject, stat) & requestedMask) != requestedMask) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
         }
     }
