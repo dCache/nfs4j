@@ -167,6 +167,10 @@ public class Stat {
         _ctime = ctime;
     }
 
+    public long getFileId() {
+        return (long)getDev() << 32 | getIno();
+    }
+
     public Type type() {
         switch(_mode & S_TYPE) {
             case S_IFBLK:

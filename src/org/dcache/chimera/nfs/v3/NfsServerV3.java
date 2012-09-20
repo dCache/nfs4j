@@ -299,7 +299,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             Inode inode = null;
-            Stat inodeStat = new Stat();
             Stat parentStat = null;
             boolean exists = true;
             long now = System.currentTimeMillis();
@@ -320,29 +319,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
-            try {
-                int fmode = 0644 | UnixPermission.S_IFREG;
-                if (newAttr != null) {
-                    fmode = newAttr.mode.mode.value.value | UnixPermission.S_IFREG;
-                }
-                inode = _fs.create(parent, Stat.Type.REGULAR, path, user.getUID(), user.getGID(), fmode);
 
-                // as inode is new, we can use our information and do not ask DB for it
-                inodeStat.setATime(now);
-                inodeStat.setCTime(now);
-                inodeStat.setMTime(now);
-
-                inodeStat.setGid(user.getGID());
-                inodeStat.setUid(user.getUID());
-
-                inodeStat.setSize(0);
-                inodeStat.setNlink(1);
-                inodeStat.setIno((int) inode.id());
-                inodeStat.setMode(fmode);
-
-            } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+            int fmode = 0644 | UnixPermission.S_IFREG;
+            if (newAttr != null) {
+                fmode = newAttr.mode.mode.value.value | UnixPermission.S_IFREG;
             }
+            inode = _fs.create(parent, Stat.Type.REGULAR, path, user.getUID(), user.getGID(), fmode);
+            Stat inodeStat = _fs.getattr(inode);
+
 
             res.status = nfsstat.NFS_OK;
             res.resok = new CREATE3resok();
@@ -915,7 +899,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
                 Inode ef = le.getInode();
 
-                currentEntry.fileid = new fileid3(new uint64(ef.id()));
+                currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(i));
                 currentEntry.name_handle = new post_op_fh3();
@@ -1058,9 +1042,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
                 DirectoryEntry le = dirList.get((int) i);
                 String name = le.getName();
-                Inode ef = le.getInode();
 
-                currentEntry.fileid = new fileid3(new uint64(ef.id()));
+                currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(i));
                 currentEntry.nextentry = null;

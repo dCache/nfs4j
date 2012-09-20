@@ -164,7 +164,12 @@ public class ChimeraVfs implements VirtualFileSystem {
     public Stat getattr(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
 
-        return fromChimeraStat(fsInode.stat());
+        Stat stat =  fromChimeraStat(fsInode.stat());
+        // bit of magic for  backward compatibility
+        long id = fsInode.id();
+        stat.setIno((int)id);
+        stat.setDev((int)(id >> 32));
+        return stat;
     }
 
     @Override
@@ -231,11 +236,6 @@ public class ChimeraVfs implements VirtualFileSystem {
         @Override
         public boolean exists() {
             return inode.exists();
-        }
-
-        @Override
-        public long id() {
-            return inode.id();
         }
 
         @Override

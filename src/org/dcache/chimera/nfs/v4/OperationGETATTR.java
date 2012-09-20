@@ -300,7 +300,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED :
                 break;
             case nfs4_prot.FATTR4_FILEID :
-                fattr4_fileid fileid = new fattr4_fileid(  new uint64_t(inode.id()) );
+                fattr4_fileid fileid = new fattr4_fileid(  new uint64_t(stat.getFileId()) );
                 ret = fileid;
                 break;
             case nfs4_prot.FATTR4_FILES_AVAIL:
@@ -452,7 +452,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                  * TODO!!!:
                  */
 
-            	long mofi = inode.id();
+            	long mofi = stat.getFileId() ;
 
                 if( mofi == 0x00b0a23a /* it's a root*/ ) {
                 	mofi =  0x12345678;
