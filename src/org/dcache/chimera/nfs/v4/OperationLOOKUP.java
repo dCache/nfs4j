@@ -68,16 +68,9 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
         }
 
+        Inode newInode = context.getFs().lookup(context.currentInode(), name);
+
+        context.currentInode(newInode);
         res.status = nfsstat.NFS_OK;
-        try {
-            Inode newInode = context.getFs().lookup(context.currentInode(), name);
-            if (!newInode.exists()) {
-                res.status = nfsstat.NFSERR_NOENT;
-            } else {
-                context.currentInode(newInode);
-            }
-        } catch (FileNotFoundHimeraFsException e) {
-            res.status = nfsstat.NFSERR_NOENT;
-        }
     }
 }

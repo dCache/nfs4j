@@ -21,5 +21,4 @@ package org.dcache.chimera.nfs.vfs;
 
 public interface Inode {
 
-    public boolean exists();
 }

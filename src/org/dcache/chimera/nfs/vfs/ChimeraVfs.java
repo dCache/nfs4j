@@ -24,10 +24,13 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
 import org.dcache.chimera.DirectoryStreamHelper;
+import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 
 /**
@@ -59,9 +62,13 @@ public class ChimeraVfs implements VirtualFileSystem {
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = parentFsInode.inodeOf(path);
-        return toInode(fsInode);
+        try {
+            FsInode parentFsInode = toFsInode(parent);
+            FsInode fsInode = parentFsInode.inodeOf(path);
+            return toInode(fsInode);
+        }catch (FileNotFoundHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
+        }
     }
 
     @Override
@@ -163,13 +170,16 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public Stat getattr(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
-
-        Stat stat =  fromChimeraStat(fsInode.stat());
-        // bit of magic for  backward compatibility
-        long id = fsInode.id();
-        stat.setIno((int)id);
-        stat.setDev((int)(id >> 32));
-        return stat;
+        try {
+            Stat stat =  fromChimeraStat(fsInode.stat());
+            // bit of magic for  backward compatibility
+            long id = fsInode.id();
+            stat.setIno((int)id);
+            stat.setDev((int)(id >> 32));
+            return stat;
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
+        }
     }
 
     @Override
@@ -231,11 +241,6 @@ public class ChimeraVfs implements VirtualFileSystem {
 
         ChimeraInode(FsInode inode) {
             this.inode = inode;
-        }
-
-        @Override
-        public boolean exists() {
-            return inode.exists();
         }
 
         @Override

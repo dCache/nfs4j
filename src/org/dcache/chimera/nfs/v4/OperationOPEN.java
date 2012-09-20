@@ -103,28 +103,29 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                 (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
 
                         try {
-
                             inode = context.getFs().lookup(context.currentInode(), name);
-
                             if (exclusive) {
                                 throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "file already exist");
                             }
 
                             Stat fileStat = context.getFs().getattr(context.currentInode());
                             _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
-                                    new Object[] {
+                                    new Object[]{
                                         name,
                                         fileStat.getUid(),
                                         fileStat.getGid(),
                                         Integer.toOctalString(fileStat.getMode() & 0777)
-                                    } );
+                                    });
 
                             if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
                                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
                             }
 
                             OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
-                        } catch (FileNotFoundHimeraFsException he) {
+                        } catch (ChimeraNFSException e) {
+                            if (e.getStatus() != nfsstat.NFSERR_NOENT) {
+                                throw e;
+                            }
 
                             _log.debug("Creating a new file: {}", name);
                             inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,

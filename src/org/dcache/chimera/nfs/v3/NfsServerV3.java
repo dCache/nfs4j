@@ -202,9 +202,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             Inode inode = _fs.getInodeById(arg1.object.data);
 
-            if (!inode.exists()) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_STALE, "Path do not exist.");
-            }
             Stat objStat = _fs.getattr(inode);
 
             HimeraNfsUtils.fill_attributes(objStat, res.resok.obj_attributes.attributes);
@@ -829,11 +826,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
-
-            if (!dir.exists()) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
-            }
-
             if (dirStat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
             }
@@ -976,10 +968,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             UnixAcl acl = new UnixAcl(dirStat.getUid(), dirStat.getGid(), dirStat.getMode() & 0777);
             if (!_permissionHandler.isAllowed(acl, user, AclHandler.ACL_LOOKUP)) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-            }
-
-            if (!dir.exists()) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
             }
 
             if (dirStat.type() != Stat.Type.DIRECTORY) {

@@ -118,9 +118,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         Inode dir = context.currentInode();
 
         Stat stat = context.getFs().getattr(dir);
-        if (!dir.exists()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
-        }
 
         if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
