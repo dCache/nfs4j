@@ -21,6 +21,7 @@ package org.dcache.chimera.nfs.vfs;
 
 import java.io.IOException;
 import java.util.List;
+import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 
 public interface VirtualFileSystem {
 
@@ -61,4 +62,8 @@ public interface VirtualFileSystem {
     Stat getattr(Inode inode) throws IOException;
 
     void setattr(Inode inode, Stat stat) throws IOException;
+
+    nfsace4[] getAcl(Inode inode) throws IOException;
+
+    void setAcl(Inode inode, nfsace4[] acl) throws IOException;
 }

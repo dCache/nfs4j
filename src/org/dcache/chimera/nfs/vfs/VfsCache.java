@@ -26,6 +26,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
 
 /**
@@ -170,6 +171,16 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
         _inner.setattr(inode, stat);
+    }
+
+    @Override
+    public nfsace4[] getAcl(Inode inode) throws IOException {
+        return _inner.getAcl(inode);
+    }
+
+    @Override
+    public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
+        _inner.setAcl(inode, acl);
     }
 
     /**

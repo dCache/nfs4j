@@ -271,7 +271,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_ACL:
 
-                nfsace4[] aces = inode.getAcl();
+                nfsace4[] aces = context.getFs().getAcl(inode);
                 fattr4_acl acl = new fattr4_acl(aces);
 
                 ret = acl;

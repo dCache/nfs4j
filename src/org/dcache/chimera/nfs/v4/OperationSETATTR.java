@@ -149,7 +149,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 fattr4_acl acl = new fattr4_acl();
                 acl.xdrDecode(xdr);
 
-                inode.setAcl(acl.value);
+                context.getFs().setAcl(inode, acl.value);
                 stat.setMTime(System.currentTimeMillis());
 
                 isApplied = true;

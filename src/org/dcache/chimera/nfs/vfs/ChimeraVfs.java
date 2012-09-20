@@ -174,6 +174,16 @@ public class ChimeraVfs implements VirtualFileSystem {
         _fs.setInodeAttributes(fsInode, 0, toChimeraStat(stat));
     }
  
+    @Override
+    public nfsace4[] getAcl(Inode inode) throws IOException {
+        return new nfsace4[0];
+    }
+
+    @Override
+    public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
+        // FIXME:
+    }
+
     private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat) {
         Stat stat = new Stat();
 
@@ -227,16 +237,6 @@ public class ChimeraVfs implements VirtualFileSystem {
         @Override
         public long id() {
             return inode.id();
-        }
-
-        @Override
-        public nfsace4[] getAcl() throws IOException {
-            return new nfsace4[0];
-        }
-
-        @Override
-        public void setAcl(nfsace4[] acl) throws IOException {
-            /* NOP */
         }
 
         @Override

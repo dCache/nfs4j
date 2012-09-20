@@ -19,9 +19,6 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import java.io.IOException;
-import org.dcache.chimera.nfs.v4.xdr.nfsace4;
-
 public interface Inode {
 
     enum Type {
@@ -39,10 +36,6 @@ public interface Inode {
     public boolean exists();
 
     long id();
-
-    nfsace4[] getAcl() throws IOException;
-
-    void setAcl(nfsace4[] acl) throws IOException;
 
     Type type();
 }

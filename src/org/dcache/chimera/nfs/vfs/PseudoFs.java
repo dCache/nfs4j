@@ -30,6 +30,7 @@ import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
+import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
@@ -167,12 +168,26 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Stat getattr(Inode inode) throws IOException {
+        checkAccess(inode, ACE4_READ_ATTRIBUTES);
         return _inner.getattr(inode);
     }
 
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
+        checkAccess(inode, ACE4_WRITE_ATTRIBUTES);
         _inner.setattr(inode, stat);
+    }
+
+    @Override
+    public nfsace4[] getAcl(Inode inode) throws IOException {
+        checkAccess(inode, ACE4_READ_ACL);
+        return _inner.getAcl(inode);
+    }
+
+    @Override
+    public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
+        checkAccess(inode, ACE4_WRITE_ACL);
+        _inner.setAcl(inode, acl);
     }
 
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
