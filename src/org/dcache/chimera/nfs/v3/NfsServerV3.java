@@ -325,7 +325,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 if (newAttr != null) {
                     fmode = newAttr.mode.mode.value.value | UnixPermission.S_IFREG;
                 }
-                inode = _fs.create(parent, Inode.Type.REGULAR, path, user.getUID(), user.getGID(), fmode);
+                inode = _fs.create(parent, Stat.Type.REGULAR, path, user.getUID(), user.getGID(), fmode);
 
                 // as inode is new, we can use our information and do not ask DB for it
                 inodeStat.setATime(now);
@@ -850,7 +850,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
             }
 
-            if (dir.type() != Inode.Type.DIRECTORY) {
+            if (dirStat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
             }
 
@@ -998,7 +998,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
             }
 
-            if (dir.type() != Inode.Type.DIRECTORY) {
+            if (dirStat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
             }
 

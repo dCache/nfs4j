@@ -35,6 +35,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +56,13 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Arbitrary value");
         }
 
+        Stat stat = context.getFs().getattr(context.currentInode());
 
-        if (context.currentInode().type() == Inode.Type.DIRECTORY) {
+        if (stat.type() == Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
         }
 
-        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+        if (stat.type() == Stat.Type.SYMLINK) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
         }
 

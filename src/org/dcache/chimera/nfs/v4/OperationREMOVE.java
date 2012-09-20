@@ -32,6 +32,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +52,9 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
         try {
 
             Inode parentInode = context.currentInode();
+            Stat stat = context.getFs().getattr(parentInode);
 
-            if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+            if (stat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
             }
 
@@ -73,7 +75,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             _log.debug("REMOVE: {} : {}", parentInode, name);
 
             boolean rc = context.getFs().remove(parentInode, name);
-            if (!rc && context.currentInode().type() == Inode.Type.DIRECTORY) {
+            if (!rc && context.getFs().getattr( context.getFs().lookup(parentInode, name)).type() == Stat.Type.DIRECTORY ) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory not empty");
             }
 
@@ -81,7 +83,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             res.resok4 = new REMOVE4resok();
             res.resok4.cinfo = new change_info4();
             res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(context.currentInode()).getMTime()));
+            res.resok4.cinfo.before = new changeid4(new uint64_t(stat.getMTime()));
             res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
         } catch (FileNotFoundHimeraFsException e) {
             res.status = nfsstat.NFSERR_NOENT;

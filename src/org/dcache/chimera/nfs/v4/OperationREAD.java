@@ -45,15 +45,15 @@ public class OperationREAD extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
         final READ4res res = result.opread;
 
-        if (context.currentInode().type() == Inode.Type.DIRECTORY) {
+        Stat inodeStat = context.getFs().getattr(context.currentInode());
+
+        if (inodeStat.type() == Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
         }
 
-        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+        if (inodeStat.type() == Stat.Type.SYMLINK) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
         }
-
-        Stat inodeStat = context.getFs().getattr(context.currentInode());
 
         if (context.getMinorversion() == 0) {
             /*

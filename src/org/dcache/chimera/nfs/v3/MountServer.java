@@ -46,6 +46,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcCall;
@@ -90,8 +91,8 @@ public class MountServer extends mount_protServerStub {
         try {
 
             Inode rootInode = path2Inode(_fs, mountPoint);
-
-            if (rootInode.type() != Inode.Type.DIRECTORY) {
+            Stat stat = _fs.getattr(rootInode);
+            if (stat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
             }
 

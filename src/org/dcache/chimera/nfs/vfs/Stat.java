@@ -21,6 +21,48 @@ package org.dcache.chimera.nfs.vfs;
 
 public class Stat {
 
+    public static final int S_TYPE = 0770000; // type mask
+    /**
+     * Unix domain socket
+     */
+    public static final int S_IFSOCK = 0140000;
+    /**
+     * Symbolic link
+     */
+    public static final int S_IFLNK = 0120000;
+    /**
+     * Regular file
+     */
+    public static final int S_IFREG = 0100000;
+    /**
+     * BLock device
+     */
+    public static final int S_IFBLK = 0060000;
+    /**
+     * Directory
+     */
+    public static final int S_IFDIR = 0040000;
+    /**
+     * Character device
+     */
+    public static final int S_IFCHR = 0020000;
+    /**
+     * Named pipe
+     */
+    public static final int S_IFIFO = 0010000;
+
+    public enum Type {
+
+        LEGACY,
+        REGULAR,
+        DIRECTORY,
+        SYMLINK,
+        CHAR,
+        BLOCK,
+        FIFO,
+        SOCK,
+    }
+
     private int _dev = -1; //
     private int _ino = -1; //
     private int _mode = -1; //
@@ -123,5 +165,26 @@ public class Stat {
 
     public void setCTime(long ctime) {
         _ctime = ctime;
+    }
+
+    public Type type() {
+        switch(_mode & S_TYPE) {
+            case S_IFBLK:
+                return Type.BLOCK;
+            case S_IFCHR:
+                return Type.CHAR;
+            case S_IFDIR:
+                return Type.DIRECTORY;
+            case S_IFIFO:
+                return Type.FIFO;
+            case S_IFLNK:
+                return Type.SYMLINK;
+            case S_IFREG:
+                return Type.REGULAR;
+            case S_IFSOCK:
+                return Type.SOCK;
+            default:
+                return Type.REGULAR;
+        }
     }
 }

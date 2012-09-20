@@ -28,7 +28,6 @@ import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
-import org.dcache.chimera.nfs.vfs.Inode.Type;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 
 /**
@@ -66,7 +65,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException {
+    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode | typeToChimera(type), typeToChimera(type));
         return toInode(fsInode);
@@ -240,17 +239,6 @@ public class ChimeraVfs implements VirtualFileSystem {
         }
 
         @Override
-        public Type type() {
-            if (inode.isDirectory()) {
-                return Type.DIRECTORY;
-            }
-            if (inode.isLink()) {
-                return Type.SYMLINK;
-            }
-            return Type.REGULAR;
-        }
-
-        @Override
         public boolean equals(Object obj) {
             if (obj == this) {
                 return true;
@@ -286,7 +274,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         }
     }
 
-    private int typeToChimera(Inode.Type type) {
+    private int typeToChimera(Stat.Type type) {
         switch (type) {
             case SYMLINK:
                 return UnixPermission.S_IFLNK;

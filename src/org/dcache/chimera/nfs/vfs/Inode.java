@@ -21,21 +21,7 @@ package org.dcache.chimera.nfs.vfs;
 
 public interface Inode {
 
-    enum Type {
-
-        LEGACY,
-        REGULAR,
-        DIRECTORY,
-        SYMLINK,
-        CHAR,
-        BLOCK,
-        FIFO,
-        SOCK
-    }
-
     public boolean exists();
 
     long id();
-
-    Type type();
 }

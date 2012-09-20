@@ -44,7 +44,6 @@ import org.dcache.chimera.nfs.InodeCacheEntry;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.DirectoryEntry;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
@@ -118,11 +117,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         Inode dir = context.currentInode();
 
+        Stat stat = context.getFs().getattr(dir);
         if (!dir.exists()) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
         }
 
-        if (dir.type() != Inode.Type.DIRECTORY) {
+        if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
         }
 
@@ -149,9 +149,9 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             // while client sends to us last cookie, we have to continue from the next one
             ++startValue;
             verifier = _args.opreaddir.cookieverf;
-            checkVerifier(dir, context.getFs(), verifier);
+            checkVerifier(stat, verifier);
         } else {
-            verifier = generateDirectoryVerifier(dir, context.getFs());
+            verifier = generateDirectoryVerifier(stat);
             startValue = COOKIE_OFFSET;
         }
 
@@ -273,9 +273,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      * @throws IllegalArgumentException
      * @throws ChimeraFsException
      */
-    private verifier4 generateDirectoryVerifier(Inode dir, VirtualFileSystem fs) throws IllegalArgumentException, IOException {
+    private verifier4 generateDirectoryVerifier(Stat stat) throws IllegalArgumentException, IOException {
         byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
-        Stat stat = fs.getattr(dir);
         Bytes.putLong(verifier, 0, stat.getMTime());
         return new verifier4(verifier);
     }
@@ -288,9 +287,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      * @throws ChimeraNFSException
      * @throws ChimeraFsException
      */
-    private void checkVerifier(Inode dir,  VirtualFileSystem fs, verifier4 verifier) throws ChimeraNFSException, IOException {
+    private void checkVerifier(Stat stat, verifier4 verifier) throws ChimeraNFSException, IOException {
         long mtime = Bytes.getLong(verifier.value, 0);
-         Stat stat = fs.getattr(dir);
         if( mtime > stat.getMTime() )
             throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie");
 

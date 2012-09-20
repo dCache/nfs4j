@@ -28,6 +28,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +47,12 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
         String name = NameFilter.convert(_args.oplookup.objname.value.value.value);
 
-        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+        Stat stat = context.getFs().getattr(context.currentInode());
+        if (stat.type() == Stat.Type.SYMLINK) {
             throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "parent not a symbolic link");
         }
 
-        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+        if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
         }
 

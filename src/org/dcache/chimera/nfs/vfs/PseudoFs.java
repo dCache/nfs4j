@@ -27,7 +27,6 @@ import org.dcache.auth.Subjects;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.nfsstat;
-import org.dcache.chimera.nfs.vfs.Inode.Type;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
@@ -62,7 +61,7 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode create(Inode parent, Type type, String path, int uid, int gid, int mode) throws IOException {
+    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
         return _inner.create(parent, type, path, uid, gid, mode);
     }

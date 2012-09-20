@@ -27,7 +27,7 @@ public interface VirtualFileSystem {
 
     int access(Inode inode, int mode) throws IOException;
 
-    Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException;
+    Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException;
 
     FsStat getFsStat() throws IOException;
 

@@ -124,7 +124,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     static boolean xdr2fattr( int fattr , Stat stat, Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
 
-        boolean isApplied = false;        
+        boolean isApplied = false;
 
         _log.debug("    FileAttribute: {}", fattr);
 
@@ -132,13 +132,13 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
             case nfs4_prot.FATTR4_SIZE :
 
-            	if( inode.type() == Inode.Type.DIRECTORY ) {
+                if( stat.type() == Stat.Type.DIRECTORY ) {
                     throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
-            	}
+                }
 
-            	if( inode.type() == Inode.Type.SYMLINK ) {
+                if( stat.type() == Stat.Type.SYMLINK ) {
                     throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symbolic link");
-            	}
+                }
 
                 uint64_t size = new uint64_t();
                 size.xdrDecode(xdr);
@@ -211,7 +211,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 nfstime4 ctime = new nfstime4();
                 ctime.xdrDecode(xdr);
                 stat.setCTime( TimeUnit.MILLISECONDS.convert(ctime.seconds.value, TimeUnit.SECONDS) +
-                		TimeUnit.MILLISECONDS.convert(ctime.nseconds.value, TimeUnit.NANOSECONDS));
+                        TimeUnit.MILLISECONDS.convert(ctime.nseconds.value, TimeUnit.NANOSECONDS));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET :
@@ -223,7 +223,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                     realMtime = System.currentTimeMillis();
                 }else{
                     realMtime = TimeUnit.MILLISECONDS.convert(setMtime.time.seconds.value, TimeUnit.SECONDS) +
-                    	TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds.value, TimeUnit.NANOSECONDS);
+                            TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds.value, TimeUnit.NANOSECONDS);
                 }
 
                 stat.setMTime( realMtime );
