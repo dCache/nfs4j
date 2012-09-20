@@ -40,20 +40,6 @@ public interface Inode {
 
     long id();
 
-    void setSize(long size) throws IOException;
-
-    void setUID(int id) throws IOException;
-
-    void setGID(int id) throws IOException;
-
-    void setATime(long time) throws IOException;
-
-    void setMTime(long time) throws IOException;
-
-    void setCTime(long time) throws IOException;
-
-    void setMode(int size) throws IOException;
-
     nfsace4[] getAcl() throws IOException;
 
     void setAcl(nfsace4[] acl) throws IOException;

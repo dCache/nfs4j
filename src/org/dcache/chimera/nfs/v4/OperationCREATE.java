@@ -118,9 +118,6 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "bad file type");
         }
 
-        inode.setGID(context.getUser().getGID());
-        inode.setUID(context.getUser().getUID());
-
         res.status = nfsstat.NFS_OK;
         res.resok4 = new CREATE4resok();
         res.resok4.attrset = OperationSETATTR.setAttributes(objAttr, inode, context);

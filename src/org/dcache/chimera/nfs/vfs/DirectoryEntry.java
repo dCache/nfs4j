@@ -19,8 +19,6 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import org.dcache.chimera.posix.Stat;
-
 public class DirectoryEntry {
 
     private final String _name;

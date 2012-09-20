@@ -67,7 +67,7 @@ import org.dcache.chimera.nfs.v4.xdr.state_protect_how4;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
-import org.dcache.chimera.posix.Stat;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;

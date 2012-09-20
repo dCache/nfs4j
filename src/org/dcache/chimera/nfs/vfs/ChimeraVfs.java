@@ -30,7 +30,6 @@ import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
-import org.dcache.chimera.posix.Stat;
 
 /**
  * Interface to a virtual file system.
@@ -69,7 +68,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode, typeToChimera(type));
+        FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode | typeToChimera(type), typeToChimera(type));
         return toInode(fsInode);
     }
 
@@ -165,16 +164,54 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public Stat getattr(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        return fsInode.stat();
+
+        return fromChimeraStat(fsInode.stat());
     }
 
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        _fs.setInodeAttributes(fsInode, 0, stat);
+        _fs.setInodeAttributes(fsInode, 0, toChimeraStat(stat));
     }
  
-    private class ChimeraInode implements Inode {
+    private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat) {
+        Stat stat = new Stat();
+
+        stat.setATime(pStat.getATime());
+        stat.setCTime(pStat.getCTime());
+        stat.setMTime(pStat.getMTime());
+
+        stat.setGid(pStat.getGid());
+        stat.setUid(pStat.getUid());
+        stat.setDev(pStat.getDev());
+        stat.setIno(pStat.getIno());
+        stat.setMode(pStat.getMode());
+        stat.setNlink(pStat.getNlink());
+        stat.setRdev(pStat.getRdev());
+        stat.setSize(pStat.getSize());
+
+        return stat;
+    }
+
+    private static org.dcache.chimera.posix.Stat toChimeraStat(Stat stat) {
+        org.dcache.chimera.posix.Stat pStat = new org.dcache.chimera.posix.Stat();
+
+        pStat.setATime(stat.getATime());
+        pStat.setCTime(stat.getCTime());
+        pStat.setMTime(stat.getMTime());
+
+        pStat.setGid(stat.getGid());
+        pStat.setUid(stat.getUid());
+        pStat.setDev(stat.getDev());
+        pStat.setIno(stat.getIno());
+        pStat.setMode(stat.getMode());
+        pStat.setNlink(stat.getNlink());
+        pStat.setRdev(stat.getRdev());
+        pStat.setSize(stat.getSize());
+        return pStat;
+    }
+
+    private static class ChimeraInode implements Inode {
 
         private final FsInode inode;
 
@@ -190,41 +227,6 @@ public class ChimeraVfs implements VirtualFileSystem {
         @Override
         public long id() {
             return inode.id();
-        }
-
-        @Override
-        public void setATime(long time) throws IOException {
-            inode.setATime(time);
-        }
-
-        @Override
-        public void setCTime(long time) throws IOException {
-            inode.setCTime(time);
-        }
-
-        @Override
-        public void setGID(int id) throws IOException {
-            inode.setGID(id);
-        }
-
-        @Override
-        public void setMTime(long time) throws IOException {
-            inode.setMTime(time);
-        }
-
-        @Override
-        public void setMode(int size) throws IOException {
-            inode.setMode(size);
-        }
-
-        @Override
-        public void setSize(long size) throws IOException {
-            inode.setSize(size);
-        }
-
-        @Override
-        public void setUID(int id) throws IOException {
-            inode.setUID(id);
         }
 
         @Override
@@ -280,7 +282,7 @@ public class ChimeraVfs implements VirtualFileSystem {
 
         @Override
         public DirectoryEntry apply(HimeraDirectoryEntry e) {
-            return new DirectoryEntry(e.getName(), toInode(e.getInode()), e.getStat());
+            return new DirectoryEntry(e.getName(), new ChimeraInode(e.getInode()), fromChimeraStat(e.getStat()));
         }
     }
 

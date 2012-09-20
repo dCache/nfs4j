@@ -30,6 +30,7 @@ import org.dcache.chimera.nfs.v4.xdr.LAYOUTCOMMIT4resok;
 import org.dcache.chimera.nfs.v4.xdr.LAYOUTCOMMIT4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +58,12 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
         res.locr_resok4.locr_newsize.ns_sizechanged = false;
 
         if (_args.oplayoutcommit.loca_last_write_offset.no_newoffset) {
-            long currentSize = context.getFs().getattr(context.currentInode()).getSize();
+            Stat stat = context.getFs().getattr(context.currentInode());
+            long currentSize = stat.getSize();
             long newSize = _args.oplayoutcommit.loca_last_write_offset.no_offset.value.value + 1;
             if (newSize > currentSize) {
-                context.currentInode().setSize(newSize);
+                stat.setSize(newSize);
+                context.getFs().setattr(context.currentInode(), stat);
                 res.locr_resok4.locr_newsize.ns_sizechanged = true;
                 res.locr_resok4.locr_newsize.ns_size = new length4(new uint64_t(newSize));
             }

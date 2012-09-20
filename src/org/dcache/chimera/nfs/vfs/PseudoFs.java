@@ -30,7 +30,6 @@ import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
-import org.dcache.chimera.posix.Stat;
 
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system

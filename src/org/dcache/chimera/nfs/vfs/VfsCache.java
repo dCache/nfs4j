@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
-import org.dcache.chimera.posix.Stat;
 
 /**
  * Caching decorator.

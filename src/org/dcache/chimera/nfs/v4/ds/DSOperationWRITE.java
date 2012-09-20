@@ -37,6 +37,7 @@ import org.dcache.chimera.nfs.v4.xdr.stable_how4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 import org.dcache.chimera.nfs.vfs.FsCache;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,11 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.resok4.writeverf = new verifier4();
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        context.currentInode().setSize(out.size());
+        if (_args.opwrite.stable != stable_how4.UNSTABLE4) {
+            Stat stat = context.getFs().getattr(context.currentInode());
+            stat.setSize(out.size());
+            context.getFs().setattr(context.currentInode(), stat);
+        }
         _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
                 new Object[]{bytesWritten, offset, _args.opwrite.data, out.size()});
     }

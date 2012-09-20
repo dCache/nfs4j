@@ -45,7 +45,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.DirectoryEntry;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
-import org.dcache.chimera.posix.Stat;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;

@@ -143,7 +143,7 @@ import org.dcache.chimera.nfs.v3.xdr.RENAME3resfail;
 import org.dcache.chimera.nfs.vfs.DirectoryEntry;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.chimera.posix.UnixAcl;
 import org.dcache.chimera.posix.UnixPermissionHandler;
 import org.dcache.chimera.posix.UnixUser;
@@ -697,7 +697,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
                 attr.mode.mode.value.value |= UnixPermission.S_IFDIR;
 
-                HimeraNfsUtils.set_sattr(inode, attr);
+                HimeraNfsUtils.set_sattr(inode, _fs, attr);
             }
 
             res.resok = new MKDIR3resok();
@@ -1438,7 +1438,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
             }
 
-            HimeraNfsUtils.set_sattr(inode, newAttr);
+            HimeraNfsUtils.set_sattr(inode, _fs, newAttr);
             res.resok = new SETATTR3resok();
             res.resok.obj_wcc = new wcc_data();
             res.resok.obj_wcc.after = new post_op_attr();
@@ -1504,7 +1504,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             inode = _fs.symlink(parent, file, link, user.getUID(), user.getGID(), 777);
 
-            HimeraNfsUtils.set_sattr(inode, linkAttr);
+            HimeraNfsUtils.set_sattr(inode, _fs, linkAttr);
 
             res.resok = new SYMLINK3resok();
 

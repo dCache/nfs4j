@@ -97,7 +97,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.FsStat;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
-import org.dcache.chimera.posix.Stat;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.xdr.OncRpcException;
 import org.glassfish.grizzly.Buffer;
 import org.slf4j.Logger;
@@ -265,7 +265,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_FILEHANDLE :
             	nfs_fh4 fh = new nfs_fh4();
-            	fh.value = context.getFs().getInodeId(context.currentInode());
+            	fh.value = context.getFs().getInodeId(inode);
                 fattr4_filehandle filehandle = new fattr4_filehandle(fh);
             	ret = filehandle;
                 break;
