@@ -21,6 +21,7 @@ package org.dcache.chimera.nfs.vfs;
 
 import java.io.IOException;
 import java.util.List;
+import org.dcache.chimera.posix.Stat;
 
 public interface VirtualFileSystem {
 
@@ -57,4 +58,8 @@ public interface VirtualFileSystem {
     Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException;
 
     int write(Inode inode, byte[] data, long offset, int count) throws IOException;
+
+    Stat getattr(Inode inode) throws IOException;
+
+    void setattr(Inode inode, Stat stat) throws IOException;
 }

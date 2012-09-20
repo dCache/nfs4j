@@ -51,7 +51,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
         result.oplink.resok4 = new LINK4resok();
         result.oplink.resok4.cinfo = new change_info4();
         result.oplink.resok4.cinfo.atomic = true;
-        result.oplink.resok4.cinfo.before = new changeid4(new uint64_t(context.savedInode().statCache().getMTime()));
+        result.oplink.resok4.cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(context.currentInode()).getMTime()));
         result.oplink.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
         result.oplink.status = nfsstat.NFS_OK;

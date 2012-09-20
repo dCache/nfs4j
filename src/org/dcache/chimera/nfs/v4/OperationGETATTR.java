@@ -97,6 +97,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.FsStat;
 import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
+import org.dcache.chimera.posix.Stat;
 import org.dcache.xdr.OncRpcException;
 import org.glassfish.grizzly.Buffer;
 import org.slf4j.Logger;
@@ -200,6 +201,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
         XdrAble ret = null;
         FsStat fsStat = null;
+        Stat stat = context.getFs().getattr(inode);
 
         switch(fattr) {
 
@@ -212,7 +214,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = supported_attrs;
                 break;
             case nfs4_prot.FATTR4_TYPE :
-                fattr4_type type = new fattr4_type( unixType2NFS(inode.statCache().getMode()) );
+                fattr4_type type = new fattr4_type( unixType2NFS(stat.getMode()) );
                 ret = type;
                 break;
             case nfs4_prot.FATTR4_FH_EXPIRE_TYPE :
@@ -221,12 +223,12 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = fh_expire_type;
                 break;
             case nfs4_prot.FATTR4_CHANGE :
-                changeid4 cid = new changeid4( new uint64_t(inode.stat().getCTime())  );
+                changeid4 cid = new changeid4( new uint64_t(stat.getCTime())  );
                 fattr4_change change = new fattr4_change( cid );
                 ret = change;
                 break;
             case nfs4_prot.FATTR4_SIZE :
-                fattr4_size size = new fattr4_size( new uint64_t(inode.statCache().getSize()) );
+                fattr4_size size = new fattr4_size( new uint64_t(stat.getSize()) );
                 ret = size;
                 break;
             case nfs4_prot.FATTR4_LINK_SUPPORT :
@@ -350,7 +352,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_MODE :
                 mode4 fmode = new mode4();
-                fmode.value = new uint32_t(inode.statCache().getMode() & 07777);
+                fmode.value = new uint32_t(stat.getMode() & 07777);
                 fattr4_mode mode = new fattr4_mode( fmode );
                 ret = mode;
                 break;
@@ -359,18 +361,18 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = no_trunc;
                 break;
             case nfs4_prot.FATTR4_NUMLINKS :
-                uint32_t nlinks = new uint32_t(inode.statCache().getNlink());
+                uint32_t nlinks = new uint32_t(stat.getNlink());
                 fattr4_numlinks numlinks = new fattr4_numlinks(nlinks);
                 ret = numlinks;
                 break;
             case nfs4_prot.FATTR4_OWNER :
-                String owner_s = context.getIdMapping().uidToPrincipal(inode.statCache().getUid());
+                String owner_s = context.getIdMapping().uidToPrincipal(stat.getUid());
                 utf8str_mixed user = new utf8str_mixed(owner_s);
                 fattr4_owner owner = new fattr4_owner(user);
                 ret = owner;
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
-                String group_s = context.getIdMapping().gidToPrincipal(inode.statCache().getGid());
+                String group_s = context.getIdMapping().gidToPrincipal(stat.getGid());
                 utf8str_mixed group = new utf8str_mixed(group_s);
                 fattr4_owner owner_group = new fattr4_owner(group);
                 ret = owner_group;
@@ -404,7 +406,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = space_total;
                 break;
             case nfs4_prot.FATTR4_SPACE_USED :
-                fattr4_space_used space_used = new fattr4_space_used ( new uint64_t(inode.statCache().getSize() ) );
+                fattr4_space_used space_used = new fattr4_space_used ( new uint64_t(stat.getSize() ) );
                 ret = space_used;
                 break;
             case nfs4_prot.FATTR4_SYSTEM :
@@ -413,7 +415,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_TIME_ACCESS :
             	nfstime4 atime = new nfstime4();
-            	atime.seconds = new int64_t(TimeUnit.SECONDS.convert(inode.statCache().getATime() , TimeUnit.MILLISECONDS));
+            	atime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getATime() , TimeUnit.MILLISECONDS));
             	atime.nseconds = new uint32_t(0);
                 fattr4_time_access time_access = new fattr4_time_access(atime);
             	ret = time_access;
@@ -422,7 +424,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_TIME_CREATE :
             	nfstime4 ctime = new nfstime4();
-            	ctime.seconds = new int64_t(TimeUnit.SECONDS.convert(inode.statCache().getCTime() , TimeUnit.MILLISECONDS));
+            	ctime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime() , TimeUnit.MILLISECONDS));
             	ctime.nseconds = new uint32_t(0);
                 fattr4_time_create time_create = new fattr4_time_create(ctime);
                 ret = time_create;
@@ -431,14 +433,14 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 break;
             case nfs4_prot.FATTR4_TIME_METADATA :
                 nfstime4 mdtime = new nfstime4();
-                mdtime.seconds = new int64_t(TimeUnit.SECONDS.convert(inode.statCache().getCTime() , TimeUnit.MILLISECONDS));
+                mdtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime() , TimeUnit.MILLISECONDS));
                 mdtime.nseconds = new uint32_t(0);
                 fattr4_time_metadata time_metadata = new fattr4_time_metadata(mdtime);
                 ret = time_metadata;
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY :
             	nfstime4 mtime = new nfstime4();
-            	mtime.seconds = new int64_t(TimeUnit.SECONDS.convert(inode.statCache().getMTime() , TimeUnit.MILLISECONDS));
+            	mtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getMTime() , TimeUnit.MILLISECONDS));
             	mtime.nseconds = new uint32_t(0);
                 fattr4_time_modify time_modify = new fattr4_time_modify(mtime);
                 ret = time_modify;

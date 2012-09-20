@@ -53,7 +53,7 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public int access(Inode inode, int mode) throws IOException {
         int accessmask = accessModeToMask(mode);
-        Stat stat = inode.stat();
+        Stat stat = _inner.getattr(inode);
 
         int unixAccessMask = unixToAccessmask(_subject, stat);
 
@@ -166,8 +166,18 @@ public class PseudoFs implements VirtualFileSystem {
         return _inner.write(inode, data, offset, count);
     }
 
+    @Override
+    public Stat getattr(Inode inode) throws IOException {
+        return _inner.getattr(inode);
+    }
+
+    @Override
+    public void setattr(Inode inode, Stat stat) throws IOException {
+        _inner.setattr(inode, stat);
+    }
+
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
-        Stat stat = inode.stat();
+        Stat stat = _inner.getattr(inode);
 
         if ((unixToAccessmask(_subject, stat) & requestedMask) != requestedMask) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");

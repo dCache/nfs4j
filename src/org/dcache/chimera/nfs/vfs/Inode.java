@@ -21,7 +21,6 @@ package org.dcache.chimera.nfs.vfs;
 
 import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
-import org.dcache.chimera.posix.Stat;
 
 public interface Inode {
 
@@ -38,10 +37,6 @@ public interface Inode {
     }
 
     public boolean exists();
-
-    Stat stat() throws IOException;
-
-    Stat statCache() throws IOException;
 
     long id();
 

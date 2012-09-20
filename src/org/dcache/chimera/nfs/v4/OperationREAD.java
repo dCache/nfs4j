@@ -53,7 +53,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
         }
 
-        Stat inodeStat = context.currentInode().statCache();
+        Stat inodeStat = context.getFs().getattr(context.currentInode());
 
         if (context.getMinorversion() == 0) {
             /*

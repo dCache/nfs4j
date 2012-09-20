@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.vfs.Inode.Type;
+import org.dcache.chimera.posix.Stat;
 
 /**
  * Caching decorator.
@@ -160,6 +161,16 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public int access(Inode inode, int mode) throws IOException {
         return _inner.access(inode, mode);
+    }
+
+    @Override
+    public Stat getattr(Inode inode) throws IOException {
+        return _inner.getattr(inode);
+    }
+
+    @Override
+    public void setattr(Inode inode, Stat stat) throws IOException {
+        _inner.setattr(inode, stat);
     }
 
     /**

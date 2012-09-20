@@ -51,7 +51,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final READ4res res = result.opread;
 
-        Stat inodeStat = context.currentInode().statCache();
+        Stat inodeStat = context.getFs().getattr(context.currentInode());
         boolean eof = false;
 
         long offset = _args.opread.offset.value.value;

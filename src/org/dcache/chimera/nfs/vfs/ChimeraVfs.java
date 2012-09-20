@@ -111,7 +111,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public String readlink(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        int count = (int) inode.statCache().getSize();
+        int count = (int) fsInode.statCache().getSize();
         byte[] data = new byte[count];
         int n = _fs.read(fsInode, 0, data, 0, count);
         if (n < 0) {
@@ -161,6 +161,18 @@ public class ChimeraVfs implements VirtualFileSystem {
     private Inode toInode(final FsInode inode) {
         return new ChimeraInode(inode);
     }
+
+    @Override
+    public Stat getattr(Inode inode) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        return fsInode.stat();
+    }
+
+    @Override
+    public void setattr(Inode inode, Stat stat) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        _fs.setInodeAttributes(fsInode, 0, stat);
+    }
  
     private class ChimeraInode implements Inode {
 
@@ -173,16 +185,6 @@ public class ChimeraVfs implements VirtualFileSystem {
         @Override
         public boolean exists() {
             return inode.exists();
-        }
-
-        @Override
-        public Stat stat() throws IOException {
-            return inode.stat();
-        }
-
-        @Override
-        public Stat statCache() throws IOException {
-            return inode.statCache();
         }
 
         @Override

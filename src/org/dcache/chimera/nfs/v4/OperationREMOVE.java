@@ -81,7 +81,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             res.resok4 = new REMOVE4resok();
             res.resok4.cinfo = new change_info4();
             res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
+            res.resok4.cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(context.currentInode()).getMTime()));
             res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
         } catch (FileNotFoundHimeraFsException e) {
             res.status = nfsstat.NFSERR_NOENT;

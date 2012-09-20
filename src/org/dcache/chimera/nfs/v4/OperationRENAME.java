@@ -98,12 +98,12 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
             res.resok4.source_cinfo = new change_info4();
             res.resok4.source_cinfo.atomic = true;
-            res.resok4.source_cinfo.before = new changeid4(new uint64_t(sourceDir.statCache().getMTime()));
+            res.resok4.source_cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(sourceDir).getMTime()));
             res.resok4.source_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             res.resok4.target_cinfo = new change_info4();
             res.resok4.target_cinfo.atomic = true;
-            res.resok4.target_cinfo.before = new changeid4(new uint64_t(sourceDir.statCache().getMTime()));
+            res.resok4.target_cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(destDir).getMTime()));
             res.resok4.target_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             res.status = nfsstat.NFS_OK;
