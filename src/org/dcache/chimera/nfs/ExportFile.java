@@ -41,14 +41,16 @@ import java.util.Set;
 
 public class ExportFile {
 
-    private final Set<FsExport> _exports ;
+    private volatile Set<FsExport> _exports ;
+    private final URL _exportFile;
 
     public ExportFile(File file) throws IOException {
-        _exports = parse(file.toURI().toURL());
+        this(file.toURI().toURL());
     }
 
     public ExportFile(URL url) throws IOException  {
-        _exports = parse(url);
+        _exportFile = url;
+        _exports = parse(_exportFile);
     }
 
     public List<FsExport> getExports() {
@@ -165,5 +167,9 @@ public class ExportFile {
         public boolean apply(FsExport export) {
             return export.isAllowed(_client);
         }
+    }
+
+    public void rescan() throws IOException {
+        _exports = parse(_exportFile);
     }
 }
