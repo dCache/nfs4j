@@ -112,7 +112,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             _deviceMap.put(deviceId, deviceAddr);
         }
 
-        nfs_fh4 fh = new nfs_fh4(context.getFs().getInodeId(context.currentInode()));
+        nfs_fh4 fh = new nfs_fh4(context.currentInode().toNfsHandle());
 
         //  -1 is special value, which means entire file
         layout4 layout = Layout.getLayoutSegment(deviceId, fh, ioMode, 0, nfs4_prot.NFS4_UINT64_MAX);

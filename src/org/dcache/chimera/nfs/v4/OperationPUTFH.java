@@ -26,6 +26,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.PUTFH4res;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
+import org.dcache.chimera.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class OperationPUTFH extends AbstractNFSv4Operation {
         final PUTFH4res res = result.opputfh;
 
         try {
-            context.currentInode(context.getFs().getInodeById(_args.opputfh.object.value));
+            context.currentInode(new Inode(_args.opputfh.object.value));
             _log.debug("NFS Request  PUTFH4 current: {}", context.currentInode());
             res.status = nfsstat.NFS_OK;
         } catch (IllegalArgumentException iae) {

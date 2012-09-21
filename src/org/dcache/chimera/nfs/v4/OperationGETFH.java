@@ -46,7 +46,7 @@ public class OperationGETFH extends AbstractNFSv4Operation {
 
         res.resok4 = new GETFH4resok();
         res.resok4.object = new nfs_fh4();
-        res.resok4.object.value = context.getFs().getInodeId(context.currentInode());
+        res.resok4.object.value = context.currentInode().toNfsHandle();
         res.status = nfsstat.NFS_OK;
     }
 }

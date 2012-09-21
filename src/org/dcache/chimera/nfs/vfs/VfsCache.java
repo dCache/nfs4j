@@ -110,16 +110,6 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode getInodeById(byte[] fh) throws IOException {
-        return _inner.getInodeById(fh);
-    }
-
-    @Override
-    public byte[] getInodeId(Inode inode) throws IOException {
-        return _inner.getInodeId(inode);
-    }
-
-    @Override
     public Inode getRootInode() throws IOException {
         return _inner.getRootInode();
     }

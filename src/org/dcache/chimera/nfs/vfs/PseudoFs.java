@@ -77,19 +77,6 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode getInodeById(byte[] fh) throws IOException {
-        FileHandle handle = new FileHandle(fh);
-        return _inner.getInodeById(handle.getFsOpaque());
-    }
-
-    @Override
-    public byte[] getInodeId(Inode inode) throws IOException {        
-        byte[] opaque = _inner.getInodeId(inode);
-        FileHandle.FileHandleBuilder builder = new FileHandle.FileHandleBuilder();
-        return builder.build(opaque).bytes();
-    }
-
-    @Override
     public Inode lookup(Inode parent, String path) throws IOException {
         checkAccess(parent, ACE4_EXECUTE);
         return _inner.lookup(parent, path);

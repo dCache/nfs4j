@@ -19,6 +19,46 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-public interface Inode {
+import java.util.Arrays;
 
+public class Inode {
+
+    FileHandle fh;
+
+    public Inode(byte[] bytes) {
+        fh = new FileHandle(bytes);
+    }
+
+    public Inode(FileHandle h) {
+        fh = h;
+    }
+
+    static Inode forFile(byte[] bytes) {
+        return new Inode(new FileHandle.FileHandleBuilder().build(bytes));
+    }
+
+    public byte[] getFileId() {
+        return fh.getFsOpaque();
+    }
+
+    public byte[] toNfsHandle() {
+        return fh.bytes();
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(fh.bytes());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Inode other = (Inode) obj;
+        return Arrays.equals(fh.bytes(), other.fh.bytes());
+    }
 }

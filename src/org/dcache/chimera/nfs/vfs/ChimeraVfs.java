@@ -50,17 +50,6 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode getInodeById(final byte[] fh) throws IOException {
-        return toInode(_fs.inodeFromBytes(fh));
-    }
-
-    @Override
-    public byte[] getInodeId(Inode inode) throws IOException {
-        FsInode chimeraInode = toFsInode(inode);
-        return  _fs.inodeToBytes(chimeraInode);
-    }
-
-    @Override
     public Inode lookup(Inode parent, String path) throws IOException {
         try {
             FsInode parentFsInode = toFsInode(parent);
@@ -159,12 +148,11 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     private FsInode toFsInode(Inode inode) throws IOException {
-        ChimeraInode chimeraInode = (ChimeraInode)inode;
-        return chimeraInode.inode;
+        return _fs.inodeFromBytes(inode.getFileId());
     }
 
     private Inode toInode(final FsInode inode) {
-        return new ChimeraInode(inode);
+        return Inode.forFile(inode.toFullString().getBytes());
     }
 
     @Override
@@ -235,37 +223,6 @@ public class ChimeraVfs implements VirtualFileSystem {
         return pStat;
     }
 
-    private static class ChimeraInode implements Inode {
-
-        private final FsInode inode;
-
-        ChimeraInode(FsInode inode) {
-            this.inode = inode;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (!(obj instanceof ChimeraInode)) {
-                return false;
-            }
-            ChimeraInode other = (ChimeraInode) obj;
-            return this.inode.equals(other.inode);
-        }
-
-        @Override
-        public int hashCode() {
-            return inode.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return inode.toString();
-        }
-    }
-
     @Override
     public int access(Inode inode, int mode) throws IOException {
         return mode;
@@ -275,7 +232,7 @@ public class ChimeraVfs implements VirtualFileSystem {
 
         @Override
         public DirectoryEntry apply(HimeraDirectoryEntry e) {
-            return new DirectoryEntry(e.getName(), new ChimeraInode(e.getInode()), fromChimeraStat(e.getStat()));
+            return new DirectoryEntry(e.getName(), toInode(e.getInode()), fromChimeraStat(e.getStat()));
         }
     }
 
