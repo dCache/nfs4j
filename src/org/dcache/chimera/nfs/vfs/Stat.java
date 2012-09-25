@@ -71,6 +71,7 @@ public class Stat {
     private int _group = -1; //
     private int _rdev = -1; //
     private long _size = -1; //
+    private long _fileid = -1;
 
     /*
      * Opposite to classic Unix, all times in milliseconds
@@ -168,7 +169,11 @@ public class Stat {
     }
 
     public long getFileId() {
-        return (long)getDev() << 32 | getIno();
+        return _fileid;
+    }
+
+    public void setFileid(long fileid) {
+        _fileid = fileid;
     }
 
     public Type type() {

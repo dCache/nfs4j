@@ -159,12 +159,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     public Stat getattr(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
         try {
-            Stat stat =  fromChimeraStat(fsInode.stat());
-            // bit of magic for  backward compatibility
-            long id = fsInode.id();
-            stat.setIno((int)id);
-            stat.setDev((int)(id >> 32));
-            return stat;
+            return  fromChimeraStat(fsInode.stat(), fsInode.id());
         } catch (FileNotFoundHimeraFsException e) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
         }
@@ -186,7 +181,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         // FIXME:
     }
 
-    private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat) {
+    private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat, long fileid) {
         Stat stat = new Stat();
 
         stat.setATime(pStat.getATime());
@@ -201,6 +196,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         stat.setNlink(pStat.getNlink());
         stat.setRdev(pStat.getRdev());
         stat.setSize(pStat.getSize());
+        stat.setFileid(fileid);
 
         return stat;
     }
@@ -232,7 +228,7 @@ public class ChimeraVfs implements VirtualFileSystem {
 
         @Override
         public DirectoryEntry apply(HimeraDirectoryEntry e) {
-            return new DirectoryEntry(e.getName(), toInode(e.getInode()), fromChimeraStat(e.getStat()));
+            return new DirectoryEntry(e.getName(), toInode(e.getInode()), fromChimeraStat(e.getStat(), e.getInode().id()));
         }
     }
 
