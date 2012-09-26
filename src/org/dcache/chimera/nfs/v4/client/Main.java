@@ -59,6 +59,8 @@ import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.nfsstat;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_mode;
+import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.chimera.nfs.v4.xdr.sequenceid4;
@@ -109,7 +111,8 @@ public class Main {
             "remove",
             "umount",
             "write",
-            "fs_locations"
+            "fs_locations",
+            "getattr"
         };
 
         PrintWriter out = new PrintWriter(System.out);
@@ -197,7 +200,20 @@ public class Main {
                 }
                 nfsClient.lookup(commandArgs[1]);
 
-            } else if (commandArgs[0].equals("mkdir")) {
+            } else if (commandArgs[0].equals("getattr")) {
+
+                if (nfsClient == null) {
+                    System.out.println("Not mounted");
+                    continue;
+                }
+
+                if (commandArgs.length != 2) {
+                    System.out.println("usage: getattr <path>");
+                    continue;
+                }
+                nfsClient.getattr(commandArgs[1]);
+
+            }else if (commandArgs[0].equals("mkdir")) {
 
                 if (nfsClient == null) {
                     System.out.println("Not mounted");
@@ -1235,6 +1251,33 @@ public class Main {
             // ok
         } else {
             System.out.println("lookup-sun failed. Error = "
+                    + nfsstat.toString(compound4res.status));
+        }
+
+    }
+
+    private void getattr(String path) throws OncRpcException, IOException {
+
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh(_cwd)
+                .withLookup(path)
+                .withGetattr(nfs4_prot.FATTR4_CHANGE,
+                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY, nfs4_prot.FATTR4_MODE)
+                .withTag("getattr")
+                .build();
+
+        COMPOUND4res compound4res = sendCompound(args);
+
+        if (compound4res.status == nfsstat.NFS_OK) {
+            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+
+            mode4 mode = (mode4) attrMap.get(nfs4_prot.FATTR4_MODE);
+            if (mode != null) {
+                System.out.println("mode: 0" + Integer.toOctalString(mode.value.value));
+            }
+        } else {
+            System.out.println("getattr failed. Error = "
                     + nfsstat.toString(compound4res.status));
         }
 

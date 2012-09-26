@@ -20,8 +20,8 @@
 package org.dcache.chimera.nfs.v4.client;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,7 @@ import org.dcache.chimera.nfs.v4.xdr.GETATTR4args;
 import org.dcache.chimera.nfs.v4.xdr.bitmap4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_fs_locations;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_mode;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_type;
 import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
@@ -38,7 +39,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 
@@ -100,9 +100,6 @@ public class GetattrStub {
 
 
     static void xdr2fattr( Map<Integer,Object> attr, int fattr , XdrDecodingStream xdr) throws OncRpcException, IOException {
-
-        System.out.println("decoding mask " + fattr);
-
 
         switch(fattr) {
 
