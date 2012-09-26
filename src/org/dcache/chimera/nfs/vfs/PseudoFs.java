@@ -19,17 +19,29 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
+import com.google.common.base.Function;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.ExportFile;
+import org.dcache.chimera.nfs.FsExport;
+import org.dcache.chimera.nfs.PseudoFsNode;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
@@ -39,14 +51,17 @@ import org.dcache.chimera.nfs.v4.xdr.nfsace4;
  */
 public class PseudoFs implements VirtualFileSystem {
 
+    private final static Logger _log = LoggerFactory.getLogger(PseudoFs.class);
     private final Subject _subject;
     private final InetAddress _inetAddress;
     private final VirtualFileSystem _inner;
+    private final ExportFile _exportFile;
 
-    public PseudoFs(VirtualFileSystem inner, RpcCall call) {
+    public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportFile exportFile) {
         _inner = inner;
         _subject = call.getCredential().getSubject();
         _inetAddress = call.getTransport().getRemoteSocketAddress().getAddress();
+        _exportFile = exportFile;
     }
 
     @Override
@@ -63,7 +78,7 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
-        return _inner.create(parent, type, path, uid, gid, mode);
+        return pushExportIndex(parent, _inner.create(parent, type, path, uid, gid, mode));
     }
 
     @Override
@@ -73,32 +88,37 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode getRootInode() throws IOException {
-        return _inner.getRootInode();
+        return realToPseudo(_inner.getRootInode());
     }
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
         checkAccess(parent, ACE4_EXECUTE);
+        if (parent.isPesudoInode()) {
+            return lookupInPseudoDirectory(parent, path);
+        }
         return _inner.lookup(parent, path);
     }
 
     @Override
     public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
-        return _inner.link(parent, link, path, uid, gid);
+        return pushExportIndex(parent, _inner.link(parent, link, path, uid, gid));
 
     }
 
     @Override
     public List<DirectoryEntry> list(Inode inode) throws IOException {
         checkAccess(inode, ACE4_LIST_DIRECTORY);
+        if (inode.isPesudoInode()) 
+            return listPseudoDirectory(inode);
         return _inner.list(inode);
     }
 
     @Override
     public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
-        return _inner.mkdir(parent, path, uid, gid, mode);
+        return pushExportIndex(parent, _inner.mkdir(parent, path, uid, gid, mode));
     }
 
     @Override
@@ -143,7 +163,7 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
-        return _inner.symlink(parent, path, link, uid, gid, mode);
+        return pushExportIndex(parent, _inner.symlink(parent, path, link, uid, gid, mode));
     }
 
     @Override
@@ -179,7 +199,9 @@ public class PseudoFs implements VirtualFileSystem {
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
         Stat stat = _inner.getattr(inode);
 
-        if ((unixToAccessmask(_subject, stat) & requestedMask) != requestedMask) {
+        int unixAccessmask = unixToAccessmask(_subject, stat);
+        if ( (unixAccessmask & requestedMask) != requestedMask) {
+            _log.warn("Access Deny1: {} {} {} {}", new Object[] {inode, requestedMask, unixAccessmask, _subject});
             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
         }
     }
@@ -213,7 +235,7 @@ public class PseudoFs implements VirtualFileSystem {
 
     private int toAccessMask(int mode, boolean isDir, boolean isOwner) {
 
-        int mask = 0;
+        int mask = ACE4_READ_ATTRIBUTES; // we should always allow read rettribues on plane posix
 
         if (isOwner) {
             mask |= ACE4_WRITE_ACL
@@ -306,5 +328,150 @@ public class PseudoFs implements VirtualFileSystem {
 
     private boolean hasAccessBit(int accessMode, int bit) {
         return (accessMode & bit) == bit;
+    }
+
+    private Inode lookupInPseudoDirectory(Inode parent, String name) throws IOException {
+        Set<PseudoFsNode> nodes = prepareExportTree();
+
+        for (PseudoFsNode node : nodes) {
+            if (node.id().equals(parent)) {
+                PseudoFsNode n = node.getChild(name);
+                if (n != null) {
+                    return n.isMountPoint() ? pseudoIdToReal(n.id(), getIndexId(n)) : n.id();
+                }
+            }
+        }
+        throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
+    }
+
+    private Inode pseudoIdToReal(Inode inode, int index) {
+
+        FileHandle fh = new FileHandle.FileHandleBuilder()
+                .setExportIdx(index)
+                .setType(0)
+                .build(inode.getFileId());
+        return new Inode(fh);
+    }
+
+    private int getIndexId(PseudoFsNode node) {
+        List<FsExport> exports = node.getExports();
+        return exports.get(0).getIndex();
+    }
+
+    private class ConvertToRealInode implements Function<DirectoryEntry, DirectoryEntry> {
+
+        private final PseudoFsNode _node;
+
+        ConvertToRealInode(PseudoFsNode node) {
+            _node = node;
+        }
+
+        @Override
+        public DirectoryEntry apply(DirectoryEntry input) {
+            return new DirectoryEntry(input.getName(),
+                    pseudoIdToReal(input.getInode(), getIndexId(_node)),
+                    input.getStat());
+        }
+    }
+
+    private List<DirectoryEntry> listPseudoDirectory(Inode parent) throws ChimeraNFSException, IOException {
+        Set<PseudoFsNode> nodes = prepareExportTree();
+        for (PseudoFsNode node : nodes) {
+            if (node.id().equals(parent)) {
+                if (node.isMountPoint()) {
+                    return Lists.transform(_inner.list(parent), new ConvertToRealInode(node));
+                } else {
+                    List<DirectoryEntry> pseudoLs = new ArrayList<DirectoryEntry>();
+                    for (String s : node.getChildren()) {
+                        PseudoFsNode subNode = node.getChild(s);
+                        Inode inode = subNode.id();
+                        Stat stat = _inner.getattr(inode);
+                        DirectoryEntry e = new DirectoryEntry(s,
+                                subNode.isMountPoint()
+                                ? pseudoIdToReal(inode, getIndexId(subNode)) : inode, stat);
+                        pseudoLs.add(e);
+                    }
+                    return pseudoLs;
+                }
+            }
+        }
+        throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
+    }
+
+    private Inode pushExportIndex(Inode parent, Inode inode) {
+
+        FileHandle fh = new FileHandle.FileHandleBuilder()
+                .setExportIdx(parent.exportIndex())
+                .setType(0)
+                .build(inode.getFileId());
+        return new Inode(fh);
+    }
+
+    private Inode realToPseudo(Inode inode) {
+        return realToPseudo(inode, 0);
+    }
+
+    private Inode realToPseudo(Inode inode, int idx) {
+
+        FileHandle fh = new FileHandle.FileHandleBuilder()
+                .setExportIdx(idx)
+                .setType(1)
+                .build(inode.getFileId());
+        return new Inode(fh);
+    }
+
+    private void pathToPseudoFs(final PseudoFsNode root, Set<PseudoFsNode> all, FsExport e) throws IOException {
+
+        PseudoFsNode parent = root;
+        String path = e.getPath();
+
+        if (e.getPath().equals("/")) {
+            root.addExport(e);
+            return;
+        }
+
+        Splitter splitter = Splitter.on('/').omitEmptyStrings();
+        Set<PseudoFsNode> pathNodes = new HashSet<PseudoFsNode>();
+
+        for (String s : splitter.split(path)) {
+            try {
+                PseudoFsNode node = parent.getChild(s);
+                if (node == null) {
+                    node = new PseudoFsNode(realToPseudo(_inner.lookup(parent.id(), s)));
+                    parent.addChild(s, node);
+                    pathNodes.add(node);
+                }
+                parent = node;
+            } catch (IOException ef) {
+                return;
+            }
+        }
+
+        all.addAll(pathNodes);
+        parent.setId(pseudoIdToReal(parent.id(), e.getIndex()));
+        parent.addExport(e);
+    }
+
+    private Set<PseudoFsNode> prepareExportTree() throws ChimeraNFSException, IOException {
+
+        Collection<FsExport> exports = _exportFile.exportsFor(_inetAddress);
+        if (exports.isEmpty()) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+        }
+
+        Set<PseudoFsNode> nodes = new HashSet<PseudoFsNode>();
+        Inode rootInode = realToPseudo(_inner.getRootInode());
+        PseudoFsNode root = new PseudoFsNode(rootInode);
+
+        for (FsExport export : exports) {
+            pathToPseudoFs(root, nodes, export);
+        }
+
+        if (nodes.isEmpty()) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+        }
+
+        nodes.add(root);
+        return nodes;
     }
 }

@@ -130,6 +130,15 @@ public class ExportFile {
         return null;
     }
 
+    public FsExport getExport(int index, InetAddress client) {
+        for (FsExport export : _exports) {
+            if (export.getIndex() == index && export.isAllowed(client)) {
+                return export;
+            }
+        }
+        return null;
+    }
+
     // FIXME: one trusted client has an access to all tree
     public boolean isTrusted(java.net.InetAddress client) {
 

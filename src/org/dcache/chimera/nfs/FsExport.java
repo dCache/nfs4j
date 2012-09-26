@@ -19,6 +19,7 @@
  */
 package org.dcache.chimera.nfs;
 
+import com.google.common.base.Splitter;
 import java.net.InetAddress;
 
 public class FsExport {
@@ -96,7 +97,10 @@ public class FsExport {
                 .append("(").append(_rw)
                 .append(",")
                 .append(_isTrusted)
-                .append(")");
+                .append(")")
+                .append(':')
+                .append("idx=")
+                .append(getIndex());
 
         return sb.toString();
 
@@ -116,5 +120,17 @@ public class FsExport {
 
     public String client() {
         return _client;
+    }
+
+    public IO ioMode() {
+        return _rw;
+    }
+
+    public int getIndex() {
+        int index = 1;
+        for (String s: Splitter.on('/').omitEmptyStrings().split(_path) ) {
+            index = 31 * index + s.hashCode();
+        }
+        return index;
     }
 }

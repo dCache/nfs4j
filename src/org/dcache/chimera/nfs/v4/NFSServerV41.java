@@ -97,7 +97,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
             }
 
-            VirtualFileSystem fs = new PseudoFs(_fs, call$);
+            VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
                 fs, _statHandler, _deviceManager, _aclHandler, call$, _idMapping,
                     _exportFile, arg1.argarray.length);

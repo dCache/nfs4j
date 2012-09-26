@@ -61,4 +61,17 @@ public class Inode {
         final Inode other = (Inode) obj;
         return Arrays.equals(fh.bytes(), other.fh.bytes());
     }
+
+    public boolean isPesudoInode() {
+        return fh.getType() == 1;
+    }
+
+    public int exportIndex() {
+        return fh.getExportIdx();
+    }
+
+    @Override
+    public String toString() {
+        return fh.toString();
+    }
 }
