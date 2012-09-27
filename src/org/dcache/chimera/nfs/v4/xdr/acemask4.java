@@ -47,5 +47,17 @@ public class acemask4 implements XdrAble {
         value = new uint32_t(xdr);
     }
 
+    public static acemask4 allOf(acemask4... masks) {
+        int mask = 0;
+        for (acemask4 acemask : masks) {
+            mask |= acemask.value.value;
+        }
+        return new acemask4(new uint32_t(mask));
+    }
+
+    public static acemask4 clear(acemask4 acemask, acemask4 clear) {
+        int mask = (acemask.value.value | clear.value.value) & ~acemask.value.value;
+        return new acemask4(new uint32_t(mask));
+    }
 }
 // End of acemask4.java

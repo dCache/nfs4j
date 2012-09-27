@@ -22,7 +22,12 @@ package org.dcache.chimera.nfs.vfs;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import org.dcache.acl.ACE;
+import org.dcache.acl.enums.AceFlags;
+import org.dcache.acl.enums.AceType;
+import org.dcache.acl.enums.Who;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
@@ -31,7 +36,14 @@ import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.nfsstat;
+import org.dcache.chimera.nfs.v4.NfsIdMapping;
+import org.dcache.chimera.nfs.v4.acl.Acls;
+import org.dcache.chimera.nfs.v4.xdr.aceflag4;
+import org.dcache.chimera.nfs.v4.xdr.acemask4;
+import org.dcache.chimera.nfs.v4.xdr.acetype4;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
+import org.dcache.chimera.nfs.v4.xdr.uint32_t;
+import org.dcache.chimera.nfs.v4.xdr.utf8str_mixed;
 
 /**
  * Interface to a virtual file system.
@@ -39,9 +51,11 @@ import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 public class ChimeraVfs implements VirtualFileSystem {
 
     private final JdbcFs _fs;
+    private final NfsIdMapping _idMapping;
 
-    public ChimeraVfs(JdbcFs fs) {
+    public ChimeraVfs(JdbcFs fs, NfsIdMapping idMapping) {
         _fs = fs;
+        _idMapping = idMapping;
     }
 
     @Override
@@ -170,15 +184,33 @@ public class ChimeraVfs implements VirtualFileSystem {
         FsInode fsInode = toFsInode(inode);
         _fs.setInodeAttributes(fsInode, 0, toChimeraStat(stat));
     }
- 
+
     @Override
     public nfsace4[] getAcl(Inode inode) throws IOException {
-        return new nfsace4[0];
+        FsInode fsInode = toFsInode(inode);
+        nfsace4[] aces;
+        List<ACE> dacl = _fs.getACL(fsInode);
+        org.dcache.chimera.posix.Stat stat = _fs.stat(fsInode);
+
+        nfsace4[] unixAcl = Acls.of(stat.getMode(), fsInode.isDirectory());
+        aces = new nfsace4[dacl.size() + unixAcl.length];
+        int i = 0;
+        for (ACE ace : dacl) {
+            aces[i] = valueOf(ace, _idMapping);
+            i++;
+        }
+        System.arraycopy(unixAcl, 0, aces, i, unixAcl.length);
+        return aces;
     }
 
     @Override
     public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
-        // FIXME:
+        FsInode fsInode = toFsInode(inode);
+        List<ACE> dacl = new ArrayList<ACE>();
+        for (nfsace4 ace : acl) {
+            dacl.add(valueOf(ace, _idMapping));
+        }
+        _fs.setACL(fsInode, dacl);
     }
 
     private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat, long fileid) {
@@ -250,5 +282,49 @@ public class ChimeraVfs implements VirtualFileSystem {
             default:
                 return UnixPermission.S_IFREG;
         }
+    }
+
+    private static nfsace4 valueOf(ACE ace, NfsIdMapping idMapping) {
+
+        String principal;
+        switch (ace.getWho()) {
+            case USER:
+                principal = idMapping.uidToPrincipal(ace.getWhoID());
+                break;
+            case GROUP:
+                principal = idMapping.gidToPrincipal(ace.getWhoID());
+                break;
+            default:
+                principal = ace.getWho().getAbbreviation();
+        }
+
+        nfsace4 nfsace = new nfsace4();
+        nfsace.access_mask = new acemask4(new uint32_t(ace.getAccessMsk()));
+        nfsace.flag = new aceflag4(new uint32_t(ace.getFlags()));
+        nfsace.type = new acetype4(new uint32_t(ace.getType().getValue()));
+        nfsace.who = new utf8str_mixed(principal);
+        return nfsace;
+    }
+
+    private static ACE valueOf(nfsace4 ace, NfsIdMapping idMapping) {
+        String principal = ace.who.toString();
+        int type = ace.type.value.value;
+        int flags = ace.flag.value.value;
+        int mask = ace.access_mask.value.value;
+
+        int id = -1;
+        Who who = Who.fromAbbreviation(principal);
+        if (who == null) {
+            // not a special pricipal
+            boolean isGroup = AceFlags.IDENTIFIER_GROUP.matches(flags);
+            if (isGroup) {
+                who = Who.GROUP;
+                id = idMapping.principalToGid(principal);
+            } else {
+                who = Who.USER;
+                id = idMapping.principalToUid(principal);
+            }
+        }
+        return new ACE(AceType.valueOf(type), flags, mask, who, id, ACE.DEFAULT_ADDRESS_MSK);
     }
 }
