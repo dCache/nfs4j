@@ -38,6 +38,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SETATTR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.concurrent.TimeUnit;
+import org.dcache.chimera.nfs.v4.acl.Acls;
 
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.xdr.XdrDecodingStream;
@@ -172,7 +173,9 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MODE :
                 mode4 mode = new mode4();
                 mode.xdrDecode(xdr);
-                stat.setMode( mode.value.value | (stat.getMode() & 0770000));
+                int rwx = mode.value.value | (stat.getMode() & 0770000);
+                stat.setMode(rwx);
+                context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), rwx));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER :
