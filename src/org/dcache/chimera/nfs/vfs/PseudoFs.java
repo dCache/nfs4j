@@ -105,7 +105,7 @@ public class PseudoFs implements VirtualFileSystem {
         if (parent.isPesudoInode()) {
             return lookupInPseudoDirectory(parent, path);
         }
-        return _inner.lookup(parent, path);
+        return pushExportIndex(parent, _inner.lookup(parent, path));
     }
 
     @Override
@@ -121,7 +121,7 @@ public class PseudoFs implements VirtualFileSystem {
         if (inode.isPesudoInode()) {
             return listPseudoDirectory(inode);
         }
-        return _inner.list(inode);
+        return Lists.transform(_inner.list(inode), new PushParentIndex(inode));
     }
 
     @Override
@@ -403,6 +403,21 @@ public class PseudoFs implements VirtualFileSystem {
             return new DirectoryEntry(input.getName(),
                     pseudoIdToReal(input.getInode(), getIndexId(_node)),
                     input.getStat());
+        }
+    }
+
+    private class PushParentIndex implements Function<DirectoryEntry, DirectoryEntry> {
+
+        private final Inode _inode;
+
+        PushParentIndex(Inode parent) {
+            _inode = parent;
+        }
+
+        @Override
+        public DirectoryEntry apply(DirectoryEntry input) {
+            return new DirectoryEntry(input.getName(),
+                    pushExportIndex(_inode, input.getInode()), input.getStat());
         }
     }
 

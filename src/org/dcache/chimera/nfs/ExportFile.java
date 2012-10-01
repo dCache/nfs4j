@@ -35,8 +35,9 @@ import com.google.common.collect.Lists;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeSet;
 
 
 public class ExportFile {
@@ -60,7 +61,14 @@ public class ExportFile {
     private static Set<FsExport> parse(URL exportFile) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()));
-        Set<FsExport> exports = new HashSet<FsExport>();
+        Set<FsExport> exports = new TreeSet<FsExport>( new Comparator<FsExport>() {
+
+            @Override
+            public int compare(FsExport e1, FsExport e2) {
+                return HostEntryComparator.compare(e1.client(), e2.client());
+            }
+            
+        });
 
         String line;
         try {
@@ -151,14 +159,6 @@ public class ExportFile {
         return false;
     }
 
-    /**
-     * add a new export to existing exports
-     *
-     * @param export
-     */
-    public void addExport( FsExport export) {
-        _exports.add(export);
-    }
 
     public Collection<FsExport> exportsFor(InetAddress client) {
         return Collections2.filter(_exports, new AllowedExports(client));
