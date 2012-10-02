@@ -27,8 +27,6 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.dcache.chimera.nfs.FsExport.IO;
-import org.dcache.chimera.nfs.FsExport.Root;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -83,38 +81,49 @@ public class ExportFile {
 
                 StringTokenizer st = new StringTokenizer(line);
                 String path = st.nextToken();
+                FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
 
-                if( st.hasMoreTokens() ) {
-                    while(st.hasMoreTokens() ) {
-
-                        String hostAndOptions = st.nextToken();
-                        StringTokenizer optionsTokenizer = new StringTokenizer(hostAndOptions, "(),");
-
-                        String host = optionsTokenizer.nextToken();
-                        Root isTrusted = Root.NOTTRUSTED;
-                        IO rw = IO.RO;
-                        while(optionsTokenizer.hasMoreTokens()) {
-
-                            String option = optionsTokenizer.nextToken();
-                            if( option.equals("rw") ) {
-                                rw = IO.RW;
-                                continue;
-                            }
-
-                            if( option.equals("no_root_squash") ) {
-                                isTrusted = Root.TRUSTED;
-                                continue;
-                            }
-
-                        }
-
-                        exports.add(new FsExport(path, host,isTrusted, rw ));
-                    }
-
-                }else{
-                    exports.add( new FsExport(path, "*", Root.NOTTRUSTED, IO.RO ) );
+                if (!st.hasMoreTokens()) {
+                    FsExport export = exportBuilder.build(path);
+                    exports.add(export);
+                    continue;
                 }
 
+                while (st.hasMoreTokens()) {
+
+                    String hostAndOptions = st.nextToken();
+                    StringTokenizer optionsTokenizer = new StringTokenizer(hostAndOptions, "(),");
+
+                    String host = optionsTokenizer.nextToken();
+
+                    exportBuilder.forClient(host);
+                    while (optionsTokenizer.hasMoreTokens()) {
+
+                        String option = optionsTokenizer.nextToken();
+                        if (option.equals("rw")) {
+                            exportBuilder.rw();
+                            continue;
+                        }
+
+                        if (option.equals("ro")) {
+                            exportBuilder.ro();
+                            continue;
+                        }
+
+                        if (option.equals("root_squash")) {
+                            exportBuilder.notTrusted();
+                            continue;
+                        }
+
+                        if (option.equals("no_root_squash")) {
+                            exportBuilder.trusted();
+                            continue;
+                        }
+                    }
+                }
+
+                FsExport export = exportBuilder.build(path);
+                exports.add(export);
             }
         } finally {
             try {

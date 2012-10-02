@@ -137,4 +137,40 @@ public class FsExport {
         }
         return index;
     }
+
+    public static class FsExportBuilder {
+
+        private String _client = "*";
+        private IO _io = IO.RO;
+        private Root _isTrusted = Root.NOTTRUSTED;
+
+        public FsExportBuilder forClient(String client) {
+            _client = client;
+            return this;
+        }
+
+        public FsExportBuilder trusted() {
+            _isTrusted = Root.TRUSTED;
+            return this;
+        }
+
+        public FsExportBuilder notTrusted() {
+            _isTrusted = Root.NOTTRUSTED;
+            return this;
+        }
+
+        public FsExportBuilder ro() {
+            _io = IO.RO;
+            return this;
+        }
+
+        public FsExportBuilder rw() {
+            _io = IO.RW;
+            return this;
+        }
+
+        public FsExport build(String path) {
+            return new FsExport(path, _client, _isTrusted, _io);
+        }
+    }
 }
