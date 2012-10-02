@@ -70,7 +70,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.status = nfsstat.NFS_OK;
         res.resok4 = new WRITE4resok();
         res.resok4.count = new count4(new uint32_t(bytesWritten));
-        res.resok4.committed = stable_how4.FILE_SYNC4;
+        res.resok4.committed = _args.opwrite.stable;
         res.resok4.writeverf = new verifier4();
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
