@@ -104,7 +104,7 @@ public class FsExport {
                 .append(')')
                 .append(':')
                 .append("idx=")
-                .append(getIndex());
+                .append(Integer.toHexString(getIndex()));
 
         return sb.toString();
 
