@@ -120,9 +120,6 @@
         <constructor-arg ref="ds-data-pool" />
     </bean>
 
-    <bean id="acl-handler" class="org.dcache.chimera.posix.UnixPermissionHandler"
-        factory-method="getInstance"/>
-
     <bean id="idmapd" class="org.dcache.chimera.nfs.v4.SimpleIdMap" />
 
     <!--
@@ -132,7 +129,6 @@
         <description>NFSv4.1 MDS server</description>
         <constructor-arg ref="mds-factory"/>
         <constructor-arg ref="device-manager" />
-        <constructor-arg ref="acl-handler" />
         <constructor-arg ref="vfs" />
         <constructor-arg ref="idmapd" />
         <constructor-arg ref="export" />
@@ -145,10 +141,9 @@
         <description>NFSv4.1 DS server</description>
         <constructor-arg index="0" ref="ds-factory"/>
         <constructor-arg index="1" ref="device-manager" />
-        <constructor-arg index="2" ref="acl-handler" />
-        <constructor-arg index="3" ref="vfs" />
-        <constructor-arg index="4"><null/></constructor-arg>
-        <constructor-arg index="5"><null/></constructor-arg>
+        <constructor-arg index="2" ref="vfs" />
+        <constructor-arg index="3"><null/></constructor-arg>
+        <constructor-arg index="4" ref="export" />
     </bean>
     <!--
         MOUNTD server
