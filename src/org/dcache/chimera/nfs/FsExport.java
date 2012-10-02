@@ -118,6 +118,10 @@ public class FsExport {
         return isAllowed(client) && _isTrusted == Root.TRUSTED;
     }
 
+    public boolean isTrusted() {
+        return _isTrusted == Root.TRUSTED;
+    }
+
     public String client() {
         return _client;
     }
