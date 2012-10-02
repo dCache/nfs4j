@@ -119,6 +119,16 @@ public class ExportFile {
                             exportBuilder.trusted();
                             continue;
                         }
+
+                        if (option.equals("acl")) {
+                            exportBuilder.withAcl();
+                            continue;
+                        }
+
+                        if (option.equals("noacl")) {
+                            exportBuilder.withoutAcl();
+                            continue;
+                        }
                     }
                 }
 

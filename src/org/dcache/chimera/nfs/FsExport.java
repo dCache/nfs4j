@@ -36,6 +36,7 @@ public class FsExport {
     private final String _client;
     private final Root _isTrusted;
     private final IO _rw;
+    private final boolean _withAcl;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -75,11 +76,12 @@ public class FsExport {
      * @param isTrusted root squash option
      * @param rw IO mode option
      */
-    public FsExport(String path, String client, Root isTrusted, IO rw) {
+    public FsExport(String path, String client, Root isTrusted, IO rw, boolean withAcl) {
         _path = path;
         _client = client;
         _isTrusted = isTrusted;
         _rw = rw;
+        _withAcl = withAcl;
     }
 
     public String getPath() {
@@ -91,13 +93,15 @@ public class FsExport {
 
         StringBuilder sb = new StringBuilder();
         sb.append(_path)
-                .append(":")
-                .append(" ")
+                .append(':')
+                .append(' ')
                 .append(_client)
-                .append("(").append(_rw)
-                .append(",")
+                .append('(').append(_rw)
+                .append(',')
                 .append(_isTrusted)
-                .append(")")
+                .append(',')
+                .append(_withAcl ? "acl" : "noacl")
+                .append(')')
                 .append(':')
                 .append("idx=")
                 .append(getIndex());
@@ -138,11 +142,16 @@ public class FsExport {
         return index;
     }
 
+    public boolean checkAcls() {
+        return _withAcl;
+    }
+
     public static class FsExportBuilder {
 
         private String _client = "*";
         private IO _io = IO.RO;
         private Root _isTrusted = Root.NOTTRUSTED;
+        private boolean _withAcl = false;
 
         public FsExportBuilder forClient(String client) {
             _client = client;
@@ -169,8 +178,18 @@ public class FsExport {
             return this;
         }
 
+        public FsExportBuilder withAcl() {
+            _withAcl = true;
+            return this;
+        }
+
+        public FsExportBuilder withoutAcl() {
+            _withAcl = false;
+            return this;
+        }
+
         public FsExport build(String path) {
-            return new FsExport(path, _client, _isTrusted, _io);
+            return new FsExport(path, _client, _isTrusted, _io, _withAcl);
         }
     }
 }
