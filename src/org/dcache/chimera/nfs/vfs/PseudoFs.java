@@ -35,6 +35,7 @@ import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
+import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.PseudoFsNode;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.xdr.RpcCall;
@@ -210,10 +211,13 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
+
+        Subject effectiveSubject = _subject;
         Stat stat = _inner.getattr(inode);
+        boolean aclMatched = false;
 
         if (inode.isPesudoInode() && wantModify(requestedMask)) {
-            _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{inode, requestedMask, _subject});
+            _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{inode, requestedMask, effectiveSubject});
             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
         }
 
@@ -229,12 +233,23 @@ public class PseudoFs implements VirtualFileSystem {
                 _log.warn("Access Deny to modify (RO export) inode {} for client {}", new Object[]{inode, _inetAddress});
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
+
+            if (!export.isTrusted() && Subjects.isRoot(_subject)) {
+                effectiveSubject = NfsUser.NFS_NOBODY;
+            }
+
+            if (export.checkAcls()) {
+                ChimeraVfs chimeraVfs = (ChimeraVfs) _inner;
+                aclMatched = chimeraVfs.checkAclAccess(_subject, inode, requestedMask);
+            }
         }
 
-        int unixAccessmask = unixToAccessmask(_subject, stat);
-        if ( (unixAccessmask & requestedMask) != requestedMask) {
-            _log.warn("Access Deny: {} {} {} {}", new Object[] {inode, requestedMask, unixAccessmask, _subject});
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
+        if (!aclMatched) {
+            int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
+            if ((unixAccessmask & requestedMask) != requestedMask) {
+                _log.warn("Access Deny: {} {} {} {}", new Object[]{inode, requestedMask, unixAccessmask, _subject});
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
+            }
         }
     }
 
@@ -271,7 +286,9 @@ public class PseudoFs implements VirtualFileSystem {
 
         if (isOwner) {
             mask |= ACE4_WRITE_ACL
-                    | ACE4_WRITE_ATTRIBUTES;
+                    | ACE4_WRITE_ATTRIBUTES
+                    | ACE4_READ_ATTRIBUTES
+                    | ACE4_READ_ACL;
         }
 
         if ((mode & RBIT) != 0) {
@@ -503,6 +520,7 @@ public class PseudoFs implements VirtualFileSystem {
 
         Collection<FsExport> exports = _exportFile.exportsFor(_inetAddress);
         if (exports.isEmpty()) {
+            _log.warn("No exports found for: {}", _inetAddress);
             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
         }
 
@@ -512,10 +530,6 @@ public class PseudoFs implements VirtualFileSystem {
 
         for (FsExport export : exports) {
             pathToPseudoFs(root, nodes, export);
-        }
-
-        if (nodes.isEmpty()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
         }
 
         nodes.add(root);
