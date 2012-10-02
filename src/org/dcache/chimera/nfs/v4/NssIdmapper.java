@@ -27,6 +27,7 @@ import com.sun.jna.ptr.IntByReference;
 import java.security.Principal;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
+import org.dcache.chimera.nfs.NfsUser;
 
 /**
  *
@@ -35,8 +36,8 @@ import org.dcache.auth.Subjects;
 public class NssIdmapper implements NfsIdMapping, NfsLoginService {
 
     private final String _domain;
-    private static final int NOBODY_UID = -1;
-    private static final int NOBODY_GID = -1;
+    private static final int NOBODY_UID = NfsUser.NOBODY;
+    private static final int NOBODY_GID = NfsUser.NOBODY;
     private static final String NOBODY_USER = "nobody";
     private static final String NOBODY_GROUP = "nobody";
 

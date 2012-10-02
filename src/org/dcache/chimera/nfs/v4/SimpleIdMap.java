@@ -22,6 +22,7 @@ package org.dcache.chimera.nfs.v4;
 import java.security.Principal;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
+import org.dcache.chimera.nfs.NfsUser;
 
 /**
  * Simple implementation of {@link NfsIdMapping} which converts number into
@@ -31,8 +32,8 @@ import org.dcache.auth.Subjects;
  */
 public class SimpleIdMap implements NfsIdMapping, NfsLoginService {
 
-    private static final int NOBODY_UID = -1;
-    private static final int NOBODY_GID = -1;
+    private static final int NOBODY_UID = NfsUser.NOBODY;
+    private static final int NOBODY_GID = NfsUser.NOBODY;
 
     private static final int DEFAULT_UID = 1001;
     private static final int DEFAULT_GID = 1001;

@@ -29,6 +29,8 @@ import org.dcache.auth.Subjects;
  */
 public class NfsUser {
 
+    public final static int NOBODY = 65534;
+
     /*no instances allowed*/
     private NfsUser() {
     }
@@ -43,7 +45,7 @@ public class NfsUser {
         Subject subject = call.getCredential().getSubject();
         uid = (int)Subjects.getUid(subject);
         gids = from(Subjects.getGids(subject));
-        gid = gids.length > 0 ? gids[0] : -1;
+        gid = gids.length > 0 ? gids[0] : NOBODY;
 
         String host = call.getTransport().getRemoteSocketAddress().getAddress().getHostAddress();
 
@@ -53,8 +55,8 @@ public class NfsUser {
                     call.getTransport().getRemoteSocketAddress().getAddress())) {
 
                 // FIXME: actual 'nobody' account should be used
-                uid = -1;
-                gid = -1;
+                uid = NOBODY;
+                gid = NOBODY;
             }
         }
 
