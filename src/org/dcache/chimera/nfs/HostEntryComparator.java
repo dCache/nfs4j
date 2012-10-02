@@ -28,7 +28,7 @@ import java.util.Comparator;
  * The sorting order is - more relevant first, e.q:
  * <pre>
  *   a.b.c.d/N
- *   a.b.c.d/m ( N > n)
+ *   a.b.c.d/m ( N &gt; n)
  *   somelonger*.at.some.net
  *   some*.at.some.net
  * </pre>
