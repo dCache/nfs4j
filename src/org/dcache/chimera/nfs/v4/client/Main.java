@@ -1000,6 +1000,8 @@ public class Main {
                 System.out.println("    offset: " + l.lo_offset.value.value);
                 System.out.println("    type  : " + l.lo_content.loc_type);
                 System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
+                System.out.println("    commit: " +
+                        ((fileDevice.nfl_util.value.value & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) == 0? "ds" : "mds"));
 
                 deviceid4 deviceID = fileDevice.nfl_deviceid;
                 Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0],
