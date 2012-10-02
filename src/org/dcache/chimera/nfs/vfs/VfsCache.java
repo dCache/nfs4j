@@ -19,9 +19,9 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.io.IOException;
 import java.util.List;
@@ -33,7 +33,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfsace4;
  */
 public class VfsCache implements VirtualFileSystem {
 
-    private final Cache<CacheKey, Inode> _lookupCache;
+    private final LoadingCache<CacheKey, Inode> _lookupCache;
     private final VirtualFileSystem _inner;
 
     public VfsCache(VirtualFileSystem inner) {

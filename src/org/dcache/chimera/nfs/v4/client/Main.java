@@ -19,9 +19,9 @@
  */
 package org.dcache.chimera.nfs.v4.client;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.net.HostAndPort;
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +59,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.nfsstat;
-import org.dcache.chimera.nfs.v4.xdr.fattr4_mode;
 import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
@@ -1310,7 +1309,7 @@ public class Main {
         }
     }
 
-    private final Cache<InetSocketAddress, Main> _servers =
+    private final LoadingCache<InetSocketAddress, Main> _servers =
             CacheBuilder.newBuilder().build(new Connector());
 
     private static class Connector extends CacheLoader<InetSocketAddress, Main> {

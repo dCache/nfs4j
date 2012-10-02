@@ -22,6 +22,7 @@ package org.dcache.chimera.nfs.v4;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,13 +40,13 @@ public class CachingIdmap implements NfsIdMapping {
     /*
      * forward mapping cache
      */
-    private final Cache<String, Integer> _uidByNameCache;
-    private final Cache<String, Integer> _gidByNameCache;
+    private final LoadingCache<String, Integer> _uidByNameCache;
+    private final LoadingCache<String, Integer> _gidByNameCache;
     /*
      * reverse mapping cache
      */
-    private final Cache<Integer, String> _userNameByIdCache;
-    private final Cache<Integer, String> _groupNameByIdCache;
+    private final LoadingCache<Integer, String> _userNameByIdCache;
+    private final LoadingCache<Integer, String> _groupNameByIdCache;
 
     /**
      * Construct caching {@link NfsIdMapping}.

@@ -19,10 +19,10 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
-import com.google.common.collect.MapMaker;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.entry4;
@@ -91,12 +91,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
     private static final int DIRLIST4_SIZE = 4 + nfs4_prot.NFS4_VERIFIER_SIZE + 4 + ENTRY4_SIZE + 4;
     private static final int READDIR4RESOK_SIZE = DIRLIST4_SIZE + ENTRY4_SIZE;
 
-    private static final ConcurrentMap<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
-            new MapMaker()
+    private static final Cache<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
+            CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .softValues()
             .maximumSize(512)
-            .makeMap();
+            .build();
 	OperationREADDIR(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_READDIR);
 	}
@@ -153,7 +153,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         }
 
         InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<verifier4>(dir, verifier);
-        dirList = _dlCache.get(cacheKey);
+        dirList = _dlCache.getIfPresent(cacheKey);
         if (dirList == null) {
             _log.debug("No cached list found for {}", dir);
             dirList = context.getFs().list(dir);

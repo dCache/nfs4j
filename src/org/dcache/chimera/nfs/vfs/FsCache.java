@@ -66,7 +66,7 @@ public class FsCache {
             }
         }
     }
-    private Cache<Inode, FileChannel> _cache;
+    private LoadingCache<Inode, FileChannel> _cache;
     private int _maxSize;
     private int _lastAccess;
     private File _base;
