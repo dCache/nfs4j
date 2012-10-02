@@ -24,10 +24,12 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.security.auth.Subject;
 import org.dcache.acl.ACE;
 import org.dcache.acl.enums.AceFlags;
 import org.dcache.acl.enums.AceType;
 import org.dcache.acl.enums.Who;
+import org.dcache.auth.Subjects;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
@@ -44,12 +46,16 @@ import org.dcache.chimera.nfs.v4.xdr.acetype4;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 import org.dcache.chimera.nfs.v4.xdr.uint32_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_mixed;
+import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Interface to a virtual file system.
  */
 public class ChimeraVfs implements VirtualFileSystem {
 
+    private final static Logger _log = LoggerFactory.getLogger(ChimeraVfs.class);
     private final JdbcFs _fs;
     private final NfsIdMapping _idMapping;
 
@@ -326,5 +332,51 @@ public class ChimeraVfs implements VirtualFileSystem {
             }
         }
         return new ACE(AceType.valueOf(type), flags, mask, who, id, ACE.DEFAULT_ADDRESS_MSK);
+    }
+
+    boolean checkAclAccess(Subject subject, Inode inode, int access) throws ChimeraNFSException, IOException {
+        FsInode fsInode = toFsInode(inode);
+        List<ACE> acl = _fs.getACL(fsInode);
+        org.dcache.chimera.posix.Stat stat = _fs.stat(fsInode);
+        return checkAcl(subject, acl, stat.getUid(), stat.getGid(), access);
+    }
+
+    private boolean checkAcl(Subject subject, List<ACE> acl, int owner, int group, int access) throws ChimeraNFSException {
+
+        for (ACE ace : acl) {
+
+            int flag = ace.getFlags();
+            if ((flag & ACE4_INHERIT_ONLY_ACE) != 0) {
+                continue;
+            }
+
+            if ((ace.getType() != AceType.ACCESS_ALLOWED_ACE_TYPE) && (ace.getType() != AceType.ACCESS_DENIED_ACE_TYPE)) {
+                continue;
+            }
+
+            int ace_mask = ace.getAccessMsk();
+            if ((ace_mask & access) == 0) {
+                continue;
+            }
+
+            Who who = ace.getWho();
+
+            if (who == Who.EVERYONE
+                    || (who == Who.OWNER & Subjects.hasUid(subject, owner))
+                    || (who == Who.OWNER_GROUP & Subjects.hasGid(subject, group))
+                    || (who == Who.GROUP & Subjects.hasGid(subject, ace.getWhoID()))
+                    || (who == Who.USER & Subjects.hasUid(subject, ace.getWhoID()))) {
+
+                if (ace.getType() == AceType.ACCESS_DENIED_ACE_TYPE) {
+                    _log.warn("Access deny: {} {}", subject, access);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+                } else {
+                    _log.debug("Access grant: {} {}", subject, access);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
