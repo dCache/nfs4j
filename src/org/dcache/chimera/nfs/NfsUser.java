@@ -19,10 +19,14 @@
  */
 package org.dcache.chimera.nfs;
 
+import com.google.common.collect.Sets;
+import java.util.Collections;
 import javax.security.auth.Subject;
+import org.dcache.auth.GidPrincipal;
 import org.dcache.chimera.posix.UnixUser;
 import org.dcache.xdr.RpcCall;
 import org.dcache.auth.Subjects;
+import org.dcache.auth.UidPrincipal;
 
 /**
  * Utility class extract user record from NFS request
@@ -30,6 +34,12 @@ import org.dcache.auth.Subjects;
 public class NfsUser {
 
     public final static int NOBODY = 65534;
+
+    public final static Subject NFS_NOBODY = new Subject(true,
+            Sets.newHashSet(
+            new UidPrincipal(NfsUser.NOBODY),
+            new GidPrincipal(NfsUser.NOBODY, true)),
+            Collections.EMPTY_SET, Collections.EMPTY_SET);
 
     /*no instances allowed*/
     private NfsUser() {
