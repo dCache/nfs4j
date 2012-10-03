@@ -178,7 +178,7 @@ public class CompoundBuilder {
     }
 
     public CompoundBuilder withSequence(boolean CacheThis, sessionid4 sessionid,
-            int slotid, int highSlotid, int sequence) {
+            int sequence, int slotid, int highSlotid) {
 
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_SEQUENCE;
