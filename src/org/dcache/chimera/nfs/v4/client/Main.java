@@ -974,7 +974,7 @@ public class Main {
                 .withPutfh(fh)
                 .withLayoutget(false,
                 layouttype4.LAYOUT4_NFSV4_1_FILES,
-                layoutiomode, 0, 0xffffffff, 0xff, 0xffff,
+                layoutiomode, 0, 0xffffffff, 0xff, 8,
                 stateid)
                 .withTag("layoutget")
                 .build();
