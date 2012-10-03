@@ -793,7 +793,7 @@ public class Main {
 
             dsClient.nfsRead(stripe.getFh(), or.stateid());
 
-            layoutreturn(or.fh(), 0, -1, new byte[0], or.stateid());
+            layoutreturn(or.fh(), 0, -1, new byte[0], stripeMap.getStateid());
 
         } else {
             nfsRead(or.fh(), or.stateid());
@@ -878,7 +878,7 @@ public class Main {
                 if (raf != null) {
                     raf.close();
                 }
-                layoutreturn(or.fh(), 0, -1, new byte[0], or.stateid());
+                layoutreturn(or.fh(), 0, -1, new byte[0], stripeMap.getStateid());
             }
 
         } else {
@@ -986,7 +986,7 @@ public class Main {
             System.out.println("Layoutget for fh: " + Bytes.toHexString(fh.value));
             System.out.println("    roc   : " + compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_return_on_close);
 
-            StripeMap stripeMap = new StripeMap();
+            StripeMap stripeMap = new StripeMap(compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_stateid);
 
             for (layout4 l : layout) {
                 nfsv4_1_file_layout4 fileDevice = LayoutgetStub.decodeLayoutId(l.lo_content.loc_body);
