@@ -269,8 +269,18 @@
         </dependency>
         <dependency>
             <groupId>org.dcache</groupId>
-            <artifactId>nio-jrpc</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <artifactId>oncrpc4j-spring</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcache</groupId>
+            <artifactId>oncrpc4j-core</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>3.0.9</version>
         </dependency>
         <!--
             LOCAL JARS
