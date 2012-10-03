@@ -105,7 +105,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createLink(parentFsInode, path, link);
+        FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes());
         return toInode(fsInode);
     }
 
