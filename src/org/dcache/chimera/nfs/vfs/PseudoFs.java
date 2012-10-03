@@ -218,20 +218,20 @@ public class PseudoFs implements VirtualFileSystem {
 
         if (inode.isPesudoInode() && wantModify(requestedMask)) {
             _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{inode, requestedMask, effectiveSubject});
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
+            throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to mofity pseudofs");
         }
 
         if (!inode.isPesudoInode()) {
             int exportIdx = inode.exportIndex();
             FsExport export = _exportFile.getExport(exportIdx, _inetAddress);
             if (exportIdx != 0 && export == null) {
-                _log.warn("Access Deny to inode {} for client {}", new Object[]{inode, _inetAddress});
+                _log.warn("Access Deny (no export) to inode {} for client {}", inode, _inetAddress);
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
 
             if ( (export.ioMode() == FsExport.IO.RO) && wantModify(requestedMask)) {
-                _log.warn("Access Deny to modify (RO export) inode {} for client {}", new Object[]{inode, _inetAddress});
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
+                _log.warn("Access Deny (RO export) inode {} for client {}", inode, _inetAddress);
+                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "read-only export");
             }
 
             if (!export.isTrusted() && Subjects.isRoot(_subject)) {
