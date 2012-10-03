@@ -1,7 +1,7 @@
 # sample /etc/exports file
 /               master(rw) trusty(rw,no_root_squash)
-/projects       proj*.local.domain(rw)
-/usr            *.local.domain(ro) @trusted(rw)
+/projects       proj*.local.domain.org(rw)
+/usr            *.local.domain.org(ro) @trusted(rw)
 /home/joe       pc001(rw,all_squash,anonuid=150,anongid=100)
 /pnfs           localhost(rw,no_root_squash)
 /h1             h1.desy.de

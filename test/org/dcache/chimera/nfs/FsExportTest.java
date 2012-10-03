@@ -46,21 +46,6 @@ public class FsExportTest {
     }
 
     @Test
-    public void testIsLocalHostExplicit() throws UnknownHostException {
-
-        InetAddress local = InetAddress.getByName("127.0.0.1");
-        FsExport export = _exportFile.getExport("/pnfs", local);
-        assertNotNull("null returned for existing export", export);
-    }
-
-    @Test
-    public void testLocalAlwaysAllowed() throws UnknownHostException {
-        InetAddress local = InetAddress.getByName("127.0.0.1");
-        FsExport export = _exportFile.getExport("/h1", local);
-        assertNotNull("localhost should always be allowed", export);
-    }
-
-    @Test
     public void testTrustedMultimpleClients() throws UnknownHostException {
 
         InetAddress trusted = InetAddress.getByName("www.google.com");
