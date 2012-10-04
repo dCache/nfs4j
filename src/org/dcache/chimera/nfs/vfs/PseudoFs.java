@@ -36,7 +36,6 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
 import org.dcache.chimera.nfs.NfsUser;
-import org.dcache.chimera.nfs.PseudoFsNode;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
