@@ -140,7 +140,12 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode parentOf(Inode inode) throws IOException {
-        return _inner.parentOf(inode);
+        /*
+         * FIXME:
+         * we have mess up here with export id,
+         * but it' good enough for Solaris client
+         */
+        return pushExportIndex(inode, _inner.parentOf(inode));
     }
 
     @Override
