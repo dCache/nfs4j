@@ -34,15 +34,15 @@ import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
 
 
 public class ExportFile {
 
-    private volatile Set<FsExport> _exports ;
+    private volatile List<FsExport> _exports ;
     private final URL _exportFile;
 
     public ExportFile(File file) throws IOException {
@@ -58,17 +58,10 @@ public class ExportFile {
         return Lists.newArrayList(_exports);
     }
 
-    private static Set<FsExport> parse(URL exportFile) throws IOException {
+    private static List<FsExport> parse(URL exportFile) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()));
-        Set<FsExport> exports = new TreeSet<FsExport>( new Comparator<FsExport>() {
-
-            @Override
-            public int compare(FsExport e1, FsExport e2) {
-                return HostEntryComparator.compare(e1.client(), e2.client());
-            }
-            
-        });
+        List<FsExport> exports = new ArrayList<FsExport>();
 
         String line;
         try {
@@ -98,7 +91,7 @@ public class ExportFile {
 
                     String host = optionsTokenizer.nextToken();
                     if (!isValidHostSpecifier(host))
-                        break;
+                        continue;
 
                     exportBuilder.forClient(host);
                     while (optionsTokenizer.hasMoreTokens()) {
@@ -134,10 +127,10 @@ public class ExportFile {
                             continue;
                         }
                     }
+                    FsExport export = exportBuilder.build(path);
+                    exports.add(export);
                 }
 
-                FsExport export = exportBuilder.build(path);
-                exports.add(export);
             }
         } finally {
             try {
@@ -147,8 +140,13 @@ public class ExportFile {
             }
         }
 
+        Collections.sort(exports, new Comparator<FsExport>() {
+            @Override
+            public int compare(FsExport e1, FsExport e2) {
+                return HostEntryComparator.compare(e1.client(), e2.client());
+            }
+        });
         return exports;
-
     }
 
     /**
