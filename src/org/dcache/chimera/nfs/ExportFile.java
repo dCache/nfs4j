@@ -20,14 +20,15 @@
 package org.dcache.chimera.nfs;
 
 
+import com.google.common.base.CharMatcher;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.net.InetAddresses;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 
 public class ExportFile {
@@ -74,29 +76,37 @@ public class ExportFile {
                 if (line.charAt(0) == '#')
                     continue;
 
-                StringTokenizer st = new StringTokenizer(line);
-                String path = st.nextToken();
-                FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
+                int pathEnd = line.indexOf(' ');
 
-                if (!st.hasMoreTokens()) {
-                    FsExport export = exportBuilder.build(path);
+                String path;
+                if (pathEnd < 0) {
+                    FsExport export = new FsExport.FsExportBuilder().build(line);
                     exports.add(export);
                     continue;
+                } else {
+                    path = line.substring(0, pathEnd);
                 }
 
-                while (st.hasMoreTokens()) {
+                Splitter splitter = Splitter.on(' ').omitEmptyStrings().trimResults();
 
-                    String hostAndOptions = st.nextToken();
-                    StringTokenizer optionsTokenizer = new StringTokenizer(hostAndOptions, "(),");
+                for (String hostAndOptions: splitter.split(line.substring(pathEnd +1))) {
 
-                    String host = optionsTokenizer.nextToken();
+                    FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
+
+                    Iterator<String> s = Splitter
+                            .on(CharMatcher.anyOf("(,)"))
+                            .omitEmptyStrings()
+                            .trimResults()
+                            .split(hostAndOptions).iterator();
+
+                    String host = s.next();
                     if (!isValidHostSpecifier(host))
                         continue;
 
                     exportBuilder.forClient(host);
-                    while (optionsTokenizer.hasMoreTokens()) {
+                    while (s.hasNext()) {
+                        String option = s.next();
 
-                        String option = optionsTokenizer.nextToken();
                         if (option.equals("rw")) {
                             exportBuilder.rw();
                             continue;
