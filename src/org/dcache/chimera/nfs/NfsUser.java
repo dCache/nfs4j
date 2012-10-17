@@ -34,7 +34,6 @@ import org.dcache.auth.UidPrincipal;
 public class NfsUser {
 
     public final static int NOBODY = 65534;
-
     public final static Subject NFS_NOBODY = new Subject(true,
             Sets.newHashSet(
             new UidPrincipal(NfsUser.NOBODY),
@@ -53,6 +52,11 @@ public class NfsUser {
         int[] gids;
 
         Subject subject = call.getCredential().getSubject();
+
+        if (subject == Subjects.NOBODY || subject.getPrincipals().isEmpty()) {
+            subject = NFS_NOBODY;
+        }
+
         uid = (int)Subjects.getUid(subject);
         gids = from(Subjects.getGids(subject));
         gid = gids.length > 0 ? gids[0] : NOBODY;
