@@ -47,11 +47,21 @@ public class OperationACCESS extends AbstractNFSv4Operation {
 
         _log.debug("NFS Request ACCESS uid: {}", context.getUser());
 
-        int realAccess = context.getFs().access(context.currentInode(), _args.opaccess.access.value);
+        int requestedAccess = _args.opaccess.access.value;
+
+
+        /*
+         * FIXME: for now we reply that all requested bits are allowed
+         * as ACL later on will take care about real access.
+         *
+         * int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
+         */
+
+        int realAccess = requestedAccess;
 
         res.resok4 = new ACCESS4resok();
         res.resok4.access = new uint32_t(realAccess);
-        res.resok4.supported = new uint32_t(realAccess);
+        res.resok4.supported = new uint32_t(requestedAccess);
 
         res.status = nfsstat.NFS_OK;
     }
