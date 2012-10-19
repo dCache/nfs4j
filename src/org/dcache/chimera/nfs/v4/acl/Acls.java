@@ -21,6 +21,7 @@ package org.dcache.chimera.nfs.v4.acl;
 
 import java.util.Arrays;
 import org.dcache.chimera.nfs.v4.xdr.*;
+import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 
 /**
  * Utility class to calculate unix permission mask from NFSv4 ACL and vise versa.
@@ -46,8 +47,16 @@ public class Acls {
     public final static utf8str_mixed EVERYONE = new utf8str_mixed("EVERYONE@");
 
     private final static aceflag4 NO_FLAGS = new aceflag4(new uint32_t(0));
-    private final static acetype4 ALLOW = new acetype4(new uint32_t(nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE));
-    private final static acetype4 DENY = new acetype4(new uint32_t(nfs4_prot.ACE4_ACCESS_DENIED_ACE_TYPE));
+    private final static acetype4 ALLOW = new acetype4(new uint32_t(ACE4_ACCESS_ALLOWED_ACE_TYPE));
+    private final static acetype4 DENY = new acetype4(new uint32_t(ACE4_ACCESS_DENIED_ACE_TYPE));
+
+    private final static int WANT_MODITY = ACE4_WRITE_ACL
+            | ACE4_WRITE_ATTRIBUTES
+            | ACE4_WRITE_DATA
+            | ACE4_ADD_FILE
+            | ACE4_DELETE_CHILD
+            | ACE4_DELETE
+            | ACE4_ADD_SUBDIRECTORY;
 
     private Acls() {}
 
@@ -140,32 +149,32 @@ public class Acls {
         int mask = 0;
 
         if (isOwner) {
-            mask |= nfs4_prot.ACE4_WRITE_ACL
-                    | nfs4_prot.ACE4_WRITE_ATTRIBUTES;
+            mask |= ACE4_WRITE_ACL
+                    | ACE4_WRITE_ATTRIBUTES;
         }
 
         if( (mode &  RBIT) != 0) {
-            mask |= nfs4_prot.ACE4_READ_DATA |
-                    nfs4_prot.ACE4_READ_ACL |
-                    nfs4_prot.ACE4_READ_ATTRIBUTES;
+            mask |= ACE4_READ_DATA |
+                    ACE4_READ_ACL |
+                    ACE4_READ_ATTRIBUTES;
         }
 
         if ((mode & WBIT) != 0) {
-            mask |= nfs4_prot.ACE4_WRITE_DATA |
-                    nfs4_prot.ACE4_APPEND_DATA;
+            mask |= ACE4_WRITE_DATA |
+                    ACE4_APPEND_DATA;
 
             if(isDir)
-                mask |= nfs4_prot.ACE4_DELETE_CHILD;
+                mask |= ACE4_DELETE_CHILD;
         }
 
         if ((mode & XBIT) != 0) {
             if(isDir)
-                mask |= nfs4_prot.ACE4_LIST_DIRECTORY;
+                mask |= ACE4_LIST_DIRECTORY;
 
-            mask |= nfs4_prot.ACE4_EXECUTE;
+            mask |= ACE4_EXECUTE;
 
             if (isDir)
-                mask |= nfs4_prot.ACE4_LIST_DIRECTORY;
+                mask |= ACE4_LIST_DIRECTORY;
         }
 
         acemask4 acemask = new acemask4();
@@ -209,20 +218,20 @@ public class Acls {
     }
 
     private static int getBitR(int acemask) {
-        if( (acemask & nfs4_prot.ACE4_READ_DATA) != 0)
+        if( (acemask & ACE4_READ_DATA) != 0)
           return RBIT;
         return 0;
     }
 
     private static int getBitW(int acemask) {
-        if((acemask & (nfs4_prot.ACE4_WRITE_DATA |
-                    nfs4_prot.ACE4_APPEND_DATA)) != 0 )
+        if((acemask & (ACE4_WRITE_DATA |
+                    ACE4_APPEND_DATA)) != 0 )
           return WBIT;
         return 0;
     }
 
     private static int getBitX(int acemask) {
-      if ((acemask & nfs4_prot.ACE4_EXECUTE) != 0)
+      if ((acemask & ACE4_EXECUTE) != 0)
         return XBIT;
       return 0;
     }
@@ -241,15 +250,15 @@ public class Acls {
             /*
              * consider only ALLOWED and DENIED aces
              */
-            if (ace.type.value.value != nfs4_prot.ACE4_ACCESS_DENIED_ACE_TYPE
-                    && ace.type.value.value != nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE) {
+            if (ace.type.value.value != ACE4_ACCESS_DENIED_ACE_TYPE
+                    && ace.type.value.value != ACE4_ACCESS_ALLOWED_ACE_TYPE) {
                 continue;
             }
 
             if( ace.who.equals(EVERYONE) || ace.who.equals(principal)) {
                 int acemask = ace.access_mask.value.value;
                 int rwx = getBitR(acemask) |  getBitW(acemask) | getBitX(acemask);
-                if (ace.type.value.value == nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE) {
+                if (ace.type.value.value == ACE4_ACCESS_ALLOWED_ACE_TYPE) {
                     mode |= rwx;
                 } else {
                     mode ^= rwx;
@@ -292,5 +301,16 @@ public class Acls {
     private static boolean isSpecialPrincipal(utf8str_mixed who) {
         String w = who.toString();
         return w.charAt(w.length() -1) == '@';
+    }
+
+    /**
+     * Check given access mask for a modification request.
+     *
+     * @param accessMask mast to evaluate
+     * @return {@code true} if access mask as a request for modification and
+     *     {@code false} other wise.
+     */
+    public static boolean wantModify(int accessMask) {
+        return (accessMask & WANT_MODITY) != 0;
     }
 }

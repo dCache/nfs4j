@@ -37,6 +37,7 @@ import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
 import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.nfsstat;
+import org.dcache.chimera.nfs.v4.acl.Acls;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
@@ -56,14 +57,6 @@ public class PseudoFs implements VirtualFileSystem {
     private final InetAddress _inetAddress;
     private final VirtualFileSystem _inner;
     private final ExportFile _exportFile;
-
-    private final static int WANT_MODITY = ACE4_WRITE_ACL
-            | ACE4_WRITE_ATTRIBUTES
-            | ACE4_WRITE_DATA
-            | ACE4_ADD_FILE
-            | ACE4_DELETE_CHILD
-            | ACE4_DELETE
-            | ACE4_ADD_SUBDIRECTORY;
 
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportFile exportFile) {
         _inner = inner;
@@ -210,17 +203,13 @@ public class PseudoFs implements VirtualFileSystem {
         _inner.setAcl(inode, acl);
     }
 
-    private boolean wantModify(int requestMask) {
-        return (requestMask & WANT_MODITY) != 0;
-    }
-
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
 
         Subject effectiveSubject = _subject;
         Stat stat = _inner.getattr(inode);
         boolean aclMatched = false;
 
-        if (inode.isPesudoInode() && wantModify(requestedMask)) {
+        if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
             _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{inode, requestedMask, effectiveSubject});
             throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to mofity pseudofs");
         }
@@ -233,7 +222,7 @@ public class PseudoFs implements VirtualFileSystem {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
 
-            if ( (export.ioMode() == FsExport.IO.RO) && wantModify(requestedMask)) {
+            if ( (export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
                 _log.warn("Access Deny (RO export) inode {} for client {}", inode, _inetAddress);
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "read-only export");
             }
