@@ -253,9 +253,6 @@ public class PseudoFs implements VirtualFileSystem {
     private static final int BIT_MASK_OWNER_OFFSET = 6;
     private static final int BIT_MASK_GROUP_OFFSET = 3;
     private static final int BIT_MASK_OTHER_OFFSET = 0;
-    static public final int RBIT = 04; // read bit
-    static public final int WBIT = 02; // write bit
-    static public final int XBIT = 01; //execute bit
 
     @SuppressWarnings("PointlessBitwiseExpression")
     private int unixToAccessmask(Subject subject, Stat stat) {
@@ -264,50 +261,13 @@ public class PseudoFs implements VirtualFileSystem {
         int fromUnixMask;
 
         if (Subjects.hasUid(subject, stat.getUid())) {
-            fromUnixMask = toAccessMask(mode >> BIT_MASK_OWNER_OFFSET, isDir, true);
+            fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OWNER_OFFSET, isDir, true);
         } else if (Subjects.hasGid(subject, stat.getGid())) {
-            fromUnixMask = toAccessMask(mode >> BIT_MASK_GROUP_OFFSET, isDir, false);
+            fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_GROUP_OFFSET, isDir, false);
         } else {
-            fromUnixMask = toAccessMask(mode >> BIT_MASK_OTHER_OFFSET, isDir, false);
+            fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OTHER_OFFSET, isDir, false);
         }
         return fromUnixMask;
-    }
-
-    private int toAccessMask(int mode, boolean isDir, boolean isOwner) {
-
-        int mask = ACE4_READ_ATTRIBUTES; // we should always allow read rettribues on plane posix
-
-        if (isOwner) {
-            mask |= ACE4_WRITE_ACL
-                    | ACE4_WRITE_ATTRIBUTES
-                    | ACE4_READ_ATTRIBUTES
-                    | ACE4_READ_ACL;
-        }
-
-        if ((mode & RBIT) != 0) {
-            mask |= ACE4_READ_DATA
-                    | ACE4_READ_ACL
-                    | ACE4_READ_ATTRIBUTES;
-        }
-
-        if ((mode & WBIT) != 0) {
-            mask |= ACE4_WRITE_DATA
-                    | ACE4_APPEND_DATA;
-
-            if (isDir) {
-                mask |= ACE4_DELETE_CHILD;
-            }
-        }
-
-        if ((mode & XBIT) != 0) {
-            mask |= ACE4_EXECUTE;
-
-            if (isDir) {
-                mask |= ACE4_LIST_DIRECTORY;
-            }
-        }
-
-        return mask;
     }
 
     private int accessModeToMask(int accessMode) {

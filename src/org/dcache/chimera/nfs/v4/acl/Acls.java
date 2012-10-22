@@ -144,41 +144,47 @@ public class Acls {
         });
     }
 
-    private static acemask4 toAceMask(int mode, boolean isDir, boolean isOwner) {
+    public static int toAccessMask(int mode, boolean isDir, boolean isOwner) {
 
-        int mask = 0;
+        int mask = ACE4_READ_ATTRIBUTES; // we should always allow read rettribues on plane posix
 
         if (isOwner) {
             mask |= ACE4_WRITE_ACL
-                    | ACE4_WRITE_ATTRIBUTES;
+                    | ACE4_WRITE_ATTRIBUTES
+                    | ACE4_READ_ATTRIBUTES
+                    | ACE4_READ_ACL;
         }
 
-        if( (mode &  RBIT) != 0) {
-            mask |= ACE4_READ_DATA |
-                    ACE4_READ_ACL |
-                    ACE4_READ_ATTRIBUTES;
+        if ((mode & RBIT) != 0) {
+            mask |= ACE4_READ_DATA
+                    | ACE4_READ_ACL
+                    | ACE4_READ_ATTRIBUTES;
         }
 
         if ((mode & WBIT) != 0) {
-            mask |= ACE4_WRITE_DATA |
-                    ACE4_APPEND_DATA;
+            mask |= ACE4_WRITE_DATA
+                    | ACE4_APPEND_DATA;
 
-            if(isDir)
+            if (isDir) {
                 mask |= ACE4_DELETE_CHILD;
+            }
         }
 
         if ((mode & XBIT) != 0) {
-            if(isDir)
-                mask |= ACE4_LIST_DIRECTORY;
-
             mask |= ACE4_EXECUTE;
 
-            if (isDir)
+            if (isDir) {
                 mask |= ACE4_LIST_DIRECTORY;
+            }
         }
 
+        return mask;
+    }
+
+    private static acemask4 toAceMask(int mode, boolean isDir, boolean isOwner) {
+
         acemask4 acemask = new acemask4();
-        acemask.value = new uint32_t(mask);
+        acemask.value = new uint32_t(toAccessMask(mode, isDir, isOwner));
 
         return acemask;
     }
