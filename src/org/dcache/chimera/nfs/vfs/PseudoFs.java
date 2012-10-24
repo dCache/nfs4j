@@ -65,15 +65,56 @@ public class PseudoFs implements VirtualFileSystem {
         _exportFile = exportFile;
     }
 
+    private boolean canAccess(Inode inode, int mode) {
+        try {
+            checkAccess(inode, mode);
+            return true;
+        } catch (IOException e) {
+        }
+        return false;
+    }
+
     @Override
     public int access(Inode inode, int mode) throws IOException {
-        int accessmask = accessModeToMask(mode);
-        Stat stat = _inner.getattr(inode);
+        int accessmask = 0;
 
-        int unixAccessMask = unixToAccessmask(_subject, stat);
+        if ((mode & ACCESS4_READ) != 0) {
+            if (canAccess(inode, ACE4_READ_DATA)) {
+                accessmask |= ACCESS4_READ;
+            }
+        }
 
-        // do & mode to remove all extra modes which was added during accessMaskToMode
-        return accessMaskToMode(unixAccessMask & accessmask) & mode;
+        if ((mode & ACCESS4_LOOKUP) != 0) {
+            if (canAccess(inode, ACE4_EXECUTE)) {
+                accessmask |= ACCESS4_LOOKUP;
+            }
+        }
+
+        if ((mode & ACCESS4_MODIFY) != 0) {
+            if (canAccess(inode, ACE4_WRITE_DATA)) {
+                accessmask |= ACCESS4_MODIFY;
+            }
+        }
+
+        if ((mode & ACCESS4_EXECUTE) != 0) {
+            if (canAccess(inode, ACE4_EXECUTE)) {
+                accessmask |= ACCESS4_EXECUTE;
+            }
+        }
+
+        if ((mode & ACCESS4_EXTEND) != 0) {
+            if (canAccess(inode, ACE4_APPEND_DATA)) {
+                accessmask |= ACCESS4_EXTEND;
+            }
+        }
+
+        if ((mode & ACCESS4_DELETE) != 0) {
+            if (canAccess(inode, ACE4_DELETE_CHILD)) {
+                accessmask |= ACCESS4_DELETE;
+            }
+        }
+
+        return accessmask;
     }
 
     @Override
@@ -268,68 +309,6 @@ public class PseudoFs implements VirtualFileSystem {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OTHER_OFFSET, isDir, false);
         }
         return fromUnixMask;
-    }
-
-    private int accessModeToMask(int accessMode) {
-
-        int accessMask = 0;
-
-        if (hasAccessBit(accessMode, ACCESS4_DELETE)) {
-            accessMask |= ACE4_DELETE_CHILD;
-        }
-
-        if (hasAccessBit(accessMode, ACCESS4_EXECUTE)) {
-            accessMask |= ACE4_EXECUTE;
-        }
-
-        if (hasAccessBit(accessMode, ACCESS4_EXTEND)) {
-            accessMask |= ACE4_APPEND_DATA | ACE4_ADD_SUBDIRECTORY;
-        }
-
-        if (hasAccessBit(accessMode, ACCESS4_LOOKUP)) {
-            accessMask |= ACE4_EXECUTE;
-        }
-
-        if (hasAccessBit(accessMode, ACCESS4_MODIFY)) {
-            accessMask |= ACE4_WRITE_DATA;
-        }
-
-        if (hasAccessBit(accessMode, ACCESS4_READ)) {
-            accessMask |= ACE4_READ_DATA;
-        }
-
-        return accessMask;
-    }
-
-    private int accessMaskToMode(int accessMask) {
-        int mode = 0;
-
-        if (hasAccessBit(accessMask, ACE4_READ_DATA)) {
-            mode |= ACCESS4_READ;
-        }
-
-        if (hasAccessBit(accessMask, ACE4_EXECUTE)) {
-            mode |= ACCESS4_LOOKUP;
-            mode |= ACCESS4_EXECUTE;
-        }
-
-        if (hasAccessBit(accessMask, ACE4_WRITE_DATA)) {
-            mode |= ACCESS4_MODIFY;
-        }
-
-        if (hasAccessBit(accessMask, ACE4_APPEND_DATA) || hasAccessBit(accessMask, ACE4_ADD_FILE)) {
-            mode |= ACCESS4_EXTEND;
-        }
-
-        if (hasAccessBit(accessMask, ACE4_DELETE_CHILD)) {
-            mode |= ACCESS4_DELETE;
-        }
-
-        return mode;
-    }
-
-    private boolean hasAccessBit(int accessMode, int bit) {
-        return (accessMode & bit) == bit;
     }
 
     private Inode lookupInPseudoDirectory(Inode parent, String name) throws IOException {
