@@ -38,6 +38,7 @@ import org.dcache.chimera.nfs.FsExport;
 import org.dcache.chimera.nfs.NfsUser;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.acl.Acls;
+import org.dcache.chimera.nfs.v4.xdr.acemask4;
 import org.dcache.xdr.RpcCall;
 import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
@@ -251,8 +252,10 @@ public class PseudoFs implements VirtualFileSystem {
         boolean aclMatched = false;
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
-            _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{inode, requestedMask, effectiveSubject});
-            throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to mofity pseudofs");
+            _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{
+                inode, acemask4.toString(requestedMask),
+                effectiveSubject});
+            throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to modify pseudofs");
         }
 
         if (!inode.isPesudoInode()) {
@@ -281,7 +284,9 @@ public class PseudoFs implements VirtualFileSystem {
         if (!aclMatched) {
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
-                _log.warn("Access Deny: {} {} {} {}", new Object[]{inode, requestedMask, unixAccessmask, _subject});
+                _log.warn("Access Deny: {} {} {} {}", new Object[]{inode,
+                    acemask4.toString(requestedMask),
+                    acemask4.toString(unixAccessmask), _subject});
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
         }

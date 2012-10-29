@@ -368,10 +368,10 @@ public class ChimeraVfs implements VirtualFileSystem {
                     || (who == Who.USER & Subjects.hasUid(subject, ace.getWhoID()))) {
 
                 if (ace.getType() == AceType.ACCESS_DENIED_ACE_TYPE) {
-                    _log.warn("Access deny: {} {}", subject, access);
+                    _log.warn("Access deny: {} {}", subject, acemask4.toString(access));
                     throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
                 } else {
-                    _log.debug("Access grant: {} {}", subject, access);
+                    _log.debug("Access grant: {} {}", subject, acemask4.toString(access));
                     return true;
                 }
             }
