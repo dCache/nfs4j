@@ -51,5 +51,34 @@ public class nfsace4 implements XdrAble {
         who = new utf8str_mixed(xdr);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        switch (type.value.value) {
+            case nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE:
+                sb.append('A');
+                break;
+            case nfs4_prot.ACE4_ACCESS_DENIED_ACE_TYPE:
+                sb.append('D');
+                break;
+            case nfs4_prot.ACE4_SYSTEM_ALARM_ACE_TYPE:
+                sb.append('L');
+                break;
+            case nfs4_prot.ACE4_SYSTEM_AUDIT_ACE_TYPE:
+                sb.append('U');
+                break;
+            default:
+                sb.append("X");
+        }
+
+        sb.append(':');
+        // flag
+        sb.append(':');
+        sb.append(who);
+        sb.append(':');
+        sb.append(acemask4.toString(access_mask.value.value));
+        return sb.toString();
+    }
 }
 // End of nfsace4.java
