@@ -103,6 +103,59 @@ public class AclsTest {
         assertMode(mode, toMode(adjust(acl, mode)));
     }
 
+    @Test
+    public void testCompactByPrincipal() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+            toACE(Acls.GROUP, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_ACL),
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_DELETE_CHILD)
+        };
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testCompactByPrincipal2() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+            toACE(Acls.GROUP, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
+        };
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testCompactByPrincipal3() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_WRITE_DATA),
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),
+            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
+        };
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testCompactByPrincipal4() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_DELETE_CHILD),
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testCompactByPrincipal5() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
+            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
     private static void assertMode(int expected, int actual) {
         String message = String.format("expected<0%o>, but was <0%o>",
                 expected, actual);

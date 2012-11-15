@@ -281,15 +281,44 @@ public class Acls {
      * @return compacted acl
      */
     public static nfsace4[] compact(nfsace4[] acl) {
+
         int size = acl.length;
+
+        if (size == 0) {
+            return acl;
+        }
+
+        for(int i = 0; i < size; i++) {
+            nfsace4 a = acl[i];
+            utf8str_mixed pricipal = a.who;
+
+            int processedMask = a.access_mask.value.value;
+            for(int j = i+1; j < size; j++) {
+                nfsace4 b = acl[j];
+                if (!pricipal.equals(b.who)) {
+                    continue;
+                }
+
+                // remove processed bits
+                b.access_mask.value.value &= ~processedMask;
+                int maskToProcess = b.access_mask.value.value;
+
+                if(maskToProcess != 0) {
+                    if (a.type.value.value == b.type.value.value) {
+                        a.access_mask.value.value |= maskToProcess;
+                        b.access_mask.value.value &=  ~maskToProcess;
+                    } else {
+                        //b.access_mask.value.value &=  ~maskToProcess;
+                    }
+                }
+                processedMask |= maskToProcess;
+            }
+        }
+
         for (nfsace4 ace : acl) {
             if (ace.access_mask.value.value == 0) {
                 size--;
             }
-        }
-
-        if (size == acl.length) {
-            return acl;
         }
 
         nfsace4[] compact = new nfsace4[size];

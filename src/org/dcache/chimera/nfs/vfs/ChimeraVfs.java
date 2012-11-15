@@ -206,7 +206,7 @@ public class ChimeraVfs implements VirtualFileSystem {
             i++;
         }
         System.arraycopy(unixAcl, 0, aces, i, unixAcl.length);
-        return aces;
+        return Acls.compact(aces);
     }
 
     @Override
