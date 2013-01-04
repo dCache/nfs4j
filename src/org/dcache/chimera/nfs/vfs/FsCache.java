@@ -66,7 +66,7 @@ public class FsCache {
         }
     }
 
-    private static class InodeGarbaceCollector implements RemovalListener<Inode, FileChannel> {
+    private static class InodeGarbageCollector implements RemovalListener<Inode, FileChannel> {
 
         @Override
         public void onRemoval(RemovalNotification<Inode, FileChannel> notification) {
@@ -98,7 +98,7 @@ public class FsCache {
         _cache = CacheBuilder.newBuilder()
                 .maximumSize(_maxSize)
                 .expireAfterAccess(_lastAccess, TimeUnit.SECONDS)
-                .removalListener(new InodeGarbaceCollector())
+                .removalListener(new InodeGarbageCollector())
                 .build(new FileChannelSupplier(_base));
     }
 
