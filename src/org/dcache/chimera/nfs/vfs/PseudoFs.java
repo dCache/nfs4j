@@ -68,7 +68,7 @@ public class PseudoFs implements VirtualFileSystem {
 
     private boolean canAccess(Inode inode, int mode) {
         try {
-            checkAccess(inode, mode);
+            checkAccess(inode, mode, false);
             return true;
         } catch (IOException e) {
         }
@@ -246,15 +246,21 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
+        checkAccess(inode, requestedMask, true);
+    }
+
+    private void checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
         Stat stat = _inner.getattr(inode);
         boolean aclMatched = false;
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
-            _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{
-                inode, acemask4.toString(requestedMask),
-                effectiveSubject});
+            if (shouldLog) {
+                _log.warn("Access Deny: pseudo Inode {} {} {}", new Object[]{
+                            inode, acemask4.toString(requestedMask),
+                            effectiveSubject});
+            }
             throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to modify pseudofs");
         }
 
@@ -262,12 +268,16 @@ public class PseudoFs implements VirtualFileSystem {
             int exportIdx = inode.exportIndex();
             FsExport export = _exportFile.getExport(exportIdx, _inetAddress);
             if (exportIdx != 0 && export == null) {
-                _log.warn("Access Deny (no export) to inode {} for client {}", inode, _inetAddress);
+                if (shouldLog) {
+                    _log.warn("Access Deny (no export) to inode {} for client {}", inode, _inetAddress);
+                }
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
 
             if ( (export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
-                _log.warn("Access Deny (RO export) inode {} for client {}", inode, _inetAddress);
+                if (shouldLog) {
+                    _log.warn("Access Deny (RO export) inode {} for client {}", inode, _inetAddress);
+                }
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "read-only export");
             }
 
@@ -284,9 +294,11 @@ public class PseudoFs implements VirtualFileSystem {
         if (!aclMatched) {
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
-                _log.warn("Access Deny: {} {} {} {}", new Object[]{inode,
-                    acemask4.toString(requestedMask),
-                    acemask4.toString(unixAccessmask), _subject});
+                if (shouldLog) {
+                    _log.warn("Access Deny: {} {} {} {}", new Object[]{inode,
+                                acemask4.toString(requestedMask),
+                                acemask4.toString(unixAccessmask), _subject});
+                }
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
         }
