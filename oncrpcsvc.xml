@@ -83,7 +83,7 @@
         <description>Export file</description>
         <constructor-arg>
             <bean class="java.io.File">
-                <constructor-arg value="/etc/exports"/>
+                <constructor-arg value="exports"/>
             </bean>
         </constructor-arg>
     </bean>
