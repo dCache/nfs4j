@@ -39,7 +39,7 @@ public interface Inode {
 
     public byte[] toFileHandle() throws IOException;
 
-    public boolean exists();
+    public boolean exists() throws IOException;
 
     Stat stat() throws IOException;
 
@@ -65,5 +65,5 @@ public interface Inode {
 
     void setAcl(nfsace4[] acl) throws IOException;
 
-    Type type();
+    Type type() throws IOException;
 }

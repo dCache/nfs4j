@@ -19,6 +19,7 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.rpcsec_gss_info;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -42,7 +43,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final SECINFO4res res = result.opsecinfo;
         if (context.currentInode().type() != Inode.Type.DIRECTORY) {

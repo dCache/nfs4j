@@ -19,6 +19,7 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.xdr.stateid4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
@@ -40,7 +41,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final OPEN_CONFIRM4res res = result.opopen_confirm;
 

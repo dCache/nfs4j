@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.HimeraDirectoryEntry;
@@ -162,7 +163,7 @@ public class ChimeraVfs implements VirtualFileSystem {
             }
 
             @Override
-            public boolean exists() {
+            public boolean exists() throws IOException {
                 return inode.exists();
             }
 
@@ -227,7 +228,7 @@ public class ChimeraVfs implements VirtualFileSystem {
             }
 
             @Override
-            public Type type() {
+            public Type type() throws IOException {
                 if (inode.isDirectory()) {
                     return Type.DIRECTORY;
                 }
