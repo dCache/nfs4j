@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
+import org.dcache.chimera.FsInode;
+import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
@@ -243,6 +245,11 @@ public class PseudoFs implements VirtualFileSystem {
     public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
         checkAccess(inode, ACE4_WRITE_ACL);
         _inner.setAcl(inode, acl);
+    }
+
+    @Override
+    public boolean hasIOLayout(Inode inode) throws IOException {
+        return _inner.hasIOLayout(inode);
     }
 
     private void checkAccess(Inode inode, int requestedMask) throws IOException {

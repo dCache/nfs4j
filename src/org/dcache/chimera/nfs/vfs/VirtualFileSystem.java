@@ -62,4 +62,6 @@ public interface VirtualFileSystem {
     nfsace4[] getAcl(Inode inode) throws IOException;
 
     void setAcl(Inode inode, nfsace4[] acl) throws IOException;
+
+    boolean hasIOLayout(Inode inode) throws IOException;
 }

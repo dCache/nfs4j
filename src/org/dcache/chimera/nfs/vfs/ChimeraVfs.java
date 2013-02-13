@@ -33,6 +33,7 @@ import org.dcache.auth.Subjects;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
+import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
@@ -112,7 +113,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public int read(Inode inode, byte[] data, long offset, int count) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        return _fs.read(fsInode, offset, data, 0, count);
+        return fsInode.read(offset, data, 0, count);
     }
 
     @Override
@@ -143,7 +144,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public int write(Inode inode, byte[] data, long offset, int count) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        return _fs.write(fsInode, offset, data, 0, count);
+        return fsInode.write(offset, data, 0, count);
     }
 
     @Override
@@ -260,6 +261,12 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public int access(Inode inode, int mode) throws IOException {
         return mode;
+    }
+
+    @Override
+    public boolean hasIOLayout(Inode inode) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        return fsInode.type() == FsInodeType.INODE;
     }
 
     private class ChimeraDirectoryEntryToVfs implements Function<HimeraDirectoryEntry, DirectoryEntry> {

@@ -91,8 +91,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         device_addr4 deviceAddr;
         deviceid4 deviceId;
 
-        Stat stat = context.getFs().getattr(inode);
-        if (stat.type() == Stat.Type.LEGACY) {
+        if (!context.getFs().hasIOLayout(inode)) {
             deviceId = MDS_ID;
         } else {
 

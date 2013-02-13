@@ -172,6 +172,11 @@ public class VfsCache implements VirtualFileSystem {
         _inner.setAcl(inode, acl);
     }
 
+    @Override
+    public boolean hasIOLayout(Inode inode) throws IOException {
+        return _inner.hasIOLayout(inode);
+    }
+
     /**
      * Cache entry key based on parent id and name
      */
