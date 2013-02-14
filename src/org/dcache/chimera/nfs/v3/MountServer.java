@@ -46,6 +46,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.PseudoFs;
 import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.RpcAuthType;
@@ -57,12 +58,12 @@ public class MountServer extends mount_protServerStub {
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
     private final ExportFile _exportFile;
     private final Map<String, Set<String>> _mounts = new HashMap<String, Set<String>>();
-    private final VirtualFileSystem _fs;
+    private final VirtualFileSystem _vfs;
 
     public MountServer(ExportFile exportFile, VirtualFileSystem fs) {
         super();
         _exportFile = exportFile;
-        _fs = fs;
+        _vfs = fs;
     }
 
     @Override
@@ -73,6 +74,7 @@ public class MountServer extends mount_protServerStub {
     @Override
     public mountres3 MOUNTPROC3_MNT_3(RpcCall call$, dirpath arg1) {
 
+        VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exportFile);
         mountres3 m = new mountres3();
 
         java.io.File f = new java.io.File(arg1.value);
@@ -90,8 +92,8 @@ public class MountServer extends mount_protServerStub {
 
         try {
 
-            Inode rootInode = path2Inode(_fs, mountPoint);
-            Stat stat = _fs.getattr(rootInode);
+            Inode rootInode = path2Inode(fs, mountPoint);
+            Stat stat = fs.getattr(rootInode);
             if (stat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
             }

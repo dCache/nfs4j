@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
-import org.dcache.chimera.FsInode;
-import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;

@@ -83,7 +83,7 @@ public class HimeraNfsUtils {
 
         //public int fileid;
         // Get some value for this file/dir
-        at.fileid = new fileid3(new uint64( stat.getIno() ) );
+        at.fileid = new fileid3(new uint64( stat.getFileId() ) );
 
         at.size = new size3( new uint64( stat.getSize() ) );
         at.used = new size3( new uint64( stat.getSize() ) );
