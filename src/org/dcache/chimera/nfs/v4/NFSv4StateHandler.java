@@ -79,7 +79,6 @@ public class NFSv4StateHandler {
         _clientByOwner.remove(client.getOwner());
         _clientsByVerifier.remove(client.verifier()) ;
         _clients.remove(client);
-
     }
 
     private synchronized void addClient(NFS4Client newClient) {
@@ -108,6 +107,24 @@ public class NFSv4StateHandler {
 
     public synchronized NFSv41Session sessionById( sessionid4 id) {
        return _sessionById.get(id);
+    }
+
+    public synchronized NFSv41Session removeSessionById(sessionid4 id) throws ChimeraNFSException {
+        NFSv41Session session = _sessionById.remove(id);
+        if (session == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "session not found");
+        }
+
+        NFS4Client client = session.getClient();
+        client.removeSession(session);
+
+        /*
+         * remove client if there is not sessions any more
+         */
+        if (client.sessions().isEmpty()) {
+            removeClient(client);
+        }
+        return session;
     }
 
     public synchronized void sessionById( sessionid4 id, NFSv41Session session) {
