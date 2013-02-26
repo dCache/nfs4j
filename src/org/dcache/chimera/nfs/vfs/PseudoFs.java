@@ -131,7 +131,10 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode getRootInode() throws IOException {
-        return realToPseudo(_inner.getRootInode());
+        Inode inode = _inner.getRootInode();
+        FsExport export = _exportFile.getExport("/", _inetAddress);
+        return export == null? realToPseudo(inode) :
+                pushExportIndex(inode, export.getIndex());
     }
 
     @Override
@@ -416,13 +419,17 @@ public class PseudoFs implements VirtualFileSystem {
         throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
     }
 
-    private Inode pushExportIndex(Inode parent, Inode inode) {
+    private Inode pushExportIndex(Inode inode, int index) {
 
         FileHandle fh = new FileHandle.FileHandleBuilder()
-                .setExportIdx(parent.exportIndex())
+                .setExportIdx(index)
                 .setType(0)
                 .build(inode.getFileId());
         return new Inode(fh);
+    }
+
+    private Inode pushExportIndex(Inode parent, Inode inode) {
+        return pushExportIndex(inode, parent.exportIndex());
     }
 
     private Inode realToPseudo(Inode inode) {
