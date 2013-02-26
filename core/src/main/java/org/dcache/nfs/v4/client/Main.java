@@ -244,7 +244,6 @@ public class Main {
                         continue;
                     }
                     nfsClient.mkdir(commandArgs[1]);
-
                 } else if (commandArgs[0].equals("read")) {
 
                     if (nfsClient == null) {
@@ -252,11 +251,12 @@ public class Main {
                         continue;
                     }
 
-                    if (commandArgs.length != 2) {
-                        System.out.println("usage: read <file>");
+                    if (commandArgs.length < 2 || commandArgs.length > 3) {
+                        System.out.println("usage: read <file> [-nopnfs]");
                         continue;
                     }
-                    nfsClient.read(commandArgs[1]);
+                    boolean usePNFS = commandArgs.length == 2 || !commandArgs[2].equals("-nopnfs");
+                    nfsClient.read(commandArgs[1], usePNFS);
 
                 } else if (commandArgs[0].equals("readatonce")) {
 
@@ -279,7 +279,7 @@ public class Main {
                     }
 
                     if (commandArgs.length != 2) {
-                        System.out.println("usage: readatonce <file>");
+                        System.out.println("usage: read-nostate <file>");
                         continue;
                     }
                     nfsClient.readNoState(commandArgs[1]);
@@ -318,11 +318,12 @@ public class Main {
                         continue;
                     }
 
-                    if (commandArgs.length != 3) {
-                        System.out.println("usage: write <src> <dest>");
+                    if (commandArgs.length < 3 || commandArgs.length > 4) {
+                        System.out.println("usage: write <src> <dest> [-nopnfs]");
                         continue;
                     }
-                    nfsClient.write(commandArgs[1], commandArgs[2]);
+                    boolean usePNFS = commandArgs.length == 3 || !commandArgs[3].equals("-nopnfs");
+                    nfsClient.write(commandArgs[1], commandArgs[2], usePNFS);
 
                 } else if (commandArgs[0].equals("filebomb")) {
 
@@ -395,7 +396,7 @@ public class Main {
         try {
             for (int i = 0; i < count; i++) {
                 String file = UUID.randomUUID().toString();
-                write("/etc/profile", file);
+                write("/etc/profile", file, true);
                 files.add(file);
             }
         } finally {
@@ -564,7 +565,6 @@ public class Main {
         } else {
             _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
                     90, 90, TimeUnit.SECONDS);
-
         }
     }
 
@@ -768,11 +768,11 @@ public class Main {
         return stat;
     }
 
-    private void read(String path) throws OncRpcException, IOException {
+    private void read(String path, boolean pnfs) throws OncRpcException, IOException {
 
         OpenReply or = open(path);
 
-        if (_isMDS) {
+        if (pnfs && _isMDS) {
             StripeMap stripeMap = layoutget(or.fh(), or.stateid(), layoutiomode4.LAYOUTIOMODE4_READ);
 
             List<Stripe> stripes = stripeMap.getStripe(0, 4096);
@@ -821,7 +821,7 @@ public class Main {
         System.out.println("[" + new String(data) + "]");
     }
 
-    private void write(String source, String path) throws OncRpcException, IOException {
+    private void write(String source, String path, boolean pnfs) throws OncRpcException, IOException {
 
         File f = new File(source);
         if (!f.exists()) {
@@ -830,7 +830,7 @@ public class Main {
 
         OpenReply or = create(path);
 
-        if (_isMDS) {
+        if (pnfs && _isMDS) {
 
             StripeMap stripeMap = layoutget(or.fh(), or.stateid(), layoutiomode4.LAYOUTIOMODE4_RW);
             try (RandomAccessFile raf = new RandomAccessFile(source, "r")) {
