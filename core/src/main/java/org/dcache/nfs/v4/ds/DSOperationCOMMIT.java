@@ -32,6 +32,8 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.FsCache;
+import java.nio.channels.FileChannel;
+import org.dcache.nfs.vfs.Stat;
 import org.dcache.xdr.OncRpcException;
 
 public class DSOperationCOMMIT extends AbstractNFSv4Operation {
@@ -48,6 +50,13 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
         // FIXME: sync the data
 
         final COMMIT4res res = result.opcommit;
+        if (context.getFs() != null) {
+            FileChannel out = _fsCache.get(context.currentInode());
+            Stat stat = context.getFs().getattr(context.currentInode());
+            stat.setSize(out.size());
+            context.getFs().setattr(context.currentInode(), stat);
+        }
+
         res.status = nfsstat.NFS_OK;
         res.resok4 = new COMMIT4resok();
         res.resok4.writeverf = new verifier4();
