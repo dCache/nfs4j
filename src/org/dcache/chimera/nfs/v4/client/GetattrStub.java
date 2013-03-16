@@ -69,8 +69,19 @@ public class GetattrStub {
 
     }
 
+    public static class Attrs {
+        private final Map<Integer,Object> _attrs;
 
-    public static Map<Integer, Object> decodeType(fattr4 attributes) throws OncRpcException, IOException  {
+        public Attrs(Map<Integer, Object> attrs) {
+            _attrs = attrs;
+        }
+
+        public <T> T get(Integer attr) {
+            return (T) _attrs.get(attr);
+       }
+    }
+
+    public static Attrs decodeType(fattr4 attributes) throws OncRpcException, IOException  {
 
         Map<Integer,Object> attr = new HashMap<Integer, Object>();
 
@@ -95,7 +106,7 @@ public class GetattrStub {
 
         xdr.endDecoding();
 
-        return attr;
+        return new Attrs(attr);
     }
 
 

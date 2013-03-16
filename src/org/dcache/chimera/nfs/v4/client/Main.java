@@ -695,9 +695,9 @@ public class Main {
 
         if (compound4res.status == nfsstat.NFS_OK) {
 
-            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+            GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
-            fattr4_fs_locations locations = (fattr4_fs_locations) attrMap.get(nfs4_prot.FATTR4_FS_LOCATIONS);
+            fattr4_fs_locations locations = attrs.get(nfs4_prot.FATTR4_FS_LOCATIONS);
             if (locations != null) {
                 System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0].value.toString());
                 System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0].value.toString());
@@ -751,14 +751,14 @@ public class Main {
         if (compound4res.status == nfsstat.NFS_OK) {
 
 
-            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
+            GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
 
-            uint64_t size = (uint64_t) attrMap.get(nfs4_prot.FATTR4_SIZE);
+            uint64_t size = attrs.get(nfs4_prot.FATTR4_SIZE);
             if (size != null) {
                 stat.setSize(size.value);
             }
 
-            fattr4_type type = (fattr4_type) attrMap.get(nfs4_prot.FATTR4_TYPE);
+            fattr4_type type = attrs.get(nfs4_prot.FATTR4_TYPE);
 
             System.out.println("Type is: " + type.value);
 
@@ -1270,9 +1270,9 @@ public class Main {
         COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.status == nfsstat.NFS_OK) {
-            Map<Integer, Object> attrMap = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+            GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
-            mode4 mode = (mode4) attrMap.get(nfs4_prot.FATTR4_MODE);
+            mode4 mode = attrs.get(nfs4_prot.FATTR4_MODE);
             if (mode != null) {
                 System.out.println("mode: 0" + Integer.toOctalString(mode.value.value));
             }
