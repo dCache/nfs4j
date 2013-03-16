@@ -35,9 +35,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
@@ -89,13 +90,13 @@ public class Main {
     private boolean _isMDS = false;
     private boolean _isDS = false;
     private static final String PROMPT = "NFSv41: ";
+    private final ScheduledExecutorService _executorService = Executors.newScheduledThreadPool(1);
 
     public static void main(String[] args) throws IOException, OncRpcException, InterruptedException {
 
         System.out.println("Started the NFS4 Client ....");
         String line;
 
-        Timer timer = new Timer();
         Main nfsClient = null;
 
         final String[] commands = {
@@ -157,7 +158,6 @@ public class Main {
                 }
 
                 nfsClient.umount();
-                timer.purge();
                 nfsClient = null;
 
             } else if (commandArgs[0].equals("ls")) {
@@ -320,7 +320,6 @@ public class Main {
                     nfsClient.destroy_session();
                     nfsClient.destroy_clientid();
                 }
-                timer.purge();
                 System.exit(0);
             } else {
                 out.println("Supported commands: ");
@@ -329,9 +328,6 @@ public class Main {
                 }
             }
             out.flush();
-
-            timer.schedule(new LeasUpdater(nfsClient), LEASETIME, LEASETIME);
-
         }
     }
 
@@ -375,11 +371,11 @@ public class Main {
         return System.currentTimeMillis() - _lastUpdate > 60000;
     }
 
-    private static class LeasUpdater extends TimerTask {
+    private static class LeaseUpdater implements Runnable {
 
         private final Main _nfsClient;
 
-        LeasUpdater(Main nfsClient) {
+        LeaseUpdater(Main nfsClient) {
             _nfsClient = nfsClient;
         }
 
@@ -498,6 +494,8 @@ public class Main {
             // FIXME: no idea why, but other wise server reply MISORDER
             _sequenceID.value.value = 0;
 
+            _executorService.scheduleAtFixedRate( new LeaseUpdater(this),
+                    LEASETIME, LEASETIME, TimeUnit.MILLISECONDS);
         } else {
             System.out.println("create session failed. Error = "
                     + nfsstat.toString(compound4res.status));
@@ -514,6 +512,7 @@ public class Main {
 
         @SuppressWarnings("unused")
         COMPOUND4res compound4res = sendCompound(args);
+        _executorService.shutdown();
     }
 
     private void destroy_clientid() throws OncRpcException, IOException {
