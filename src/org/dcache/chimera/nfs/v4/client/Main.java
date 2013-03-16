@@ -141,193 +141,199 @@ public class Main {
 
             String[] commandArgs = line.split("[ \t]+");
 
-            if (commandArgs[0].equals("mount")) {
+            try {
 
-                String host = commandArgs.length > 1 ? commandArgs[1]
-                        : "localhost";
-                String root =  commandArgs.length > 2 ? commandArgs[2]
-                        : "/";
-                nfsClient = new Main(InetAddress.getByName(host));
-                nfsClient.mount(root);
+                if (commandArgs[0].equals("mount")) {
 
-            } else if (commandArgs[0].equals("umount")) {
+                    String host = commandArgs.length > 1 ? commandArgs[1]
+                            : "localhost";
+                    String root = commandArgs.length > 2 ? commandArgs[2]
+                            : "/";
+                    nfsClient = new Main(InetAddress.getByName(host));
+                    nfsClient.mount(root);
 
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
+                } else if (commandArgs[0].equals("umount")) {
 
-                nfsClient.umount();
-                nfsClient = null;
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
 
-            } else if (commandArgs[0].equals("ls")) {
+                    nfsClient.umount();
+                    nfsClient = null;
 
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
+                } else if (commandArgs[0].equals("ls")) {
 
-                if (commandArgs.length == 2) {
-                    nfsClient.readdir(commandArgs[1]);
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length == 2) {
+                        nfsClient.readdir(commandArgs[1]);
+                    } else {
+                        nfsClient.readdir();
+                    }
+
+                } else if (commandArgs[0].equals("cd")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: cd <path>");
+                        continue;
+                    }
+                    nfsClient.cwd(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("lookup")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: lookup <path>");
+                        continue;
+                    }
+                    nfsClient.lookup(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("getattr")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: getattr <path>");
+                        continue;
+                    }
+                    nfsClient.getattr(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("mkdir")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: mkdir <path>");
+                        continue;
+                    }
+                    nfsClient.mkdir(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("read")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: read <file>");
+                        continue;
+                    }
+                    nfsClient.read(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("readatonce")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: readatonce <file>");
+                        continue;
+                    }
+                    nfsClient.readatonce(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("fs_locations")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: fs_locations <file>");
+                        continue;
+                    }
+
+                    nfsClient.get_fs_locations(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("remove")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: remove <file>");
+                        continue;
+                    }
+                    nfsClient.remove(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("write")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 3) {
+                        System.out.println("usage: write <src> <dest>");
+                        continue;
+                    }
+                    nfsClient.write(commandArgs[1], commandArgs[2]);
+
+                } else if (commandArgs[0].equals("filebomb")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: filebomb <num>");
+                        continue;
+                    }
+                    nfsClient.filebomb(Integer.parseInt(commandArgs[1]));
+
+                } else if (commandArgs[0].equals("gc")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    nfsClient.gc();
+
+                } else if (line.equalsIgnoreCase("quit")
+                        || line.equalsIgnoreCase("exit")) {
+
+                    if (nfsClient != null) {
+                        nfsClient.destroy_session();
+                        nfsClient.destroy_clientid();
+                    }
+                    System.exit(0);
                 } else {
-                    nfsClient.readdir();
+                    out.println("Supported commands: ");
+                    for (String command : commands) {
+                        out.println("    " + command);
+                    }
                 }
-
-            } else if (commandArgs[0].equals("cd")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: cd <path>");
-                    continue;
-                }
-                nfsClient.cwd(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("lookup")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: lookup <path>");
-                    continue;
-                }
-                nfsClient.lookup(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("getattr")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: getattr <path>");
-                    continue;
-                }
-                nfsClient.getattr(commandArgs[1]);
-
-            }else if (commandArgs[0].equals("mkdir")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: mkdir <path>");
-                    continue;
-                }
-                nfsClient.mkdir(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("read")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: read <file>");
-                    continue;
-                }
-                nfsClient.read(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("readatonce")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: readatonce <file>");
-                    continue;
-                }
-                nfsClient.readatonce(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("fs_locations")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: fs_locations <file>");
-                    continue;
-                }
-
-                nfsClient.get_fs_locations(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("remove")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: remove <file>");
-                    continue;
-                }
-                nfsClient.remove(commandArgs[1]);
-
-            } else if (commandArgs[0].equals("write")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 3) {
-                    System.out.println("usage: write <src> <dest>");
-                    continue;
-                }
-                nfsClient.write(commandArgs[1], commandArgs[2]);
-
-            } else if (commandArgs[0].equals("filebomb")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                if (commandArgs.length != 2) {
-                    System.out.println("usage: filebomb <num>");
-                    continue;
-                }
-                nfsClient.filebomb(Integer.parseInt(commandArgs[1]));
-
-            } else if (commandArgs[0].equals("gc")) {
-
-                if (nfsClient == null) {
-                    System.out.println("Not mounted");
-                    continue;
-                }
-
-                nfsClient.gc();
-
-            } else if (line.equalsIgnoreCase("quit")
-                    || line.equalsIgnoreCase("exit")) {
-
-                if (nfsClient != null) {
-                    nfsClient.destroy_session();
-                    nfsClient.destroy_clientid();
-                }
-                System.exit(0);
-            } else {
-                out.println("Supported commands: ");
-                for (String command : commands) {
-                    out.println("    " + command);
-                }
+                out.flush();
+            } catch (ChimeraNFSException e) {
+                out.printf("%s failed: %s(%d) \n", commandArgs[0],
+                        nfsstat.toString(e.getStatus()), e.getStatus());
             }
-            out.flush();
         }
     }
 
@@ -447,36 +453,28 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-
-            if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
-                String serverId = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.toString();
-                System.out.println("Connected to: " + serverId);
-            } else {
-                System.out.println("Connected to: Mr. X");
-            }
-
-            _clientIdByServer = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_clientid;
-            _sequenceID = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_sequenceid;
-
-            if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
-                    & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS) != 0) {
-                _isMDS = true;
-            }
-
-            if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
-                    & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS) != 0) {
-                _isDS = true;
-            }
-
-            System.out.println("pNFS MDS: " + _isMDS);
-            System.out.println("pNFS  DS: " + _isDS);
-
+        if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
+            String serverId = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.toString();
+            System.out.println("Connected to: " + serverId);
         } else {
-            System.out.println("exchangeId failed. Error = "
-                    + nfsstat.toString(compound4res.status));
+            System.out.println("Connected to: Mr. X");
         }
 
+        _clientIdByServer = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_clientid;
+        _sequenceID = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_sequenceid;
+
+        if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
+                & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS) != 0) {
+            _isMDS = true;
+        }
+
+        if ((compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_flags.value
+                & nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS) != 0) {
+            _isDS = true;
+        }
+
+        System.out.println("pNFS MDS: " + _isMDS);
+        System.out.println("pNFS  DS: " + _isDS);
     }
 
     private void create_session() throws OncRpcException, IOException {
@@ -488,19 +486,12 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
+        // FIXME: no idea why, but other wise server reply MISORDER
+        _sequenceID.value.value = 0;
 
-            _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
-            // FIXME: no idea why, but other wise server reply MISORDER
-            _sequenceID.value.value = 0;
-
-            _executorService.scheduleAtFixedRate( new LeaseUpdater(this),
-                    LEASETIME, LEASETIME, TimeUnit.MILLISECONDS);
-        } else {
-            System.out.println("create session failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
+        _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
+                LEASETIME, LEASETIME, TimeUnit.MILLISECONDS);
     }
 
     private void destroy_session() throws OncRpcException, IOException {
@@ -539,38 +530,20 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-
-            _rootFh = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
-            _cwd = _rootFh;
-            System.out.println("root fh = " + Bytes.toHexString(_rootFh.value));
-
-        } else {
-            System.out.println("getRootFh failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
+        _rootFh = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
+        _cwd = _rootFh;
+        System.out.println("root fh = " + Bytes.toHexString(_rootFh.value));
     }
 
     public void readdir() throws OncRpcException, IOException {
-
-        try {
-            for (String entry : list(_cwd)) {
-                System.out.println(entry);
-            }
-        } catch (Exception e) {
-            System.out.println("readdir: " + e.getMessage());
+        for (String entry : list(_cwd)) {
+            System.out.println(entry);
         }
     }
 
     public void readdir(String path) throws OncRpcException, IOException {
-
-        try {
-            for (String entry : list(_cwd, path)) {
-                System.out.println(entry);
-            }
-        } catch (Exception e) {
-            System.out.println("readdir: " + e.getMessage());
+        for (String entry : list(_cwd, path)) {
+            System.out.println(entry);
         }
     }
 
@@ -592,29 +565,19 @@ public class Main {
 
             COMPOUND4res compound4res = sendCompound(args);
 
-            if (compound4res.status == nfsstat.NFS_OK) {
-                verifier = compound4res.resarray.get(2).opreaddir.resok4.cookieverf;
-                done = compound4res.resarray.get(2).opreaddir.resok4.reply.eof;
+            verifier = compound4res.resarray.get(2).opreaddir.resok4.cookieverf;
+            done = compound4res.resarray.get(2).opreaddir.resok4.reply.eof;
 
-                entry4 dirEntry = compound4res.resarray.get(2).opreaddir.resok4.reply.entries;
-                while (dirEntry != null) {
-                    cookie = dirEntry.cookie.value.value;
-                    list.add(new String(dirEntry.name.value.value.value));
-                    dirEntry = dirEntry.nextentry;
-                }
-
-            } else {
-                System.out.println("readdir failed. Error = "
-                        + nfsstat.toString(compound4res.status));
-                done = true;
-                throw new ChimeraNFSException(compound4res.status, nfsstat.toString(compound4res.status));
+            entry4 dirEntry = compound4res.resarray.get(2).opreaddir.resok4.reply.entries;
+            while (dirEntry != null) {
+                cookie = dirEntry.cookie.value.value;
+                list.add(new String(dirEntry.name.value.value.value));
+                dirEntry = dirEntry.nextentry;
             }
 
         } while (!done);
 
-
         return list.toArray(new String[list.size()]);
-
     }
 
     public String[] list(nfs_fh4 fh, String path) throws OncRpcException, IOException, ChimeraNFSException {
@@ -627,39 +590,28 @@ public class Main {
         do {
 
             COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
-                .withPutfh( path.charAt(0) == '/' ? _rootFh : fh)
-                .withLookup(path)
-                .withReaddir(cookie, verifier)
-                .withTag("readdir")
-                .build();
+                    .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                    .withPutfh(path.charAt(0) == '/' ? _rootFh : fh)
+                    .withLookup(path)
+                    .withReaddir(cookie, verifier)
+                    .withTag("readdir")
+                    .build();
 
             COMPOUND4res compound4res = sendCompound(args);
 
-            if (compound4res.status == nfsstat.NFS_OK) {
+            verifier = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.cookieverf;
+            done = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.eof;
 
-                verifier = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.cookieverf;
-                done = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.eof;
-
-                entry4 dirEntry = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.entries;
-                while (dirEntry != null) {
-                    cookie = dirEntry.cookie.value.value;
-                    list.add(new String(dirEntry.name.value.value.value));
-                    dirEntry = dirEntry.nextentry;
-                }
-
-            } else {
-                System.out.println("readdir failed. Error = "
-                        + nfsstat.toString(compound4res.status));
-                done = true;
-                throw new ChimeraNFSException(compound4res.status, nfsstat.toString(compound4res.status));
+            entry4 dirEntry = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.entries;
+            while (dirEntry != null) {
+                cookie = dirEntry.cookie.value.value;
+                list.add(new String(dirEntry.name.value.value.value));
+                dirEntry = dirEntry.nextentry;
             }
 
         } while (!done);
 
-
         return list.toArray(new String[list.size()]);
-
     }
 
     private void mkdir(String path) throws OncRpcException, IOException {
@@ -675,11 +627,6 @@ public class Main {
                 .withTag("mkdir")
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status != nfsstat.NFS_OK) {
-            System.out.println("mkdir failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
     }
 
     private void get_fs_locations(String path) throws OncRpcException, IOException {
@@ -691,25 +638,18 @@ public class Main {
                 .withGetattr(nfs4_prot.FATTR4_FS_LOCATIONS)
                 .withTag("get_fs_locations")
                 .build();
+
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
-            GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        fattr4_fs_locations locations = attrs.get(nfs4_prot.FATTR4_FS_LOCATIONS);
+        if (locations != null) {
+            System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0].value.toString());
+            System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0].value.toString());
+            System.out.println("fs_locations locations server: " + new String(locations.value.locations[0].server[0].value.value));
 
-            fattr4_fs_locations locations = attrs.get(nfs4_prot.FATTR4_FS_LOCATIONS);
-            if (locations != null) {
-                System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0].value.toString());
-                System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0].value.toString());
-                System.out.println("fs_locations locations server: " + new String(locations.value.locations[0].server[0].value.value));
-
-            }
-
-        } else {
-            System.out.println("get_fs_locations failed. Error = "
-                    + nfsstat.toString(compound4res.status));
         }
-
     }
 
     nfs_fh4 cwd(String path) throws OncRpcException, IOException {
@@ -723,16 +663,8 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-
-            _cwd = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
-            System.out.println("CWD fh = " + Bytes.toHexString(_cwd.value));
-
-        } else {
-            System.out.println("cwd failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
+        _cwd = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
+        System.out.println("CWD fh = " + Bytes.toHexString(_cwd.value));
         return new nfs_fh4(_cwd.value);
     }
 
@@ -748,28 +680,15 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
 
-
-            GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
-
-            uint64_t size = attrs.get(nfs4_prot.FATTR4_SIZE);
-            if (size != null) {
-                stat.setSize(size.value);
-            }
-
-            fattr4_type type = attrs.get(nfs4_prot.FATTR4_TYPE);
-
-            System.out.println("Type is: " + type.value);
-
-
-
-
-        } else {
-            System.out.println("getAttr failed. Error = "
-                    + nfsstat.toString(compound4res.status));
+        uint64_t size = attrs.get(nfs4_prot.FATTR4_SIZE);
+        if (size != null) {
+            stat.setSize(size.value);
         }
 
+        fattr4_type type = attrs.get(nfs4_prot.FATTR4_TYPE);
+        System.out.println("Type is: " + type.value);
 
         return stat;
     }
@@ -815,15 +734,10 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-            int opss = compound4res.resarray.size();
-            byte[] data = new byte[compound4res.resarray.get(opss-2).opread.resok4.data.remaining()];
-            compound4res.resarray.get(opss-2).opread.resok4.data.get(data);
-            System.out.println("[" + new String(data) + "]");
-        } else {
-            System.out.println("open failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
+        int opss = compound4res.resarray.size();
+        byte[] data = new byte[compound4res.resarray.get(opss - 2).opread.resok4.data.remaining()];
+        compound4res.resarray.get(opss - 2).opread.resok4.data.get(data);
+        System.out.println("[" + new String(data) + "]");
     }
 
     private void write(String source, String path) throws OncRpcException, IOException {
@@ -901,21 +815,11 @@ public class Main {
 
         int opCount = compound4res.resarray.size();
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
+        stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
+        System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
 
-            nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
-            stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
-            System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
-
-            return new OpenReply(fh, stateid);
-
-        } else {
-            System.out.println("open failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
-        return null;
-
+        return new OpenReply(fh, stateid);
     }
 
     private OpenReply create(String path) throws OncRpcException, IOException {
@@ -930,21 +834,12 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-            int opCount = compound4res.resarray.size();
-            nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
-            stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
-            System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
+        int opCount = compound4res.resarray.size();
+        nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
+        stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
+        System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
 
-            return new OpenReply(fh, stateid);
-
-        } else {
-            System.out.println("open failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
-        return null;
-
+        return new OpenReply(fh, stateid);
     }
 
     private void close(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
@@ -956,13 +851,6 @@ public class Main {
                 .withTag("close")
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status != nfsstat.NFS_OK) {
-
-            System.out.println("close failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
     }
 
     private StripeMap layoutget(nfs_fh4 fh, stateid4 stateid, int layoutiomode) throws OncRpcException,
@@ -979,61 +867,51 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
+        System.out.println("Layoutget for fh: " + Bytes.toHexString(fh.value));
+        System.out.println("    roc   : " + compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_return_on_close);
 
-            layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
-            System.out.println("Layoutget for fh: " + Bytes.toHexString(fh.value));
-            System.out.println("    roc   : " + compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_return_on_close);
+        StripeMap stripeMap = new StripeMap(compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_stateid);
 
-            StripeMap stripeMap = new StripeMap(compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_stateid);
+        for (layout4 l : layout) {
+            nfsv4_1_file_layout4 fileDevice = LayoutgetStub.decodeLayoutId(l.lo_content.loc_body);
+            System.out.println("       sd # "
+                    + Arrays.toString(fileDevice.nfl_deviceid.value) + " size "
+                    + fileDevice.nfl_deviceid.value.length);
 
-            for (layout4 l : layout) {
-                nfsv4_1_file_layout4 fileDevice = LayoutgetStub.decodeLayoutId(l.lo_content.loc_body);
-                System.out.println("       sd # "
-                        + Arrays.toString(fileDevice.nfl_deviceid.value) + " size "
-                        + fileDevice.nfl_deviceid.value.length);
+            _ioFH = fileDevice.nfl_fh_list[0];
+            System.out.println("     io fh: " + Bytes.toHexString(_ioFH.value));
+            System.out.println("    length: " + l.lo_length.value.value);
+            System.out.println("    offset: " + l.lo_offset.value.value);
+            System.out.println("    type  : " + l.lo_content.loc_type);
+            System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
+            System.out.println("    commit: "
+                    + ((fileDevice.nfl_util.value.value & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) == 0 ? "ds" : "mds"));
 
-                _ioFH = fileDevice.nfl_fh_list[0];
-                System.out.println("     io fh: " + Bytes.toHexString(_ioFH.value));
-                System.out.println("    length: " + l.lo_length.value.value);
-                System.out.println("    offset: " + l.lo_offset.value.value);
-                System.out.println("    type  : " + l.lo_content.loc_type);
-                System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
-                System.out.println("    commit: " +
-                        ((fileDevice.nfl_util.value.value & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) == 0? "ds" : "mds"));
+            deviceid4 deviceID = fileDevice.nfl_deviceid;
+            Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0],
+                    l.lo_length.value.value, l.lo_offset.value.value,
+                    fileDevice.nfl_pattern_offset.value.value,
+                    fileDevice.nfl_util.value.value,
+                    fileDevice.nfl_first_stripe_index.value);
+            stripeMap.addStripe(stripe);
 
-                deviceid4 deviceID = fileDevice.nfl_deviceid;
-                Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0],
-                        l.lo_length.value.value, l.lo_offset.value.value,
-                        fileDevice.nfl_pattern_offset.value.value,
-                        fileDevice.nfl_util.value.value,
-                        fileDevice.nfl_first_stripe_index.value);
-                stripeMap.addStripe(stripe);
-
-                if (!_knowDevices.containsKey(deviceID)) {
-                    System.out.println("    new: true");
-                    get_deviceinfo(deviceID);
-                } else {
-                    System.out.println("    new: false");
-                }
-                FileIoDevice address = _knowDevices.get(deviceID);
-                if (address == null) {
-                    System.out.println("    address: failed to get");
-                } else {
-                    System.out.println("    address: " + address);
-                }
-
-                return stripeMap;
-
+            if (!_knowDevices.containsKey(deviceID)) {
+                System.out.println("    new: true");
+                get_deviceinfo(deviceID);
+            } else {
+                System.out.println("    new: false");
+            }
+            FileIoDevice address = _knowDevices.get(deviceID);
+            if (address == null) {
+                System.out.println("    address: failed to get");
+            } else {
+                System.out.println("    address: " + address);
             }
 
-        } else {
-            System.out.println("layoutget failed. Error = "
-                    + nfsstat.toString(compound4res.status));
         }
 
-        return null;
-
+        return stripeMap;
     }
 
     private void layoutreturn(nfs_fh4 fh, long offset, long len, byte[] body, stateid4 stateid) throws OncRpcException,
@@ -1047,12 +925,6 @@ public class Main {
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status != nfsstat.NFS_OK) {
-            System.out.println("layoutreturn failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
     }
 
     private COMPOUND4res sendCompound(COMPOUND4args compound4args)
@@ -1072,6 +944,10 @@ public class Main {
             }
         } while (compound4res.status == nfsstat.NFSERR_GRACE);
 
+        if (compound4res.status != nfsstat.NFS_OK) {
+            throw new ChimeraNFSException(compound4res.status, "");
+        }
+
         return compound4res;
     }
 
@@ -1085,17 +961,10 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub
+                .decodeFileDevice(compound4res.resarray.get(1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
-            nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub
-                    .decodeFileDevice(compound4res.resarray.get(1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
-
-            _knowDevices.put(deviceId, new FileIoDevice(addr) );
-
-        } else {
-            System.out.println("getdeviceinfo failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
+        _knowDevices.put(deviceId, new FileIoDevice(addr));
     }
 
     private void get_devicelist() throws OncRpcException, IOException {
@@ -1109,22 +978,12 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
+        deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
 
-            deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
-
-            System.out.println("Know devices: ");
-            for (deviceid4 device : deviceList) {
-                System.out.println("      Device: # " + Arrays.toString(device.value));
-            }
-
-        } else {
-            System.out.println("get_devicelist failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-            _isMDS = false;
-            _isDS = false;
+        System.out.println("Know devices: ");
+        for (deviceid4 device : deviceList) {
+            System.out.println("      Device: # " + Arrays.toString(device.value));
         }
-
     }
 
     private void nfsRead(nfs_fh4 fh, stateid4 stateid)
@@ -1138,15 +997,9 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-
-            byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
-            compound4res.resarray.get(2).opread.resok4.data.get(data);
-            System.out.println("[" + new String(data) + "]");
-        } else {
-            System.out.println("read failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
+        byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
+        compound4res.resarray.get(2).opread.resok4.data.get(data);
+        System.out.println("[" + new String(data) + "]");
 
     }
 
@@ -1161,13 +1014,6 @@ public class Main {
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status != nfsstat.NFS_OK) {
-            throw new IOException(nfsstat.toString(compound4res.status));
-        }
-
-
-        // OK
     }
 
     private void sequence() throws OncRpcException, IOException {
@@ -1177,15 +1023,6 @@ public class Main {
                 .withTag("sequence")
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status != nfsstat.NFS_OK) {
-
-            System.out.println("sequence failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-
-        } else {
-            // ok
-        }
     }
 
     private void get_supported_attributes() throws OncRpcException, IOException {
@@ -1198,16 +1035,7 @@ public class Main {
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status == nfsstat.NFS_OK) {
-            //    uint32_t supported = compound4res.resarray[1].opgetattr.resok4.obj_attributes.attrmask.value[0];
-            //    System.out.println(supported);
-            // TODO:
-        } else {
-            System.out.println("get_supported_attributes failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
+        // TODO:
     }
 
     public void remove(String path) throws OncRpcException, IOException {
@@ -1219,14 +1047,6 @@ public class Main {
                 .withTag("remove")
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status == nfsstat.NFS_OK) {
-            // ok
-        } else {
-            System.out.println("remove failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
     }
 
     private void lookup(String path) throws OncRpcException, IOException {
@@ -1246,14 +1066,6 @@ public class Main {
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
-
-        if (compound4res.status == nfsstat.NFS_OK) {
-            // ok
-        } else {
-            System.out.println("lookup-sun failed. Error = "
-                    + nfsstat.toString(compound4res.status));
-        }
-
     }
 
     private void getattr(String path) throws OncRpcException, IOException {
@@ -1269,18 +1081,12 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        if (compound4res.status == nfsstat.NFS_OK) {
-            GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
-            mode4 mode = attrs.get(nfs4_prot.FATTR4_MODE);
-            if (mode != null) {
-                System.out.println("mode: 0" + Integer.toOctalString(mode.value.value));
-            }
-        } else {
-            System.out.println("getattr failed. Error = "
-                    + nfsstat.toString(compound4res.status));
+        mode4 mode = attrs.get(nfs4_prot.FATTR4_MODE);
+        if (mode != null) {
+            System.out.println("mode: 0" + Integer.toOctalString(mode.value.value));
         }
-
     }
 
     public void processSequence(COMPOUND4res compound4res) {
