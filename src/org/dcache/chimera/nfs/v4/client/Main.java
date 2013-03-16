@@ -60,6 +60,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_fh4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.nfsstat;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
@@ -86,7 +87,6 @@ public class Main {
     private sequenceid4 _sequenceID = null;
     private sessionid4 _sessionid = null;
     private long _lastUpdate = -1;
-    private final static long LEASETIME = 10 * 1000;
     private boolean _isMDS = false;
     private boolean _isDS = false;
     private static final String PROMPT = "NFSv41: ";
@@ -487,11 +487,23 @@ public class Main {
         COMPOUND4res compound4res = sendCompound(args);
 
         _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
-        // FIXME: no idea why, but other wise server reply MISORDER
         _sequenceID.value.value = 0;
 
+        args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutrootfh()
+                .withGetattr(nfs4_prot.FATTR4_LEASE_TIME)
+                .withTag("get_lease_time")
+                .build();
+
+        compound4res = sendCompound(args);
+
+        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        fattr4_lease_time leaseTime = attrs.get(nfs4_prot.FATTR4_LEASE_TIME);
+        int leaseTimeInSeconds = leaseTime.value.value.value;
+        System.out.println("server lease time: " + leaseTimeInSeconds + " sec.");
         _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
-                LEASETIME, LEASETIME, TimeUnit.MILLISECONDS);
+                leaseTimeInSeconds, leaseTimeInSeconds, TimeUnit.SECONDS);
     }
 
     private void destroy_session() throws OncRpcException, IOException {

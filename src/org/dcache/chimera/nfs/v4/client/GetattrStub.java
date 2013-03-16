@@ -30,6 +30,7 @@ import org.dcache.chimera.nfs.v4.xdr.GETATTR4args;
 import org.dcache.chimera.nfs.v4.xdr.bitmap4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_fs_locations;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_mode;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_type;
 import org.dcache.chimera.nfs.v4.xdr.mode4;
@@ -147,6 +148,9 @@ public class GetattrStub {
                 fattr4_fs_locations fs_locations = new fattr4_fs_locations();
                 fs_locations.xdrDecode(xdr);
                 attr.put(fattr, fs_locations);
+                break;
+            case nfs4_prot.FATTR4_LEASE_TIME:
+                attr.put(fattr, new fattr4_lease_time(xdr));
                 break;
         }
 
