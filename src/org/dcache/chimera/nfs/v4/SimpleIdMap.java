@@ -68,6 +68,6 @@ public class SimpleIdMap implements NfsIdMapping, NfsLoginService {
 
     @Override
     public Subject login(Principal principal) {
-        return Subjects.of(DEFAULT_UID, DEFAULT_GID, new int[0]);
+        return Subjects.of(DEFAULT_UID, DEFAULT_GID);
     }
 }
