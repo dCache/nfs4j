@@ -125,7 +125,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
     }
 
-    static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context)
+    static fattr4 getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context)
             throws IOException, OncRpcException {
 
         int[] mask = new int[bitmap.value.length];
@@ -145,7 +145,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
                 int newmask = (mask[i/32] >> (i-(32*(i/32))) );
                 if( (newmask & 1) > 0 ) {
-                        XdrAble attrXdr = fattr2xdr(i, fs, inode, context);
+                        XdrAble attrXdr = fattr2xdr(i, fs, inode, stat, context);
                         if( attrXdr != null) {
                             _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i) );
                             attrXdr.xdrEncode(xdr);
@@ -178,6 +178,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
     }
 
+    static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context)
+            throws IOException, OncRpcException {
+        return getAttributes(bitmap, fs, inode, context.getFs().getattr(inode), context);
+    }
+
     private static FsStat getFsStat(FsStat fsStat, VirtualFileSystem fs) throws IOException {
         if (fsStat != null) {
             return fsStat;
@@ -197,11 +202,10 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
      */
 
     // read/read-write
-    private static XdrAble fattr2xdr( int fattr , VirtualFileSystem fs, Inode inode, CompoundContext context) throws IOException {
+    private static XdrAble fattr2xdr( int fattr , VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context) throws IOException {
 
         XdrAble ret = null;
         FsStat fsStat = null;
-        Stat stat = context.getFs().getattr(inode);
 
         switch(fattr) {
 
