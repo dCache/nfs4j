@@ -19,6 +19,7 @@
  */
 package org.dcache.chimera.nfs.v4;
 
+import com.google.common.base.Optional;
 import java.io.IOException;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_numlinks;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_hidden;
@@ -145,10 +146,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
                 int newmask = (mask[i/32] >> (i-(32*(i/32))) );
                 if( (newmask & 1) > 0 ) {
-                        XdrAble attrXdr = fattr2xdr(i, fs, inode, stat, context);
-                        if( attrXdr != null) {
+                        Optional<XdrAble> optionalAttr = (Optional<XdrAble>)fattr2xdr(i, fs, inode, stat, context);
+                        if( optionalAttr.isPresent()) {
+                            XdrAble attr = optionalAttr.get();
                             _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i) );
-                            attrXdr.xdrEncode(xdr);
+                            attr.xdrEncode(xdr);
                             int attrmask = 1 << (i-(32*(i/32)));
                             retMask[i/32] |= attrmask;
                         }else{
@@ -202,291 +204,207 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
      */
 
     // read/read-write
-    private static XdrAble fattr2xdr( int fattr , VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context) throws IOException {
+    private static Optional<? extends XdrAble> fattr2xdr(int fattr, VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context) throws IOException {
 
-        XdrAble ret = null;
         FsStat fsStat = null;
 
-        switch(fattr) {
+        switch (fattr) {
 
-            case nfs4_prot.FATTR4_SUPPORTED_ATTRS :
+            case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
                 bitmap4 bitmap = new bitmap4();
                 bitmap.value = new uint32_t[2];
                 bitmap.value[0] = new uint32_t(NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0);
                 bitmap.value[1] = new uint32_t(NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1);
-                fattr4_supported_attrs  supported_attrs = new fattr4_supported_attrs(bitmap);
-                ret = supported_attrs;
-                break;
-            case nfs4_prot.FATTR4_TYPE :
-                fattr4_type type = new fattr4_type( unixType2NFS(stat.getMode()) );
-                ret = type;
-                break;
-            case nfs4_prot.FATTR4_FH_EXPIRE_TYPE :
+                return Optional.of(new fattr4_supported_attrs(bitmap));
+            case nfs4_prot.FATTR4_TYPE:
+                fattr4_type type = new fattr4_type(unixType2NFS(stat.getMode()));
+                return Optional.of(type);
+            case nfs4_prot.FATTR4_FH_EXPIRE_TYPE:
                 uint32_t fh_type = new uint32_t(nfs4_prot.FH4_PERSISTENT);
                 fattr4_fh_expire_type fh_expire_type = new fattr4_fh_expire_type(fh_type);
-                ret = fh_expire_type;
-                break;
-            case nfs4_prot.FATTR4_CHANGE :
-                changeid4 cid = new changeid4( new uint64_t(stat.getCTime())  );
-                fattr4_change change = new fattr4_change( cid );
-                ret = change;
-                break;
-            case nfs4_prot.FATTR4_SIZE :
-                fattr4_size size = new fattr4_size( new uint64_t(stat.getSize()) );
-                ret = size;
-                break;
-            case nfs4_prot.FATTR4_LINK_SUPPORT :
-                fattr4_link_support  link_support = new fattr4_link_support(true);
-                ret = link_support;
-                break;
-            case nfs4_prot.FATTR4_SYMLINK_SUPPORT :
-                fattr4_symlink_support  symlink_support = new fattr4_symlink_support(true);
-                ret = symlink_support;
-                break;
-            case nfs4_prot.FATTR4_NAMED_ATTR :
-                fattr4_named_attr  named_attr = new fattr4_named_attr(false);
-                ret = named_attr;
-                break;
-            case nfs4_prot.FATTR4_FSID :
+                return Optional.of(fh_expire_type);
+            case nfs4_prot.FATTR4_CHANGE:
+                changeid4 cid = new changeid4(new uint64_t(stat.getCTime()));
+                fattr4_change change = new fattr4_change(cid);
+                return Optional.of(change);
+            case nfs4_prot.FATTR4_SIZE:
+                fattr4_size size = new fattr4_size(new uint64_t(stat.getSize()));
+                return Optional.of(size);
+            case nfs4_prot.FATTR4_LINK_SUPPORT:
+                fattr4_link_support link_support = new fattr4_link_support(true);
+                return Optional.of(link_support);
+            case nfs4_prot.FATTR4_SYMLINK_SUPPORT:
+                fattr4_symlink_support symlink_support = new fattr4_symlink_support(true);
+                return Optional.of(symlink_support);
+            case nfs4_prot.FATTR4_NAMED_ATTR:
+                fattr4_named_attr named_attr = new fattr4_named_attr(false);
+                return Optional.of(named_attr);
+            case nfs4_prot.FATTR4_FSID:
                 fsid4 fsid = new fsid4();
                 fsid.major = new uint64_t(17);
                 fsid.minor = new uint64_t(17);
-                fattr4_fsid id = new fattr4_fsid(fsid);
-                ret = id;
-                break;
-            case nfs4_prot.FATTR4_UNIQUE_HANDLES :
-                fattr4_unique_handles  unique_handles = new fattr4_unique_handles(true);
-                ret = unique_handles;
-                break;
-            case nfs4_prot.FATTR4_LEASE_TIME :
-                fattr4_lease_time lease_time = new fattr4_lease_time( new nfs_lease4(new uint32_t(NFSv4Defaults.NFS4_LEASE_TIME) ));
-                ret = lease_time;
-                break;
-            case nfs4_prot.FATTR4_RDATTR_ERROR :
+                return Optional.of(new fattr4_fsid(fsid));
+            case nfs4_prot.FATTR4_UNIQUE_HANDLES:
+                return Optional.of(new fattr4_unique_handles(true));
+            case nfs4_prot.FATTR4_LEASE_TIME:
+                return Optional.of(new fattr4_lease_time(new nfs_lease4(new uint32_t(NFSv4Defaults.NFS4_LEASE_TIME))));
+            case nfs4_prot.FATTR4_RDATTR_ERROR:
                 //enum is an integer
-                fattr4_rdattr_error rdattr_error = new fattr4_rdattr_error(0);
-                ret = rdattr_error;
-                break;
-            case nfs4_prot.FATTR4_FILEHANDLE :
-            	nfs_fh4 fh = new nfs_fh4();
-            	fh.value = inode.toNfsHandle();
-                fattr4_filehandle filehandle = new fattr4_filehandle(fh);
-            	ret = filehandle;
-                break;
+                return Optional.of(new fattr4_rdattr_error(0));
+            case nfs4_prot.FATTR4_FILEHANDLE:
+                nfs_fh4 fh = new nfs_fh4();
+                fh.value = inode.toNfsHandle();
+                return Optional.of(new fattr4_filehandle(fh));
             case nfs4_prot.FATTR4_ACL:
-
                 nfsace4[] aces = context.getFs().getAcl(inode);
-                fattr4_acl acl = new fattr4_acl(aces);
-
-                ret = acl;
-                break;
-            case nfs4_prot.FATTR4_ACLSUPPORT :
+                return Optional.of(new fattr4_acl(aces));
+            case nfs4_prot.FATTR4_ACLSUPPORT:
                 fattr4_aclsupport aclSupport = new fattr4_aclsupport();
                 aclSupport.value = new uint32_t();
-                aclSupport.value.value = nfs4_prot.ACL4_SUPPORT_ALLOW_ACL |
-                                         nfs4_prot.ACL4_SUPPORT_DENY_ACL;
-                ret = aclSupport;
-                break;
-            case nfs4_prot.FATTR4_ARCHIVE :
-                break;
-            case nfs4_prot.FATTR4_CANSETTIME :
-                fattr4_cansettime cansettime = new fattr4_cansettime(true);
-                ret = cansettime;
-                break;
-            case nfs4_prot.FATTR4_CASE_INSENSITIVE :
-                fattr4_case_insensitive caseinsensitive = new fattr4_case_insensitive(true);
-                ret = caseinsensitive;
-                break;
-            case nfs4_prot.FATTR4_CASE_PRESERVING :
-                fattr4_case_preserving casepreserving = new fattr4_case_preserving(true);
-                ret = casepreserving;
-                break;
-            case nfs4_prot.FATTR4_CHOWN_RESTRICTED :
-                break;
-            case nfs4_prot.FATTR4_FILEID :
-                fattr4_fileid fileid = new fattr4_fileid(  new uint64_t(stat.getFileId()) );
-                ret = fileid;
-                break;
+                aclSupport.value.value = nfs4_prot.ACL4_SUPPORT_ALLOW_ACL
+                        | nfs4_prot.ACL4_SUPPORT_DENY_ACL;
+                return Optional.of(aclSupport);
+            case nfs4_prot.FATTR4_ARCHIVE:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_CANSETTIME:
+                return Optional.of(new fattr4_cansettime(true));
+            case nfs4_prot.FATTR4_CASE_INSENSITIVE:
+                return Optional.of(new fattr4_case_insensitive(true));
+            case nfs4_prot.FATTR4_CASE_PRESERVING:
+                return Optional.of(new fattr4_case_preserving(true));
+            case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_FILEID:
+                return Optional.of(new fattr4_fileid(new uint64_t(stat.getFileId())));
             case nfs4_prot.FATTR4_FILES_AVAIL:
                 fsStat = getFsStat(fsStat, fs);
                 fattr4_files_avail files_avail = new fattr4_files_avail(new uint64_t(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
-                ret = files_avail;
-                break;
+                return Optional.of(files_avail);
             case nfs4_prot.FATTR4_FILES_FREE:
                 fsStat = getFsStat(fsStat, fs);
                 fattr4_files_free files_free = new fattr4_files_free(new uint64_t(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
-                ret = files_free;
-                break;
+                return Optional.of(files_free);
             case nfs4_prot.FATTR4_FILES_TOTAL:
                 fsStat = getFsStat(fsStat, fs);
-                fattr4_files_total files_total = new fattr4_files_total(new uint64_t(fsStat.getTotalFiles()));
-                ret = files_total;
-                break;
-            case nfs4_prot.FATTR4_FS_LOCATIONS :
-                break;
-            case nfs4_prot.FATTR4_HIDDEN :
-                fattr4_hidden hidden = new fattr4_hidden(false);
-                ret = hidden;
-                break;
-            case nfs4_prot.FATTR4_HOMOGENEOUS :
-                fattr4_homogeneous homogeneous = new fattr4_homogeneous(true);
-                ret = homogeneous;
-                break;
-            case nfs4_prot.FATTR4_MAXFILESIZE :
-                fattr4_maxfilesize maxfilesize = new fattr4_maxfilesize( new uint64_t(NFSv4Defaults.NFS4_MAXFILESIZE) );
-                ret = maxfilesize;
-                break;
-            case nfs4_prot.FATTR4_MAXLINK :
-                fattr4_maxlink maxlink = new fattr4_maxlink( new uint32_t(NFSv4Defaults.NFS4_MAXLINK) );
-                ret = maxlink;
-                break;
-            case nfs4_prot.FATTR4_MAXNAME :
-                fattr4_maxname maxname = new fattr4_maxname( new uint32_t(NFSv4Defaults.NFS4_MAXFILENAME) );
-                ret = maxname;
-                break;
-            case nfs4_prot.FATTR4_MAXREAD :
-                fattr4_maxread maxread = new fattr4_maxread( new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE) );
-                ret = maxread;
-                break;
-            case nfs4_prot.FATTR4_MAXWRITE :
-                fattr4_maxwrite maxwrite = new fattr4_maxwrite( new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE) );
-                ret = maxwrite;
-                break;
-            case nfs4_prot.FATTR4_MIMETYPE :
-                break;
-            case nfs4_prot.FATTR4_MODE :
+                return Optional.of(new fattr4_files_total(new uint64_t(fsStat.getTotalFiles())));
+            case nfs4_prot.FATTR4_FS_LOCATIONS:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_HIDDEN:
+                return Optional.of(new fattr4_hidden(false));
+            case nfs4_prot.FATTR4_HOMOGENEOUS:
+                return Optional.of(new fattr4_homogeneous(true));
+            case nfs4_prot.FATTR4_MAXFILESIZE:
+                return Optional.of(new fattr4_maxfilesize(new uint64_t(NFSv4Defaults.NFS4_MAXFILESIZE)));
+            case nfs4_prot.FATTR4_MAXLINK:
+                return Optional.of(new fattr4_maxlink(new uint32_t(NFSv4Defaults.NFS4_MAXLINK)));
+            case nfs4_prot.FATTR4_MAXNAME:
+                return Optional.of(new fattr4_maxname(new uint32_t(NFSv4Defaults.NFS4_MAXFILENAME)));
+            case nfs4_prot.FATTR4_MAXREAD:
+                return Optional.of(new fattr4_maxread(new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE)));
+            case nfs4_prot.FATTR4_MAXWRITE:
+                fattr4_maxwrite maxwrite = new fattr4_maxwrite(new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE));
+                return Optional.of(maxwrite);
+            case nfs4_prot.FATTR4_MIMETYPE:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_MODE:
                 mode4 fmode = new mode4();
                 fmode.value = new uint32_t(stat.getMode() & 07777);
-                fattr4_mode mode = new fattr4_mode( fmode );
-                ret = mode;
-                break;
-            case nfs4_prot.FATTR4_NO_TRUNC :
-                fattr4_no_trunc no_trunc = new    fattr4_no_trunc(true);
-                ret = no_trunc;
-                break;
-            case nfs4_prot.FATTR4_NUMLINKS :
+                return Optional.of(new fattr4_mode(fmode));
+            case nfs4_prot.FATTR4_NO_TRUNC:
+                return Optional.of(new fattr4_no_trunc(true));
+            case nfs4_prot.FATTR4_NUMLINKS:
                 uint32_t nlinks = new uint32_t(stat.getNlink());
-                fattr4_numlinks numlinks = new fattr4_numlinks(nlinks);
-                ret = numlinks;
-                break;
-            case nfs4_prot.FATTR4_OWNER :
+                return Optional.of(new fattr4_numlinks(nlinks));
+            case nfs4_prot.FATTR4_OWNER:
                 String owner_s = context.getIdMapping().uidToPrincipal(stat.getUid());
                 utf8str_mixed user = new utf8str_mixed(owner_s);
-                fattr4_owner owner = new fattr4_owner(user);
-                ret = owner;
-                break;
-            case nfs4_prot.FATTR4_OWNER_GROUP :
+                return Optional.of(new fattr4_owner(user));
+            case nfs4_prot.FATTR4_OWNER_GROUP:
                 String group_s = context.getIdMapping().gidToPrincipal(stat.getGid());
                 utf8str_mixed group = new utf8str_mixed(group_s);
-                fattr4_owner owner_group = new fattr4_owner(group);
-                ret = owner_group;
-                break;
-            case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD :
-                break;
-            case nfs4_prot.FATTR4_QUOTA_AVAIL_SOFT :
-                break;
-            case nfs4_prot.FATTR4_QUOTA_USED :
-                break;
-            case nfs4_prot.FATTR4_RAWDEV :
-            	specdata4 dev = new specdata4();
-            	dev.specdata1 = new uint32_t(0);
-            	dev.specdata2 = new uint32_t(0);
-                fattr4_rawdev rawdev = new fattr4_rawdev(dev);
-            	ret = rawdev;
-                break;
+                return Optional.of(new fattr4_owner(group));
+            case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_QUOTA_AVAIL_SOFT:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_QUOTA_USED:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_RAWDEV:
+                specdata4 dev = new specdata4();
+                dev.specdata1 = new uint32_t(0);
+                dev.specdata2 = new uint32_t(0);
+                return Optional.of(new fattr4_rawdev(dev));
             case nfs4_prot.FATTR4_SPACE_AVAIL:
                 fsStat = getFsStat(fsStat, fs);
                 uint64_t spaceAvail = new uint64_t(fsStat.getTotalSpace() - fsStat.getUsedSpace());
-                ret = spaceAvail;
-                break;
+                return Optional.of(spaceAvail);
             case nfs4_prot.FATTR4_SPACE_FREE:
                 fsStat = getFsStat(fsStat, fs);
                 fattr4_space_free space_free = new fattr4_space_free(new uint64_t(fsStat.getTotalSpace() - fsStat.getUsedSpace()));
-                ret = space_free;
-                break;
+                return Optional.of(space_free);
             case nfs4_prot.FATTR4_SPACE_TOTAL:
                 fsStat = getFsStat(fsStat, fs);
-                fattr4_space_total space_total = new fattr4_space_total(new uint64_t(fsStat.getTotalSpace()));
-                ret = space_total;
-                break;
-            case nfs4_prot.FATTR4_SPACE_USED :
-                fattr4_space_used space_used = new fattr4_space_used ( new uint64_t(stat.getSize() ) );
-                ret = space_used;
-                break;
-            case nfs4_prot.FATTR4_SYSTEM :
-                fattr4_system system = new fattr4_system(false);
-                ret = system;
-                break;
-            case nfs4_prot.FATTR4_TIME_ACCESS :
-            	nfstime4 atime = new nfstime4();
-            	atime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getATime() , TimeUnit.MILLISECONDS));
-            	atime.nseconds = new uint32_t(0);
-                fattr4_time_access time_access = new fattr4_time_access(atime);
-            	ret = time_access;
-                break;
-            case nfs4_prot.FATTR4_TIME_BACKUP :
-                break;
-            case nfs4_prot.FATTR4_TIME_CREATE :
-            	nfstime4 ctime = new nfstime4();
-            	ctime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime() , TimeUnit.MILLISECONDS));
-            	ctime.nseconds = new uint32_t(0);
-                fattr4_time_create time_create = new fattr4_time_create(ctime);
-                ret = time_create;
-                break;
-            case nfs4_prot.FATTR4_TIME_DELTA :
-                break;
-            case nfs4_prot.FATTR4_TIME_METADATA :
+                return Optional.of(new fattr4_space_total(new uint64_t(fsStat.getTotalSpace())));
+            case nfs4_prot.FATTR4_SPACE_USED:
+                return Optional.of(new fattr4_space_used(new uint64_t(stat.getSize())));
+            case nfs4_prot.FATTR4_SYSTEM:
+                return Optional.of(new fattr4_system(false));
+            case nfs4_prot.FATTR4_TIME_ACCESS:
+                nfstime4 atime = new nfstime4();
+                atime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getATime(), TimeUnit.MILLISECONDS));
+                atime.nseconds = new uint32_t(0);
+                return Optional.of(new fattr4_time_access(atime));
+            case nfs4_prot.FATTR4_TIME_BACKUP:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_TIME_CREATE:
+                nfstime4 ctime = new nfstime4();
+                ctime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime(), TimeUnit.MILLISECONDS));
+                ctime.nseconds = new uint32_t(0);
+                return Optional.of(new fattr4_time_create(ctime));
+            case nfs4_prot.FATTR4_TIME_DELTA:
+                return Optional.absent();
+            case nfs4_prot.FATTR4_TIME_METADATA:
                 nfstime4 mdtime = new nfstime4();
-                mdtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime() , TimeUnit.MILLISECONDS));
+                mdtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime(), TimeUnit.MILLISECONDS));
                 mdtime.nseconds = new uint32_t(0);
-                fattr4_time_metadata time_metadata = new fattr4_time_metadata(mdtime);
-                ret = time_metadata;
-                break;
-            case nfs4_prot.FATTR4_TIME_MODIFY :
-            	nfstime4 mtime = new nfstime4();
-            	mtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getMTime() , TimeUnit.MILLISECONDS));
-            	mtime.nseconds = new uint32_t(0);
-                fattr4_time_modify time_modify = new fattr4_time_modify(mtime);
-                ret = time_modify;
-                break;
-            case nfs4_prot.FATTR4_MOUNTED_ON_FILEID :
-
+                return Optional.of(new fattr4_time_metadata(mdtime));
+            case nfs4_prot.FATTR4_TIME_MODIFY:
+                nfstime4 mtime = new nfstime4();
+                mtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getMTime(), TimeUnit.MILLISECONDS));
+                mtime.nseconds = new uint32_t(0);
+                return Optional.of(new fattr4_time_modify(mtime));
+            case nfs4_prot.FATTR4_MOUNTED_ON_FILEID:
 
                 /*
                  * TODO!!!:
                  */
 
-            	long mofi = stat.getFileId() ;
+                long mofi = stat.getFileId();
 
-                if( mofi == 0x00b0a23a /* it's a root*/ ) {
-                	mofi =  0x12345678;
+                if (mofi == 0x00b0a23a /* it's a root*/) {
+                    mofi = 0x12345678;
                 }
 
                 uint64_t rootid = new uint64_t(mofi);
                 fattr4_mounted_on_fileid mounted_on_fileid = new fattr4_mounted_on_fileid(rootid);
-                ret = mounted_on_fileid;
-                break;
+                return Optional.of(mounted_on_fileid);
 
-                /**
-                 * this is NFSv4.1 (pNFS) specific code,
-                 * which is still in the development ( as protocol )
-                 */
+            /**
+             * this is NFSv4.1 (pNFS) specific code, which is still in the
+             * development ( as protocol )
+             */
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPE:
-            	fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
-            	fs_layout_type.value = new int[1];
-            	fs_layout_type.value[0] =  layouttype4.LAYOUT4_NFSV4_1_FILES;
-            	ret = fs_layout_type;
-            	break;
-
+                fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
+                fs_layout_type.value = new int[1];
+                fs_layout_type.value[0] = layouttype4.LAYOUT4_NFSV4_1_FILES;
+                return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
                 throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "getattr of write-only attributes");
             default:
                 _log.debug("GETATTR for #{}", fattr);
-
+                return Optional.absent();
         }
-
-        return ret;
     }
 
 
