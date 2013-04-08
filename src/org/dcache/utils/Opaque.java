@@ -57,11 +57,7 @@ public class Opaque {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('[');
-        for (byte b : _opaque) {
-            sb.append(Integer.toHexString(0xFF & b).toUpperCase());
-        }
-        sb.append(']');
+        sb.append('[').append(Bytes.toHexString(_opaque)).append(']');
         return sb.toString();
     }
 }

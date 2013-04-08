@@ -114,16 +114,7 @@ public class NFSv41Session {
 
     @Override
     public String toString() {
-        return _client.getRemoteAddress() + " : " +toHexString(_session.value);
-    }
-
-    public String toHexString(byte[] data) {
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : data) {
-            sb.append(Integer.toHexString(b));
-        }
-        return sb.toString();
+        return _client.getRemoteAddress() + " : " + Bytes.toHexString(_session.value);
     }
 
     public void updateSlotCache(int slot, List<nfs_resop4> reply) throws ChimeraNFSException {
