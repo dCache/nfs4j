@@ -7,7 +7,7 @@
     </description>
 
     <groupId>org.dcache.chimera</groupId>
-    <artifactId>jpNFS</artifactId>
+    <artifactId>jpnfs</artifactId>
     <version>0.0.5-SNAPSHOT</version>
     <name>Java based NFSv4.1 implementation</name>
     <packaging>jar</packaging>
