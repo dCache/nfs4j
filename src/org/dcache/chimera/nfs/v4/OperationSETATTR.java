@@ -38,13 +38,12 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.SETATTR4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import java.util.concurrent.TimeUnit;
+import org.dcache.chimera.nfs.v4.acl.Acls;
 
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.slf4j.Logger;
@@ -65,13 +64,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         final SETATTR4res res = result.opsetattr;
 
         try {
-
-            Stat inodeStat = context.currentInode().statCache();
-
-            UnixAcl acl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-            if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_ADMINISTER)) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-            }
 
             res.status = nfsstat.NFS_OK;
             res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode(), context);
@@ -99,13 +91,14 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         xdr.beginDecoding();
 
         int[] retMask = new int[mask.length];
+        Stat stat = context.getFs().getattr(inode);
 
         if( mask.length != 0 ) {
             int maxAttr = 32*mask.length;
             for( int i = 0; i < maxAttr; i++) {
                 int newmask = (mask[i/32] >> (i-(32*(i/32))) );
                 if( (newmask & 1L) != 0 ) {
-                    if( xdr2fattr(i, inode, context, xdr) ) {
+                    if( xdr2fattr(i, stat, inode, context, xdr) ) {
                         _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
                         int attrmask = 1 << (i-(32*(i/32)));
                         retMask[i/32] |= attrmask;
@@ -119,6 +112,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         xdr.endDecoding();
 
+        context.getFs().setattr(inode, stat);
 
         bitmap4 bitmap = new bitmap4();
         bitmap.value = new uint32_t[retMask.length];
@@ -129,7 +123,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         return bitmap;
     }
 
-    static boolean xdr2fattr( int fattr , Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
+    static boolean xdr2fattr( int fattr , Stat stat, Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
 
         boolean isApplied = false;
 
@@ -139,25 +133,25 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
             case nfs4_prot.FATTR4_SIZE :
 
-            	if( inode.type() == Inode.Type.DIRECTORY ) {
+                if( stat.type() == Stat.Type.DIRECTORY ) {
                     throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
-            	}
+                }
 
-            	if( inode.type() == Inode.Type.SYMLINK ) {
+                if( stat.type() == Stat.Type.SYMLINK ) {
                     throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symbolic link");
-            	}
+                }
 
                 uint64_t size = new uint64_t();
                 size.xdrDecode(xdr);
-                inode.setSize(size.value);
+                stat.setSize(size.value);
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_ACL :
                 fattr4_acl acl = new fattr4_acl();
                 acl.xdrDecode(xdr);
 
-                inode.setAcl(acl.value);
-                inode.setMTime(System.currentTimeMillis());
+                context.getFs().setAcl(inode, acl.value);
+                stat.setMTime(System.currentTimeMillis());
 
                 isApplied = true;
                 break;
@@ -179,7 +173,9 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MODE :
                 mode4 mode = new mode4();
                 mode.xdrDecode(xdr);
-                inode.setMode( mode.value.value );
+                int rwx = mode.value.value | (stat.getMode() & 0770000);
+                stat.setMode(rwx);
+                context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), rwx));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER :
@@ -187,7 +183,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 utf8str_cs owner = new utf8str_cs ();
                 owner.xdrDecode(xdr);
                 String new_owner = owner.toString();
-                inode.setUID(context.getIdMapping().principalToUid(new_owner));
+                stat.setUid(context.getIdMapping().principalToUid(new_owner));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
@@ -195,7 +191,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 utf8str_cs owner_group = new utf8str_cs ();
                 owner_group.xdrDecode(xdr);
                 String new_group = owner_group.toString();
-                inode.setGID(context.getIdMapping().principalToGid(new_group));
+                stat.setGid(context.getIdMapping().principalToGid(new_group));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_SYSTEM :
@@ -217,8 +213,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_TIME_CREATE :
                 nfstime4 ctime = new nfstime4();
                 ctime.xdrDecode(xdr);
-                inode.setCTime( TimeUnit.MILLISECONDS.convert(ctime.seconds.value, TimeUnit.SECONDS) +
-                		TimeUnit.MILLISECONDS.convert(ctime.nseconds.value, TimeUnit.NANOSECONDS));
+                stat.setCTime( TimeUnit.MILLISECONDS.convert(ctime.seconds.value, TimeUnit.SECONDS) +
+                        TimeUnit.MILLISECONDS.convert(ctime.nseconds.value, TimeUnit.NANOSECONDS));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET :
@@ -230,10 +226,10 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                     realMtime = System.currentTimeMillis();
                 }else{
                     realMtime = TimeUnit.MILLISECONDS.convert(setMtime.time.seconds.value, TimeUnit.SECONDS) +
-                    	TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds.value, TimeUnit.NANOSECONDS);
+                            TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds.value, TimeUnit.NANOSECONDS);
                 }
 
-                inode.setMTime( realMtime );
+                stat.setMTime( realMtime );
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:

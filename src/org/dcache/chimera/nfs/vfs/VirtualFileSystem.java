@@ -21,16 +21,17 @@ package org.dcache.chimera.nfs.vfs;
 
 import java.io.IOException;
 import java.util.List;
+import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 
 public interface VirtualFileSystem {
 
-    Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException;
+    int access(Inode inode, int mode) throws IOException;
+
+    Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException;
 
     FsStat getFsStat() throws IOException;
 
     Inode getRootInode() throws IOException;
-
-    Inode inodeOf(final byte[] fh) throws IOException;
 
     Inode lookup(Inode parent, String path) throws IOException;
 
@@ -53,4 +54,14 @@ public interface VirtualFileSystem {
     Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException;
 
     int write(Inode inode, byte[] data, long offset, int count) throws IOException;
+
+    Stat getattr(Inode inode) throws IOException;
+
+    void setattr(Inode inode, Stat stat) throws IOException;
+
+    nfsace4[] getAcl(Inode inode) throws IOException;
+
+    void setAcl(Inode inode, nfsace4[] acl) throws IOException;
+
+    boolean hasIOLayout(Inode inode) throws IOException;
 }

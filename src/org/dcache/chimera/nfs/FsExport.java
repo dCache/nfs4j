@@ -19,16 +19,24 @@
  */
 package org.dcache.chimera.nfs;
 
+import com.google.common.base.Splitter;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.dcache.chimera.nfs.ExportClient.Root;
 
 public class FsExport {
 
+    public enum Root {
+        TRUSTED, NOTTRUSTED
+    }
+
+    public enum IO {
+        RW, RO
+    }
+
     private final String _path;
-    private final List<ExportClient> _clients = new ArrayList<ExportClient>();
+    private final String _client;
+    private final Root _isTrusted;
+    private final IO _rw;
+    private final boolean _withAcl;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -64,13 +72,16 @@ public class FsExport {
      *
      *
      * @param path
-     * @param clients list of {@link ExportClient} which allowed to mount this export.
+     * @param client hosts identifier which allowed to mount this export.
+     * @param isTrusted root squash option
+     * @param rw IO mode option
      */
-    public FsExport(String path, List<ExportClient> clients) {
-
+    public FsExport(String path, String client, Root isTrusted, IO rw, boolean withAcl) {
         _path = path;
-        _clients.addAll(clients);
-
+        _client = client;
+        _isTrusted = isTrusted;
+        _rw = rw;
+        _withAcl = withAcl;
     }
 
     public String getPath() {
@@ -81,17 +92,19 @@ public class FsExport {
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append(_path).append(":");
-
-        if (_clients.isEmpty()) {
-            sb.append(" *");
-        } else {
-            for (ExportClient client : _clients) {
-                sb.append(" ").append(client.ip()).append("(").append(
-                        client.io()).append(",").append(client.trusted())
-                        .append(")");
-            }
-        }
+        sb.append(_path)
+                .append(':')
+                .append(' ')
+                .append(_client)
+                .append('(').append(_rw)
+                .append(',')
+                .append(_isTrusted)
+                .append(',')
+                .append(_withAcl ? "acl" : "noacl")
+                .append(')')
+                .append(':')
+                .append("idx=")
+                .append(Integer.toHexString(getIndex()));
 
         return sb.toString();
 
@@ -100,46 +113,83 @@ public class FsExport {
     public boolean isAllowed(InetAddress client) {
 
         // localhost always allowed
-        if( client.isLoopbackAddress() ) {
-            return true;
-        }else{
-
-            for (ExportClient exportClient : _clients) {
-                if(  IPMatcher.match(exportClient.ip(), client) ) {
-                    return true;
-                }
-            }
-
-        }
-
-        return false;
+        return client.isLoopbackAddress() || IPMatcher.match(_client, client);
     }
 
     public boolean isTrusted(InetAddress client) {
 
         // localhost always allowed
-        if( client.isLoopbackAddress() ) {
-            return true;
-        }else{
-
-            for (ExportClient exportClient : _clients) {
-                if( exportClient.trusted() == Root.TRUSTED && IPMatcher.match(exportClient.ip(), client)) {
-                    return true;
-                }
-            }
-
-        }
-
-        return false;
+        return isAllowed(client) && _isTrusted == Root.TRUSTED;
     }
 
-    public List<String> client() {
-        List<String> client = new ArrayList<String>(_clients.size());
+    public boolean isTrusted() {
+        return _isTrusted == Root.TRUSTED;
+    }
 
-        for (ExportClient exportClient : _clients) {
-            client.add(exportClient.ip());
+    public String client() {
+        return _client;
+    }
+
+    public IO ioMode() {
+        return _rw;
+    }
+
+    public int getIndex() {
+        int index = 1;
+        for (String s: Splitter.on('/').omitEmptyStrings().split(_path) ) {
+            index = 31 * index + s.hashCode();
+        }
+        return index;
+    }
+
+    public boolean checkAcls() {
+        return _withAcl;
+    }
+
+    public static class FsExportBuilder {
+
+        private String _client = "*";
+        private IO _io = IO.RO;
+        private Root _isTrusted = Root.NOTTRUSTED;
+        private boolean _withAcl = false;
+
+        public FsExportBuilder forClient(String client) {
+            _client = client;
+            return this;
         }
 
-        return client;
+        public FsExportBuilder trusted() {
+            _isTrusted = Root.TRUSTED;
+            return this;
+        }
+
+        public FsExportBuilder notTrusted() {
+            _isTrusted = Root.NOTTRUSTED;
+            return this;
+        }
+
+        public FsExportBuilder ro() {
+            _io = IO.RO;
+            return this;
+        }
+
+        public FsExportBuilder rw() {
+            _io = IO.RW;
+            return this;
+        }
+
+        public FsExportBuilder withAcl() {
+            _withAcl = true;
+            return this;
+        }
+
+        public FsExportBuilder withoutAcl() {
+            _withAcl = false;
+            return this;
+        }
+
+        public FsExport build(String path) {
+            return new FsExport(path, _client, _isTrusted, _io, _withAcl);
+        }
     }
 }

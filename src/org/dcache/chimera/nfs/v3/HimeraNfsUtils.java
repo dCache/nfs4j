@@ -41,6 +41,8 @@ import org.dcache.chimera.nfs.vfs.Inode;
 import org.dcache.chimera.nfs.v3.xdr.post_op_attr;
 import org.dcache.chimera.nfs.v3.xdr.pre_op_attr;
 import org.dcache.chimera.nfs.v3.xdr.wcc_data;
+import org.dcache.chimera.nfs.vfs.Stat;
+import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,7 @@ public class HimeraNfsUtils {
         // no instance allowed
     }
 
-    public static void fill_attributes(org.dcache.chimera.posix.Stat stat,  fattr3 at) {
+    public static void fill_attributes(Stat stat,  fattr3 at) {
 
         at.type = unixType2NFS(stat.getMode());
         at.mode = new mode3(new uint32( stat.getMode()  & 0777777 ) );
@@ -81,7 +83,7 @@ public class HimeraNfsUtils {
 
         //public int fileid;
         // Get some value for this file/dir
-        at.fileid = new fileid3(new uint64( stat.getIno() ) );
+        at.fileid = new fileid3(new uint64( stat.getFileId() ) );
 
         at.size = new size3( new uint64( stat.getSize() ) );
         at.used = new size3( new uint64( stat.getSize() ) );
@@ -101,7 +103,7 @@ public class HimeraNfsUtils {
     }
 
 
-    public static void fill_attributes(org.dcache.chimera.posix.Stat stat,  wcc_attr at) {
+    public static void fill_attributes(Stat stat,  wcc_attr at) {
 
         at.size = new size3( new uint64( stat.getSize() ) );
         //public nfstime mtime;
@@ -115,25 +117,27 @@ public class HimeraNfsUtils {
 
     }
 
-    public static void set_sattr( Inode inode, sattr3 s) throws IOException {
+    public static void set_sattr( Inode inode, VirtualFileSystem fs, sattr3 s) throws IOException {
 
+        Stat stat = fs.getattr(inode);
         long now = System.currentTimeMillis();
 
         if( s.uid.set_it ) {
-            inode.setUID( s.uid.uid.value.value);
+            stat.setUid( s.uid.uid.value.value);
         }
 
         if( s.gid.set_it ) {
-            inode.setGID(s.gid.gid.value.value);
+            stat.setGid(s.gid.gid.value.value);
         }
 
         if( s.mode.set_it  ) {
-            _log.debug("New mode [" + Integer.toOctalString(s.mode.mode.value.value) + "]");
-            inode.setMode( s.mode.mode.value.value);
+            int mode = s.mode.mode.value.value | (stat.getMode() & 0770000);
+            _log.debug("New mode [{}]", Integer.toOctalString(mode));
+            stat.setMode(mode);
         }
 
         if( s.size.set_it ) {
-            inode.setSize( s.size.size.value.value);
+            stat.setSize( s.size.size.value.value);
         }
 
    /*     switch( s.atime.set_it ) {
@@ -150,17 +154,18 @@ public class HimeraNfsUtils {
         switch( s.mtime.set_it ) {
 
             case time_how.SET_TO_SERVER_TIME:
-            	inode.setMTime( now );
+                stat.setMTime( now );
                 break;
             case time_how.SET_TO_CLIENT_TIME:
                 // update mtime only if it's more than 10 seconds
                 long mtime =  TimeUnit.MILLISECONDS.convert(s.mtime.mtime.seconds.value , TimeUnit.SECONDS)  +
                 	TimeUnit.MILLISECONDS.convert(s.mtime.mtime.nseconds.value , TimeUnit.NANOSECONDS);
-                inode.setMTime(  mtime );
+                stat.setMTime(  mtime );
                 break;
             default:
         }
 
+        fs.setattr(inode, stat);
     }
 
 
@@ -192,7 +197,7 @@ public class HimeraNfsUtils {
                 ret = ftype3.NF3FIFO;
                 break;
             default:
-                _log.info("Unknown mode [" + Integer.toOctalString(type) +"]");
+                _log.info("Unknown mode [{}]", Integer.toOctalString(type));
                 ret = 0;
         }
 

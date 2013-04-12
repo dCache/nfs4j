@@ -19,21 +19,21 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.dcache.chimera.nfs.vfs.Inode.Type;
+import org.dcache.chimera.nfs.v4.xdr.nfsace4;
 
 /**
  * Caching decorator.
  */
 public class VfsCache implements VirtualFileSystem {
 
-    private final Cache<CacheKey, Inode> _lookupCache;
+    private final LoadingCache<CacheKey, Inode> _lookupCache;
     private final VirtualFileSystem _inner;
 
     public VfsCache(VirtualFileSystem inner) {
@@ -110,11 +110,6 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(byte[] fh) throws IOException {
-        return _inner.inodeOf(fh);
-    }
-
-    @Override
     public Inode getRootInode() throws IOException {
         return _inner.getRootInode();
     }
@@ -125,7 +120,7 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode create(Inode parent, Type type, String path, int uid, int gid, int mode) throws IOException {
+    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         Inode inode = _inner.create(parent, type, path, uid, gid, mode);
         updateCache(parent, path, inode);
         return inode;
@@ -150,6 +145,36 @@ public class VfsCache implements VirtualFileSystem {
 
     private void updateCache(Inode parent, String path, Inode inode) {
         _lookupCache.asMap().put(new CacheKey(parent, path), inode);
+    }
+
+    @Override
+    public int access(Inode inode, int mode) throws IOException {
+        return _inner.access(inode, mode);
+    }
+
+    @Override
+    public Stat getattr(Inode inode) throws IOException {
+        return _inner.getattr(inode);
+    }
+
+    @Override
+    public void setattr(Inode inode, Stat stat) throws IOException {
+        _inner.setattr(inode, stat);
+    }
+
+    @Override
+    public nfsace4[] getAcl(Inode inode) throws IOException {
+        return _inner.getAcl(inode);
+    }
+
+    @Override
+    public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
+        _inner.setAcl(inode, acl);
+    }
+
+    @Override
+    public boolean hasIOLayout(Inode inode) throws IOException {
+        return _inner.hasIOLayout(inode);
     }
 
     /**

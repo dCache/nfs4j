@@ -30,7 +30,7 @@ import org.dcache.chimera.nfs.v4.xdr.READLINK4res;
 import org.dcache.chimera.nfs.v4.xdr.READLINK4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,8 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final READLINK4res res = result.opreadlink;
 
-        if (context.currentInode().type() != Inode.Type.SYMLINK) {
+        Stat stat = context.getFs().getattr(context.currentInode());
+        if (stat.type() != Stat.Type.SYMLINK) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "not a symlink");
         }
 

@@ -29,7 +29,7 @@ import org.dcache.chimera.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.chimera.nfs.v4.xdr.SECINFO4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.xdr.RpcAuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,9 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final SECINFO4res res = result.opsecinfo;
-        if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+        Stat stat = context.getFs().getattr(context.currentInode());
+
+        if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
         }
 

@@ -38,8 +38,8 @@ public class ReaddirStub {
         nfs_argop4 op = new nfs_argop4();
         op.opreaddir = new READDIR4args();
         op.opreaddir.cookie = new nfs_cookie4( new uint64_t(cookie) );
-        op.opreaddir.dircount = new count4(new uint32_t(10000));
-        op.opreaddir.maxcount = new count4(new uint32_t(10000));
+        op.opreaddir.dircount = new count4(new uint32_t(1024));
+        op.opreaddir.maxcount = new count4(new uint32_t(256));
         op.opreaddir.attr_request = new bitmap4( new uint32_t[] { new uint32_t(0), new uint32_t(0) });
         op.opreaddir.cookieverf =  verifier;
 

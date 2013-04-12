@@ -66,8 +66,22 @@ public class NFSv41Session {
      * Get maximum slot id.
      * @return max slot id.
      */
-    public int slotMax() {
+    public int getHighestSlot() {
         return _slots.length - 1;
+    }
+
+    /**
+     * Get highest slot id used.
+     * @return slot id or -1 if there are no sloths have been used yet
+     */
+    public int getHighestUsedSlot() {
+        int id;
+        for(id = getHighestSlot(); id >= 0 && _slots[id] == null; id--) {
+           /*
+            * NOP. We only move pointer
+            */
+        }
+        return id;
     }
 
     public List<nfs_resop4> checkCacheSlot(int slot, int sequence, boolean checkCache)
@@ -83,7 +97,7 @@ public class NFSv41Session {
      */
     private SessionSlot getSlot(int slot) throws ChimeraNFSException {
 
-        if (slot < 0 || slot > slotMax()) {
+        if (slot < 0 || slot > getHighestSlot()) {
             throw new ChimeraNFSException(nfsstat.NFSERR_BADSLOT, "slot id overflow");
         }
 
@@ -100,16 +114,7 @@ public class NFSv41Session {
 
     @Override
     public String toString() {
-        return _client.getRemoteAddress() + " : " +toHexString(_session.value);
-    }
-
-    public String toHexString(byte[] data) {
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : data) {
-            sb.append(Integer.toHexString(b));
-        }
-        return sb.toString();
+        return _client.getRemoteAddress() + " : " + Bytes.toHexString(_session.value);
     }
 
     public void updateSlotCache(int slot, List<nfs_resop4> reply) throws ChimeraNFSException {

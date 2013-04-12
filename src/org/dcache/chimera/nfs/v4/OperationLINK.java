@@ -29,9 +29,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.LINK4resok;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,19 +45,13 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
         String newName = NameFilter.convert(_args.oplink.newname.value.value.value);
 
-        Stat parentStat = context.currentInode().statCache();
-        UnixAcl acl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-        if (!context.getAclHandler().isAllowed(acl, context.getUser(), AclHandler.ACL_INSERT)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-        }
-
         context.getFs().link(context.currentInode(), context.savedInode(), newName,
                 context.getUser().getUID(), context.getUser().getGID());
 
         result.oplink.resok4 = new LINK4resok();
         result.oplink.resok4.cinfo = new change_info4();
         result.oplink.resok4.cinfo.atomic = true;
-        result.oplink.resok4.cinfo.before = new changeid4(new uint64_t(context.savedInode().statCache().getMTime()));
+        result.oplink.resok4.cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(context.currentInode()).getMTime()));
         result.oplink.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
         result.oplink.status = nfsstat.NFS_OK;

@@ -22,28 +22,48 @@ package org.dcache.chimera.nfs.vfs;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import org.dcache.chimera.ChimeraFsException;
+
+import javax.security.auth.Subject;
+import org.dcache.acl.ACE;
+import org.dcache.acl.enums.AceFlags;
+import org.dcache.acl.enums.AceType;
+import org.dcache.acl.enums.Who;
+import org.dcache.auth.Subjects;
 import org.dcache.chimera.DirectoryStreamHelper;
+import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.UnixPermission;
-import org.dcache.chimera.nfs.vfs.Inode.Type;
+import org.dcache.chimera.nfs.ChimeraNFSException;
+import org.dcache.chimera.nfs.nfsstat;
+import org.dcache.chimera.nfs.v4.NfsIdMapping;
+import org.dcache.chimera.nfs.v4.acl.Acls;
+import org.dcache.chimera.nfs.v4.xdr.aceflag4;
+import org.dcache.chimera.nfs.v4.xdr.acemask4;
+import org.dcache.chimera.nfs.v4.xdr.acetype4;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
-import org.dcache.chimera.posix.Stat;
+import org.dcache.chimera.nfs.v4.xdr.uint32_t;
+import org.dcache.chimera.nfs.v4.xdr.utf8str_mixed;
+import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Interface to a virtual file system.
  */
 public class ChimeraVfs implements VirtualFileSystem {
 
+    private final static Logger _log = LoggerFactory.getLogger(ChimeraVfs.class);
     private final JdbcFs _fs;
+    private final NfsIdMapping _idMapping;
 
-    public ChimeraVfs(JdbcFs fs) {
+    public ChimeraVfs(JdbcFs fs, NfsIdMapping idMapping) {
         _fs = fs;
+        _idMapping = idMapping;
     }
 
     @Override
@@ -52,21 +72,20 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode inodeOf(final byte[] fh) throws IOException {
-        return toInode(_fs.inodeFromBytes(fh));
-    }
-
-    @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = parentFsInode.inodeOf(path);
-        return toInode(fsInode);
+        try {
+            FsInode parentFsInode = toFsInode(parent);
+            FsInode fsInode = parentFsInode.inodeOf(path);
+            return toInode(fsInode);
+        }catch (FileNotFoundHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
+        }
     }
 
     @Override
-    public Inode create(Inode parent, Inode.Type type, String path, int uid, int gid, int mode) throws IOException {
+    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode, typeToChimera(type));
+        FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode | typeToChimera(type), typeToChimera(type));
         return toInode(fsInode);
     }
 
@@ -88,7 +107,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createLink(parentFsInode, path, link);
+        FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes());
         return toInode(fsInode);
     }
 
@@ -108,7 +127,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public String readlink(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        int count = (int) inode.statCache().getSize();
+        int count = (int) fsInode.statCache().getSize();
         byte[] data = new byte[count];
         int n = _fs.read(fsInode, 0, data, 0, count);
         if (n < 0) {
@@ -151,136 +170,115 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     private FsInode toFsInode(Inode inode) throws IOException {
-        return _fs.inodeFromBytes(inode.toFileHandle());
+        return _fs.inodeFromBytes(inode.getFileId());
     }
 
     private Inode toInode(final FsInode inode) {
+        return Inode.forFile(inode.toFullString().getBytes());
+    }
 
-        return new Inode() {
+    @Override
+    public Stat getattr(Inode inode) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        try {
+            return  fromChimeraStat(fsInode.stat(), fsInode.id());
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
+        }
+    }
 
-            @Override
-            public byte[] toFileHandle() throws IOException {
-                return _fs.inodeToBytes(inode);
-            }
+    @Override
+    public void setattr(Inode inode, Stat stat) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        _fs.setInodeAttributes(fsInode, 0, toChimeraStat(stat));
+    }
 
-            @Override
-            public boolean exists() throws IOException {
-                return inode.exists();
-            }
+    @Override
+    public nfsace4[] getAcl(Inode inode) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        nfsace4[] aces;
+        List<ACE> dacl = _fs.getACL(fsInode);
+        org.dcache.chimera.posix.Stat stat = _fs.stat(fsInode);
 
-            @Override
-            public Stat stat() throws IOException {
-                return inode.stat();
-            }
+        nfsace4[] unixAcl = Acls.of(stat.getMode(), fsInode.isDirectory());
+        aces = new nfsace4[dacl.size() + unixAcl.length];
+        int i = 0;
+        for (ACE ace : dacl) {
+            aces[i] = valueOf(ace, _idMapping);
+            i++;
+        }
+        System.arraycopy(unixAcl, 0, aces, i, unixAcl.length);
+        return Acls.compact(aces);
+    }
 
-            @Override
-            public Stat statCache() throws IOException {
-                return inode.statCache();
-            }
+    @Override
+    public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        List<ACE> dacl = new ArrayList<ACE>();
+        for (nfsace4 ace : acl) {
+            dacl.add(valueOf(ace, _idMapping));
+        }
+        _fs.setACL(fsInode, dacl);
+    }
 
-            @Override
-            public long id() {
-                return inode.id();
-            }
+    private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat, long fileid) {
+        Stat stat = new Stat();
 
-            @Override
-            public void setATime(long time) throws IOException {
-                inode.setATime(time);
-            }
+        stat.setATime(pStat.getATime());
+        stat.setCTime(pStat.getCTime());
+        stat.setMTime(pStat.getMTime());
 
-            @Override
-            public void setCTime(long time) throws IOException {
-                inode.setCTime(time);
-            }
+        stat.setGid(pStat.getGid());
+        stat.setUid(pStat.getUid());
+        stat.setDev(pStat.getDev());
+        stat.setIno(pStat.getIno());
+        stat.setMode(pStat.getMode());
+        stat.setNlink(pStat.getNlink());
+        stat.setRdev(pStat.getRdev());
+        stat.setSize(pStat.getSize());
+        stat.setFileid(fileid);
 
-            @Override
-            public void setGID(int id) throws IOException {
-                inode.setGID(id);
-            }
+        return stat;
+    }
 
-            @Override
-            public void setMTime(long time) throws IOException {
-                inode.setMTime(time);
-            }
+    private static org.dcache.chimera.posix.Stat toChimeraStat(Stat stat) {
+        org.dcache.chimera.posix.Stat pStat = new org.dcache.chimera.posix.Stat();
 
-            @Override
-            public void setMode(int size) throws IOException {
-                inode.setMode(size);
-            }
+        pStat.setATime(stat.getATime());
+        pStat.setCTime(stat.getCTime());
+        pStat.setMTime(stat.getMTime());
 
-            @Override
-            public void setSize(long size) throws IOException {
-                inode.setSize(size);
-            }
+        pStat.setGid(stat.getGid());
+        pStat.setUid(stat.getUid());
+        pStat.setDev(stat.getDev());
+        pStat.setIno(stat.getIno());
+        pStat.setMode(stat.getMode());
+        pStat.setNlink(stat.getNlink());
+        pStat.setRdev(stat.getRdev());
+        pStat.setSize(stat.getSize());
+        return pStat;
+    }
 
-            @Override
-            public void setUID(int id) throws IOException {
-                inode.setUID(id);
-            }
+    @Override
+    public int access(Inode inode, int mode) throws IOException {
+        return mode;
+    }
 
-            @Override
-            public nfsace4[] getAcl() throws IOException {
-                return new nfsace4[0];
-            }
-
-            @Override
-            public void setAcl(nfsace4[] acl) throws IOException {
-                /* NOP */
-            }
-
-            @Override
-            public Type type() throws IOException {
-
-                if (inode.type() != FsInodeType.INODE) {
-                    return Type.LEGACY;
-                }
-
-                if (inode.isDirectory()) {
-                    return Type.DIRECTORY;
-                }
-                if (inode.isLink()) {
-                    return Type.SYMLINK;
-                }
-                return Type.REGULAR;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (obj == this) {
-                    return true;
-                }
-                if (!(obj instanceof Inode)) {
-                    return false;
-                }
-                Inode other = (Inode) obj;
-                try {
-                    return Arrays.equals(this.toFileHandle(), other.toFileHandle());
-                }catch(IOException e) {
-                    return false;
-                }
-            }
-
-            @Override
-            public int hashCode() {
-                return inode.hashCode();
-            }
-
-            @Override
-            public String toString() {
-                return inode.toString();
-            }
-        };
+    @Override
+    public boolean hasIOLayout(Inode inode) throws IOException {
+        FsInode fsInode = toFsInode(inode);
+        return fsInode.type() == FsInodeType.INODE;
     }
 
     private class ChimeraDirectoryEntryToVfs implements Function<HimeraDirectoryEntry, DirectoryEntry> {
 
         @Override
         public DirectoryEntry apply(HimeraDirectoryEntry e) {
-            return new DirectoryEntry(e.getName(), toInode(e.getInode()), e.getStat());
+            return new DirectoryEntry(e.getName(), toInode(e.getInode()), fromChimeraStat(e.getStat(), e.getInode().id()));
         }
     }
 
-    private int typeToChimera(Inode.Type type) {
+    private int typeToChimera(Stat.Type type) {
         switch (type) {
             case SYMLINK:
                 return UnixPermission.S_IFLNK;
@@ -298,5 +296,95 @@ public class ChimeraVfs implements VirtualFileSystem {
             default:
                 return UnixPermission.S_IFREG;
         }
+    }
+
+    private static nfsace4 valueOf(ACE ace, NfsIdMapping idMapping) {
+
+        String principal;
+        switch (ace.getWho()) {
+            case USER:
+                principal = idMapping.uidToPrincipal(ace.getWhoID());
+                break;
+            case GROUP:
+                principal = idMapping.gidToPrincipal(ace.getWhoID());
+                break;
+            default:
+                principal = ace.getWho().getAbbreviation();
+        }
+
+        nfsace4 nfsace = new nfsace4();
+        nfsace.access_mask = new acemask4(new uint32_t(ace.getAccessMsk()));
+        nfsace.flag = new aceflag4(new uint32_t(ace.getFlags()));
+        nfsace.type = new acetype4(new uint32_t(ace.getType().getValue()));
+        nfsace.who = new utf8str_mixed(principal);
+        return nfsace;
+    }
+
+    private static ACE valueOf(nfsace4 ace, NfsIdMapping idMapping) {
+        String principal = ace.who.toString();
+        int type = ace.type.value.value;
+        int flags = ace.flag.value.value;
+        int mask = ace.access_mask.value.value;
+
+        int id = -1;
+        Who who = Who.fromAbbreviation(principal);
+        if (who == null) {
+            // not a special pricipal
+            boolean isGroup = AceFlags.IDENTIFIER_GROUP.matches(flags);
+            if (isGroup) {
+                who = Who.GROUP;
+                id = idMapping.principalToGid(principal);
+            } else {
+                who = Who.USER;
+                id = idMapping.principalToUid(principal);
+            }
+        }
+        return new ACE(AceType.valueOf(type), flags, mask, who, id, ACE.DEFAULT_ADDRESS_MSK);
+    }
+
+    boolean checkAclAccess(Subject subject, Inode inode, int access) throws ChimeraNFSException, IOException {
+        FsInode fsInode = toFsInode(inode);
+        List<ACE> acl = _fs.getACL(fsInode);
+        org.dcache.chimera.posix.Stat stat = _fs.stat(fsInode);
+        return checkAcl(subject, acl, stat.getUid(), stat.getGid(), access);
+    }
+
+    private boolean checkAcl(Subject subject, List<ACE> acl, int owner, int group, int access) throws ChimeraNFSException {
+
+        for (ACE ace : acl) {
+
+            int flag = ace.getFlags();
+            if ((flag & ACE4_INHERIT_ONLY_ACE) != 0) {
+                continue;
+            }
+
+            if ((ace.getType() != AceType.ACCESS_ALLOWED_ACE_TYPE) && (ace.getType() != AceType.ACCESS_DENIED_ACE_TYPE)) {
+                continue;
+            }
+
+            int ace_mask = ace.getAccessMsk();
+            if ((ace_mask & access) == 0) {
+                continue;
+            }
+
+            Who who = ace.getWho();
+
+            if (who == Who.EVERYONE
+                    || (who == Who.OWNER & Subjects.hasUid(subject, owner))
+                    || (who == Who.OWNER_GROUP & Subjects.hasGid(subject, group))
+                    || (who == Who.GROUP & Subjects.hasGid(subject, ace.getWhoID()))
+                    || (who == Who.USER & Subjects.hasUid(subject, ace.getWhoID()))) {
+
+                if (ace.getType() == AceType.ACCESS_DENIED_ACE_TYPE) {
+                    _log.warn("Access deny: {} {}", subject, acemask4.toString(access));
+                    throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+                } else {
+                    _log.debug("Access grant: {} {}", subject, acemask4.toString(access));
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

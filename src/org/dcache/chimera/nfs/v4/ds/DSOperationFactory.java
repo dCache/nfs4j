@@ -38,7 +38,7 @@ public class DSOperationFactory implements NFSv4OperationFactory {
 
         switch (op.argop) {
             case nfs_opnum4.OP_COMMIT:
-                return new OperationCOMMIT(op);
+                return new DSOperationCOMMIT(op, _fs);
             case nfs_opnum4.OP_GETATTR:
                 return new OperationGETATTR(op);
             case nfs_opnum4.OP_PUTFH:

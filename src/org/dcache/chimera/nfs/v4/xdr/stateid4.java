@@ -22,6 +22,7 @@ import java.util.Arrays;
 import org.dcache.xdr.*;
 import java.io.IOException;
 import java.io.Serializable;
+import org.dcache.utils.Bytes;
 
 public class stateid4 implements XdrAble, Serializable {
 
@@ -76,12 +77,7 @@ public class stateid4 implements XdrAble, Serializable {
         StringBuilder sb = new StringBuilder();
 
         sb.append("[");
-        for(byte b : other) {
-            if(b < 0x10)
-                sb.append("0");
-            sb.append(Integer.toHexString(b));
-        }
-
+        sb.append(Bytes.toHexString(other));
         sb.append(", seq: ").append(seqid.value).append("]");
         return sb.toString();
     }

@@ -19,15 +19,26 @@
  */
 package org.dcache.chimera.nfs;
 
+import com.google.common.collect.Sets;
+import java.util.Collections;
 import javax.security.auth.Subject;
+import org.dcache.auth.GidPrincipal;
 import org.dcache.chimera.posix.UnixUser;
 import org.dcache.xdr.RpcCall;
 import org.dcache.auth.Subjects;
+import org.dcache.auth.UidPrincipal;
 
 /**
  * Utility class extract user record from NFS request
  */
 public class NfsUser {
+
+    public final static int NOBODY = 65534;
+    public final static Subject NFS_NOBODY = new Subject(true,
+            Sets.newHashSet(
+            new UidPrincipal(NfsUser.NOBODY),
+            new GidPrincipal(NfsUser.NOBODY, true)),
+            Collections.EMPTY_SET, Collections.EMPTY_SET);
 
     /*no instances allowed*/
     private NfsUser() {
@@ -41,9 +52,14 @@ public class NfsUser {
         int[] gids;
 
         Subject subject = call.getCredential().getSubject();
+
+        if (subject == Subjects.NOBODY || subject.getPrincipals().isEmpty()) {
+            subject = NFS_NOBODY;
+        }
+
         uid = (int)Subjects.getUid(subject);
         gids = from(Subjects.getGids(subject));
-        gid = gids.length > 0 ? gids[0] : -1;
+        gid = gids.length > 0 ? gids[0] : NOBODY;
 
         String host = call.getTransport().getRemoteSocketAddress().getAddress().getHostAddress();
 
@@ -53,8 +69,8 @@ public class NfsUser {
                     call.getTransport().getRemoteSocketAddress().getAddress())) {
 
                 // FIXME: actual 'nobody' account should be used
-                uid = -1;
-                gid = -1;
+                uid = NOBODY;
+                gid = NOBODY;
             }
         }
 

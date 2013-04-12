@@ -20,6 +20,8 @@
 package org.dcache.chimera.nfs.v3;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.io.IOException;
 import org.dcache.chimera.nfs.v3.xdr.exportnode;
 import org.dcache.chimera.nfs.v3.xdr.mountbody;
@@ -44,23 +46,24 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.FsExport;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.PseudoFs;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 public class MountServer extends mount_protServerStub {
 
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
     private final ExportFile _exportFile;
     private final Map<String, Set<String>> _mounts = new HashMap<String, Set<String>>();
-    private final VirtualFileSystem _fs;
+    private final VirtualFileSystem _vfs;
 
     public MountServer(ExportFile exportFile, VirtualFileSystem fs) {
         super();
         _exportFile = exportFile;
-        _fs = fs;
+        _vfs = fs;
     }
 
     @Override
@@ -71,6 +74,7 @@ public class MountServer extends mount_protServerStub {
     @Override
     public mountres3 MOUNTPROC3_MNT_3(RpcCall call$, dirpath arg1) {
 
+        VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exportFile);
         mountres3 m = new mountres3();
 
         java.io.File f = new java.io.File(arg1.value);
@@ -88,13 +92,13 @@ public class MountServer extends mount_protServerStub {
 
         try {
 
-            Inode rootInode = path2Inode(_fs, mountPoint);
-
-            if (rootInode.type() != Inode.Type.DIRECTORY) {
+            Inode rootInode = path2Inode(fs, mountPoint);
+            Stat stat = fs.getattr(rootInode);
+            if (stat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
             }
 
-            byte[] b = rootInode.toFileHandle();
+            byte[] b = rootInode.toNfsHandle();
 
             m.fhs_status = mountstat3.MNT3_OK;
             m.mountinfo.fhandle = new fhandle3(b);
@@ -174,10 +178,8 @@ public class MountServer extends mount_protServerStub {
 
         eList.value = null;
 
-
-        for (String path : _exportFile.getExports()) {
-
-            FsExport export = _exportFile.getExport(path);
+        Multimap<String, String> exports = groupBy(_exportFile.getExports());
+        for (String path : exports.keySet()) {
 
             eList.value = new exportnode();
             eList.value.ex_dir = new dirpath(path);
@@ -185,7 +187,7 @@ public class MountServer extends mount_protServerStub {
             eList.value.ex_groups.value = null;
             groups g = eList.value.ex_groups;
 
-            for (String client : export.client()) {
+            for (String client : exports.get(path)) {
 
                 g.value = new groupnode();
                 g.value.gr_name = new name(client);
@@ -249,14 +251,8 @@ public class MountServer extends mount_protServerStub {
 
     private boolean isAllowed(InetAddress client, String mountPoint) {
 
-        boolean rc = false;
-
-        FsExport export = _exportFile.getExport(mountPoint);
-        if (export != null) {
-            rc = export.isAllowed(client);
-        }
-
-        return rc;
+        FsExport export = _exportFile.getExport(mountPoint, client);
+        return export != null;
     }
 
     private static Inode path2Inode(VirtualFileSystem fs, String path)
@@ -272,5 +268,14 @@ public class MountServer extends mount_protServerStub {
         } catch (ChimeraFsException e) {
             throw new ChimeraNFSException(mountstat3.MNT3ERR_NOENT, e.getMessage());
         }
+    }
+
+    private Multimap<String, String> groupBy(Collection<FsExport> exports) {
+        Multimap<String, String> asMultiMap = HashMultimap.create();
+        for ( FsExport export: exports) {
+            asMultiMap.put(export.getPath(), export.client());
+        }
+
+        return asMultiMap;
     }
 }

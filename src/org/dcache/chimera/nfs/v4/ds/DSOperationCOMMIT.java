@@ -17,46 +17,41 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.chimera.nfs.v4;
+package org.dcache.chimera.nfs.v4.ds;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.nfsstat;
-import org.dcache.chimera.nfs.v4.xdr.uint32_t;
+import org.dcache.chimera.nfs.v4.AbstractNFSv4Operation;
+import org.dcache.chimera.nfs.v4.CompoundContext;
+import org.dcache.chimera.nfs.v4.xdr.COMMIT4res;
+import org.dcache.chimera.nfs.v4.xdr.COMMIT4resok;
+import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
 import org.dcache.chimera.nfs.v4.xdr.nfs_argop4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.chimera.nfs.v4.xdr.ACCESS4res;
-import org.dcache.chimera.nfs.v4.xdr.ACCESS4resok;
-import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcache.chimera.nfs.v4.xdr.verifier4;
+import org.dcache.chimera.nfs.vfs.FsCache;
+import org.dcache.xdr.OncRpcException;
 
-public class OperationACCESS extends AbstractNFSv4Operation {
+public class DSOperationCOMMIT extends AbstractNFSv4Operation {
 
-    private static final Logger _log = LoggerFactory.getLogger(OperationACCESS.class);
+    private final FsCache _fsCache;
 
-    OperationACCESS(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_ACCESS);
+    public DSOperationCOMMIT(nfs_argop4 args, FsCache fsCache) {
+        super(args, nfs_opnum4.OP_COMMIT);
+        _fsCache = fsCache;
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result)
-            throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+        // FIXME: sync the data
 
-        final ACCESS4res res = result.opaccess;
-        int requestedAccess = _args.opaccess.access.value;
-
-        int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
-
-        _log.debug("NFS Request ACCESS uid: {} {} {}",
-                new Object[]{
-                    context.getUser(), requestedAccess, realAccess
-                });
-
-        res.resok4 = new ACCESS4resok();
-        res.resok4.access = new uint32_t(realAccess);
-        res.resok4.supported = new uint32_t(requestedAccess);
-
+        final COMMIT4res res = result.opcommit;
         res.status = nfsstat.NFS_OK;
+        res.resok4 = new COMMIT4resok();
+        res.resok4.writeverf = new verifier4();
+        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
     }
 }

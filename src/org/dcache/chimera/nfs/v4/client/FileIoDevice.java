@@ -22,6 +22,7 @@ package org.dcache.chimera.nfs.v4.client;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import org.dcache.chimera.nfs.v4.xdr.netaddr4;
 import org.dcache.chimera.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.utils.net.InetSocketAddresses;
 
@@ -39,8 +40,12 @@ public class FileIoDevice {
         }
         _ds_list = new InetSocketAddress[addr.nflda_multipath_ds_list.length];
         for (int i = 0; i < _ds_list.length; i++) {
-            _ds_list[i] = InetSocketAddresses.forUaddrString(
-                    addr.nflda_multipath_ds_list[i].value[0].na_r_addr);
+            for(netaddr4 na : addr.nflda_multipath_ds_list[i].value) {
+                if (na.na_r_netid.equals("tcp")) {
+                    _ds_list[i] = InetSocketAddresses.forUaddrString(na.na_r_addr);
+                    break;
+                }
+            }
         }
     }
 

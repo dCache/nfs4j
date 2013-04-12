@@ -29,6 +29,7 @@ import org.dcache.chimera.nfs.v4.xdr.OPEN_CONFIRM4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +47,13 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         final OPEN_CONFIRM4res res = result.opopen_confirm;
 
         Inode inode = context.currentInode();
+        Stat stat = context.getFs().getattr(context.currentInode());
 
-        if (inode.type() == Inode.Type.DIRECTORY) {
+        if (stat.type() == Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
         }
 
-        if (inode.type() == Inode.Type.SYMLINK) {
+        if (stat.type() == Stat.Type.SYMLINK) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
         }
 

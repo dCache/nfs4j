@@ -80,7 +80,6 @@ public class CompoundContext {
     private final UnixUser _user;
     private final ExportFile _exportFile;
     private final NFSv41DeviceManager _deviceManager;
-    private final AclHandler _aclHandler;
     private final NFSv4StateHandler _stateHandler;
     private final NfsIdMapping _idMapping;
     private int _slotId;
@@ -102,13 +101,12 @@ public class CompoundContext {
      */
     public CompoundContext(int minorversion, VirtualFileSystem fs,
             NFSv4StateHandler stateHandler,
-            NFSv41DeviceManager deviceManager, AclHandler aclHandler, RpcCall call,
+            NFSv41DeviceManager deviceManager, RpcCall call,
             NfsIdMapping idMapping,
             ExportFile exportFile, int opCount) {
         _minorversion = minorversion;
         _fs = fs;
         _deviceManager = deviceManager;
-        _aclHandler = aclHandler;
         _callInfo = call;
         _exportFile = exportFile;
         _user = NfsUser.remoteUser(_callInfo, _exportFile);
@@ -133,9 +131,6 @@ public class CompoundContext {
         return _deviceManager;
     }
 
-    public AclHandler getAclHandler() {
-        return _aclHandler;
-    }
     /**
      * Get NFSv4 minor version number. The version number os provided by client
      * for each compound.

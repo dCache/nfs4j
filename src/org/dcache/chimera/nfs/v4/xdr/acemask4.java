@@ -18,6 +18,7 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.chimera.nfs.v4.xdr;
+import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
@@ -47,5 +48,82 @@ public class acemask4 implements XdrAble {
         value = new uint32_t(xdr);
     }
 
+    public static acemask4 allOf(acemask4... masks) {
+        int mask = 0;
+        for (acemask4 acemask : masks) {
+            mask |= acemask.value.value;
+        }
+        return new acemask4(new uint32_t(mask));
+    }
+
+    public static acemask4 clear(acemask4 acemask, acemask4 clear) {
+        int mask = (acemask.value.value | clear.value.value) & ~acemask.value.value;
+        return new acemask4(new uint32_t(mask));
+    }
+
+    private static boolean hasBit(int value, int bit) {
+        return (value & bit) == bit;
+    }
+
+    public static String toString(int mask) {
+        StringBuilder sb = new StringBuilder();
+
+        if (hasBit(mask, ACE4_READ_DATA) || hasBit(mask, ACE4_LIST_DIRECTORY)) {
+            sb.append('r');
+        }
+        if (hasBit(mask, ACE4_WRITE_DATA)) {
+            sb.append('w');
+        }
+        if (hasBit(mask, ACE4_ADD_FILE) || hasBit(mask, ACE4_APPEND_DATA)
+                || hasBit(mask, ACE4_ADD_SUBDIRECTORY)) {
+            sb.append('a');
+        }
+        if (hasBit(mask, ACE4_READ_NAMED_ATTRS)) {
+            sb.append('n');
+        }
+        if (hasBit(mask, ACE4_WRITE_NAMED_ATTRS)) {
+            sb.append('N');
+        }
+        if (hasBit(mask, ACE4_EXECUTE)) {
+            sb.append('x');
+        }
+        if (hasBit(mask, ACE4_DELETE_CHILD)) {
+            sb.append('D');
+        }
+        if (hasBit(mask, ACE4_READ_ATTRIBUTES)) {
+            sb.append('t');
+        }
+        if (hasBit(mask, ACE4_WRITE_ATTRIBUTES)) {
+            sb.append('T');
+        }
+//        if (hasBit(mask, ACE4_WRITE_RETENTION)) {
+//            sb.append('?');
+//        }
+//        if (hasBit(mask, ACE4_WRITE_RETENTION_HOLD)) {
+//            sb.append('?');
+//        }
+        if (hasBit(mask, ACE4_DELETE)) {
+            sb.append('d');
+        }
+        if (hasBit(mask, ACE4_READ_ACL)) {
+            sb.append('c');
+        }
+        if (hasBit(mask, ACE4_WRITE_ACL)) {
+            sb.append('C');
+        }
+        if (hasBit(mask, ACE4_WRITE_OWNER)) {
+            sb.append('o');
+        }
+        if (hasBit(mask, ACE4_SYNCHRONIZE)) {
+            sb.append('y');
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return toString(value.value);
+    }
 }
 // End of acemask4.java

@@ -49,12 +49,24 @@ public class FsCache {
 
         @Override
         public FileChannel load(Inode inode) throws IOException {
-            File f = new File(_base, inode.toString());
+            byte[] fid = inode.getFileId();
+            String id = new String(fid);
+            File dir = getAndCreateDirectory(id);
+            File f = new File(dir, id);
             return new RandomAccessFile(f, "rw").getChannel();
+        }
+
+        private File getAndCreateDirectory(String id) {
+            int len = id.length();
+            String topLevelDir = id.substring(len - 6, len - 4);
+            String subDir = id.substring(len - 4, len - 2);
+            File dir = new File(_base, topLevelDir + "/" + subDir);
+            dir.mkdirs();
+            return dir;
         }
     }
 
-    private static class InodeGarbaceCollector implements RemovalListener<Inode, FileChannel> {
+    private static class InodeGarbageCollector implements RemovalListener<Inode, FileChannel> {
 
         @Override
         public void onRemoval(RemovalNotification<Inode, FileChannel> notification) {
@@ -66,7 +78,7 @@ public class FsCache {
             }
         }
     }
-    private Cache<Inode, FileChannel> _cache;
+    private LoadingCache<Inode, FileChannel> _cache;
     private int _maxSize;
     private int _lastAccess;
     private File _base;
@@ -86,7 +98,7 @@ public class FsCache {
         _cache = CacheBuilder.newBuilder()
                 .maximumSize(_maxSize)
                 .expireAfterAccess(_lastAccess, TimeUnit.SECONDS)
-                .removalListener(new InodeGarbaceCollector())
+                .removalListener(new InodeGarbageCollector())
                 .build(new FileChannelSupplier(_base));
     }
 

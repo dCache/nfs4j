@@ -33,7 +33,7 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.vfs.FsCache;
-import org.dcache.chimera.posix.Stat;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final READ4res res = result.opread;
 
-        Stat inodeStat = context.currentInode().statCache();
+        Stat inodeStat = context.getFs().getattr(context.currentInode());
         boolean eof = false;
 
         long offset = _args.opread.offset.value.value;

@@ -37,14 +37,11 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.OPEN4resok;
 import org.dcache.chimera.nfs.v4.xdr.OPEN4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +88,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 case open_claim_type4.CLAIM_NULL:
 
-                    if (context.currentInode().type() != Inode.Type.DIRECTORY) {
+                    Stat stat = context.getFs().getattr(context.currentInode());
+                    if (stat.type() != Stat.Type.DIRECTORY) {
                         throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
                     }
 
@@ -106,38 +104,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         try {
 
-                            inode = context.getFs().lookup(context.currentInode(), name);
-
-                            if (exclusive) {
-                                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "file already exist");
-                            }
-
-                            Stat fileStat = inode.statCache();
-                            _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
-                                    new Object[] {
-                                        name,
-                                        fileStat.getUid(),
-                                        fileStat.getGid(),
-                                        Integer.toOctalString(fileStat.getMode() & 0777)
-                                    } );
-
-                            UnixAcl fileAcl = new UnixAcl(fileStat.getUid(), fileStat.getGid(), fileStat.getMode() & 0777);
-                            if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_WRITE)) {
-                                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-                            }
-
-                            OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
-                        } catch (FileNotFoundHimeraFsException he) {
-
-                            // check parent permissions
-                            Stat parentStat = context.currentInode().statCache();
-                            UnixAcl parentAcl = new UnixAcl(parentStat.getUid(), parentStat.getGid(), parentStat.getMode() & 0777);
-                            if (!context.getAclHandler().isAllowed(parentAcl, context.getUser(), AclHandler.ACL_INSERT)) {
-                                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-                            }
-
                             _log.debug("Creating a new file: {}", name);
-                            inode = context.getFs().create(context.currentInode(), Inode.Type.REGULAR,
+                            inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,
                                     name, context.getUser().getUID(),
                                     context.getUser().getGID(), 0600);
 
@@ -150,23 +118,45 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                 case createmode4.EXCLUSIVE4:
                                 case createmode4.EXCLUSIVE4_1:
                             }
+                        } catch (FileExistsChimeraFsException e) {
+
+                            if (exclusive) {
+                                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "file already exist");
+                            }
+
+                            inode = context.getFs().lookup(context.currentInode(), name);
+                            if (_log.isDebugEnabled()) {
+                                Stat fileStat = context.getFs().getattr(context.currentInode());
+                                _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
+                                        new Object[]{
+                                    name,
+                                    fileStat.getUid(),
+                                    fileStat.getGid(),
+                                    Integer.toOctalString(fileStat.getMode() & 0777)
+                                });
+                            }
+
+                            if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
+                                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                            }
+
+                            OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
                         }
 
                     } else {
 
                         inode = context.getFs().lookup(context.currentInode(), name);
+                        stat = context.getFs().getattr(inode);
 
-                        Stat inodeStat = inode.statCache();
-                        UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-                        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
+                        if ( context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0) {
                             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
                         }
 
-                        if (inode.type() == Inode.Type.DIRECTORY) {
+                        if (stat.type() == Stat.Type.DIRECTORY) {
                             throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
                         }
 
-                        if (inode.type() == Inode.Type.SYMLINK) {
+                        if (stat.type() == Stat.Type.SYMLINK) {
                             throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "path is a symlink");
                         }
                     }
@@ -185,7 +175,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             res.resok4.cinfo = new change_info4();
             res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4(new uint64_t(context.currentInode().statCache().getMTime()));
+            res.resok4.cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(context.currentInode()).getMTime()));
             res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             /*

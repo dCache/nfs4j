@@ -20,8 +20,8 @@
 package org.dcache.chimera.nfs.v4.client;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,8 @@ import org.dcache.chimera.nfs.v4.xdr.GETATTR4args;
 import org.dcache.chimera.nfs.v4.xdr.bitmap4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_fs_locations;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_lease_time;
+import org.dcache.chimera.nfs.v4.xdr.fattr4_mode;
 import org.dcache.chimera.nfs.v4.xdr.fattr4_type;
 import org.dcache.chimera.nfs.v4.xdr.mode4;
 import org.dcache.chimera.nfs.v4.xdr.nfs4_prot;
@@ -38,7 +40,6 @@ import org.dcache.chimera.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.chimera.nfs.v4.xdr.uint64_t;
 import org.dcache.chimera.nfs.v4.xdr.utf8str_cs;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 
@@ -69,8 +70,19 @@ public class GetattrStub {
 
     }
 
+    public static class Attrs {
+        private final Map<Integer,Object> _attrs;
 
-    public static Map<Integer, Object> decodeType(fattr4 attributes) throws OncRpcException, IOException  {
+        public Attrs(Map<Integer, Object> attrs) {
+            _attrs = attrs;
+        }
+
+        public <T> T get(Integer attr) {
+            return (T) _attrs.get(attr);
+       }
+    }
+
+    public static Attrs decodeType(fattr4 attributes) throws OncRpcException, IOException  {
 
         Map<Integer,Object> attr = new HashMap<Integer, Object>();
 
@@ -95,14 +107,11 @@ public class GetattrStub {
 
         xdr.endDecoding();
 
-        return attr;
+        return new Attrs(attr);
     }
 
 
     static void xdr2fattr( Map<Integer,Object> attr, int fattr , XdrDecodingStream xdr) throws OncRpcException, IOException {
-
-        System.out.println("decoding mask " + fattr);
-
 
         switch(fattr) {
 
@@ -139,6 +148,9 @@ public class GetattrStub {
                 fattr4_fs_locations fs_locations = new fattr4_fs_locations();
                 fs_locations.xdrDecode(xdr);
                 attr.put(fattr, fs_locations);
+                break;
+            case nfs4_prot.FATTR4_LEASE_TIME:
+                attr.put(fattr, new fattr4_lease_time(xdr));
                 break;
         }
 

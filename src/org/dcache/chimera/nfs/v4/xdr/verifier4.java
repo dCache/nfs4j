@@ -21,6 +21,7 @@ package org.dcache.chimera.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 import java.util.Arrays;
+import org.dcache.utils.Bytes;
 
 public class verifier4 implements XdrAble {
 
@@ -68,11 +69,7 @@ public class verifier4 implements XdrAble {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('[');
-        for (byte b : value) {
-            sb.append(Integer.toHexString(0xFF & b).toUpperCase());
-        }
-        sb.append(']');
+        sb.append('[').append(Bytes.toHexString(value)).append(']');
         return sb.toString();
     }
 }

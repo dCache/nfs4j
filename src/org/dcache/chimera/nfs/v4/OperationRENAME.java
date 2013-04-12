@@ -32,9 +32,7 @@ import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,11 +53,14 @@ public class OperationRENAME extends AbstractNFSv4Operation {
             Inode sourceDir = context.savedInode();
             Inode destDir = context.currentInode();
 
-            if (sourceDir.type() != Inode.Type.DIRECTORY) {
+            Stat sourceStat = context.getFs().getattr(sourceDir);
+            Stat destStat = context.getFs().getattr(destDir);
+
+            if (sourceStat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "source path not a directory");
             }
 
-            if (destDir.type() != Inode.Type.DIRECTORY) {
+            if (destStat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "destination path  not a directory");
             }
 
@@ -95,27 +96,18 @@ public class OperationRENAME extends AbstractNFSv4Operation {
                         newName
                     });
 
-            Stat fromStat = sourceDir.stat();
-            Stat toStat = destDir.stat();
-            UnixAcl fromAcl = new UnixAcl(fromStat.getUid(), fromStat.getGid(), fromStat.getMode() & 0777);
-            UnixAcl toAcl = new UnixAcl(toStat.getUid(), toStat.getGid(), toStat.getMode() & 0777);
-            if (!(context.getAclHandler().isAllowed(fromAcl, context.getUser(), AclHandler.ACL_DELETE)
-                    && context.getAclHandler().isAllowed(toAcl, context.getUser(), AclHandler.ACL_INSERT))) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
-            }
-
             context.getFs().move(sourceDir, oldName, destDir, newName);
 
             res.resok4 = new RENAME4resok();
 
             res.resok4.source_cinfo = new change_info4();
             res.resok4.source_cinfo.atomic = true;
-            res.resok4.source_cinfo.before = new changeid4(new uint64_t(sourceDir.statCache().getMTime()));
+            res.resok4.source_cinfo.before = new changeid4(new uint64_t(sourceStat.getMTime()));
             res.resok4.source_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             res.resok4.target_cinfo = new change_info4();
             res.resok4.target_cinfo.atomic = true;
-            res.resok4.target_cinfo.before = new changeid4(new uint64_t(sourceDir.statCache().getMTime()));
+            res.resok4.target_cinfo.before = new changeid4(new uint64_t(destStat.getMTime()));
             res.resok4.target_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
 
             res.status = nfsstat.NFS_OK;

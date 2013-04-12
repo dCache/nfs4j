@@ -20,12 +20,10 @@
 package org.dcache.chimera.nfs.v4;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import javax.security.auth.Subject;
 import org.dcache.chimera.nfs.ExportFile;
 import org.dcache.chimera.nfs.vfs.VirtualFileSystem;
-import org.dcache.chimera.posix.AclHandler;
 import org.dcache.xdr.*;
 
 public class CompoundContextBuilder {
@@ -89,15 +87,9 @@ public class CompoundContextBuilder {
     private VirtualFileSystem fs = null;
     private NFSv4StateHandler stateHandler = null;
     private NFSv41DeviceManager deviceManager = null;
-    private AclHandler aclHandler = null;
     private NfsIdMapping idMapping = null;
     private ExportFile exportFile = null;
     private int opCount = 0;
-
-    public CompoundContextBuilder withAclHandler(AclHandler aclHandler) {
-        this.aclHandler = aclHandler;
-        return this;
-    }
 
     public CompoundContextBuilder withCall(RpcCall call) {
         this.call = call;
@@ -145,7 +137,6 @@ public class CompoundContextBuilder {
                 fs,
                 stateHandler,
                 deviceManager,
-                aclHandler,
                 call,
                 idMapping,
                 exportFile,

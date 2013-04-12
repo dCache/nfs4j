@@ -19,51 +19,59 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import java.io.IOException;
-import org.dcache.chimera.nfs.v4.xdr.nfsace4;
-import org.dcache.chimera.posix.Stat;
+import java.util.Arrays;
 
-public interface Inode {
+public class Inode {
 
-    enum Type {
+    FileHandle fh;
 
-        LEGACY,
-        REGULAR,
-        DIRECTORY,
-        SYMLINK,
-        CHAR,
-        BLOCK,
-        FIFO,
-        SOCK
+    public Inode(byte[] bytes) {
+        fh = new FileHandle(bytes);
     }
 
-    public byte[] toFileHandle() throws IOException;
+    public Inode(FileHandle h) {
+        fh = h;
+    }
 
-    public boolean exists() throws IOException;
+    static Inode forFile(byte[] bytes) {
+        return new Inode(new FileHandle.FileHandleBuilder().build(bytes));
+    }
 
-    Stat stat() throws IOException;
+    public byte[] getFileId() {
+        return fh.getFsOpaque();
+    }
 
-    Stat statCache() throws IOException;
+    public byte[] toNfsHandle() {
+        return fh.bytes();
+    }
 
-    long id();
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(fh.bytes());
+    }
 
-    void setSize(long size) throws IOException;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Inode other = (Inode) obj;
+        return Arrays.equals(fh.bytes(), other.fh.bytes());
+    }
 
-    void setUID(int id) throws IOException;
+    public boolean isPesudoInode() {
+        return fh.getType() == 1;
+    }
 
-    void setGID(int id) throws IOException;
+    public int exportIndex() {
+        return fh.getExportIdx();
+    }
 
-    void setATime(long time) throws IOException;
-
-    void setMTime(long time) throws IOException;
-
-    void setCTime(long time) throws IOException;
-
-    void setMode(int size) throws IOException;
-
-    nfsace4[] getAcl() throws IOException;
-
-    void setAcl(nfsace4[] acl) throws IOException;
-
-    Type type() throws IOException;
+    @Override
+    public String toString() {
+        return fh.toString();
+    }
 }

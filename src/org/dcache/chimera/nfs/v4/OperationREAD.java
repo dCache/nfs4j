@@ -29,9 +29,7 @@ import org.dcache.chimera.nfs.v4.xdr.READ4res;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.v4.xdr.nfs_resop4;
 import org.dcache.chimera.nfs.vfs.Inode;
-import org.dcache.chimera.posix.AclHandler;
-import org.dcache.chimera.posix.Stat;
-import org.dcache.chimera.posix.UnixAcl;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,19 +45,14 @@ public class OperationREAD extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
         final READ4res res = result.opread;
 
-        if (context.currentInode().type() == Inode.Type.DIRECTORY) {
+        Stat inodeStat = context.getFs().getattr(context.currentInode());
+
+        if (inodeStat.type() == Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
         }
 
-        if (context.currentInode().type() == Inode.Type.SYMLINK) {
+        if (inodeStat.type() == Stat.Type.SYMLINK) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
-        }
-
-        Stat inodeStat = context.currentInode().statCache();
-
-        UnixAcl fileAcl = new UnixAcl(inodeStat.getUid(), inodeStat.getGid(), inodeStat.getMode() & 0777);
-        if (!context.getAclHandler().isAllowed(fileAcl, context.getUser(), AclHandler.ACL_READ)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
         }
 
         if (context.getMinorversion() == 0) {

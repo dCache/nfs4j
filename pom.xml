@@ -8,7 +8,7 @@
 
     <groupId>org.dcache.chimera</groupId>
     <artifactId>jpNFS</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
     <name>Java based NFSv4.1 implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
@@ -47,6 +47,15 @@
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -55,6 +64,7 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
 
@@ -165,59 +175,6 @@
     </build>
 
     <!--
-        BUILD REPORTING
-    -->
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>2.0.1</version>
-                <configuration>
-                    <linkXref>true</linkXref>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.4.3</version>
-                <configuration>
-                    <linkXref>true</linkXref>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.6</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <linkXref>true</linkXref>
-                    <targetJdk>1.5</targetJdk>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jdepend-maven-plugin</artifactId>
-                <version>2.0-beta-2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.3</version>
-            </plugin>
-        </plugins>
-    </reporting>
-
-    <!--
         EXTERNAL DEPENDENCIES
     -->
     <dependencies>
@@ -260,7 +217,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>10.0.1</version>
+            <version>13.0</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -269,8 +226,18 @@
         </dependency>
         <dependency>
             <groupId>org.dcache</groupId>
-            <artifactId>nio-jrpc</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <artifactId>oncrpc4j-spring</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcache</groupId>
+            <artifactId>oncrpc4j-core</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>3.0.9</version>
         </dependency>
         <!--
             LOCAL JARS

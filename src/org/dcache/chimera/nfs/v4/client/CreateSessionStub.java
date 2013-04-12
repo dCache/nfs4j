@@ -40,7 +40,7 @@ public class CreateSessionStub {
 
         channel_attrs4 chan_attrs = new channel_attrs4();
         chan_attrs.ca_headerpadsize = new count4(new uint32_t(0));
-        chan_attrs.ca_maxoperations = new count4(new uint32_t(8192));
+        chan_attrs.ca_maxoperations = new count4(new uint32_t(128));
         chan_attrs.ca_maxrequests = new count4(new uint32_t(8192));
         chan_attrs.ca_maxrequestsize = new count4(new uint32_t(8192));
         chan_attrs.ca_maxresponsesize = new count4(new uint32_t(8192));

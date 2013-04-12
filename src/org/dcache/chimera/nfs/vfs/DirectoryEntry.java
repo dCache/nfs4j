@@ -19,19 +19,11 @@
  */
 package org.dcache.chimera.nfs.vfs;
 
-import java.io.IOException;
-import org.dcache.chimera.posix.Stat;
-
 public class DirectoryEntry {
 
     private final String _name;
     private final Stat _stat;
     private final Inode _inode;
-
-
-    public DirectoryEntry(String name, Inode inode) throws IOException {
-        this(name, inode, inode.statCache());
-    }
 
     public DirectoryEntry(String name, Inode inode, Stat stat) {
         _inode = inode;

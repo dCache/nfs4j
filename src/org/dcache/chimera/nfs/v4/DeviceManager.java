@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.vfs.Inode;
+import org.dcache.chimera.nfs.vfs.Stat;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.glassfish.grizzly.Buffer;
@@ -90,7 +91,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         device_addr4 deviceAddr;
         deviceid4 deviceId;
 
-        if (inode.type() == Inode.Type.LEGACY) {
+        if (!context.getFs().hasIOLayout(inode)) {
             deviceId = MDS_ID;
         } else {
 
@@ -110,7 +111,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             _deviceMap.put(deviceId, deviceAddr);
         }
 
-        nfs_fh4 fh = new nfs_fh4(inode.toFileHandle());
+        nfs_fh4 fh = new nfs_fh4(context.currentInode().toNfsHandle());
 
         //  -1 is special value, which means entire file
         layout4 layout = Layout.getLayoutSegment(deviceId, fh, ioMode, 0, nfs4_prot.NFS4_UINT64_MAX);

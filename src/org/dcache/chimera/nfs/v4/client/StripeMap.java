@@ -22,6 +22,7 @@ package org.dcache.chimera.nfs.v4.client;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.dcache.chimera.nfs.v4.xdr.stateid4;
 
 /**
  *
@@ -30,6 +31,10 @@ import java.util.List;
  */
 public class StripeMap {
 
+    private stateid4 _stateid;
+    public StripeMap(stateid4 stateid) {
+        _stateid = stateid;
+    }
     /**
      * List off all know stripes.
      */
@@ -63,4 +68,7 @@ public class StripeMap {
         _fileStripeLsit.add(stripe);
     }
 
+    public stateid4 getStateid() {
+        return _stateid;
+    }
 }
