@@ -45,13 +45,6 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
         final SEQUENCE4res res = result.opsequence;
 
-        res.sr_resok4 = new SEQUENCE4resok();
-
-        res.sr_resok4.sr_highest_slotid = new slotid4(_args.opsequence.sa_highest_slotid.value);
-        res.sr_resok4.sr_slotid = new slotid4(_args.opsequence.sa_slotid.value);
-        res.sr_resok4.sr_target_highest_slotid = new slotid4(_args.opsequence.sa_slotid.value);
-        res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
-
         NFSv41Session session = context.getStateHandler().sessionById(_args.opsequence.sa_sessionid);
 
         if (session == null) {
@@ -75,6 +68,14 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
         context.setSession(session);
         context.setSlotId(_args.opsequence.sa_slotid.value.value);
+
+        res.sr_resok4 = new SEQUENCE4resok();
+
+        final uint32_t highestSlot = new uint32_t(session.getHighestSlot());
+        res.sr_resok4.sr_highest_slotid = new slotid4(highestSlot);
+        res.sr_resok4.sr_slotid = new slotid4(_args.opsequence.sa_slotid.value);
+        res.sr_resok4.sr_target_highest_slotid = new slotid4(highestSlot);
+        res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
 
         //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
         res.sr_resok4.sr_sequenceid = _args.opsequence.sa_sequenceid;
