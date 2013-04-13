@@ -47,7 +47,7 @@
     <!--
         NFSv4.1 pNFS Data Server manager
     -->
-    <bean id="device-manager" class="org.dcache.chimera.nfs.v4.DeviceManager">
+    <bean id="device-manager" class="org.dcache.nfs.v4.DeviceManager">
         <description>Device manager</description>
         <property name="dataservers" value="${mds.devices}" />
     </bean>
@@ -68,18 +68,18 @@
         <constructor-arg value="${chimera.db.dialect}" />
     </bean>
 
-    <bean id="vfs-intern" class="org.dcache.chimera.nfs.vfs.ChimeraVfs">
+    <bean id="vfs-intern" class="org.dcache.nfs.vfs.ChimeraVfs">
         <description>Chimera Filesystem</description>
         <constructor-arg ref="fileSystem"/>
         <constructor-arg ref="idmapd"/>
     </bean>
 
-    <bean id="vfs" class="org.dcache.chimera.nfs.vfs.VfsCache">
+    <bean id="vfs" class="org.dcache.nfs.vfs.VfsCache">
         <description>VFS Cache</description>
         <constructor-arg ref="vfs-intern"/>
     </bean>
 
-    <bean id="export" class="org.dcache.chimera.nfs.ExportFile">
+    <bean id="export" class="org.dcache.nfs.ExportFile">
         <description>Export file</description>
         <constructor-arg>
             <bean class="java.io.File">
@@ -91,10 +91,10 @@
     <!--
         NFSv4.1 Operation factory
     -->
-    <bean id="mds-factory-inner" class="org.dcache.chimera.nfs.v4.MDSOperationFactory">
+    <bean id="mds-factory-inner" class="org.dcache.nfs.v4.MDSOperationFactory">
         <description>MDS operation factory</description>
     </bean>
-    <bean id="mds-factory" class="org.dcache.chimera.nfs.v4.OperationFactoryMXBeanImpl">
+    <bean id="mds-factory" class="org.dcache.nfs.v4.OperationFactoryMXBeanImpl">
         <description>MDS operation factory JMX wrapper</description>
         <constructor-arg ref="mds-factory-inner"/>
         <constructor-arg value="mds"/>
@@ -105,7 +105,7 @@
         <constructor-arg value="${ds.base}" />
     </bean>
 
-    <bean id="ds-data-pool" class="org.dcache.chimera.nfs.vfs.FsCache" init-method="init">
+    <bean id="ds-data-pool" class="org.dcache.nfs.vfs.FsCache" init-method="init">
         <property name="base" ref="ds-data-dir" />
         <property name="maxSize" value="1024" />
         <property name="lastAccess" value="30" />
@@ -114,18 +114,18 @@
     <!--
         NFSv4.1 Operation factory
     -->
-    <bean id="ds-factory" class="org.dcache.chimera.nfs.v4.ds.DSOperationFactory"
+    <bean id="ds-factory" class="org.dcache.nfs.v4.ds.DSOperationFactory"
         depends-on="ds-data-pool">
         <description>DS operation factory</description>
         <constructor-arg ref="ds-data-pool" />
     </bean>
 
-    <bean id="idmapd" class="org.dcache.chimera.nfs.v4.SimpleIdMap" />
+    <bean id="idmapd" class="org.dcache.nfs.v4.SimpleIdMap" />
 
     <!--
        NFSv4.1 MDS
     -->
-    <bean id="mds" class="org.dcache.chimera.nfs.v4.NFSServerV41">
+    <bean id="mds" class="org.dcache.nfs.v4.NFSServerV41">
         <description>NFSv4.1 MDS server</description>
         <constructor-arg ref="mds-factory"/>
         <constructor-arg ref="device-manager" />
@@ -137,7 +137,7 @@
     <!--
        NFSv4.1 DS
     -->
-    <bean id="ds" class="org.dcache.chimera.nfs.v4.NFSServerV41">
+    <bean id="ds" class="org.dcache.nfs.v4.NFSServerV41">
         <description>NFSv4.1 DS server</description>
         <constructor-arg index="0" ref="ds-factory"/>
         <constructor-arg index="1" ref="device-manager" />
@@ -148,7 +148,7 @@
     <!--
         MOUNTD server
     -->
-    <bean id="mountd" class="org.dcache.chimera.nfs.v3.MountServer">
+    <bean id="mountd" class="org.dcache.nfs.v3.MountServer">
         <description>Mountd seriver</description>
         <constructor-arg ref="export" />
         <constructor-arg ref="vfs" />
@@ -185,7 +185,7 @@
     <!--
        NFSv3
     -->
-    <bean id="nfs3" class="org.dcache.chimera.nfs.v3.NfsServerV3">
+    <bean id="nfs3" class="org.dcache.nfs.v3.NfsServerV3">
         <description>NFSv3 server</description>
         <constructor-arg ref="vfs" />
         <constructor-arg ref="export" />
