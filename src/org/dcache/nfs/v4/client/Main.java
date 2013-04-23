@@ -391,10 +391,7 @@ public class Main {
                 if (_nfsClient.needUpdate()) {
                     _nfsClient.sequence();
                 }
-            } catch (OncRpcException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (OncRpcException | IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }

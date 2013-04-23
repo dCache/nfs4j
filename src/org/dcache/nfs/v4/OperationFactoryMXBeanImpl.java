@@ -115,13 +115,8 @@ public class OperationFactoryMXBeanImpl implements OperationFactoryMXBean, NFSv4
             if (!server.isRegistered(mxBeanName)) {
                 server.registerMBean(this, new ObjectName(jmxName));
             }
-        } catch (MalformedObjectNameException ex) {
-            _log.log(Level.SEVERE, ex.getMessage(), ex);
-        } catch (InstanceAlreadyExistsException ex) {
-            _log.log(Level.SEVERE, ex.getMessage(), ex);
-        } catch (MBeanRegistrationException ex) {
-            _log.log(Level.SEVERE, ex.getMessage(), ex);
-        } catch (NotCompliantMBeanException ex) {
+        } catch (MalformedObjectNameException | InstanceAlreadyExistsException
+                | MBeanRegistrationException | NotCompliantMBeanException ex) {
             _log.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }

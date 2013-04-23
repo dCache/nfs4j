@@ -643,10 +643,8 @@ public class CompoundBuilder {
             size.xdrEncode(xdr);
             mode.xdrEncode(xdr);
 
-        } catch (OncRpcException never_happens) {
+        } catch (OncRpcException | IOException never_happens) {
             // ignore
-        } catch (IOException never_happens) {
-            // ignored
         }
 
         xdr.endEncoding();
