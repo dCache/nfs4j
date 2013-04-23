@@ -36,8 +36,8 @@ import org.dcache.nfs.FsExport;
  */
 public class PseudoFsNode {
 
-    private final List<FsExport> _exports = new ArrayList<FsExport>();
-    private final Map<String, PseudoFsNode> _children = new HashMap<String, PseudoFsNode>();
+    private final List<FsExport> _exports = new ArrayList<>();
+    private final Map<String, PseudoFsNode> _children = new HashMap<>();
     private Inode _id;
 
     public PseudoFsNode(Inode id) {

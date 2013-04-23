@@ -57,7 +57,7 @@ public class MountServer extends mount_protServerStub {
 
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
     private final ExportFile _exportFile;
-    private final Map<String, Set<String>> _mounts = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> _mounts = new HashMap<>();
     private final VirtualFileSystem _vfs;
 
     public MountServer(ExportFile exportFile, VirtualFileSystem fs) {
@@ -110,7 +110,7 @@ public class MountServer extends mount_protServerStub {
                 Set<String> s = _mounts.get(mountPoint);
                 s.add(call$.getTransport().getRemoteSocketAddress().getHostName());
             } else {
-                Set<String> s = new HashSet<String>();
+                Set<String> s = new HashSet<>();
                 s.add(call$.getTransport().getRemoteSocketAddress().getHostName());
                 _mounts.put(mountPoint, s);
             }

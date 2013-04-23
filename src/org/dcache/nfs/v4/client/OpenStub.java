@@ -153,7 +153,7 @@ public class OpenStub {
 
     private static bitmap4 openFattrBitmap() {
 
-        List<Integer> attrs = new ArrayList<Integer>();
+        List<Integer> attrs = new ArrayList<>();
 
         attrs.add(nfs4_prot.FATTR4_SIZE);
         attrs.add(nfs4_prot.FATTR4_MODE);

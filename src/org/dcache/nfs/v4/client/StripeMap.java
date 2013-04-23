@@ -38,7 +38,7 @@ public class StripeMap {
     /**
      * List off all know stripes.
      */
-    private final List<Stripe> _fileStripeLsit = new ArrayList<Stripe>();
+    private final List<Stripe> _fileStripeLsit = new ArrayList<>();
 
     /**
      * Get list of stripes for the range.
@@ -48,7 +48,7 @@ public class StripeMap {
      */
     public List<Stripe> getStripe(long offset , long len) {
 
-        List<Stripe> ioStripe = new LinkedList<Stripe>();
+        List<Stripe> ioStripe = new LinkedList<>();
 
         for(Stripe stripe: _fileStripeLsit) {
 

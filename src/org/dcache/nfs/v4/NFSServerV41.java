@@ -53,7 +53,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final NfsIdMapping _idMapping;
 
     private static final RequestExecutionTimeGauges<String> GAUGES =
-            new RequestExecutionTimeGauges<String>(NFSServerV41.class.getName());
+            new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
 
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, VirtualFileSystem fs,
@@ -104,7 +104,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     _exportFile, arg1.argarray.length);
 
             res.status = nfsstat.NFS_OK;
-            res.resarray = new ArrayList<nfs_resop4>(arg1.argarray.length);
+            res.resarray = new ArrayList<>(arg1.argarray.length);
             res.tag = arg1.tag;
 
             boolean retransmit = false;

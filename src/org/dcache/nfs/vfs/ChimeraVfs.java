@@ -214,7 +214,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        List<ACE> dacl = new ArrayList<ACE>();
+        List<ACE> dacl = new ArrayList<>();
         for (nfsace4 ace : acl) {
             dacl.add(valueOf(ace, _idMapping));
         }

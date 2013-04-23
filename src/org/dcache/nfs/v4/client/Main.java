@@ -78,7 +78,7 @@ import org.dcache.xdr.OncRpcException;
 public class Main {
 
     private final nfs4_prot_NFS4_PROGRAM_Client _nfsClient;
-    private final Map<deviceid4, FileIoDevice> _knowDevices = new HashMap<deviceid4, FileIoDevice>();
+    private final Map<deviceid4, FileIoDevice> _knowDevices = new HashMap<>();
     private nfs_fh4 _cwd = null;
     private nfs_fh4 _rootFh = null;
     // FIXME:
@@ -118,7 +118,7 @@ public class Main {
         PrintWriter out = new PrintWriter(System.out);
         ConsoleReader reader = new ConsoleReader(System.in, out);
         reader.setUseHistory(true);
-        List<SimpleCompletor> completors = new LinkedList<SimpleCompletor>();
+        List<SimpleCompletor> completors = new LinkedList<>();
         completors.add(new SimpleCompletor(commands));
         reader.addCompletor(new ArgumentCompletor(completors));
 
@@ -346,7 +346,7 @@ public class Main {
      */
     private void filebomb(int count) throws OncRpcException, IOException {
 
-        List<String> files = new ArrayList<String>(count);
+        List<String> files = new ArrayList<>(count);
         long start = System.currentTimeMillis();
         try {
             for (int i = 0; i < count; i++) {
@@ -562,7 +562,7 @@ public class Main {
     public String[] list(nfs_fh4 fh) throws OncRpcException, IOException, ChimeraNFSException {
 
         boolean done;
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         long cookie = 0;
         verifier4 verifier = new verifier4(new byte[nfs4_prot.NFS4_VERIFIER_SIZE]);
 
@@ -595,7 +595,7 @@ public class Main {
     public String[] list(nfs_fh4 fh, String path) throws OncRpcException, IOException, ChimeraNFSException {
 
         boolean done;
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         long cookie = 0;
         verifier4 verifier = new verifier4(new byte[nfs4_prot.NFS4_VERIFIER_SIZE]);
 

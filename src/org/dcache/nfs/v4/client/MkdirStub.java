@@ -74,7 +74,7 @@ public class MkdirStub {
 
     private static bitmap4 openFattrBitmap() {
 
-        List<Integer> attrs = new ArrayList<Integer>();
+        List<Integer> attrs = new ArrayList<>();
 
         attrs.add(nfs4_prot.FATTR4_MODE);
 

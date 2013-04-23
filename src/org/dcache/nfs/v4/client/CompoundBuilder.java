@@ -106,7 +106,7 @@ public class CompoundBuilder {
     private final utf8string NO_TAG = new utf8string(new byte[0]);
     private utf8string tag = NO_TAG;
     private int minorversion = 1;
-    private List<nfs_argop4> ops = new ArrayList<nfs_argop4>();
+    private List<nfs_argop4> ops = new ArrayList<>();
 
     public CompoundBuilder withTag(String tag) {
         this.tag = new utf8string(tag);
@@ -600,7 +600,7 @@ public class CompoundBuilder {
 
     private static bitmap4 openFattrBitmap() {
 
-        List<Integer> attrs = new ArrayList<Integer>();
+        List<Integer> attrs = new ArrayList<>();
 
         attrs.add(nfs4_prot.FATTR4_SIZE);
         attrs.add(nfs4_prot.FATTR4_MODE);

@@ -68,11 +68,11 @@ public class DeviceManager implements NFSv41DeviceManager {
     private final Random _deviceIdGenerator = new Random();
 
     private final Map<deviceid4, device_addr4> _deviceMap =
-            new ConcurrentHashMap<deviceid4, device_addr4>();
+            new ConcurrentHashMap<>();
 
     private InetSocketAddress[] _knownDataServers;
     private final StripingPattern<InetSocketAddress> _stripingPattern = new
-            RoundRobinStripingPattern<InetSocketAddress>();
+            RoundRobinStripingPattern<>();
 
     /**
      * Set configures data servers. Each string represents a dataserver
@@ -152,7 +152,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     @Override
     public List<deviceid4> getDeviceList(CompoundContext context) {
-        return new ArrayList<deviceid4>(_deviceMap.keySet());
+        return new ArrayList<>(_deviceMap.keySet());
     }
 
     /*

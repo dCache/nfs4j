@@ -61,7 +61,7 @@ public class ExportFile {
     private static List<FsExport> parse(URL exportFile) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()));
-        List<FsExport> exports = new ArrayList<FsExport>();
+        List<FsExport> exports = new ArrayList<>();
 
         String line;
         try {

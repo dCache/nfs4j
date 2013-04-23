@@ -401,7 +401,7 @@ public class PseudoFs implements VirtualFileSystem {
                 if (node.isMountPoint()) {
                     return Lists.transform(_inner.list(parent), new ConvertToRealInode(node));
                 } else {
-                    List<DirectoryEntry> pseudoLs = new ArrayList<DirectoryEntry>();
+                    List<DirectoryEntry> pseudoLs = new ArrayList<>();
                     for (String s : node.getChildren()) {
                         PseudoFsNode subNode = node.getChild(s);
                         Inode inode = subNode.id();
@@ -455,7 +455,7 @@ public class PseudoFs implements VirtualFileSystem {
         }
 
         Splitter splitter = Splitter.on('/').omitEmptyStrings();
-        Set<PseudoFsNode> pathNodes = new HashSet<PseudoFsNode>();
+        Set<PseudoFsNode> pathNodes = new HashSet<>();
 
         for (String s : splitter.split(path)) {
             try {
@@ -480,7 +480,7 @@ public class PseudoFs implements VirtualFileSystem {
 
         Iterable<FsExport> exports = _exportFile.exportsFor(_inetAddress);
 
-        Set<PseudoFsNode> nodes = new HashSet<PseudoFsNode>();
+        Set<PseudoFsNode> nodes = new HashSet<>();
         Inode rootInode = realToPseudo(_inner.getRootInode());
         PseudoFsNode root = new PseudoFsNode(rootInode);
 

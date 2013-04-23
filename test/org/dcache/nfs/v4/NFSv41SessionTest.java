@@ -55,7 +55,7 @@ public class NFSv41SessionTest {
     public void testHighestSlotUsed() throws ChimeraNFSException {
 
         int slotToUse = _session.getHighestSlot() / 2;
-        List<nfs_resop4> reply = new ArrayList<nfs_resop4>();
+        List<nfs_resop4> reply = new ArrayList<>();
         _session.updateSlotCache(slotToUse, reply);
 
         assertEquals("invalid highest slot id on empty session", slotToUse, _session.getHighestUsedSlot());
@@ -65,7 +65,7 @@ public class NFSv41SessionTest {
     public void testInvalidSlotAccess() throws ChimeraNFSException {
 
         int slotToUse = _session.getHighestSlot() + 1;
-        List<nfs_resop4> reply = new ArrayList<nfs_resop4>();
+        List<nfs_resop4> reply = new ArrayList<>();
         _session.updateSlotCache(slotToUse, reply);
     }
 

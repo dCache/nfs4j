@@ -62,7 +62,7 @@ public class GetattrStub {
 
     public static List<Integer> supportedAttrs(bitmap4 bitmap) {
 
-        List<Integer> supported = new ArrayList<Integer>();
+        List<Integer> supported = new ArrayList<>();
 
         // TODO:
 
@@ -84,7 +84,7 @@ public class GetattrStub {
 
     public static Attrs decodeType(fattr4 attributes) throws OncRpcException, IOException  {
 
-        Map<Integer,Object> attr = new HashMap<Integer, Object>();
+        Map<Integer,Object> attr = new HashMap<>();
 
 
         int[] mask = new int[attributes.attrmask.value.length];
