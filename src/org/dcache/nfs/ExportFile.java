@@ -60,11 +60,10 @@ public class ExportFile {
 
     private static List<FsExport> parse(URL exportFile) throws IOException {
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()));
         List<FsExport> exports = new ArrayList<>();
 
         String line;
-        try {
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()))) {
             while ((line = br.readLine()) != null) {
 
                 line = line.trim();
@@ -139,12 +138,6 @@ public class ExportFile {
                     exports.add(export);
                 }
 
-            }
-        } finally {
-            try {
-                br.close();
-            } catch (IOException dummy) {
-                // ignored
             }
         }
 

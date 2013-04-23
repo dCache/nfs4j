@@ -764,11 +764,7 @@ public class Main {
         if (_isMDS) {
 
             StripeMap stripeMap = layoutget(or.fh(), or.stateid(), layoutiomode4.LAYOUTIOMODE4_RW);
-
-            RandomAccessFile raf = null;
-            try {
-
-                raf = new RandomAccessFile(source, "r");
+            try (RandomAccessFile raf = new RandomAccessFile(source, "r")) {
                 byte[] data = new byte[4096];
                 long offset = 0;
                 while (true) {
@@ -800,9 +796,6 @@ public class Main {
             } catch (IOException ie) {
                 System.out.println("Write failed: " + ie.getMessage());
             } finally {
-                if (raf != null) {
-                    raf.close();
-                }
                 layoutreturn(or.fh(), 0, -1, new byte[0], stripeMap.getStateid());
             }
 
