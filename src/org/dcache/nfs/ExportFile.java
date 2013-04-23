@@ -29,14 +29,12 @@ import java.util.List;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -56,8 +54,8 @@ public class ExportFile {
         _exports = parse(_exportFile);
     }
 
-    public List<FsExport> getExports() {
-        return Lists.newArrayList(_exports);
+    public Iterable<FsExport> getExports() {
+        return _exports;
     }
 
     private static List<FsExport> parse(URL exportFile) throws IOException {
@@ -234,8 +232,7 @@ public class ExportFile {
     // FIXME: one trusted client has an access to all tree
     public boolean isTrusted(java.net.InetAddress client) {
 
-        List<FsExport> exports = getExports();
-        for (FsExport export : exports) {
+        for (FsExport export : getExports()) {
             if (export.isTrusted(client)) {
                 return true;
             }
@@ -244,8 +241,8 @@ public class ExportFile {
     }
 
 
-    public Collection<FsExport> exportsFor(InetAddress client) {
-        return Collections2.filter(_exports, new AllowedExports(client));
+    public Iterable<FsExport> exportsFor(InetAddress client) {
+        return Iterables.filter(_exports, new AllowedExports(client));
     }
 
     private static class AllowedExports implements Predicate<FsExport> {

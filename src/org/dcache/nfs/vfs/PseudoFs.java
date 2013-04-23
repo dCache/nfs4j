@@ -25,7 +25,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -479,11 +478,7 @@ public class PseudoFs implements VirtualFileSystem {
 
     private Set<PseudoFsNode> prepareExportTree() throws ChimeraNFSException, IOException {
 
-        Collection<FsExport> exports = _exportFile.exportsFor(_inetAddress);
-        if (exports.isEmpty()) {
-            _log.warn("No exports found for: {}", _inetAddress);
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
-        }
+        Iterable<FsExport> exports = _exportFile.exportsFor(_inetAddress);
 
         Set<PseudoFsNode> nodes = new HashSet<PseudoFsNode>();
         Inode rootInode = realToPseudo(_inner.getRootInode());
@@ -491,6 +486,11 @@ public class PseudoFs implements VirtualFileSystem {
 
         for (FsExport export : exports) {
             pathToPseudoFs(root, nodes, export);
+        }
+
+        if (nodes.isEmpty()) {
+            _log.warn("No exports found for: {}", _inetAddress);
+            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
         }
 
         nodes.add(root);

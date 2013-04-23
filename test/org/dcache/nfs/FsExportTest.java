@@ -19,13 +19,11 @@
  */
 package org.dcache.nfs;
 
-import org.dcache.nfs.ExportFile;
-import org.dcache.nfs.FsExport;
+import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +41,8 @@ public class FsExportTest {
     @Test
     public void testIsEmpty() {
 
-        List<FsExport> exports = _exportFile.getExports();
-        assertFalse("Export file should not produce empty export list", exports.isEmpty());
+        Iterable<FsExport> exports = _exportFile.getExports();
+        assertFalse("Export file should not produce empty export list", Iterables.isEmpty(exports));
     }
 
     @Test

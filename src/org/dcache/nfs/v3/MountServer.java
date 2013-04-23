@@ -270,7 +270,7 @@ public class MountServer extends mount_protServerStub {
         }
     }
 
-    private Multimap<String, String> groupBy(Collection<FsExport> exports) {
+    private Multimap<String, String> groupBy(Iterable<FsExport> exports) {
         Multimap<String, String> asMultiMap = HashMultimap.create();
         for ( FsExport export: exports) {
             asMultiMap.put(export.getPath(), export.client());
