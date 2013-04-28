@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -129,55 +129,36 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
     static fattr4 getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context)
             throws IOException, OncRpcException {
 
-        int[] mask = new int[bitmap.value.length];
-        for( int i = 0; i < mask.length; i++) {
-            mask[i] = bitmap.value[i].value;
-            _log.debug("getAttributes[{}]: {}", i, Integer.toBinaryString(mask[i]) );
-        }
-
-        int[] retMask = new int[mask.length];
+        /*
+         * bitmap we send back. can't be uninitialized.
+         */
+        bitmap4 processedAttributes = new bitmap4(new uint32_t[0]);
 
         XdrBuffer xdr = new XdrBuffer(1024);
         xdr.beginEncoding();
 
-        if( mask.length != 0 ) {
-            int maxAttr = 32*mask.length;
-            for( int i = 0; i < maxAttr; i++) {
-
-                int newmask = (mask[i/32] >> (i-(32*(i/32))) );
-                if( (newmask & 1) > 0 ) {
-                        Optional<XdrAble> optionalAttr = (Optional<XdrAble>)fattr2xdr(i, fs, inode, stat, context);
-                        if( optionalAttr.isPresent()) {
-                            XdrAble attr = optionalAttr.get();
-                            _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i) );
-                            attr.xdrEncode(xdr);
-                            int attrmask = 1 << (i-(32*(i/32)));
-                            retMask[i/32] |= attrmask;
-                        }else{
-                            _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.", i, attrMask2String(i) );
-                        }
-                }
-
+        for (int i : bitmap) {
+            Optional<XdrAble> optionalAttr = (Optional<XdrAble>) fattr2xdr(i, fs, inode, stat, context);
+            if (optionalAttr.isPresent()) {
+                XdrAble attr = optionalAttr.get();
+                _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i));
+                attr.xdrEncode(xdr);
+                processedAttributes.set(i);
+            } else {
+                _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.", i, attrMask2String(i));
             }
-
         }
+
         xdr.endEncoding();
         Buffer body = xdr.asBuffer();
         byte[] retBytes = new byte[body.remaining()] ;
         body.get(retBytes);
 
         fattr4 attributes = new fattr4();
-        attributes.attrmask = new bitmap4();
-        attributes.attrmask.value = new uint32_t[retMask.length];
-        for( int i = 0; i < retMask.length; i++) {
-            attributes.attrmask.value[i] = new uint32_t(retMask[i]);
-            _log.debug("getAttributes[{}] reply : {}", i, Integer.toBinaryString(retMask[i]) );
-
-        }
+        attributes.attrmask = processedAttributes;
         attributes.attr_vals = new attrlist4(retBytes);
 
         return attributes;
-
     }
 
     static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context)

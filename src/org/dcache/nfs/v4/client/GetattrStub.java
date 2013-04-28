@@ -96,9 +96,10 @@ public class GetattrStub {
         xdr.beginDecoding();
 
         if( mask.length != 0 ) {
-            int maxAttr = 32*mask.length;
+            int maxAttr = Integer.SIZE * mask.length;
             for( int i = 0; i < maxAttr; i++) {
-                int newmask = (mask[i/32] >> (i-(32*(i/32))) );
+                int bitmapIdx = i / Integer.SIZE;
+                int newmask = mask[bitmapIdx] >> i % Integer.SIZE;
                 if( (newmask & 1L) != 0 ) {
                     xdr2fattr(attr, i, xdr);
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -79,48 +79,29 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException, OncRpcException {
 
-        _log.debug("set Attribute length: {}", attributes.attrmask.value.length);
-
-        int[] mask = new int[attributes.attrmask.value.length];
-        for( int i = 0; i < mask.length; i++) {
-            mask[i] = attributes.attrmask.value[i].value;
-            _log.debug("setAttributes[{}]: {}", i, Integer.toBinaryString(mask[i]));
-        }
-
         XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
         xdr.beginDecoding();
 
-        int[] retMask = new int[mask.length];
+        /*
+         * bitmap we send back. can't be uninitialized.
+         */
+        bitmap4 processedAttributes = new bitmap4(new uint32_t[0]);
         Stat stat = context.getFs().getattr(inode);
 
-        if( mask.length != 0 ) {
-            int maxAttr = 32*mask.length;
-            for( int i = 0; i < maxAttr; i++) {
-                int newmask = (mask[i/32] >> (i-(32*(i/32))) );
-                if( (newmask & 1L) != 0 ) {
-                    if( xdr2fattr(i, stat, inode, context, xdr) ) {
-                        _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
-                        int attrmask = 1 << (i-(32*(i/32)));
-                        retMask[i/32] |= attrmask;
-                    }else{
-                        _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
-                        throw new ChimeraNFSException( nfsstat.NFSERR_ATTRNOTSUPP, "attribute "+ OperationGETATTR.attrMask2String(i) +" not supported");
-                    }
-                }
+        for (int i : attributes.attrmask) {
+            if (xdr2fattr(i, stat, inode, context, xdr)) {
+                _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
+                processedAttributes.set(i);
+            } else {
+                _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
+                throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "attribute " + OperationGETATTR.attrMask2String(i) + " not supported");
             }
         }
 
         xdr.endDecoding();
 
         context.getFs().setattr(inode, stat);
-
-        bitmap4 bitmap = new bitmap4();
-        bitmap.value = new uint32_t[retMask.length];
-        for(int k = 0; k < retMask.length; k++) {
-            bitmap.value[k] = new uint32_t(retMask[k]);
-        }
-
-        return bitmap;
+        return processedAttributes;
     }
 
     static boolean xdr2fattr( int fattr , Stat stat, Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
