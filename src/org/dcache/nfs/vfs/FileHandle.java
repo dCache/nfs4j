@@ -39,6 +39,8 @@ public class FileHandle {
     private final static int VERSION = 1;
     private final static int MAGIC = 0xCAFFEE;
     private final static byte[] EMPTY_FH = new byte[0];
+    private final static byte[] FH_V0_REG = new byte[] {0x30, 0x3a};
+    private final static byte[] FH_V0_PFS = new byte[] {0x32, 0x35, 0x35, 0x3a};
 
     private final int version;
     private final int magic;
@@ -66,22 +68,44 @@ public class FileHandle {
         b.order(ByteOrder.BIG_ENDIAN);
 
         int magic_version = b.getInt();
-        version = (magic_version & 0xFF000000) >>> 24;
-        if (version != VERSION) {
-            throw new IllegalArgumentException("Unsupported version: " + version);
-        }
+        int geussVersion = (magic_version & 0xFF000000) >>> 24;
+        if (geussVersion == VERSION) {
+            version = geussVersion;
+            magic = magic_version & 0x00FFFFFF;
+            if (magic != MAGIC) {
+                throw new IllegalArgumentException("Bad magic number");
+            }
 
-        magic = magic_version & 0x00FFFFFF;
-        if (magic != MAGIC) {
-            throw new IllegalArgumentException("Bad magic number");
-        }
+            generation = b.getInt();
+            exportIdx = b.getInt();
+            type = (int) b.get();
+            int olen = (int) b.get();
+            fs_opaque = new byte[olen];
+            b.get(fs_opaque);
 
-        generation = b.getInt();
-        exportIdx = b.getInt();
-        type = (int) b.get();
-        int olen = (int) b.get();
-        fs_opaque = new byte[olen];
-        b.get(fs_opaque);
+        } else if (arrayEquals(bytes, FH_V0_REG, FH_V0_REG.length)
+                || arrayEquals(bytes, FH_V0_PFS, FH_V0_PFS.length)) {
+            magic = MAGIC;
+            generation = 0;
+            type = bytes[1] == FH_V0_REG[1] ? 0 : 1;
+            if (type == 1) {
+                /*
+                 * convert pseudo inode into real one: '255:' => '0:'
+                 * NOTICE: the converted handle will present himself as version 1
+                 */
+                version = 1;
+                exportIdx = 0;
+                fs_opaque = new byte[bytes.length -2];
+                System.arraycopy(bytes, 2, fs_opaque, 0, fs_opaque.length);
+                fs_opaque[0] = 0x30;
+            } else {
+                version = 0;
+                exportIdx = -1;
+                fs_opaque = bytes;
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported version: " + geussVersion);
+        }
     }
 
     public int getVersion() {
@@ -126,6 +150,16 @@ public class FileHandle {
     @Override
     public String toString() {
         return Bytes.toHexString(this.bytes());
+    }
+
+    private static boolean arrayEquals(byte[] a1, byte[] a2, int len) {
+        if (a1.length < len || a2.length < len) return false;
+        for (int i = 0; i < len; i++) {
+            if (a1[i] != a2[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static class FileHandleBuilder {

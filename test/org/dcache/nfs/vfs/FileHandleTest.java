@@ -45,7 +45,7 @@ public class FileHandleTest {
     }
 
     @Test
-    public void testValidHandle() {
+    public void testValidHandleV1() {
         byte[] bytes = fromHexString("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         FileHandle fh = new FileHandle(bytes);
 
@@ -68,6 +68,39 @@ public class FileHandleTest {
                 fh.toString());
         assertArrayEquals(fromHexString("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
                 fh.bytes());
+    }
+
+    @Test
+    public void testValidHandleV0Regular() {
+        String oldId = "0:INODE:0000C37233174392456EB83E44844E8D28D6:0";
+
+        byte[] bytes = oldId.getBytes(ACSII);
+        FileHandle fh = new FileHandle(bytes);
+
+        assertEquals(0, fh.getVersion());
+        assertEquals(0xCAFFEE, fh.getMagic());
+        assertEquals(0, fh.getGeneration());
+        byte[] opaque = fh.getFsOpaque();
+        assertEquals(-1, fh.getExportIdx());
+        assertEquals(0, fh.getType());
+        assertEquals(oldId, new String(opaque, ACSII));
+    }
+
+    @Test
+    public void testValidHandleV0Pseudo() {
+        String oldIdPseudo = "255:INODE:0000C37233174392456EB83E44844E8D28D6:0";
+        String oldIdReg = "0:INODE:0000C37233174392456EB83E44844E8D28D6:0";
+
+        byte[] bytes = oldIdPseudo.getBytes(ACSII);
+        FileHandle fh = new FileHandle(bytes);
+
+        assertEquals(1, fh.getVersion());
+        assertEquals(0xCAFFEE, fh.getMagic());
+        assertEquals(0, fh.getGeneration());
+        byte[] opaque = fh.getFsOpaque();
+        assertEquals(0, fh.getExportIdx());
+        assertEquals(1, fh.getType());
+        assertEquals(oldIdReg, new String(opaque, ACSII));
     }
 
     private static byte[] fromHexString(String s) {
