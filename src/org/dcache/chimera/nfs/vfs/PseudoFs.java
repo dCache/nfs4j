@@ -22,6 +22,7 @@ package org.dcache.chimera.nfs.vfs;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -282,7 +283,7 @@ public class PseudoFs implements VirtualFileSystem {
         }
 
         if (!inode.isPesudoInode()) {
-            int exportIdx = inode.exportIndex();
+            int exportIdx = getExportIndex(inode);
             FsExport export = _exportFile.getExport(exportIdx, _inetAddress);
             if (exportIdx != 0 && export == null) {
                 if (shouldLog) {
@@ -438,7 +439,19 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     private Inode pushExportIndex(Inode parent, Inode inode) {
-        return pushExportIndex(inode, parent.exportIndex());
+        return pushExportIndex(inode, getExportIndex(parent));
+    }
+
+    private int getExportIndex(Inode inode) {
+        /*
+         * NOTE, we take first export entry allowed for this client.
+         * This can be wrong, e.g. RO vs. RW.
+         */
+        if (inode.handleVersion() == 0) {
+            FsExport export = Iterables.getFirst(_exportFile.exportsFor(_inetAddress), null);
+            return export == null? -1 : export.getIndex();
+        }
+        return inode.exportIndex();
     }
 
     private Inode realToPseudo(Inode inode) {
