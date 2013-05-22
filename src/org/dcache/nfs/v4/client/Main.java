@@ -104,6 +104,7 @@ public class Main {
             "cd",
             "ls",
             "lookup",
+            "lookup-fh",
             "mkdir",
             "read",
             "readatonce",
@@ -200,6 +201,19 @@ public class Main {
                         continue;
                     }
                     nfsClient.lookup(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("lookup-fh")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 3) {
+                        System.out.println("usage: lookup-fh <fh> <path>");
+                        continue;
+                    }
+                    nfsClient.lookup(commandArgs[1], commandArgs[2]);
 
                 } else if (commandArgs[0].equals("getattr")) {
 
@@ -1068,6 +1082,20 @@ public class Main {
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
+    }
+
+    private void lookup(String fh, String path) throws OncRpcException, IOException {
+
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value.value, 12, 0)
+                .withPutfh( new nfs_fh4(fh.getBytes()))
+                .withLookup(path)
+                .withGetfh()
+                .withTag("lookup-with-id")
+                .build();
+
+        COMPOUND4res compound4res = sendCompound(args);
+        System.out.println("fh = " + Bytes.toHexString(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object.value));
     }
 
     private void getattr(String path) throws OncRpcException, IOException {
