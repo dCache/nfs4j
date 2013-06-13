@@ -334,7 +334,9 @@ public class PseudoFs implements VirtualFileSystem {
         boolean isDir = (mode & UnixPermission.S_IFDIR) == UnixPermission.S_IFDIR;
         int fromUnixMask;
 
-        if (Subjects.hasUid(subject, stat.getUid())) {
+        if (Subjects.isRoot(subject)) {
+            fromUnixMask = Acls.toAccessMask(Acls.RBIT | Acls.WBIT | Acls.XBIT, isDir, true);
+        } else if (Subjects.hasUid(subject, stat.getUid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OWNER_OFFSET, isDir, true);
         } else if (Subjects.hasGid(subject, stat.getGid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_GROUP_OFFSET, isDir, false);
