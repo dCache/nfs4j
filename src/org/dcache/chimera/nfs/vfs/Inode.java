@@ -70,6 +70,10 @@ public class Inode {
         return fh.getExportIdx();
     }
 
+    public int handleVersion() {
+        return fh.getVersion();
+    }
+
     @Override
     public String toString() {
         return fh.toString();
