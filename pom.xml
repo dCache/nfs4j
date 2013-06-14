@@ -13,8 +13,8 @@
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
     <scm>
-        <connection>scm:git: https://github.com/kofemann/jpnfs.git</connection>
-        <developerConnection>scm:git: https://github.com/kofemann/jpnfs.git</developerConnection>
+        <connection>scm:git:https://github.com/dCache/jpnfs.git</connection>
+        <developerConnection>scm:git:https://github.com/dCache/jpnfs.git</developerConnection>
     </scm>
 
     <!--
