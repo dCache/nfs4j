@@ -39,7 +39,8 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result)
+            throws ChimeraNFSException, IOException {
         final CLOSE4res res = result.opclose;
 
         Inode inode = context.currentInode();
@@ -52,11 +53,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
              * Nevertheless, NFSERR_BAD_STATEID is throws if state is invalid.
              */
             NFS4State state = context.getSession().getClient().state(_args.opclose.open_stateid);
-            try {
-                context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
-            } catch (IOException e) {
-                _log.error("Failed to return a layout: {}", e.getMessage());
-            }
+            context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
         } else {
             context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
         }
