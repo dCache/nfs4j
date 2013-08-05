@@ -37,6 +37,7 @@ import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
+import org.dcache.chimera.StorageGenericLocation;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.chimera.nfs.ChimeraNFSException;
 import org.dcache.chimera.nfs.nfsstat;
@@ -261,7 +262,19 @@ public class ChimeraVfs implements VirtualFileSystem {
 
     @Override
     public int access(Inode inode, int mode) throws IOException {
-        return mode;
+
+        int accessmask = mode;
+        if ((mode & (ACCESS4_MODIFY | ACCESS4_EXTEND)) != 0) {
+
+            FsInode fsInode = toFsInode(inode);
+            if (!fsInode.isDirectory() && (!_fs.getInodeLocations(fsInode, StorageGenericLocation.TAPE).isEmpty()
+                    || !_fs.getInodeLocations(fsInode, StorageGenericLocation.DISK).isEmpty())) {
+
+                accessmask ^= (ACCESS4_MODIFY | ACCESS4_EXTEND);
+            }
+        }
+
+        return accessmask;
     }
 
     @Override

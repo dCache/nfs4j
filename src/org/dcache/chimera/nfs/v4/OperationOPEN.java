@@ -148,7 +148,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         inode = context.getFs().lookup(context.currentInode(), name);
                         stat = context.getFs().getattr(inode);
 
-                        if ( context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0) {
+                        if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_READ) != 0
+                                && (context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0)) {
+                            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                        }
+
+                        if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0
+                                && (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0)) {
                             throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
                         }
 
@@ -164,13 +170,44 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     context.currentInode(inode);
 
                     break;
-                case open_claim_type4.CLAIM_PREVIOUS:
+
+                case open_claim_type4.CLAIM_FH:
+
                     _log.debug("open by Inode for : {}", context.currentInode());
+
+                    inode = context.currentInode();
+                    stat = context.getFs().getattr(inode);
+
+                    if ((_args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_READ)
+                            && (context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0)) {
+                        throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                    }
+
+                    if ((_args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_BOTH
+                            || _args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_WRITE)
+                            && (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0)) {
+                        throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                    }
+
+                    if (stat.type() == Stat.Type.DIRECTORY) {
+                        throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+                    }
+
+                    if (stat.type() == Stat.Type.SYMLINK) {
+                        throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "path is a symlink");
+                    }
                     break;
+                case open_claim_type4.CLAIM_PREVIOUS:
                 case open_claim_type4.CLAIM_DELEGATE_CUR:
-                    break;
                 case open_claim_type4.CLAIM_DELEGATE_PREV:
-                    break;
+                case open_claim_type4.CLAIM_DELEG_CUR_FH:
+                case open_claim_type4.CLAIM_DELEG_PREV_FH:
+                    _log.warn("Unimplemented open claim: {}", _args.opopen.claim.claim);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "Unimplemented open claim: {}" + _args.opopen.claim.claim);
+                default:
+                    _log.warn("BAD open claim: {}", _args.opopen.claim.claim);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "BAD open claim: {}" + _args.opopen.claim.claim);
+
             }
 
             res.resok4.cinfo = new change_info4();
