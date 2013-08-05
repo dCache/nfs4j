@@ -115,7 +115,7 @@ public class PseudoFs implements VirtualFileSystem {
             }
         }
 
-        return accessmask;
+        return accessmask & _inner.access(inode, accessmask);
     }
 
     @Override
