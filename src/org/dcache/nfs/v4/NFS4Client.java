@@ -336,8 +336,13 @@ public class NFS4Client {
         _sessions.remove(session.getSequence());
     }
 
-    public boolean sessionsEmpty(NFSv41Session session) {
-        return _sessions.isEmpty();
+    /**
+     * Tell if there are any sessions owned by the client.
+     *
+     * @return true if client has at least one session.
+     */
+    public boolean hasSessions() {
+        return !_sessions.isEmpty();
     }
 
     public Principal principal() {

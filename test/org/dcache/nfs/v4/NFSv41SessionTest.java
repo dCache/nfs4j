@@ -40,10 +40,12 @@ import static org.junit.Assert.*;
 public class NFSv41SessionTest {
 
     private NFSv41Session _session;
+    private NFS4Client _client;
 
     @Before
-    public void setUp() throws UnknownHostException {
-        _session = new NFSv41Session(createClient(), 1, 10);
+    public void setUp() throws UnknownHostException, ChimeraNFSException {
+        _client = createClient();
+        _session = _client.createSession(1, 10);
     }
 
     @Test
@@ -67,6 +69,13 @@ public class NFSv41SessionTest {
         int slotToUse = _session.getHighestSlot() + 1;
         List<nfs_resop4> reply = new ArrayList<>();
         _session.updateSlotCache(slotToUse, reply);
+    }
+
+    @Test
+    public void testSessionRemove() throws ChimeraNFSException {
+        assertTrue(_client.hasSessions());
+        _client.removeSession(_session);
+        assertFalse(_client.hasSessions());
     }
 
     static NFS4Client createClient() throws UnknownHostException {

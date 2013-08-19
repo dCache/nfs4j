@@ -54,7 +54,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
         NFS4Client client = session.getClient();
 
-        if (client.sessionsEmpty(session)) {
+        if (!client.hasSessions()) {
             _log.debug("no client for session for id [{}]", _args.opsequence.sa_sessionid);
             throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
         }
