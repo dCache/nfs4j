@@ -19,6 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
+import java.net.UnknownHostException;
+
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.client.CloseStub;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -31,15 +34,18 @@ import org.dcache.nfs.vfs.Inode;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class NFS4ClientTest {
 
     private NFSv4StateHandler stateHandler;
+    private NFS4Client nfsClient;
 
     @Before
-    public void setUp() {
+    public void setUp() throws UnknownHostException, ChimeraNFSException {
         stateHandler = new NFSv4StateHandler();
+        nfsClient = createClient(stateHandler);
     }
 
     @Test
@@ -47,8 +53,6 @@ public class NFS4ClientTest {
         CompoundContext context;
         nfs_resop4 result;
 
-
-        NFS4Client nfsClient = createClient(stateHandler);
         NFSv41Session session = nfsClient.createSession(1, 2);
         NFS4State state = nfsClient.createState();
 
@@ -74,7 +78,6 @@ public class NFS4ClientTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        NFS4Client nfsClient = createClient(stateHandler);
         NFS4State state = nfsClient.createState();
 
         nfs_argop4 close_args = CloseStub.generateRequest(state.stateid());
@@ -92,4 +95,27 @@ public class NFS4ClientTest {
         assertFalse("client state not cleaned", nfsClient.hasState());
     }
 
+    @Test
+    public void testInitiallyNoStates() throws ChimeraNFSException {
+        assertFalse(nfsClient.hasState());
+    }
+
+    @Test
+    public void testAttacheDetachState() throws ChimeraNFSException {
+        NFS4State state = new NFS4State(0, 0);
+
+        nfsClient.attachState(state);
+        assertTrue(nfsClient.hasState());
+
+        nfsClient.detachState(state);
+        assertFalse(nfsClient.hasState());
+    }
+
+    @Test
+    public void testCreateState() throws ChimeraNFSException {
+        NFS4State state = nfsClient.createState();
+        assertTrue(nfsClient.hasState());
+    }
+
 }
+

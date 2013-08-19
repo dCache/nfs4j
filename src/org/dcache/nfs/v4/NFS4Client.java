@@ -155,6 +155,8 @@ public class NFS4Client {
      */
     private final long _leaseTime;
 
+    private boolean _disposed;
+
     public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
             byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime) {
 
@@ -360,5 +362,43 @@ public class NFS4Client {
 
     public boolean hasState() {
         return !_clientStates.isEmpty();
+    }
+
+    /**
+     * Attach the state to the client.
+     *
+     * @param state to attach
+     */
+    public void attachState(NFS4State state) {
+        _clientStates.put(state.stateid(), state);
+    }
+
+    /**
+     * Detach a state from the client.
+     *
+     * @param state to detach
+     */
+    public void detachState(NFS4State state) {
+        _clientStates.remove(state.stateid());
+    }
+
+    /**
+     * Release resources used by this client if not released yet. Any subsequent
+     * call will have no effect.
+     */
+    public final void tryDispose() {
+        if (!_disposed) {
+            dispose();
+            _disposed = true;
+        }
+    }
+
+    /**
+     * Release resources used by this client.
+     */
+    protected void dispose() {
+        for (NFS4State state : _clientStates.values()) {
+            state.tryDispose();
+        }
     }
 }

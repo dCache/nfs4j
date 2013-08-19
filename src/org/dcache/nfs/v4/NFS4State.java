@@ -21,10 +21,9 @@ package org.dcache.nfs.v4;
 
 import java.security.SecureRandom;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.utils.Bytes;
 
-class NFS4State {            
+public class NFS4State {
         
     /*
         struct stateid4 {
@@ -44,20 +43,27 @@ class NFS4State {
 		        	
     private final stateid4 _stateid;
     private boolean _isConfimed = false;
+    private boolean _disposed = false;
 
     /**
      * Random generator to generate stateids.
      */
     private static final SecureRandom RANDOM = new SecureRandom();
-    
-    public NFS4State(long clientid, int seqid) {
 
-        _stateid = new stateid4();
-        _stateid.other = new byte[12];        
-        _stateid.seqid = new uint32_t(seqid);
-        // generated using a cryptographically strong pseudo random number generator.
-        Bytes.putLong(_stateid.other, 0, clientid);
-        Bytes.putInt(_stateid.other, 8, RANDOM.nextInt());
+    public NFS4State(stateid4 stateid) {
+        _stateid = stateid;
+
+    }
+
+    public NFS4State(long clientid, int seqid) {
+        this( new stateid4(generateState(clientid), seqid));
+    }
+
+    private static byte[] generateState(long clientid) {
+        byte[] other = new byte[12];
+        Bytes.putLong(other, 0, clientid);
+        Bytes.putInt(other, 8, RANDOM.nextInt());
+        return other;
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
@@ -73,22 +79,22 @@ class NFS4State {
     public boolean isConfimed() {
     	return _isConfimed;
     }
+
+    /**
+     * Release resources used by this State if not released yet.
+     * Any subsequent call will have no effect.
+     */
+    synchronized public final void tryDispose() {
+        if (!_disposed) {
+            dispose();
+            _disposed = true;
+        }
+    }
+
+    /**
+     * Release resources used by this State.
+     */
+    protected void dispose() {
+        // NOP
+    }
 }
-
-
-/*
- * $Log: NFS4State.java,v $
- * Revision 1.4  2006/07/04 15:29:35  tigran
- * fixed  creation of stateid
- *
- * Revision 1.3  2006/07/04 15:17:49  tigran
- * initial stateid provided by client
- *
- * Revision 1.2  2006/07/04 14:46:12  tigran
- * basic state handling
- *
- * Revision 1.1  2006/06/27 16:29:37  tigran
- * first touch to states
- * TODO: it does not work yet!
- *
- */
