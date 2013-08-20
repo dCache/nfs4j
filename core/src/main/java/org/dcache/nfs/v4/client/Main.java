@@ -545,21 +545,27 @@ public class Main {
         _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
         _sequenceID.value = 0;
 
-        args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
-                .withPutrootfh()
-                .withGetattr(nfs4_prot.FATTR4_LEASE_TIME)
-                .withTag("get_lease_time")
-                .build();
+        if (_isMDS) {
+            args = new CompoundBuilder()
+                    .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                    .withPutrootfh()
+                    .withGetattr(nfs4_prot.FATTR4_LEASE_TIME)
+                    .withTag("get_lease_time")
+                    .build();
 
-        compound4res = sendCompound(args);
+            compound4res = sendCompound(args);
 
-        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
-        Optional<fattr4_lease_time> leaseTime = attrs.get(nfs4_prot.FATTR4_LEASE_TIME);
-        int leaseTimeInSeconds = leaseTime.get().value;
-        System.out.println("server lease time: " + leaseTimeInSeconds + " sec.");
-        _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
-                leaseTimeInSeconds, leaseTimeInSeconds, TimeUnit.SECONDS);
+            AttributeMap attributeMap = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+            Optional<fattr4_lease_time> fattr4_lease_timeAttr = attributeMap.get(nfs4_prot.FATTR4_LEASE_TIME);
+            int leaseTimeInSeconds = fattr4_lease_timeAttr.get().value;
+            System.out.println("server lease time: " + leaseTimeInSeconds + " sec.");
+            _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
+                    leaseTimeInSeconds, leaseTimeInSeconds, TimeUnit.SECONDS);
+        } else {
+            _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
+                    90, 90, TimeUnit.SECONDS);
+
+        }
     }
 
     private void destroy_session() throws OncRpcException, IOException {
