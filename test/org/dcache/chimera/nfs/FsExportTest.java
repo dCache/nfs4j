@@ -105,4 +105,22 @@ public class FsExportTest {
         assertNull("Deny ipv6 not recognized", export);
     }
 
+    @Test
+    public void testSecKrb5() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_with_krp5", InetAddress.getByName("192.169.2.2"));
+        assertEquals("Invalid security flavor", FsExport.Sec.KRB5, export.getSec());
+    }
+
+    @Test
+    public void testSecKrb5i() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_with_krp5i", InetAddress.getByName("192.169.2.2"));
+        assertEquals("Invalid security flavor", FsExport.Sec.KRB5I, export.getSec());
+    }
+
+    @Test
+    public void testSecKrb5p() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_with_krp5p", InetAddress.getByName("192.169.2.2"));
+        assertEquals("Invalid security flavor", FsExport.Sec.KRB5P, export.getSec());
+    }
+
 }
