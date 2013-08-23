@@ -42,10 +42,16 @@ import org.dcache.chimera.nfs.nfsstat;
 import org.dcache.chimera.nfs.v4.acl.Acls;
 import org.dcache.chimera.nfs.v4.xdr.acemask4;
 import org.dcache.xdr.RpcCall;
-import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 import org.dcache.chimera.nfs.v4.xdr.nfsace4;
+import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcAuthType;
+import org.dcache.xdr.gss.RpcAuthGss;
+import org.dcache.xdr.gss.RpcGssService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.dcache.chimera.nfs.v4.xdr.nfs4_prot.*;
 
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
@@ -60,10 +66,12 @@ public class PseudoFs implements VirtualFileSystem {
     private final InetAddress _inetAddress;
     private final VirtualFileSystem _inner;
     private final ExportFile _exportFile;
+    private final RpcAuth _auth;
 
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportFile exportFile) {
         _inner = inner;
         _subject = call.getCredential().getSubject();
+        _auth = call.getCredential();
         _inetAddress = call.getTransport().getRemoteSocketAddress().getAddress();
         _exportFile = exportFile;
     }
@@ -292,6 +300,8 @@ public class PseudoFs implements VirtualFileSystem {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }
 
+            checkSecurityFlavor(_auth, export.getSec());
+
             if ( (export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
                 if (shouldLog) {
                     _log.warn("Access denied: (RO export) inode {} for client {}", inode, _inetAddress);
@@ -519,5 +529,44 @@ public class PseudoFs implements VirtualFileSystem {
 
         nodes.add(root);
         return nodes;
+    }
+
+    private static void checkSecurityFlavor(RpcAuth auth, FsExport.Sec minFlavor) throws ChimeraNFSException {
+
+        FsExport.Sec usedFlavor;
+        switch(auth.type()) {
+            case RpcAuthType.NONE:
+                usedFlavor = FsExport.Sec.NONE;
+                break;
+            case RpcAuthType.UNIX:
+                usedFlavor = FsExport.Sec.SYS;
+                break;
+            case RpcAuthType.RPCGSS_SEC:
+                RpcAuthGss authGss = (RpcAuthGss) auth;
+                switch (authGss.getService()) {
+                    case RpcGssService.RPC_GSS_SVC_NONE:
+                        usedFlavor = FsExport.Sec.KRB5;
+                        break;
+                    case RpcGssService.RPC_GSS_SVC_INTEGRITY:
+                        usedFlavor = FsExport.Sec.KRB5I;
+                        break;
+                    case RpcGssService.RPC_GSS_SVC_PRIVACY:
+                        usedFlavor = FsExport.Sec.KRB5P;
+                        break;
+                    default:
+                        throw new ChimeraNFSException(nfsstat.NFSERR_PERM,
+                                "Unsupported Authentication GSS service: " + authGss.getService());
+                }
+                break;
+            default:
+                throw new ChimeraNFSException(nfsstat.NFSERR_PERM,
+                        "Unsupported Authentication flavor: " + auth.type());
+        }
+
+        if (usedFlavor.compareTo(minFlavor) < 0) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_PERM,
+                        "Authentication flavor too weak: "
+                    + "allowed <" + minFlavor + "> provided <" + usedFlavor + ">");
+        }
     }
 }
