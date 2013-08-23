@@ -133,6 +133,12 @@ public class ExportFile {
                             exportBuilder.withoutAcl();
                             continue;
                         }
+
+                        if (option.startsWith("sec=")) {
+                            String secFlavor = option.substring(4);
+                            exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
+                            continue;
+                        }
                     }
                     FsExport export = exportBuilder.build(path);
                     exports.add(export);

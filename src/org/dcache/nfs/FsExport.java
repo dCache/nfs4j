@@ -32,11 +32,20 @@ public class FsExport {
         RW, RO
     }
 
+    public enum Sec {
+        NONE,
+        SYS,
+        KRB5,
+        KRB5I,
+        KRB5P
+    }
+
     private final String _path;
     private final String _client;
     private final Root _isTrusted;
     private final IO _rw;
     private final boolean _withAcl;
+    private final Sec _sec;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -75,13 +84,16 @@ public class FsExport {
      * @param client hosts identifier which allowed to mount this export.
      * @param isTrusted root squash option
      * @param rw IO mode option
+     * @param withAcl use acl with this export
+     * @param sec security favor to use
      */
-    public FsExport(String path, String client, Root isTrusted, IO rw, boolean withAcl) {
+    public FsExport(String path, String client, Root isTrusted, IO rw, boolean withAcl, Sec sec) {
         _path = path;
         _client = client;
         _isTrusted = isTrusted;
         _rw = rw;
         _withAcl = withAcl;
+        _sec = sec;
     }
 
     public String getPath() {
@@ -146,12 +158,17 @@ public class FsExport {
         return _withAcl;
     }
 
+    public Sec getSec() {
+        return _sec;
+    }
+
     public static class FsExportBuilder {
 
         private String _client = "*";
         private IO _io = IO.RO;
         private Root _isTrusted = Root.NOTTRUSTED;
         private boolean _withAcl = false;
+        private Sec _sec = Sec.SYS;
 
         public FsExportBuilder forClient(String client) {
             _client = client;
@@ -188,8 +205,13 @@ public class FsExport {
             return this;
         }
 
+        public FsExportBuilder withSec(Sec sec) {
+            _sec = sec;
+            return this;
+        }
+
         public FsExport build(String path) {
-            return new FsExport(path, _client, _isTrusted, _io, _withAcl);
+            return new FsExport(path, _client, _isTrusted, _io, _withAcl, _sec);
         }
     }
 }
