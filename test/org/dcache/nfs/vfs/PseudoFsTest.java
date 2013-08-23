@@ -27,8 +27,11 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrTransport;
+import org.dcache.xdr.gss.RpcAuthGss;
+import org.dcache.xdr.gss.RpcGssService;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
 import static org.mockito.BDDMockito.given;
@@ -48,9 +51,10 @@ public class PseudoFsTest {
     private RpcCall mockedRpc;
     private RpcAuth mockedAuth;
     private PseudoFs pseudoFs;
+    private Inode inode;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
 
         mockedFs = mock(VirtualFileSystem.class);
         mockedExportFile = mock(ExportFile.class);
@@ -58,6 +62,19 @@ public class PseudoFsTest {
         mockedRpc = mock(RpcCall.class);
         mockedAuth = mock(RpcAuth.class);
         mockedExport = mock(FsExport.class);
+
+        // prepare file system
+        inode = mock(Inode.class);
+        given(inode.isPesudoInode()).willReturn(false);
+        given(inode.exportIndex()).willReturn(1);
+        given(inode.handleVersion()).willReturn(1);
+
+        Stat stat = new Stat();
+        stat.setMode(0700 | Stat.S_IFREG);
+        stat.setUid(1);
+        stat.setGid(1);
+
+        given(mockedFs.getattr(inode)).willReturn(stat, stat);
     }
 
     @Test(expected = ChimeraNFSException.class)
@@ -71,21 +88,12 @@ public class PseudoFsTest {
         given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
         given(mockedExport.isTrusted()).willReturn(false);
         given(mockedExport.checkAcls()).willReturn(false);
+        given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
         given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
 
-        Inode inode = mock(Inode.class);
-        given(inode.isPesudoInode()).willReturn(false);
-        given(inode.exportIndex()).willReturn(1);
-        given(inode.handleVersion()).willReturn(1);
 
-        Stat stat = new Stat();
-        stat.setMode(0700|Stat.S_IFREG);
-        stat.setUid(1);
-        stat.setGid(1);
-
-        given(mockedFs.getattr(inode)).willReturn(stat, stat);
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644))
                 .willReturn( mock(Inode.class));
 
@@ -104,25 +112,85 @@ public class PseudoFsTest {
         given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
         given(mockedExport.isTrusted()).willReturn(true);
         given(mockedExport.checkAcls()).willReturn(false);
+        given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
         given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
 
-        Inode inode = mock(Inode.class);
-        given(inode.isPesudoInode()).willReturn(false);
-        given(inode.exportIndex()).willReturn(1);
-        given(inode.handleVersion()).willReturn(1);
-
-        Stat stat = new Stat();
-        stat.setMode(0700 | Stat.S_IFREG);
-        stat.setUid(1);
-        stat.setGid(1);
-
-        given(mockedFs.getattr(inode)).willReturn(stat, stat);
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644))
                 .willReturn(mock(Inode.class));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
+    }
+
+    @Test(expected = ChimeraNFSException.class)
+    public void testAuthFlavorTooWeak() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
+        given(mockedExport.isTrusted()).willReturn(true);
+        given(mockedExport.checkAcls()).willReturn(false);
+        given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
+
+        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+
+        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(inode);
+    }
+
+    @Test
+    public void testAuthFlavorMatch() throws IOException {
+
+        RpcAuthGss mockedAuthGss = mock(RpcAuthGss.class);
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuthGss.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuthGss.type()).willReturn(RpcAuthType.RPCGSS_SEC);
+        given(mockedAuthGss.getService()).willReturn(RpcGssService.RPC_GSS_SVC_NONE);
+
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuthGss);
+
+        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
+        given(mockedExport.isTrusted()).willReturn(true);
+        given(mockedExport.checkAcls()).willReturn(false);
+        given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
+
+        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+
+        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(inode);
+    }
+
+    @Test
+    public void testAuthFlavorStrong() throws IOException {
+
+        RpcAuthGss mockedAuthGss = mock(RpcAuthGss.class);
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuthGss.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuthGss.type()).willReturn(RpcAuthType.RPCGSS_SEC);
+        given(mockedAuthGss.getService()).willReturn(RpcGssService.RPC_GSS_SVC_INTEGRITY);
+
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuthGss);
+
+        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
+        given(mockedExport.isTrusted()).willReturn(true);
+        given(mockedExport.checkAcls()).willReturn(false);
+        given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
+
+        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+
+        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(inode);
     }
 }
