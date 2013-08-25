@@ -123,4 +123,9 @@ public class FsExportTest {
         assertEquals("Invalid security flavor", FsExport.Sec.KRB5P, export.getSec());
     }
 
+    @Test
+    public void testIgnoreBadExport() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/bad_export", InetAddress.getByName("192.169.2.2"));
+        assertNull("Invalid export entry not ignored", export);
+    }
 }
