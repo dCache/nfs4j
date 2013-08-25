@@ -41,8 +41,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ExportFile {
+
+    private static final Logger _log = LoggerFactory.getLogger(ExportFile.class);
 
     private volatile List<FsExport> _exports ;
     private final URL _exportFile;
@@ -91,60 +96,68 @@ public class ExportFile {
 
                 for (String hostAndOptions: splitter.split(line.substring(pathEnd +1))) {
 
-                    FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
+                    try {
+                        FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
 
-                    Iterator<String> s = Splitter
-                            .on(CharMatcher.anyOf("(,)"))
-                            .omitEmptyStrings()
-                            .trimResults()
-                            .split(hostAndOptions).iterator();
+                        Iterator<String> s = Splitter
+                                .on(CharMatcher.anyOf("(,)"))
+                                .omitEmptyStrings()
+                                .trimResults()
+                                .split(hostAndOptions).iterator();
 
-                    String host = s.next();
-                    if (!isValidHostSpecifier(host))
-                        continue;
-
-                    exportBuilder.forClient(host);
-                    while (s.hasNext()) {
-                        String option = s.next();
-
-                        if (option.equals("rw")) {
-                            exportBuilder.rw();
+                        String host = s.next();
+                        if (!isValidHostSpecifier(host)) {
+                            _log.error("Invalid host specifier: " + host);
                             continue;
                         }
 
-                        if (option.equals("ro")) {
-                            exportBuilder.ro();
-                            continue;
-                        }
+                        exportBuilder.forClient(host);
+                        while (s.hasNext()) {
+                            String option = s.next();
 
-                        if (option.equals("root_squash")) {
-                            exportBuilder.notTrusted();
-                            continue;
-                        }
+                            if (option.equals("rw")) {
+                                exportBuilder.rw();
+                                continue;
+                            }
 
-                        if (option.equals("no_root_squash")) {
-                            exportBuilder.trusted();
-                            continue;
-                        }
+                            if (option.equals("ro")) {
+                                exportBuilder.ro();
+                                continue;
+                            }
 
-                        if (option.equals("acl")) {
-                            exportBuilder.withAcl();
-                            continue;
-                        }
+                            if (option.equals("root_squash")) {
+                                exportBuilder.notTrusted();
+                                continue;
+                            }
 
-                        if (option.equals("noacl")) {
-                            exportBuilder.withoutAcl();
-                            continue;
-                        }
+                            if (option.equals("no_root_squash")) {
+                                exportBuilder.trusted();
+                                continue;
+                            }
 
-                        if (option.startsWith("sec=")) {
-                            String secFlavor = option.substring(4);
-                            exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
-                            continue;
+                            if (option.equals("acl")) {
+                                exportBuilder.withAcl();
+                                continue;
+                            }
+
+                            if (option.equals("noacl")) {
+                                exportBuilder.withoutAcl();
+                                continue;
+                            }
+
+                            if (option.startsWith("sec=")) {
+                                String secFlavor = option.substring(4);
+                                exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
+                                continue;
+                            }
+
+                            throw new IllegalArgumentException("Unsupported option: " + option);
                         }
+                        FsExport export = exportBuilder.build(path);
+                        exports.add(export);
+                    } catch (IllegalArgumentException e) {
+                        _log.error("Invalid export entry [" + hostAndOptions + "] : " + e.getMessage());
                     }
-                    FsExport export = exportBuilder.build(path);
-                    exports.add(export);
                 }
 
             }
