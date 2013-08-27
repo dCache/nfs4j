@@ -113,6 +113,8 @@ public class FsExport {
                 .append(_isTrusted)
                 .append(',')
                 .append(_withAcl ? "acl" : "noacl")
+                .append(',')
+                .append("sec=").append(_sec)
                 .append(')')
                 .append(':')
                 .append("idx=")

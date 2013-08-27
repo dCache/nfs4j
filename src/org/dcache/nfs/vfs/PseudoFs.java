@@ -368,7 +368,7 @@ public class PseudoFs implements VirtualFileSystem {
         throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
     }
 
-    private Inode pseudoIdToReal(Inode inode, int index) {
+    public static Inode pseudoIdToReal(Inode inode, int index) {
 
         FileHandle fh = new FileHandle.FileHandleBuilder()
                 .setExportIdx(index)
