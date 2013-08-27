@@ -60,6 +60,13 @@ public class MountServer extends mount_protServerStub {
     private final Map<String, Set<String>> _mounts = new HashMap<String, Set<String>>();
     private final VirtualFileSystem _vfs;
 
+    /*
+     * pseudo flavors as defined in RFC2623
+     */
+    public final static int RPC_AUTH_GSS_KRB5 = 390003;
+    public final static int RPC_AUTH_GSS_KRB5I = 390004;
+    public final static int RPC_AUTH_GSS_KRB5P = 390005;
+
     public MountServer(ExportFile exportFile, VirtualFileSystem fs) {
         super();
         _exportFile = exportFile;
@@ -74,7 +81,6 @@ public class MountServer extends mount_protServerStub {
     @Override
     public mountres3 MOUNTPROC3_MNT_3(RpcCall call$, dirpath arg1) {
 
-        VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exportFile);
         mountres3 m = new mountres3();
 
         java.io.File f = new java.io.File(arg1.value);
@@ -82,7 +88,9 @@ public class MountServer extends mount_protServerStub {
 
         _log.debug("Mount request for: {}", mountPoint);
 
-        if (!isAllowed(call$.getTransport().getRemoteSocketAddress().getAddress(), mountPoint)) {
+        FsExport export = _exportFile.getExport(mountPoint,
+                call$.getTransport().getRemoteSocketAddress().getAddress());
+        if (export == null) {
             m.fhs_status = mountstat3.MNT3ERR_ACCES;
             _log.info("Mount deny for: {}:{}", call$.getTransport().getRemoteSocketAddress().getHostName(), mountPoint);
             return m;
@@ -92,18 +100,17 @@ public class MountServer extends mount_protServerStub {
 
         try {
 
-            Inode rootInode = path2Inode(fs, mountPoint);
-            Stat stat = fs.getattr(rootInode);
+            Inode rootInode = path2Inode(_vfs, mountPoint);
+            Stat stat = _vfs.getattr(rootInode);
             if (stat.type() != Stat.Type.DIRECTORY) {
                 throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
             }
 
-            byte[] b = rootInode.toNfsHandle();
+            byte[] b = PseudoFs.pseudoIdToReal(rootInode, export.getIndex()).toNfsHandle();
 
             m.fhs_status = mountstat3.MNT3_OK;
             m.mountinfo.fhandle = new fhandle3(b);
-            m.mountinfo.auth_flavors = new int[1];
-            m.mountinfo.auth_flavors[0] = RpcAuthType.UNIX;
+            m.mountinfo.auth_flavors = exportSecFlavors(export);
 
             if (_mounts.containsKey(mountPoint)) {
 
@@ -117,6 +124,7 @@ public class MountServer extends mount_protServerStub {
 
 
         } catch (ChimeraNFSException e) {
+            _log.warn("mount request failed: ", e.getMessage());
             m.fhs_status = e.getStatus();
         } catch (IOException e) {
             m.fhs_status = mountstat3.MNT3ERR_SERVERFAULT;
@@ -249,12 +257,6 @@ public class MountServer extends mount_protServerStub {
         return null;
     }
 
-    private boolean isAllowed(InetAddress client, String mountPoint) {
-
-        FsExport export = _exportFile.getExport(mountPoint, client);
-        return export != null;
-    }
-
     private static Inode path2Inode(VirtualFileSystem fs, String path)
             throws ChimeraNFSException, IOException {
         try {
@@ -277,5 +279,31 @@ public class MountServer extends mount_protServerStub {
         }
 
         return asMultiMap;
+    }
+
+    private int[] exportSecFlavors(FsExport export) throws ChimeraNFSException {
+        FsExport.Sec sec = export.getSec();
+        int[] supportedFlavors;
+        switch(sec) {
+            case KRB5:
+                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P};
+                break;
+            case KRB5I:
+                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P};
+                break;
+            case KRB5P:
+                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5P};
+                break;
+            case SYS:
+                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P, RpcAuthType.UNIX};
+                break;
+            case NONE:
+                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P, RpcAuthType.UNIX, RpcAuthType.NONE};
+                break;
+            default:
+                // shuold never happen
+                throw new ChimeraNFSException(mountstat3.MNT3ERR_PERM, "Unsupported secutiry flavor");
+        }
+        return supportedFlavors;
     }
 }
