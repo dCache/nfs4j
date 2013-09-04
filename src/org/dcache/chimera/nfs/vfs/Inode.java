@@ -33,7 +33,7 @@ public class Inode {
         fh = h;
     }
 
-    static Inode forFile(byte[] bytes) {
+    public static Inode forFile(byte[] bytes) {
         return new Inode(new FileHandle.FileHandleBuilder().build(bytes));
     }
 
