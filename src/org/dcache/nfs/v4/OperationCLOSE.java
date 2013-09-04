@@ -45,17 +45,20 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         Inode inode = context.currentInode();
 
+        NFS4Client client;
         if (context.getMinorversion() > 0) {
-            context.getSession().getClient().updateLeaseTime();
-
-            /*
-             * for now it's just a place holder for state processing.
-             * Nevertheless, NFSERR_BAD_STATEID is throws if state is invalid.
-             */
-            NFS4State state = context.getSession().getClient().state(_args.opclose.open_stateid);
-            context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
+            client = context.getSession().getClient();
         } else {
-            context.getStateHandler().updateClientLeaseTime(_args.opclose.open_stateid);
+            client = context.getStateHandler().getClientIdByStateId(_args.opclose.open_stateid);
+        }
+
+        NFS4State state = client.releaseState(_args.opclose.open_stateid);
+        client.updateLeaseTime();
+        /*
+         * TODO: some state post-processing should happen, includeing layout release
+         */
+        if (context.getMinorversion() > 0) {
+            context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
         }
 
         res.open_stateid = Stateids.invalidStateId();
