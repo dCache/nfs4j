@@ -19,21 +19,16 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.NFSv41Session;
-import org.dcache.nfs.v4.NFSv4StateHandler;
-import org.dcache.nfs.v4.NFS4Client;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.verifier4;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 /**
  *
  */
@@ -76,10 +71,5 @@ public class NFSv41SessionTest {
         assertTrue(_client.hasSessions());
         _client.removeSession(_session);
         assertFalse(_client.hasSessions());
-    }
-
-    static NFS4Client createClient() throws UnknownHostException {
-        InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(null), 123);
-        return new NFSv4StateHandler().createClient(address, address, "123".getBytes(), new verifier4("123".getBytes()), null);
     }
 }
