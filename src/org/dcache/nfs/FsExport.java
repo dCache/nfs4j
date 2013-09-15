@@ -81,19 +81,15 @@ public class FsExport {
      *
      *
      * @param path
-     * @param client hosts identifier which allowed to mount this export.
-     * @param isTrusted root squash option
-     * @param rw IO mode option
-     * @param withAcl use acl with this export
-     * @param sec security favor to use
+     * @param builder
      */
-    public FsExport(String path, String client, Root isTrusted, IO rw, boolean withAcl, Sec sec) {
+    private FsExport(String path, FsExportBuilder builder) {
         _path = path;
-        _client = client;
-        _isTrusted = isTrusted;
-        _rw = rw;
-        _withAcl = withAcl;
-        _sec = sec;
+        _client = builder.getClient();
+        _isTrusted = builder.getIsTrusted();
+        _rw = builder.getIo();
+        _withAcl = builder.isWithAcl();
+        _sec = builder.getSec();
     }
 
     public String getPath() {
@@ -212,8 +208,28 @@ public class FsExport {
             return this;
         }
 
+        public String getClient() {
+            return _client;
+        }
+
+        public IO getIo() {
+            return _io;
+        }
+
+        public Root getIsTrusted() {
+            return _isTrusted;
+        }
+
+        public boolean isWithAcl() {
+            return _withAcl;
+        }
+
+        public Sec getSec() {
+            return _sec;
+        }
+
         public FsExport build(String path) {
-            return new FsExport(path, _client, _isTrusted, _io, _withAcl, _sec);
+            return new FsExport(path, this);
         }
     }
 }
