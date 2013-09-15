@@ -46,6 +46,7 @@ public class FsExport {
     private final IO _rw;
     private final boolean _withAcl;
     private final Sec _sec;
+    private final boolean _allSquash;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -90,6 +91,7 @@ public class FsExport {
         _rw = builder.getIo();
         _withAcl = builder.isWithAcl();
         _sec = builder.getSec();
+        _allSquash = builder.hasAllSquash();
     }
 
     public String getPath() {
@@ -110,8 +112,11 @@ public class FsExport {
                 .append(',')
                 .append(_withAcl ? "acl" : "noacl")
                 .append(',')
-                .append("sec=").append(_sec)
-                .append(')')
+                .append("sec=").append(_sec);
+        if (_allSquash) {
+            sb.append(",all_squash");
+        }
+        sb.append(')')
                 .append(':')
                 .append("idx=")
                 .append(Integer.toHexString(getIndex()));
@@ -160,6 +165,10 @@ public class FsExport {
         return _sec;
     }
 
+    public boolean hasAllSquash() {
+        return _allSquash;
+    }
+
     public static class FsExportBuilder {
 
         private String _client = "*";
@@ -167,6 +176,7 @@ public class FsExport {
         private Root _isTrusted = Root.NOTTRUSTED;
         private boolean _withAcl = false;
         private Sec _sec = Sec.SYS;
+        private boolean allSquash = false;
 
         public FsExportBuilder forClient(String client) {
             _client = client;
@@ -208,6 +218,11 @@ public class FsExport {
             return this;
         }
 
+        public FsExportBuilder allSquash() {
+            allSquash = true;
+            return this;
+        }
+
         public String getClient() {
             return _client;
         }
@@ -226,6 +241,10 @@ public class FsExport {
 
         public Sec getSec() {
             return _sec;
+        }
+
+        public boolean hasAllSquash() {
+            return allSquash;
         }
 
         public FsExport build(String path) {

@@ -128,4 +128,16 @@ public class FsExportTest {
         FsExport export = _exportFile.getExport("/bad_export", InetAddress.getByName("192.169.2.2"));
         assertNull("Invalid export entry not ignored", export);
     }
+
+    @Test
+    public void testAllSquash() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/all_squash", InetAddress.getByName("192.169.2.2"));
+        assertTrue("all_squash option not detected", export.allSquash());
+    }
+
+    @Test
+    public void testNoSquash() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/no_squash", InetAddress.getByName("192.169.2.2"));
+        assertFalse("all_squash not defined, but detected", export.allSquash());
+    }
 }

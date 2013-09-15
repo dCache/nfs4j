@@ -16,3 +16,5 @@
 /export_with_krp5p *(sec=krb5p)
 /export_with_sys *(sec=sys)
 /bad_export *(some_unsupported_option)
+/all_squash *(all_squash)
+/no_squash *

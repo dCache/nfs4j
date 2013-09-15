@@ -142,6 +142,11 @@ public class ExportFile {
                                 continue;
                             }
 
+                            if (option.equals("all_squash")) {
+                                exportBuilder.allSquash();
+                                continue;
+                            }
+
                             if (option.startsWith("sec=")) {
                                 String secFlavor = option.substring(4);
                                 exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
