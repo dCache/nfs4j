@@ -125,6 +125,30 @@ public class PseudoFsTest {
     }
 
     @Test(expected = ChimeraNFSException.class)
+    public void testAllSquash() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
+        given(mockedExport.isTrusted()).willReturn(true);
+        given(mockedExport.checkAcls()).willReturn(false);
+        given(mockedExport.allSquash()).willReturn(true);
+        given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
+
+        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+
+        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644))
+                .willReturn(mock(Inode.class));
+
+        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
+        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
+    }
+
+    @Test(expected = ChimeraNFSException.class)
     public void testAuthFlavorTooWeak() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
