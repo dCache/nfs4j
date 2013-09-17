@@ -305,7 +305,7 @@ public class PseudoFs implements VirtualFileSystem {
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "read-only export");
             }
 
-            if (export.allSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
+            if (export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
                 effectiveSubject = NfsUser.NFS_NOBODY;
             }
 

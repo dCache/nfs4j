@@ -135,7 +135,7 @@ public class PseudoFsTest {
         given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
         given(mockedExport.isTrusted()).willReturn(true);
         given(mockedExport.checkAcls()).willReturn(false);
-        given(mockedExport.allSquash()).willReturn(true);
+        given(mockedExport.hasAllSquash()).willReturn(true);
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
