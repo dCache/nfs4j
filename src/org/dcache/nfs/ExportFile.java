@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -150,6 +150,18 @@ public class ExportFile {
                             if (option.startsWith("sec=")) {
                                 String secFlavor = option.substring(4);
                                 exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
+                                continue;
+                            }
+
+                            if (option.startsWith("anonuid=")) {
+                                int anonuid = Integer.parseInt(option.substring(8));
+                                exportBuilder.withAnonUid(anonuid);
+                                continue;
+                            }
+
+                            if (option.startsWith("anongid=")) {
+                                int anongid = Integer.parseInt(option.substring(8));
+                                exportBuilder.withAnonGid(anongid);
                                 continue;
                             }
 

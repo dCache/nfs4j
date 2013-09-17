@@ -18,3 +18,5 @@
 /bad_export *(some_unsupported_option)
 /all_squash *(all_squash)
 /no_squash *
+/anon_access *(anonuid=500,anongid=501)
+/anon_access_default *

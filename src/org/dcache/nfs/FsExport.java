@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,6 +24,15 @@ import java.net.InetAddress;
 
 public class FsExport {
 
+    /**
+     * default UID for anonymous access.
+     */
+    public final static int DEFAULT_ANON_UID = 65534;
+    /**
+     * default GID for anonymous access.
+     */
+    public final static int DEFAULT_ANON_GID = 65534;
+
     public enum Root {
         TRUSTED, NOTTRUSTED
     }
@@ -47,6 +56,8 @@ public class FsExport {
     private final boolean _withAcl;
     private final Sec _sec;
     private final boolean _allSquash;
+    private final int _anonUid;
+    private final int _anonGid;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -92,6 +103,8 @@ public class FsExport {
         _withAcl = builder.isWithAcl();
         _sec = builder.getSec();
         _allSquash = builder.hasAllSquash();
+        _anonUid = builder.getAnonUid();
+        _anonGid = builder.getAnonGid();
     }
 
     public String getPath() {
@@ -169,6 +182,14 @@ public class FsExport {
         return _allSquash;
     }
 
+    public int getAnonUid() {
+        return _anonUid;
+    }
+
+    public int getAnonGid() {
+        return _anonGid;
+    }
+
     public static class FsExportBuilder {
 
         private String _client = "*";
@@ -177,6 +198,8 @@ public class FsExport {
         private boolean _withAcl = false;
         private Sec _sec = Sec.SYS;
         private boolean allSquash = false;
+        private int _anonUid = DEFAULT_ANON_UID;
+        private int _anonGid = DEFAULT_ANON_GID;
 
         public FsExportBuilder forClient(String client) {
             _client = client;
@@ -218,6 +241,16 @@ public class FsExport {
             return this;
         }
 
+        public FsExportBuilder withAnonUid(int id) {
+            _anonUid = id;
+            return this;
+        }
+
+        public FsExportBuilder withAnonGid(int id) {
+            _anonGid = id;
+            return this;
+        }
+
         public FsExportBuilder allSquash() {
             allSquash = true;
             return this;
@@ -245,6 +278,14 @@ public class FsExport {
 
         public boolean hasAllSquash() {
             return allSquash;
+        }
+
+        public int getAnonUid() {
+            return _anonUid;
+        }
+
+        public int getAnonGid() {
+            return _anonGid;
         }
 
         public FsExport build(String path) {

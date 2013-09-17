@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -139,5 +139,19 @@ public class FsExportTest {
     public void testNoSquash() throws UnknownHostException {
         FsExport export = _exportFile.getExport("/no_squash", InetAddress.getByName("192.169.2.2"));
         assertFalse("all_squash not defined, but detected", export.hasAllSquash());
+    }
+
+    @Test
+    public void testAnonUid() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/anon_access", InetAddress.getByName("192.169.2.2"));
+        assertEquals("anonuid not respected", 500, export.getAnonUid());
+        assertEquals("anongid not respected", 501, export.getAnonGid());
+    }
+
+    @Test
+    public void testAnonUidDefault() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/anon_access_default", InetAddress.getByName("192.169.2.2"));
+        assertEquals("default anonuid not used", FsExport.DEFAULT_ANON_UID, export.getAnonUid());
+        assertEquals("default anongid not used", FsExport.DEFAULT_ANON_GID, export.getAnonUid());
     }
 }
