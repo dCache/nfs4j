@@ -222,14 +222,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 res.resok4.reply.eof = false;
 
                 _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
-                        new Object[]{
                             i - startValue, currcount,
                             _args.opreaddir.maxcount.value.value,
                             dircount,
                             _args.opreaddir.dircount.value.value,
-                            startValue, dirList.size()
-                        });
-
+                            startValue, dirList.size());
                 break;
             }
             dircount += newDirSize;
@@ -252,14 +249,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {} EOF={}",
-                new Object[]{
                     fcount, currcount,
                     _args.opreaddir.maxcount.value.value,
                     startValue,
                     _args.opreaddir.dircount.value.value,
-                    dirList.size(), res.resok4.reply.eof
-                });
-
+                    dirList.size(), res.resok4.reply.eof);
     }
 
     /**

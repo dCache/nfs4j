@@ -128,12 +128,10 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             if (_log.isDebugEnabled()) {
                                 Stat fileStat = context.getFs().getattr(context.currentInode());
                                 _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
-                                        new Object[]{
                                     name,
                                     fileStat.getUid(),
                                     fileStat.getGid(),
-                                    Integer.toOctalString(fileStat.getMode() & 0777)
-                                });
+                                    Integer.toOctalString(fileStat.getMode() & 0777));
                             }
 
                             if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {

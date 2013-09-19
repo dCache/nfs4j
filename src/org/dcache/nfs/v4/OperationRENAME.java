@@ -84,17 +84,11 @@ public class OperationRENAME extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
             }
 
-
-//            if( sourceDir.fsId() != destDir.fsId() ) {
-//                throw new ChimeraNFSException(nfsstat.NFSERR_XDEV, "cross filesystem request");
-//            }
-
-            _log.debug("Rename: src={} name={} dest={} name={}", new Object[]{
+            _log.debug("Rename: src={} name={} dest={} name={}",
                         sourceDir,
                         oldName,
                         destDir,
-                        newName
-                    });
+                        newName);
 
             context.getFs().move(sourceDir, oldName, destDir, newName);
 

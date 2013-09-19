@@ -77,6 +77,6 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         res.resok4.eof = eof;
 
         _log.debug("MOVER: {}@{} readed, {} requested.",
-                new Object[]{bytesReaded, offset, _args.opread.count.value.value});
+                bytesReaded, offset, _args.opread.count.value.value);
     }
 }

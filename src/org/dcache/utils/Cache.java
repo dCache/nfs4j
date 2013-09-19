@@ -294,7 +294,7 @@ public class Cache<K, V> extends  TimerTask {
         }
 
         _log.debug("Removing entry: active = [{}] key = [{}], value = [{}]",
-                new Object[]{valid, k, v});
+                valid, k, v);
 
         _eventListener.notifyRemove(this, v);
 

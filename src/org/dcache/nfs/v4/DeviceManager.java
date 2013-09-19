@@ -112,7 +112,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             deviceId = deviceidOf(id);
 
             _log.debug("generating new device: {} ({}) for stateid {}",
-                    new Object[]{deviceId, id, stateid});
+                    deviceId, id, stateid);
 
             deviceAddr = deviceAddrOf(_stripingPattern, _knownDataServers);
 

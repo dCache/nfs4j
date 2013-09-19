@@ -279,9 +279,9 @@ public class PseudoFs implements VirtualFileSystem {
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
             if (shouldLog) {
-                _log.warn("Access denied: pseudo Inode {} {} {}", new Object[]{
+                _log.warn("Access denied: pseudo Inode {} {} {}",
                             inode, acemask4.toString(requestedMask),
-                            effectiveSubject});
+                            effectiveSubject);
             }
             throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to modify pseudofs");
         }
@@ -319,9 +319,9 @@ public class PseudoFs implements VirtualFileSystem {
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
-                    _log.warn("Access denied: {} {} {} {}", new Object[]{inode,
+                    _log.warn("Access denied: {} {} {} {}", inode,
                                 acemask4.toString(requestedMask),
-                                acemask4.toString(unixAccessmask), _subject});
+                                acemask4.toString(unixAccessmask), _subject);
                 }
                 throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
             }

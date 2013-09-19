@@ -80,6 +80,6 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             context.getFs().setattr(context.currentInode(), stat);
         }
         _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
-                new Object[]{bytesWritten, offset, _args.opwrite.data, out.size()});
+                bytesWritten, offset, _args.opwrite.data, out.size());
     }
 }
