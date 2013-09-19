@@ -121,7 +121,7 @@ public class FsExport {
                 .append(_client)
                 .append('(').append(_rw)
                 .append(',')
-                .append(_isTrusted)
+                .append(_isTrusted == Root.TRUSTED ? "no_root_squash" : "root_squash")
                 .append(',')
                 .append(_withAcl ? "acl" : "noacl")
                 .append(',')
@@ -129,6 +129,12 @@ public class FsExport {
         if (_allSquash) {
             sb.append(",all_squash");
         }
+        sb.append(',')
+            .append("anonuid=")
+            .append(_anonUid);
+        sb.append(',')
+            .append("anongid=")
+            .append(_anonGid);
         sb.append(')')
                 .append(':')
                 .append("idx=")
