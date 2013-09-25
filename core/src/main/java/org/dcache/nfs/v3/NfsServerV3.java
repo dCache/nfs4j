@@ -130,6 +130,8 @@ import org.dcache.nfs.v3.xdr.FSINFO3resfail;
 import org.dcache.nfs.v3.xdr.ACCESS3res;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.chimera.ChimeraFsException;
@@ -156,6 +158,8 @@ import static org.dcache.nfs.v3.HimeraNfsUtils.defaultWccData;
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
+import org.dcache.utils.GuavaCacheMXBean;
+import org.dcache.utils.GuavaCacheMXBeanImpl;
 
 public class NfsServerV3 extends nfs3_protServerStub {
 
@@ -174,7 +178,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .softValues()
             .maximumSize(512)
+            .recordStats()
             .build();
+
+    private static final GuavaCacheMXBean CACHE_MXBEAN
+            = new GuavaCacheMXBeanImpl("READDIR3", _dlCacheFull);
 
     public NfsServerV3(ExportFile exports, VirtualFileSystem fs) throws OncRpcException, IOException {
         _vfs = fs;
@@ -760,7 +768,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     @Override
     public READDIRPLUS3res NFSPROC3_READDIRPLUS_3(RpcCall call$, READDIRPLUS3args arg1) {
 
-        VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exports);
+        final VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exports);
         UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request READDIRPLUS3 uid: {}", user);
 
@@ -768,7 +776,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            Inode dir = new Inode(arg1.dir.data);
+            final Inode dir = new Inode(arg1.dir.data);
             Stat dirStat = fs.getattr(dir);
 
             if (dirStat.type() != Stat.Type.DIRECTORY) {
@@ -795,13 +803,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-            dirList = _dlCacheFull.getIfPresent(cacheKey);
-            if (dirList == null) {
-                _log.debug("updating dirlist from db");
-                dirList = fs.list(dir);
-                _dlCacheFull.put(cacheKey, dirList);
-            } else {
-                _log.debug("using dirlist from cache");
+            try {
+                dirList = _dlCacheFull.get(cacheKey,
+                        new Callable<List<DirectoryEntry>>() {
+                            @Override
+                            public List<DirectoryEntry> call() throws Exception {
+                                return fs.list(dir);
+                            }
+                        });
+            } catch (ExecutionException e) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
             }
 
             if (startValue > dirList.size()) {
@@ -901,7 +912,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     @Override
     public READDIR3res NFSPROC3_READDIR_3(RpcCall call$, READDIR3args arg1) {
 
-        VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exports);
+        final VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exports);
         UnixUser user = NfsUser.remoteUser(call$, _exports);
         _log.debug("NFS Request READDIR3 uid: {}", user);
 
@@ -909,7 +920,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try {
 
-            Inode dir = new Inode(arg1.dir.data);
+            final Inode dir = new Inode(arg1.dir.data);
 
             Stat dirStat = fs.getattr(dir);
 
@@ -937,13 +948,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-            dirList = _dlCacheFull.getIfPresent(cacheKey);
-            if (dirList == null) {
-                _log.debug("updating dirlist from db");
-                dirList = fs.list(dir);
-                _dlCacheFull.put(cacheKey, dirList);
-            } else {
-                _log.debug("using dirlist from cache");
+            try {
+                dirList = _dlCacheFull.get(cacheKey,
+                        new Callable<List<DirectoryEntry>>() {
+                            @Override
+                            public List<DirectoryEntry> call() throws Exception {
+                                return fs.list(dir);
+                            }
+                        });
+            } catch (ExecutionException e) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
             }
 
             if (startValue > dirList.size()) {

@@ -23,6 +23,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.entry4;
@@ -46,6 +48,8 @@ import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.utils.Bytes;
+import org.dcache.utils.GuavaCacheMXBean;
+import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +100,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .softValues()
             .maximumSize(512)
+            .recordStats()
             .build();
+
+    private static final GuavaCacheMXBean CACHE_MXBEAN =
+            new GuavaCacheMXBeanImpl("READDIR4", _dlCache);
+
 	OperationREADDIR(nfs_argop4 args) {
 		super(args, nfs_opnum4.OP_READDIR);
 	}
@@ -111,11 +120,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      *
      */
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(final CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
 
         final READDIR4res res = result.opreaddir;
 
-        Inode dir = context.currentInode();
+        final Inode dir = context.currentInode();
 
         Stat stat = context.getFs().getattr(dir);
 
@@ -153,13 +162,16 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         }
 
         InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
-        dirList = _dlCache.getIfPresent(cacheKey);
-        if (dirList == null) {
-            _log.debug("No cached list found for {}", dir);
-            dirList = context.getFs().list(dir);
-            _dlCache.put(cacheKey, dirList);
-        } else {
-            _log.debug("Cached list found for {}", dir);
+        try {
+            dirList = _dlCache.get(cacheKey,
+                    new Callable<List<DirectoryEntry>>() {
+                        @Override
+                        public List<DirectoryEntry> call() throws Exception {
+                            return context.getFs().list(dir);
+                        }
+                    });
+        } catch (ExecutionException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
         }
 
 
