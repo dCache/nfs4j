@@ -93,7 +93,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
     private static final Cache<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
             CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
             .softValues()
             .maximumSize(512)
             .build();

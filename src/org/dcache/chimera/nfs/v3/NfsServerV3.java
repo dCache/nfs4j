@@ -167,7 +167,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     
     private static final Cache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>> _dlCacheFull =
             CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
             .softValues()
             .maximumSize(512)
             .build();
