@@ -114,7 +114,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 nfs_resop4 opResult = nfs_resop4.resopFor(op.argop);
                 try {
                     if (minorversion != 0) {
-                        checkOpPosition(position, position);
+                        checkOpPosition(op.argop, position);
                         if (position == 1) {
                             /*
                              * at this point we already have to have a session
