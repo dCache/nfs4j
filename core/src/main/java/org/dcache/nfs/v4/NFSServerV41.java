@@ -114,7 +114,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 nfs_resop4 opResult = nfs_resop4.resopFor(op.argop);
                 try {
                     if (minorversion != 0) {
-                        checkOpPosition(op.argop, position);
+                        checkOpPosition(op.argop, position, arg1.argarray.length);
                         if (position == 1) {
                             /*
                              * at this point we already have to have a session
@@ -198,7 +198,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
      * COMPOUND.
      *
      */
-    private static void checkOpPosition(int opCode, int position) throws ChimeraNFSException {
+    private static void checkOpPosition(int opCode, int position, int total) throws ChimeraNFSException {
 
         /*
          * special case of illegal operations.
@@ -216,7 +216,19 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     break;
                 default:
                     throw new ChimeraNFSException(nfsstat.NFSERR_OP_NOT_IN_SESSION, "not in session");
-            }            
+            }
+
+            if (total > 1) {
+                switch (opCode) {
+                    case nfs_opnum4.OP_CREATE_SESSION:
+                    case nfs_opnum4.OP_DESTROY_CLIENTID:
+                    case nfs_opnum4.OP_EXCHANGE_ID:
+                        throw new ChimeraNFSException(nfsstat.NFSERR_NOT_ONLY_OP, "not only op");
+                    default:
+                    // NOP
+                }
+            }
+
         } else {
             switch (opCode) {
                 case nfs_opnum4.OP_SEQUENCE:
