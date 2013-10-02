@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.kerberos.KerberosPrincipal;
+import org.dcache.auth.UidPrincipal;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.NfsUser;
 import org.dcache.nfs.v4.xdr.server_owner4;
@@ -326,11 +327,15 @@ public class CompoundContext {
 
     private Principal principalOf(final RpcCall call) {
 
-        if(call.getCredential().type() != RpcAuthType.RPCGSS_SEC)
-            return NO_PRINCIPAL;
+        Class<? extends Principal> type;
+        if(call.getCredential().type() == RpcAuthType.RPCGSS_SEC) {
+            type = KerberosPrincipal.class;
+        } else {
+            type = UidPrincipal.class;
+        }
 
-        Set<KerberosPrincipal> principals = call.getCredential()
-                .getSubject().getPrincipals(KerberosPrincipal.class);
+        Set<? extends Principal> principals =
+                call.getCredential().getSubject().getPrincipals(type);
         return principals.isEmpty() ? NO_PRINCIPAL : principals.iterator().next();
     }
 }
