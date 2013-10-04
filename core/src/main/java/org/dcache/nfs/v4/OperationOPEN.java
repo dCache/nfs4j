@@ -58,12 +58,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         final OPEN4res res = result.opopen;
 
         try {
-            Long clientid = _args.opopen.owner.value.clientid.value;
-            NFS4Client client;
 
+            NFS4Client client;
             if (context.getMinorversion() > 0) {
                 client = context.getSession().getClient();
             } else {
+                Long clientid = _args.opopen.owner.value.clientid.value;
                 client = context.getStateHandler().getClientByID(clientid);
 
                 if (client == null || !client.isConfirmed()) {
