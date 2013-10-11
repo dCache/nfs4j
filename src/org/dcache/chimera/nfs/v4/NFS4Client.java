@@ -34,6 +34,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.dcache.chimera.nfs.v4.xdr.verifier4;
 
@@ -113,7 +114,11 @@ public class NFS4Client {
      */
     private int _sessionSequence = 1;
 
-    private Map<stateid4, NFS4State> _clientStates = new HashMap<stateid4, NFS4State>();
+    private final Map<stateid4, NFS4State> _clientStates = new ConcurrentHashMap<stateid4, NFS4State>();
+
+    // FIXME: the max stateids have to be controlled by session
+    private final int MAX_OPEN_STATES = 16384;
+
     /**
      * sessions associated with the client
      */
@@ -261,7 +266,12 @@ public class NFS4Client {
         return _sessionSequence;
     }
 
-    public NFS4State createState() {
+    public NFS4State createState() throws ChimeraNFSException {
+        if (_clientStates.size() >= MAX_OPEN_STATES) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_RESOURCE,
+                    "Too many states.");
+        }
+
         NFS4State state = new NFS4State(_clientId, _openStateId);
         _openStateId++;
         _clientStates.put(state.stateid(), state);
