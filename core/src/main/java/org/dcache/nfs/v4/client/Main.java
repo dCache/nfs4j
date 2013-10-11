@@ -113,7 +113,8 @@ public class Main {
             "umount",
             "write",
             "fs_locations",
-            "getattr"
+            "getattr",
+            "openbomb"
         };
 
         PrintWriter out = new PrintWriter(System.out);
@@ -320,6 +321,19 @@ public class Main {
                     }
                     nfsClient.filebomb(Integer.parseInt(commandArgs[1]));
 
+                } else if (commandArgs[0].equals("openbomb")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 3) {
+                        System.out.println("usage: openbomb <file> <count>");
+                        continue;
+                    }
+                    nfsClient.openbomb(commandArgs[1], Integer.parseInt(commandArgs[2]));
+
                 } else if (commandArgs[0].equals("gc")) {
 
                     if (nfsClient == null) {
@@ -376,6 +390,21 @@ public class Main {
             System.out.println(count + " files in " + (System.currentTimeMillis() - start) / 1000);
         }
 
+    }
+
+    /**
+     * send big number of open requests
+     *
+     * @param string
+     * @param string2
+     * @throws IOException
+     * @throws OncRpcException
+     */
+    private void openbomb(String path, int count) throws OncRpcException, IOException {
+
+        for(int i = 0; i < count; i++) {
+            open(path);
+        }
     }
 
     private void gc() throws OncRpcException, IOException {
