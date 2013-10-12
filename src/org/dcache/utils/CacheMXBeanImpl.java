@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 package org.dcache.utils;
 import java.lang.management.ManagementFactory;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class CacheMXBeanImpl
@@ -30,7 +30,7 @@ import javax.management.*;
  */
 public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
 
-    private static final Logger _log = Logger.getLogger(CacheMXBeanImpl.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(CacheMXBeanImpl.class);
 
     private final Cache<K,V> _cache;
 
@@ -46,7 +46,7 @@ public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
             }
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException
                 | MBeanRegistrationException | NotCompliantMBeanException ex) {
-            _log.log(Level.SEVERE, ex.getMessage(), ex);
+            _log.warn("Failed to register JMX bean: {}", ex.getMessage());
         }
 
     }

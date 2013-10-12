@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,8 +23,6 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -33,10 +31,12 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationFactoryMXBeanImpl implements OperationFactoryMXBean, NFSv4OperationFactory {
 
-    private static final Logger _log = Logger.getLogger(OperationFactoryMXBeanImpl.class.getName());
+    private static final Logger _log = LoggerFactory.getLogger(OperationFactoryMXBeanImpl.class);
     private final Map<Integer, AtomicLong> _counters = new ConcurrentHashMap<>();
     private final NFSv4OperationFactory _inner;
 
@@ -117,7 +117,7 @@ public class OperationFactoryMXBeanImpl implements OperationFactoryMXBean, NFSv4
             }
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException
                 | MBeanRegistrationException | NotCompliantMBeanException ex) {
-            _log.log(Level.SEVERE, ex.getMessage(), ex);
+            _log.warn("Failed to register JMX bean: {}", ex.getMessage());
         }
     }
 
