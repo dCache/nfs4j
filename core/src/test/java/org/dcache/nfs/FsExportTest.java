@@ -20,7 +20,6 @@
 package org.dcache.nfs;
 
 import com.google.common.collect.Iterables;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -35,7 +34,7 @@ public class FsExportTest {
 
     @Before
     public void setUp() throws IOException {
-        _exportFile = new ExportFile(new File("test/org/dcache/nfs/exports"));
+        _exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports"));
     }
 
     @Test
