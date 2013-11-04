@@ -8,7 +8,7 @@
 
     <groupId>org.dcache.chimera</groupId>
     <artifactId>jpnfs</artifactId>
-    <version>0.5.8-SNAPSHOT</version>
+    <version>0.5.8</version>
     <name>Java based NFSv4.1 implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
