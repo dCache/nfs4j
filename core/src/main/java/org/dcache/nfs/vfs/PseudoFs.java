@@ -212,7 +212,7 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public boolean remove(Inode parent, String path) throws IOException {
+    public void remove(Inode parent, String path) throws IOException {
         try {
             checkAccess(parent, ACE4_DELETE_CHILD);
         } catch (ChimeraNFSException e) {
@@ -223,7 +223,7 @@ public class PseudoFs implements VirtualFileSystem {
                 throw e;
             }
         }
-        return _inner.remove(parent, path);
+        _inner.remove(parent, path);
     }
 
     @Override

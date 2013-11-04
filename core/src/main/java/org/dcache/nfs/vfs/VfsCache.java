@@ -55,12 +55,9 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public boolean remove(Inode parent, String path) throws IOException {
-        final boolean removed = _inner.remove(parent, path);
-        if (removed) {
-            invalidateCache(parent, path);
-        }
-        return removed;
+    public void remove(Inode parent, String path) throws IOException {
+        _inner.remove(parent, path);
+        invalidateCache(parent, path);
     }
 
     @Override

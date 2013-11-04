@@ -32,6 +32,7 @@ import org.dcache.acl.enums.AceType;
 import org.dcache.acl.enums.Who;
 import org.dcache.auth.Subjects;
 import org.dcache.chimera.ChimeraFsException;
+import org.dcache.chimera.DirNotEmptyHimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
@@ -139,9 +140,15 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public boolean remove(Inode parent, String path) throws IOException {
+    public void remove(Inode parent, String path) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
-        return _fs.remove(parentFsInode, path);
+        try {
+            _fs.remove(parentFsInode, path);
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "path not found");
+        } catch (DirNotEmptyHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory not empty");
+        }
     }
 
     @Override
