@@ -49,7 +49,7 @@ public interface VirtualFileSystem {
 
     String readlink(Inode inode) throws IOException;
 
-    boolean remove(Inode parent, String path) throws IOException;
+    void remove(Inode parent, String path) throws IOException;
 
     Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException;
 

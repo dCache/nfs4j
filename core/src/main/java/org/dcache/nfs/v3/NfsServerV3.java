@@ -1280,9 +1280,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = fs.lookup(parent, file);
             Stat parentStat = fs.getattr(parent);
 
-            if (!fs.remove(parent, file)) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "Directory is not empty.");
-            }
+            fs.remove(parent, file);
 
             res.resok = new RMDIR3resok();
             res.status = nfsstat.NFS_OK;
