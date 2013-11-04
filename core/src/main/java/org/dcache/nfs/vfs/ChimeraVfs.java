@@ -31,6 +31,7 @@ import org.dcache.acl.enums.AceFlags;
 import org.dcache.acl.enums.AceType;
 import org.dcache.acl.enums.Who;
 import org.dcache.auth.Subjects;
+import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
@@ -175,7 +176,11 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     private Inode toInode(final FsInode inode) {
-        return Inode.forFile(inode.toFullString().getBytes());
+        try {
+            return Inode.forFile(_fs.inodeToBytes(inode));
+        } catch (ChimeraFsException e) {
+            throw new RuntimeException("bug found", e);
+        }
     }
 
     @Override
