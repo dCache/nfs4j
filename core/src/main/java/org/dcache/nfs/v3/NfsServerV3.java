@@ -1387,20 +1387,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
             String link = arg1.symlink.symlink_data.value;
             sattr3 linkAttr = arg1.symlink.symlink_attributes;
 
-            Inode inode = null;
-            boolean exists = true;
-            try {
-                inode = fs.lookup(parent, file);
-            } catch (FileNotFoundHimeraFsException hfe) {
-                exists = false;
-            }
-
-            if (exists) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "File " + file + " already exist.");
-            }
-
             Stat parentStat = fs.getattr(parent);
-            inode = fs.symlink(parent, file, link, user.getUID(), user.getGID(), 777);
+            Inode inode = fs.symlink(parent, file, link, user.getUID(), user.getGID(), 777);
 
             HimeraNfsUtils.set_sattr(inode, fs, linkAttr);
 
