@@ -172,7 +172,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     private final VirtualFileSystem _vfs;
     private final ExportFile _exports;
-    
+
     private static final Cache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>> _dlCacheFull =
             CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -494,18 +494,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             String name = arg1.link.name.value;
 
             Inode hlink = new Inode(arg1.file.data);
-
-            Inode inode = null;
-            boolean exists = true;
-            try {
-                inode = fs.lookup(parent, name);
-            } catch (FileNotFoundHimeraFsException hfe) {
-                exists = false;
-            }
-
-            if (exists) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "File " + name + " already exist.");
-            }
 
             Stat parentStat = fs.getattr(parent);
             fs.link(parent, hlink, name, user.getUID(), user.getGID());
