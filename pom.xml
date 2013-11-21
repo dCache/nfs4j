@@ -8,14 +8,15 @@
 
     <groupId>org.dcache.chimera</groupId>
     <artifactId>jpnfs</artifactId>
-    <version>0.5.10-SNAPSHOT</version>
+    <version>0.5.10</version>
     <name>Java based NFSv4.1 implementation</name>
     <packaging>jar</packaging>
     <url>http://www.dCache.ORG</url>
     <scm>
         <connection>scm:git:https://github.com/dCache/jpnfs.git</connection>
         <developerConnection>scm:git:https://github.com/dCache/jpnfs.git</developerConnection>
-    </scm>
+      <tag>jpnfs-0.5.10</tag>
+  </scm>
 
     <!--
         CODE LICENSE
