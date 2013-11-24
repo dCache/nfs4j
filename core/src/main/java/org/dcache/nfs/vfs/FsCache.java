@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.vfs;
 
+import com.google.common.base.Charsets;
 import com.google.common.cache.*;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class FsCache {
         @Override
         public FileChannel load(Inode inode) throws IOException {
             byte[] fid = inode.getFileId();
-            String id = new String(fid);
+            String id = new String(fid, Charsets.UTF_8);
             File dir = getAndCreateDirectory(id);
             File f = new File(dir, id);
             return new RandomAccessFile(f, "rw").getChannel();

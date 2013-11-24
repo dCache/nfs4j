@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.vfs;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -110,7 +111,7 @@ public class ChimeraVfs implements VirtualFileSystem {
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes());
+        FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes(Charsets.UTF_8));
         return toInode(fsInode);
     }
 
@@ -136,7 +137,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         if (n < 0) {
             throw new IOException("Can't read symlink");
         }
-        return new String(data, 0, n);
+        return new String(data, 0, n, Charsets.UTF_8);
     }
 
     @Override
@@ -394,7 +395,7 @@ public class ChimeraVfs implements VirtualFileSystem {
 
             Who who = ace.getWho();
 
-            if (who == Who.EVERYONE
+            if ((who == Who.EVERYONE)
                     || (who == Who.OWNER & Subjects.hasUid(subject, owner))
                     || (who == Who.OWNER_GROUP & Subjects.hasGid(subject, group))
                     || (who == Who.GROUP & Subjects.hasGid(subject, ace.getWhoID()))

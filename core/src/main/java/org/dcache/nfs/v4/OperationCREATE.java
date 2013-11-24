@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.base.Charsets;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
@@ -85,7 +86,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                             context.getUser().getUID(), context.getUser().getGID(), 0777);
                     break;
                 case nfs_ftype4.NF4LNK:
-                    String linkDest = new String(_args.opcreate.objtype.linkdata.value.value.value);
+                    String linkDest = new String(_args.opcreate.objtype.linkdata.value.value.value, Charsets.UTF_8);
                     inode = context.getFs().symlink(context.currentInode(), name, linkDest,
                             context.getUser().getUID(), context.getUser().getGID(), 0777);
                     break;

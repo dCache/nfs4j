@@ -21,6 +21,7 @@ package org.dcache.nfs;
 
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Charsets;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +69,7 @@ public class ExportFile {
         List<FsExport> exports = new ArrayList<>();
 
         String line;
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream()))) {
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream(), Charsets.UTF_8))) {
             while ((line = br.readLine()) != null) {
 
                 line = line.trim();

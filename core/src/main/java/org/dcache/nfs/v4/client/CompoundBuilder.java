@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4.client;
 
+import com.google.common.base.Charsets;
 import org.dcache.nfs.v4.xdr.layoutreturn_file4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.CREATE_SESSION4args;
@@ -184,7 +185,7 @@ public class CompoundBuilder {
 
         op.opexchange_id.eia_client_impl_id[0].nii_date = releaseDate;
         op.opexchange_id.eia_clientowner = new client_owner4();
-        op.opexchange_id.eia_clientowner.co_ownerid = co_ownerid.getBytes();
+        op.opexchange_id.eia_clientowner.co_ownerid = co_ownerid.getBytes(Charsets.UTF_8);
 
         op.opexchange_id.eia_clientowner.co_verifier = new verifier4();
         op.opexchange_id.eia_clientowner.co_verifier.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
@@ -448,7 +449,7 @@ public class CompoundBuilder {
 
         state_owner4 owner = new state_owner4();
         owner.clientid = clientid;
-        owner.owner = "JUnitChimera".getBytes();
+        owner.owner = "JUnitChimera".getBytes(Charsets.UTF_8);
         op.opopen.owner = new open_owner4(owner);
 
         if ((access & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) == 0) {
@@ -529,7 +530,7 @@ public class CompoundBuilder {
 
         state_owner4 owner = new state_owner4();
         owner.clientid = clientid;
-        owner.owner = "JUnitChimera".getBytes();
+        owner.owner = "JUnitChimera".getBytes(Charsets.UTF_8);
         op.opopen.owner = new open_owner4(owner);
 
         openflag4 flag = new openflag4();
