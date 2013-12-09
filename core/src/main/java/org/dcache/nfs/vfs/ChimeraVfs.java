@@ -212,7 +212,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         FsInode fsInode = toFsInode(inode);
         nfsace4[] aces;
         List<ACE> dacl = _fs.getACL(fsInode);
-        org.dcache.chimera.posix.Stat stat = _fs.stat(fsInode);
+        org.dcache.chimera.posix.Stat stat = fsInode.statCache();
 
         nfsace4[] unixAcl = Acls.of(stat.getMode(), fsInode.isDirectory());
         aces = new nfsace4[dacl.size() + unixAcl.length];
