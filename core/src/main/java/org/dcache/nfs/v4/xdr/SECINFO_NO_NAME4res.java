@@ -21,15 +21,9 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class SECINFO_NO_NAME4res implements XdrAble {
-
-    public SECINFO4res value;
+public class SECINFO_NO_NAME4res extends SECINFO4res {
 
     public SECINFO_NO_NAME4res() {
-    }
-
-    public SECINFO_NO_NAME4res(SECINFO4res value) {
-        this.value = value;
     }
 
     public SECINFO_NO_NAME4res(XdrDecodingStream xdr)
@@ -39,12 +33,12 @@ public class SECINFO_NO_NAME4res implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
+        super.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        value = new SECINFO4res(xdr);
+        super.xdrDecode(xdr);
     }
 
 }

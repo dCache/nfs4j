@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -599,7 +599,7 @@ public class nfs_resop4 implements XdrAble {
                 status = oplayoutreturn.lorr_status;
                 break;
             case nfs_opnum4.OP_SECINFO_NO_NAME:
-                status = opsecinfo_no_name.value.status;
+                status = opsecinfo_no_name.status;
                 break;
             case nfs_opnum4.OP_SEQUENCE:
                 status = opsequence.sr_status;
@@ -777,7 +777,7 @@ public class nfs_resop4 implements XdrAble {
                 oplayoutreturn.lorr_status = status;
                 break;
             case nfs_opnum4.OP_SECINFO_NO_NAME:
-                opsecinfo_no_name.value.status = status;
+                opsecinfo_no_name.status = status;
                 break;
             case nfs_opnum4.OP_SEQUENCE:
                 opsequence.sr_status = status;

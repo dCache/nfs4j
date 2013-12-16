@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -141,6 +141,8 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
                 return new OperationRECLAIM_COMPLETE(op);
             case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
                 return new OperationBIND_CONN_TO_SESSION(op);
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                return new OperationSECINFO_NO_NAME(op);
             case nfs_opnum4.OP_ILLEGAL:
 
         }

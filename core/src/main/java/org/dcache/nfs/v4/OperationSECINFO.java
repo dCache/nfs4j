@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,16 +21,15 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.rpcsec_gss_info;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.secinfo4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.nfs.v4.xdr.SECINFO4res;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.xdr.RpcAuthType;
+import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,19 +45,20 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final SECINFO4res res = result.opsecinfo;
-        Stat stat = context.getFs().getattr(context.currentInode());
+        Inode inode = context.currentInode();
+        context.clearCurrentInode();
+        Stat stat = context.getFs().getattr(inode);
 
         if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
         }
 
-        res.resok4 = new SECINFO4resok();
-        res.resok4.value = new secinfo4[1];
-
-        res.resok4.value[0] = new secinfo4();
-        res.resok4.value[0].flavor = RpcAuthType.UNIX;
-        res.resok4.value[0].flavor_info = new rpcsec_gss_info();
-        context.clearCurrentInode();
-        res.status = nfsstat.NFS_OK;
+        try {
+            res.resok4 = new SECINFO4resok();
+            res.resok4.value = OperationSECINFO_NO_NAME.secinfosOf(inode, context);
+            res.status = nfsstat.NFS_OK;
+        } catch (GSSException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+        }
     }
 }
