@@ -30,56 +30,56 @@ public class IPMatcherTest {
     @Test
     public void testHostWildcart() {
 
-        boolean match = IPMatcher.match("*.desy.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("*.desy.de", "www.desy.de");
         assertTrue("failed to match host by domain", match);
     }
 
     @Test
     public void testHostWildcart1() {
 
-        boolean match = IPMatcher.match("*", "nairi.desy.de");
+        boolean match = IPMatcher.match("*", "www.desy.de");
         assertTrue("failed to match host by domain", match);
     }
 
     @Test
     public void testHostWildcart2() {
 
-        boolean match = IPMatcher.match("n*.desy.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("w*.desy.de", "www.desy.de");
         assertTrue("failed to match host by domain", match);
     }
 
     @Test
     public void testHostWildcart3() {
 
-        boolean match = IPMatcher.match("b*.desy.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("b*.desy.de", "www.desy.de");
         assertFalse("Invalid match of host by domain", match);
     }
 
     @Test
     public void testDomainWildcart() {
 
-        boolean match = IPMatcher.match("nairi.*.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("www.*.de", "www.desy.de");
         assertTrue("failed to match host by domain", match);
     }
 
     @Test
     public void testDomainWildcart2() {
 
-        boolean match = IPMatcher.match("nairi.d*.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("www.d*.de", "www.desy.de");
         assertTrue("failed to match host by domain", match);
     }
 
     @Test
     public void testDomainWildcart3() {
 
-        boolean match = IPMatcher.match("nairi.b*.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("www.b*.de", "www.desy.de");
         assertFalse("Invalid to match host by domain", match);
     }
 
     @Test
     public void testExactMatch() {
 
-        boolean match = IPMatcher.match("nairi.desy.de", "nairi.desy.de");
+        boolean match = IPMatcher.match("www.desy.de", "www.desy.de");
         assertTrue("failed to match host by domain", match);
     }
 
@@ -89,7 +89,7 @@ public class IPMatcherTest {
     @Test
     public void testHostWildcartByIp() throws UnknownHostException {
 
-        boolean match = IPMatcher.match("*.desy.de", InetAddress.getByName("nairi.desy.de"));
+        boolean match = IPMatcher.match("*.desy.de", InetAddress.getByName("www.desy.de"));
         assertTrue("failed to match host by domain", match);
     }
 
