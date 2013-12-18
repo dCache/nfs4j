@@ -20,6 +20,8 @@
 package org.dcache.nfs.v4;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.utils.Bytes;
 
@@ -45,6 +47,8 @@ public class NFS4State {
     private boolean _isConfimed = false;
     private boolean _disposed = false;
 
+    private final List<StateDisposeListener> _disposeListeners;
+
     /**
      * Random generator to generate stateids.
      */
@@ -52,7 +56,7 @@ public class NFS4State {
 
     public NFS4State(stateid4 stateid) {
         _stateid = stateid;
-
+        _disposeListeners = new ArrayList<>();
     }
 
     public NFS4State(long clientid, int seqid) {
@@ -87,6 +91,9 @@ public class NFS4State {
     synchronized public final void tryDispose() {
         if (!_disposed) {
             dispose();
+            for (StateDisposeListener disposeListener : _disposeListeners) {
+                disposeListener.notifyDisposed(this);
+            }
             _disposed = true;
         }
     }
@@ -96,5 +103,9 @@ public class NFS4State {
      */
     protected void dispose() {
         // NOP
+    }
+
+    synchronized public void addDisposeListener(StateDisposeListener disposeListener) {
+        _disposeListeners.add(disposeListener);
     }
 }
