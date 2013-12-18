@@ -52,7 +52,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
             client = context.getStateHandler().getClientIdByStateId(_args.opclose.open_stateid);
         }
 
-        NFS4State state = client.releaseState(_args.opclose.open_stateid);
+        client.releaseState(_args.opclose.open_stateid);
         client.updateLeaseTime();
         /*
          * TODO: some state post-processing should happen, includeing layout release
