@@ -195,8 +195,8 @@ public class ChimeraVfs implements VirtualFileSystem {
 
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
-        FsInode fsInode = toFsInode(inode);
-        _fs.setInodeAttributes(fsInode, 0, toChimeraStat(stat));
+	FsInode fsInode = toFsInode(inode);
+	fsInode.setStat(toChimeraStat(stat));
     }
 
     @Override
