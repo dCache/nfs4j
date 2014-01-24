@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 client.updateLeaseTime();
                 _log.debug("open request form clientid: {}, owner: {}",
                         client, new String(_args.opopen.owner.value.owner));
-            } 
+            }
 
             res.resok4 = new OPEN4resok();
             res.resok4.attrset = new bitmap4();
@@ -168,7 +168,22 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     context.currentInode(inode);
 
                     break;
-
+		case open_claim_type4.CLAIM_PREVIOUS:
+		    /*
+		     * As we don't have persistent state store there are two oprions:
+		     *
+		     *   1. fail with NFSERR_RECLAIM_BAD
+		     *   2. just do a regulat open by FH.
+		     *
+		     * Let take the second case as first one will endup with
+		     * it anyway.
+		     *
+		     * Just check that we are still in the grace period and
+		     * fall -through to CLAIM_FH.
+		     */
+		    if (context.getStateHandler().hasGracePeriodExpired()) {
+			throw new ChimeraNFSException(nfsstat.NFSERR_NO_GRACE, "Server not in grace period");
+		    }
                 case open_claim_type4.CLAIM_FH:
 
                     _log.debug("open by Inode for : {}", context.currentInode());
@@ -195,16 +210,15 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "path is a symlink");
                     }
                     break;
-                case open_claim_type4.CLAIM_PREVIOUS:
                 case open_claim_type4.CLAIM_DELEGATE_CUR:
                 case open_claim_type4.CLAIM_DELEGATE_PREV:
                 case open_claim_type4.CLAIM_DELEG_CUR_FH:
                 case open_claim_type4.CLAIM_DELEG_PREV_FH:
                     _log.warn("Unimplemented open claim: {}", _args.opopen.claim.claim);
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "Unimplemented open claim: {}" + _args.opopen.claim.claim);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Unimplemented open claim: {}" + _args.opopen.claim.claim);
                 default:
                     _log.warn("BAD open claim: {}", _args.opopen.claim.claim);
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "BAD open claim: {}" + _args.opopen.claim.claim);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "BAD open claim: {}" + _args.opopen.claim.claim);
 
             }
 
