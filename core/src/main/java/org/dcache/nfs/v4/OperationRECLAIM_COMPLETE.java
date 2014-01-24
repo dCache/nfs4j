@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -35,7 +36,22 @@ public class OperationRECLAIM_COMPLETE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
-        result.opreclaim_complete.rcr_status = nfsstat.NFSERR_NOTSUPP;
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+
+	/*
+	 * we do not have any session state percistent store and,
+	 * as a result, there is nothing to recover. Just reply OK.
+	 */
+	result.opreclaim_complete.rcr_status = nfsstat.NFS_OK;
+
+	if (_args.opreclaim_complete.rca_one_fs) {
+	    /*
+	     * this is an optional operation. We simply check that client provided
+	     * the current file handle.
+	     */
+	    context.currentInode();
+	} else {
+	    context.getSession().getClient().reclaimComplete();
+	}
     }
 }

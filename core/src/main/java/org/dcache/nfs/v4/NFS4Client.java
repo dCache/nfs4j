@@ -1,5 +1,23 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Library General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with this program (see the file COPYING.LIB for more
+ * details); if not, write to the Free Software Foundation, Inc.,
+ * 675 Mass Ave, Cambridge, MA 02139, USA.
+ *//*
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -162,6 +180,12 @@ public class NFS4Client {
 
     private boolean _disposed;
 
+    /**
+     * A flag to indicate that the client already have
+     * reclaimed associated states.
+     */
+    private boolean _reclaim_completed;
+
     public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
             byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime) {
 
@@ -173,6 +197,7 @@ public class NFS4Client {
         _clientAddress = clientAddress;
         _localAddress = localAddress;
         _leaseTime = leaseTime;
+	_reclaim_completed = false;
         _log.debug("New client id: {}", Long.toHexString(_clientId));
 
     }
@@ -410,5 +435,13 @@ public class NFS4Client {
         for (NFS4State state : _clientStates.values()) {
             state.tryDispose();
         }
+    }
+
+    public synchronized void reclaimComplete() throws ChimeraNFSException {
+	if (_reclaim_completed) {
+	    throw new ChimeraNFSException(nfsstat.NFSERR_COMPLETE_ALREADY,
+		"Duplicating reclaim");
+	}
+	_reclaim_completed = true;
     }
 }
