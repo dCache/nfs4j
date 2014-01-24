@@ -444,4 +444,8 @@ public class NFS4Client {
 	}
 	_reclaim_completed = true;
     }
+
+    public synchronized boolean needReclaim() {
+	return !_reclaim_completed;
+    }
 }

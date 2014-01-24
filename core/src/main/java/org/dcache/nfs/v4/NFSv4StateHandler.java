@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -65,12 +65,18 @@ public class NFSv4StateHandler {
      */
     private final long _leaseTime;
 
+    /**
+     * Server start time.
+     */
+    private final long _bootTime;
+
     public NFSv4StateHandler() {
         this(NFSv4Defaults.NFS4_LEASE_TIME*1000);
     }
 
     NFSv4StateHandler(long leaseTime) {
         _leaseTime = leaseTime;
+	_bootTime = System.currentTimeMillis();
     }
 
     public synchronized void removeClient(NFS4Client client) {
@@ -180,5 +186,13 @@ public class NFSv4StateHandler {
             _log.info("Removing expired session: {}", session);
             detachSession(session);
         }
+    }
+
+    /**
+     * Check is the GRACE period expired.
+     * @return true, if grace period expired.
+     */
+    public boolean hasGracePeriodExpired() {
+	return _bootTime + TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME) < System.currentTimeMillis();
     }
 }
