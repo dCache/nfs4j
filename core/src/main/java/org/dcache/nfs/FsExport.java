@@ -58,6 +58,7 @@ public class FsExport {
     private final boolean _allSquash;
     private final int _anonUid;
     private final int _anonGid;
+    private final boolean _withDcap;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -105,6 +106,7 @@ public class FsExport {
         _allSquash = builder.hasAllSquash();
         _anonUid = builder.getAnonUid();
         _anonGid = builder.getAnonGid();
+	_withDcap = builder.isWithDcap();
     }
 
     public String getPath() {
@@ -125,7 +127,9 @@ public class FsExport {
                 .append(',')
                 .append(_withAcl ? "acl" : "noacl")
                 .append(',')
-                .append("sec=").append(_sec);
+                .append("sec=").append(_sec)
+		.append(',')
+		.append(_withDcap ? "dcap" : "no_dcap");
         if (_allSquash) {
             sb.append(",all_squash");
         }
@@ -196,6 +200,10 @@ public class FsExport {
         return _anonGid;
     }
 
+    public boolean isWithDcap() {
+	return _withDcap;
+    }
+
     public static class FsExportBuilder {
 
         private String _client = "*";
@@ -206,6 +214,7 @@ public class FsExport {
         private boolean allSquash = false;
         private int _anonUid = DEFAULT_ANON_UID;
         private int _anonGid = DEFAULT_ANON_GID;
+	private boolean _withDcap = true;
 
         public FsExportBuilder forClient(String client) {
             _client = client;
@@ -262,6 +271,16 @@ public class FsExport {
             return this;
         }
 
+	public FsExportBuilder withDcap() {
+	    _withDcap = true;
+	    return this;
+	}
+
+	public FsExportBuilder withoutDcap() {
+	    _withDcap = false;
+	    return this;
+	}
+
         public String getClient() {
             return _client;
         }
@@ -293,6 +312,10 @@ public class FsExport {
         public int getAnonGid() {
             return _anonGid;
         }
+
+	public boolean isWithDcap() {
+	    return _withDcap;
+	}
 
         public FsExport build(String path) {
             return new FsExport(path, this);

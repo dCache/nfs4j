@@ -20,3 +20,5 @@
 /no_squash *
 /anon_access *(anonuid=500,anongid=501)
 /anon_access_default *
+/with_dcap *
+/without_dcap *(no_dcap)

@@ -154,6 +154,15 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
         checkAccess(parent, ACE4_EXECUTE);
+
+	/*
+	 * REVISIT: this is not ;the best place to do it, but the simples one.
+	 */
+	FsExport export = _exportFile.getExport(parent.exportIndex(), _inetAddress);
+	if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
+	    throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "the dcap magic file is blocked");
+	}
+
         if (parent.isPesudoInode()) {
             return lookupInPseudoDirectory(parent, path);
         }

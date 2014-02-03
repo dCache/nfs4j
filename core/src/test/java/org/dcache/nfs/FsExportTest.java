@@ -153,4 +153,17 @@ public class FsExportTest {
         assertEquals("default anonuid not used", FsExport.DEFAULT_ANON_UID, export.getAnonUid());
         assertEquals("default anongid not used", FsExport.DEFAULT_ANON_GID, export.getAnonUid());
     }
+
+    @Test
+    public void testWithDcap() throws UnknownHostException {
+	FsExport export = _exportFile.getExport("/with_dcap", InetAddress.getByName("192.169.2.2"));
+	assertTrue("dcap should be default option", export.isWithDcap());
+    }
+
+    @Test
+    public void testWithoutDcap() throws UnknownHostException {
+	FsExport export = _exportFile.getExport("/without_dcap", InetAddress.getByName("192.169.2.2"));
+	assertFalse("dcap is not disabled", export.isWithDcap());
+    }
+
 }
