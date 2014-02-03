@@ -166,7 +166,17 @@ public class ExportFile {
                                 continue;
                             }
 
-                            throw new IllegalArgumentException("Unsupported option: " + option);
+			    if (option.equals("dcap")) {
+				exportBuilder.withDcap();
+				continue;
+			    }
+
+			    if (option.equals("no_dcap")) {
+				exportBuilder.withoutDcap();
+				continue;
+			    }
+
+			    throw new IllegalArgumentException("Unsupported option: " + option);
                         }
                         FsExport export = exportBuilder.build(path);
                         exports.add(export);
