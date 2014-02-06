@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4.client;
 
+import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -60,7 +61,9 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.AttributeMap;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
+import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
@@ -68,7 +71,6 @@ import org.dcache.nfs.v4.xdr.sequenceid4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.utils.Bytes;
@@ -552,9 +554,9 @@ public class Main {
 
         compound4res = sendCompound(args);
 
-        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
-        fattr4_lease_time leaseTime = attrs.get(nfs4_prot.FATTR4_LEASE_TIME);
-        int leaseTimeInSeconds = leaseTime.value;
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        Optional<fattr4_lease_time> leaseTime = attrs.get(nfs4_prot.FATTR4_LEASE_TIME);
+        int leaseTimeInSeconds = leaseTime.get().value;
         System.out.println("server lease time: " + leaseTimeInSeconds + " sec.");
         _executorService.scheduleAtFixedRate(new LeaseUpdater(this),
                 leaseTimeInSeconds, leaseTimeInSeconds, TimeUnit.SECONDS);
@@ -707,12 +709,13 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
-        fattr4_fs_locations locations = attrs.get(nfs4_prot.FATTR4_FS_LOCATIONS);
-        if (locations != null) {
-            System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0].value.toString());
-            System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0].value.toString());
+        Optional<fattr4_fs_locations> locationsAttr = attrs.get(nfs4_prot.FATTR4_FS_LOCATIONS);
+        if (locationsAttr.isPresent()) {
+	    fattr4_fs_locations locations = locationsAttr.get();
+            System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0]);
+            System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0]);
             System.out.println("fs_locations locations server: " + new String(locations.value.locations[0].server[0].value.value));
 
         }
@@ -746,15 +749,15 @@ public class Main {
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
 
-        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
 
-        uint64_t size = attrs.get(nfs4_prot.FATTR4_SIZE);
-        if (size != null) {
-            stat.setSize(size.value);
+        Optional<fattr4_size> size = attrs.get(nfs4_prot.FATTR4_SIZE);
+        if (size.isPresent()) {
+            stat.setSize(size.get().value);
         }
 
-        fattr4_type type = attrs.get(nfs4_prot.FATTR4_TYPE);
-        System.out.println("Type is: " + type.value);
+        Optional<fattr4_type> type = attrs.get(nfs4_prot.FATTR4_TYPE);
+        System.out.println("Type is: " + type.get().value);
 
         return stat;
     }
@@ -1160,11 +1163,11 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        GetattrStub.Attrs attrs = GetattrStub.decodeType(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
-        mode4 mode = attrs.get(nfs4_prot.FATTR4_MODE);
-        if (mode != null) {
-            System.out.println("mode: 0" + Integer.toOctalString(mode.value));
+        Optional<mode4> mode = attrs.get(nfs4_prot.FATTR4_MODE);
+        if (mode.isPresent()) {
+            System.out.println("mode: 0" + Integer.toOctalString(mode.get().value));
         }
     }
 

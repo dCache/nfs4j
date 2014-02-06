@@ -19,27 +19,13 @@
  */
 package org.dcache.nfs.v4.client;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.dcache.nfs.v4.xdr.GETATTR4args;
 import org.dcache.nfs.v4.xdr.bitmap4;
-import org.dcache.nfs.v4.xdr.fattr4;
-import org.dcache.nfs.v4.xdr.fattr4_fs_locations;
-import org.dcache.nfs.v4.xdr.fattr4_lease_time;
-import org.dcache.nfs.v4.xdr.fattr4_type;
-import org.dcache.nfs.v4.xdr.mode4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.uint64_t;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrDecodingStream;
 
 public class GetattrStub {
 
@@ -67,89 +53,4 @@ public class GetattrStub {
         return supported;
 
     }
-
-    public static class Attrs {
-        private final Map<Integer,Object> _attrs;
-
-        public Attrs(Map<Integer, Object> attrs) {
-            _attrs = attrs;
-        }
-
-        public <T> T get(Integer attr) {
-            return (T) _attrs.get(attr);
-       }
-    }
-
-    public static Attrs decodeType(fattr4 attributes) throws OncRpcException, IOException  {
-
-        Map<Integer,Object> attr = new HashMap<>();
-
-        int[] mask = attributes.attrmask.value;
-
-        XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
-        xdr.beginDecoding();
-
-        if( mask.length != 0 ) {
-            int maxAttr = Integer.SIZE * mask.length;
-            for( int i = 0; i < maxAttr; i++) {
-                int bitmapIdx = i / Integer.SIZE;
-                int newmask = mask[bitmapIdx] >> i % Integer.SIZE;
-                if( (newmask & 1L) != 0 ) {
-                    xdr2fattr(attr, i, xdr);
-                }
-            }
-        }
-
-        xdr.endDecoding();
-
-        return new Attrs(attr);
-    }
-
-
-    static void xdr2fattr( Map<Integer,Object> attr, int fattr , XdrDecodingStream xdr) throws OncRpcException, IOException {
-
-        switch(fattr) {
-
-            case nfs4_prot.FATTR4_SIZE :
-                uint64_t size = new uint64_t();
-                size.xdrDecode(xdr);
-                attr.put(fattr, size);
-                break;
-            case nfs4_prot.FATTR4_MODE :
-                mode4 mode = new mode4();
-                mode.xdrDecode(xdr);
-                attr.put(fattr, mode);
-                break;
-            case nfs4_prot.FATTR4_OWNER :
-                // TODO: use princilat
-                utf8str_cs owner = new utf8str_cs ();
-                owner.xdrDecode(xdr);
-                String new_owner = owner.toString();
-                attr.put(fattr,new_owner );
-                break;
-            case nfs4_prot.FATTR4_OWNER_GROUP :
-                // TODO: use princilat
-                utf8str_cs owner_group = new utf8str_cs ();
-                owner_group.xdrDecode(xdr);
-                String new_group = owner_group.toString();
-                attr.put(fattr,new_group );
-                break;
-            case nfs4_prot.FATTR4_TYPE :
-                fattr4_type type = new fattr4_type();
-                type.xdrDecode(xdr);
-                attr.put(fattr,type );
-                break;
-            case nfs4_prot.FATTR4_FS_LOCATIONS:
-                fattr4_fs_locations fs_locations = new fattr4_fs_locations();
-                fs_locations.xdrDecode(xdr);
-                attr.put(fattr, fs_locations);
-                break;
-            case nfs4_prot.FATTR4_LEASE_TIME:
-                attr.put(fattr, new fattr4_lease_time(xdr));
-                break;
-        }
-
-
-    }
-
 }

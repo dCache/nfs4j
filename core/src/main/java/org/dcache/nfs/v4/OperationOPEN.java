@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.base.Optional;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.open_delegation_type4;
 import org.dcache.nfs.v4.xdr.change_info4;
@@ -38,6 +39,8 @@ import org.dcache.nfs.v4.xdr.OPEN4res;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
+import org.dcache.nfs.v4.xdr.fattr4_size;
+import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -107,21 +110,50 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         try {
 
+			    /**
+			     * according tho the spec. client MAY send all allowed attributes.
+			     * Nevertheless, in reality, clients send only mode.
+			     * We will accept only mode and client will send extra
+			     * SETATTR is required.
+			     *
+			     * REVISIT: we can apply all others as well to avoid
+			     * extra network roundtrip.
+			     */
+			    int mode = 0600;
+			    AttributeMap attributeMap;
+			    bitmap4 appliedAttribytes = bitmap4.of(0);
+			    switch(_args.opopen.openhow.how.mode) {
+				case createmode4.UNCHECKED4:
+				case createmode4.GUARDED4:
+				    attributeMap = new AttributeMap(_args.opopen.openhow.how.createattrs);
+				    break;
+				case createmode4.EXCLUSIVE4:
+				    attributeMap = new AttributeMap(null);
+				    break;
+				case createmode4.EXCLUSIVE4_1:
+				    attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
+				    break;
+				default:
+				    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "bad value: " + _args.opopen.openhow.how.mode);
+			    }
+
+			    Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
+			    if (createMode.isPresent()) {
+				mode = createMode.get().value;
+				appliedAttribytes.set(nfs4_prot.FATTR4_MODE);
+			    }
+
+                            Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
+                            if (createSize.isPresent() && createSize.get().value == 0) {
+                                appliedAttribytes.set(nfs4_prot.FATTR4_SIZE);
+                            }
+
                             _log.debug("Creating a new file: {}", name);
                             inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,
                                     name, context.getUser().getUID(),
-                                    context.getUser().getGID(), 0600);
+                                    context.getUser().getGID(), mode);
 
                             res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
-                            // FIXME: proper implementation required
-                            switch (_args.opopen.openhow.how.mode) {
-                                case createmode4.UNCHECKED4:
-                                case createmode4.GUARDED4:
-                                    res.resok4.attrset = OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
-                                    break;
-                                case createmode4.EXCLUSIVE4:
-                                case createmode4.EXCLUSIVE4_1:
-                            }
                         } catch (FileExistsChimeraFsException e) {
 
                             if (exclusive) {

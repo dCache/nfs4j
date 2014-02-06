@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
@@ -32,6 +33,9 @@ import org.dcache.nfs.v4.xdr.CREATE4res;
 import org.dcache.nfs.v4.xdr.CREATE4resok;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileExistsChimeraFsException;
+import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.mode4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -63,34 +67,43 @@ public class OperationCREATE extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
         }
 
+        AttributeMap attributeMap = new AttributeMap(objAttr);
+        bitmap4 appliedAttribytes = bitmap4.of(0);
+        int mode = 700;
+        Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
+        if (createMode.isPresent()) {
+            mode = createMode.get().value;
+            appliedAttribytes.set(nfs4_prot.FATTR4_MODE);
+        }
+
         try {
 
             switch (type) {
 
                 case nfs_ftype4.NF4DIR:
                     inode = context.getFs().mkdir(context.currentInode(), name,
-                            context.getUser().getUID(), context.getUser().getGID(), 0777);
+                            context.getUser().getUID(), context.getUser().getGID(), mode);
                     break;
                 case nfs_ftype4.NF4LNK:
                     String linkDest = new String(_args.opcreate.objtype.linkdata.value.value, Charsets.UTF_8);
                     inode = context.getFs().symlink(context.currentInode(), name, linkDest,
-                            context.getUser().getUID(), context.getUser().getGID(), 0777);
+                            context.getUser().getUID(), context.getUser().getGID(), mode);
                     break;
                 case nfs_ftype4.NF4BLK:
                     inode = context.getFs().create(context.currentInode(), Stat.Type.BLOCK, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 0777);
+                            context.getUser().getUID(), context.getUser().getGID(), mode);
                     break;
                 case nfs_ftype4.NF4CHR:
                     inode = context.getFs().create(context.currentInode(), Stat.Type.CHAR, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 0777);
+                            context.getUser().getUID(), context.getUser().getGID(), mode);
                     break;
                 case nfs_ftype4.NF4FIFO:
                     inode = context.getFs().create(context.currentInode(), Stat.Type.FIFO, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 0777);
+                            context.getUser().getUID(), context.getUser().getGID(), mode);
                     break;
                 case nfs_ftype4.NF4SOCK:
                     inode = context.getFs().create(context.currentInode(), Stat.Type.SOCK, name,
-                            context.getUser().getUID(), context.getUser().getGID(), 0777);
+                            context.getUser().getUID(), context.getUser().getGID(), mode);
                     break;
                 case nfs_ftype4.NF4ATTRDIR:
                 case nfs_ftype4.NF4NAMEDATTR:
@@ -107,7 +120,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new CREATE4resok();
-        res.resok4.attrset = OperationSETATTR.setAttributes(objAttr, inode, context);
+        res.resok4.attrset = appliedAttribytes;
         res.resok4.cinfo = new change_info4();
         res.resok4.cinfo.atomic = true;
         res.resok4.cinfo.before = new changeid4(stat.getMTime());
