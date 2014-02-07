@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -105,7 +105,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         }
 
         NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value.value,
-                _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value.value);
+                _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value);
         _log.debug("adding new session [{}]", session);
         context.getStateHandler().sessionById(session.id(), session);
 
@@ -118,7 +118,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                     context.getRpcCall().getTransport().getPeerTransport(),
                     _args.opcreate_session.csa_cb_program.value,
                     session.id(),
-                    _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value.value,
+                    _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value,
                     _args.opcreate_session.csa_sec_parms);
             client.setCB(cb);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -65,8 +65,8 @@ public class OperationREAD extends AbstractNFSv4Operation {
         }
 
 
-        long offset = _args.opread.offset.value.value;
-        int count = _args.opread.count.value.value;
+        long offset = _args.opread.offset.value;
+        int count = _args.opread.count.value;
 
         ByteBuffer buf = ByteBuffer.allocate(count);
 

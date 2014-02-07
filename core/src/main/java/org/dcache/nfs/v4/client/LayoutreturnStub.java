@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 
 public class LayoutreturnStub {
 
@@ -49,8 +48,8 @@ public class LayoutreturnStub {
         op.oplayoutreturn.lora_layoutreturn = new layoutreturn4();
         op.oplayoutreturn.lora_layoutreturn.lr_returntype = layoutreturn_type4.LAYOUTRETURN4_FILE;
         op.oplayoutreturn.lora_layoutreturn.lr_layout = new layoutreturn_file4();
-        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_offset = new offset4(new uint64_t(offset));
-        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_length = new length4(new uint64_t(len));
+        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_offset = new offset4(offset);
+        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_length = new length4(len);
         op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_body = body;
         op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid = stateid;
 

@@ -131,7 +131,7 @@ public class Layout {
         layout.nfl_util = new nfl_util4(new uint32_t(layout.nfl_util.value.value));
 
         //where the striping pattern starts
-        layout.nfl_pattern_offset = new offset4(new uint64_t(0));
+        layout.nfl_pattern_offset = new offset4(0);
 
         XdrBuffer xdr = new XdrBuffer(512);
         xdr.beginEncoding();
@@ -173,8 +173,8 @@ public class Layout {
             throws IOException {
 
         layout4 segment = new layout4();
-        segment.lo_offset = new offset4(new uint64_t(offset));
-        segment.lo_length = new length4(new uint64_t(length));
+        segment.lo_offset = new offset4(offset);
+        segment.lo_length = new length4(length);
         segment.lo_iomode = iomode;
         segment.lo_content = new layout_content4();
         segment.lo_content = getSegmentContent(deviceid, fh);

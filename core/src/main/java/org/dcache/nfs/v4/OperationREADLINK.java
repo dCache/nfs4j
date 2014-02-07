@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@ import org.dcache.nfs.v4.xdr.linktext4;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.utf8string;
 import org.dcache.nfs.v4.xdr.READLINK4res;
 import org.dcache.nfs.v4.xdr.READLINK4resok;
 import org.dcache.nfs.ChimeraNFSException;
@@ -55,8 +54,7 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
         _log.debug("NFS Request  READLINK4 link: {}", link);
         res.resok4 = new READLINK4resok();
         res.resok4.link = new linktext4();
-        res.resok4.link.value = new utf8str_cs();
-        res.resok4.link.value.value = new utf8string(link);
+        res.resok4.link.value = new utf8str_cs(link);
         res.status = nfsstat.NFS_OK;
     }
 }

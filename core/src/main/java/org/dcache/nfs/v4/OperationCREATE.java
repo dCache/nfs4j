@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         Inode inode;
 
         Stat stat = context.getFs().getattr(context.currentInode());
-        String name = NameFilter.convert(_args.opcreate.objname.value.value.value);
+        String name = NameFilter.convert(_args.opcreate.objname.value);
 
         if (name.length() == 0) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");
@@ -86,7 +86,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                             context.getUser().getUID(), context.getUser().getGID(), 0777);
                     break;
                 case nfs_ftype4.NF4LNK:
-                    String linkDest = new String(_args.opcreate.objtype.linkdata.value.value.value, Charsets.UTF_8);
+                    String linkDest = new String(_args.opcreate.objtype.linkdata.value.value, Charsets.UTF_8);
                     inode = context.getFs().symlink(context.currentInode(), name, linkDest,
                             context.getUser().getUID(), context.getUser().getGID(), 0777);
                     break;

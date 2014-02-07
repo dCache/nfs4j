@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -54,8 +54,8 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         Stat inodeStat = context.getFs().getattr(context.currentInode());
         boolean eof = false;
 
-        long offset = _args.opread.offset.value.value;
-        int count = _args.opread.count.value.value;
+        long offset = _args.opread.offset.value;
+        int count = _args.opread.count.value;
 
         ByteBuffer bb = ByteBuffer.allocateDirect(count);
 
@@ -77,6 +77,6 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         res.resok4.eof = eof;
 
         _log.debug("MOVER: {}@{} readed, {} requested.",
-                bytesReaded, offset, _args.opread.count.value.value);
+                bytesReaded, offset, _args.opread.count.value);
     }
 }

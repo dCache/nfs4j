@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,30 +21,18 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class component4 implements XdrAble {
-
-    public utf8str_cs value;
+public class component4 extends utf8str_cs {
 
     public component4() {
     }
 
-    public component4(utf8str_cs value) {
-        this.value = value;
+    public component4(String value) {
+        super(value);
     }
 
     public component4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        xdrDecode(xdr);
-    }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new utf8str_cs(xdr);
+        super(xdr);
     }
 
 }

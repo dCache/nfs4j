@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 
 public class ReaddirStub {
@@ -37,9 +36,9 @@ public class ReaddirStub {
 
         nfs_argop4 op = new nfs_argop4();
         op.opreaddir = new READDIR4args();
-        op.opreaddir.cookie = new nfs_cookie4( new uint64_t(cookie) );
-        op.opreaddir.dircount = new count4(new uint32_t(1024));
-        op.opreaddir.maxcount = new count4(new uint32_t(256));
+        op.opreaddir.cookie = new nfs_cookie4(cookie) ;
+        op.opreaddir.dircount = new count4(1024);
+        op.opreaddir.maxcount = new count4(256);
         op.opreaddir.attr_request = new bitmap4( new uint32_t[] { new uint32_t(0), new uint32_t(0) });
         op.opreaddir.cookieverf =  verifier;
 

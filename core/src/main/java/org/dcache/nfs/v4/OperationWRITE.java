@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -51,7 +50,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
         final WRITE4res res = result.opwrite;
 
-        if (_args.opwrite.offset.value.value + _args.opwrite.data.remaining() > 0x3ffffffe) {
+        if (_args.opwrite.offset.value + _args.opwrite.data.remaining() > 0x3ffffffe) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Arbitrary value");
         }
 
@@ -71,7 +70,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
         }
 
-        long offset = _args.opwrite.offset.value.value;
+        long offset = _args.opwrite.offset.value;
         int count = _args.opwrite.data.remaining();
         byte[] data = new byte[count];
         _args.opwrite.data.get(data);
@@ -85,7 +84,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new WRITE4resok();
-        res.resok4.count = new count4(new uint32_t(bytesWritten));
+        res.resok4.count = new count4(bytesWritten);
         res.resok4.committed = stable_how4.FILE_SYNC4;
         res.resok4.writeverf = new verifier4();
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];

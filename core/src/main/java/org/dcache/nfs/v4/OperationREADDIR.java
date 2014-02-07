@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,9 +31,7 @@ import org.dcache.nfs.v4.xdr.entry4;
 import org.dcache.nfs.v4.xdr.dirlist4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.component4;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -134,7 +132,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         List<DirectoryEntry> dirList;
         verifier4 verifier;
-        long startValue = _args.opreaddir.cookie.value.value;
+        long startValue = _args.opreaddir.cookie.value;
 
 
         /*
@@ -180,7 +178,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie : " + startValue + " " + dirList.size());
         }
 
-        if (_args.opreaddir.maxcount.value.value < READDIR4RESOK_SIZE) {
+        if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
             throw new ChimeraNFSException(nfsstat.NFSERR_TOOSMALL, "maxcount too small");
         }
 
@@ -218,26 +216,26 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
             Inode ei = le.getInode();
 
-            currentEntry.name = new component4(new utf8str_cs(name));
+            currentEntry.name = new component4(name);
             // keep offset
-            currentEntry.cookie = new nfs_cookie4(new uint64_t(i));
+            currentEntry.cookie = new nfs_cookie4(i);
 
             // TODO: catch here error from getattr and reply 'fattr4_rdattr_error' to the client
             currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei, le.getStat(), context);
             currentEntry.nextentry = null;
 
             // check if writing this entry exceeds the count limit
-            int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.value.value.length + currentEntry.attrs.attr_vals.value.length;
+            int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length + currentEntry.attrs.attr_vals.value.length;
             int newDirSize = name.length() + 4; // name + sizeof(long)
-            if ((currcount + newSize > _args.opreaddir.maxcount.value.value) || (dircount + newDirSize > _args.opreaddir.dircount.value.value)) {
+            if ((currcount + newSize > _args.opreaddir.maxcount.value) || (dircount + newDirSize > _args.opreaddir.dircount.value)) {
 
                 res.resok4.reply.eof = false;
 
                 _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
                             i - startValue, currcount,
-                            _args.opreaddir.maxcount.value.value,
+                            _args.opreaddir.maxcount.value,
                             dircount,
-                            _args.opreaddir.dircount.value.value,
+                            _args.opreaddir.dircount.value,
                             startValue, dirList.size());
                 break;
             }
@@ -262,9 +260,9 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         res.status = nfsstat.NFS_OK;
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {} EOF={}",
                     fcount, currcount,
-                    _args.opreaddir.maxcount.value.value,
+                    _args.opreaddir.maxcount.value,
                     startValue,
-                    _args.opreaddir.dircount.value.value,
+                    _args.opreaddir.dircount.value,
                     dirList.size(), res.resok4.reply.eof);
     }
 

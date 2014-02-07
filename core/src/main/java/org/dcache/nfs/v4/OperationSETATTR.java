@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -154,7 +154,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MODE :
                 mode4 mode = new mode4();
                 mode.xdrDecode(xdr);
-                int rwx = mode.value.value | (stat.getMode() & 0770000);
+                int rwx = mode.value | (stat.getMode() & 0770000);
                 stat.setMode(rwx);
                 context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), rwx));
                 isApplied = true;

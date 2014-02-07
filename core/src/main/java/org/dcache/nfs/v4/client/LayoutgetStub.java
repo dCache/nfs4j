@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,8 +30,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrBuffer;
@@ -51,23 +49,10 @@ public class LayoutgetStub {
         op.oplayoutget.loga_layout_type = layout_type;
         op.oplayoutget.loga_iomode = iomode;
 
-        offset4 off = new offset4();
-        uint64_t u64 = new uint64_t(offset);
-        off.value = u64;
-
-        length4 cnLong = new length4();
-        cnLong.value = new uint64_t(length);
-
-        length4 cnZero = new length4();
-        cnZero.value = new uint64_t(minlength);
-
-        count4 cnShort = new count4();
-        cnShort.value = new uint32_t(maxcount);
-
-        op.oplayoutget.loga_offset = off;
-        op.oplayoutget.loga_length = cnLong;
-        op.oplayoutget.loga_minlength = cnZero;
-        op.oplayoutget.loga_maxcount = cnShort;
+	op.oplayoutget.loga_offset = new offset4(offset);
+	op.oplayoutget.loga_length = new length4(length);
+	op.oplayoutget.loga_minlength = new length4(minlength);
+	op.oplayoutget.loga_maxcount = new count4(maxcount);
 
         op.oplayoutget.loga_stateid = stateid;
 

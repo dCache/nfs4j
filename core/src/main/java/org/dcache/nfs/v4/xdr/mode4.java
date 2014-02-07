@@ -21,31 +21,18 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class mode4 implements XdrAble {
-
-    public uint32_t value;
+public class mode4 extends uint32_t {
 
     public mode4() {
     }
 
-    public mode4(uint32_t value) {
-        this.value = value;
+    public mode4(int value) {
+        super(value);
     }
 
     public mode4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        xdrDecode(xdr);
+	super(xdr);
     }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new uint32_t(xdr);
-    }
-
 }
 // End of mode4.java

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,6 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.GETDEVICELIST4resok;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -57,23 +56,23 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
          * particular layout type.
          */
 
-        if (_args.opgetdevicelist.gdla_maxdevices.value.value < 0) {
+        if (_args.opgetdevicelist.gdla_maxdevices.value < 0) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "negative maxcount");
         }
 
-        if (_args.opgetdevicelist.gdla_maxdevices.value.value < 1) {
+        if (_args.opgetdevicelist.gdla_maxdevices.value < 1) {
             throw new ChimeraNFSException(nfsstat.NFSERR_TOOSMALL, "device list too small");
         }
 
         res.gdlr_resok4 = new GETDEVICELIST4resok();
 
-        res.gdlr_resok4.gdlr_cookie = new nfs_cookie4(new uint64_t(1));
+        res.gdlr_resok4.gdlr_cookie = new nfs_cookie4(1);
         res.gdlr_resok4.gdlr_cookieverf = new verifier4();
         res.gdlr_resok4.gdlr_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
         List<deviceid4> deviceIDs = context.getDeviceManager().getDeviceList(context);
 
-        int deviceListSize = Math.min(deviceIDs.size(), _args.opgetdevicelist.gdla_maxdevices.value.value);
+        int deviceListSize = Math.min(deviceIDs.size(), _args.opgetdevicelist.gdla_maxdevices.value);
 
         res.gdlr_resok4.gdlr_deviceid_list = new deviceid4[deviceListSize];
 
@@ -84,7 +83,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
         _log.debug("GETDEVICELIST4: new list of #{}, maxcount {}",
                 res.gdlr_resok4.gdlr_deviceid_list.length,
-                _args.opgetdevicelist.gdla_maxdevices.value.value);
+                _args.opgetdevicelist.gdla_maxdevices.value);
 
         /*
          * we reply only one dummy entry. The rest is dynamic

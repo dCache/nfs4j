@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
         }
 
-        String name = NameFilter.convert(_args.opremove.target.value.value.value);
+        String name = NameFilter.convert(_args.opremove.target.value);
 
         if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");

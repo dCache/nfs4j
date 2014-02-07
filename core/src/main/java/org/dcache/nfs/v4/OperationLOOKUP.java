@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final LOOKUP4res res = result.oplookup;
 
-        String name = NameFilter.convert(_args.oplookup.objname.value.value.value);
+        String name = NameFilter.convert(_args.oplookup.objname.value);
 
         Stat stat = context.getFs().getattr(context.currentInode());
         if (stat.type() == Stat.Type.SYMLINK) {

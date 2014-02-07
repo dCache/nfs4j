@@ -93,7 +93,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
                     }
 
-                    String name = NameFilter.convert(_args.opopen.claim.file.value.value.value);
+                    String name = NameFilter.convert(_args.opopen.claim.file.value);
                     _log.debug("regular open for : {}", name);
 
                     Inode inode;

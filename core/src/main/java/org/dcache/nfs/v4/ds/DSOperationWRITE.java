@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -34,7 +34,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.stable_how4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Stat;
@@ -56,7 +55,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
         final WRITE4res res = result.opwrite;
 
-        long offset = _args.opwrite.offset.value.value;
+        long offset = _args.opwrite.offset.value;
 
         FileChannel out = _fsCache.get(context.currentInode());
 
@@ -69,7 +68,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new WRITE4resok();
-        res.resok4.count = new count4(new uint32_t(bytesWritten));
+        res.resok4.count = new count4(bytesWritten);
         res.resok4.committed = _args.opwrite.stable;
         res.resok4.writeverf = new verifier4();
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];

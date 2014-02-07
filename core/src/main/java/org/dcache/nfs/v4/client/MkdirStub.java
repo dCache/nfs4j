@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,13 +31,11 @@ import org.dcache.nfs.v4.xdr.component4;
 import org.dcache.nfs.v4.xdr.createtype4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_mode;
-import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
@@ -51,7 +49,7 @@ public class MkdirStub {
 
         CREATE4args args = new CREATE4args();
 
-        args.objname = new component4(new utf8str_cs(path));
+        args.objname = new component4(path);
         args.objtype = new createtype4();
         args.objtype.type = nfs_ftype4.NF4DIR;
         args.createattrs = new fattr4();
@@ -106,11 +104,7 @@ public class MkdirStub {
         XdrBuffer xdr = new XdrBuffer(1024);
         try {
             xdr.beginEncoding();
-
-            mode4 fmode = new mode4();
-            fmode.value = new uint32_t(0755);
-            fattr4_mode mode = new fattr4_mode( fmode );
-
+            fattr4_mode mode = new fattr4_mode(0755);
             mode.xdrEncode(xdr);
 
         }catch(OncRpcException | IOException never_happens) {

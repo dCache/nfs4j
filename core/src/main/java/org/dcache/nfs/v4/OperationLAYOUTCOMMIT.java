@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,6 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.length4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.newsize4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -48,8 +47,8 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
         final LAYOUTCOMMIT4res res = result.oplayoutcommit;
 
         _log.debug("LAYOUTCOMMIT: inode=" + context.currentInode() + " length="
-                + _args.oplayoutcommit.loca_length.value.value + " offset="
-                + _args.oplayoutcommit.loca_offset.value.value + " loca_last_write_offset="
+                + _args.oplayoutcommit.loca_length.value + " offset="
+                + _args.oplayoutcommit.loca_offset.value + " loca_last_write_offset="
                 + (_args.oplayoutcommit.loca_last_write_offset.no_newoffset
                 ? _args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset"));
 
@@ -60,12 +59,12 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
         if (_args.oplayoutcommit.loca_last_write_offset.no_newoffset) {
             Stat stat = context.getFs().getattr(context.currentInode());
             long currentSize = stat.getSize();
-            long newSize = _args.oplayoutcommit.loca_last_write_offset.no_offset.value.value + 1;
+            long newSize = _args.oplayoutcommit.loca_last_write_offset.no_offset.value + 1;
             if (newSize > currentSize) {
                 stat.setSize(newSize);
                 context.getFs().setattr(context.currentInode(), stat);
                 res.locr_resok4.locr_newsize.ns_sizechanged = true;
-                res.locr_resok4.locr_newsize.ns_size = new length4(new uint64_t(newSize));
+                res.locr_resok4.locr_newsize.ns_size = new length4(newSize);
             }
         }
 

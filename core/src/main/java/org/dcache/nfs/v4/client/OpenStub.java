@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -34,7 +34,6 @@ import org.dcache.nfs.v4.xdr.createmode4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_mode;
 import org.dcache.nfs.v4.xdr.fattr4_size;
-import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -46,9 +45,6 @@ import org.dcache.nfs.v4.xdr.opentype4;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.uint64_t;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
-import org.dcache.nfs.v4.xdr.utf8string;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
@@ -97,7 +93,7 @@ public class OpenStub {
 
         open_claim4 claim = new open_claim4();
         claim.claim = open_claim_type4.CLAIM_NULL;
-        claim.file = new component4(new utf8str_cs(path));
+        claim.file = new component4(path);
         claim.delegate_type = nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
         claim.file_delegate_prev = null;
         claim.oc_delegate_stateid = null;
@@ -139,7 +135,7 @@ public class OpenStub {
 
         open_claim4 claim = new open_claim4();
         claim.claim = open_claim_type4.CLAIM_NULL;
-        claim.file = new component4(new utf8str_cs(path));
+        claim.file = new component4(path);
         claim.delegate_type = nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
         claim.file_delegate_prev = null;
         claim.oc_delegate_stateid = null;
@@ -188,10 +184,8 @@ public class OpenStub {
         try {
             xdr.beginEncoding();
 
-            mode4 fmode = new mode4();
-            fmode.value = new uint32_t(0755);
-            fattr4_mode mode = new fattr4_mode(fmode);
-            fattr4_size size = new fattr4_size(new uint64_t(0));
+            fattr4_mode mode = new fattr4_mode(0755);
+            fattr4_size size = new fattr4_size(0);
 
             size.xdrEncode(xdr);
             mode.xdrEncode(xdr);

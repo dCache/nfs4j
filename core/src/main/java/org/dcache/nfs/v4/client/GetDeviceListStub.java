@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,8 +30,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.Xdr;
@@ -46,16 +44,14 @@ public class GetDeviceListStub {
         op.argop = nfs_opnum4.OP_GETDEVICELIST;
         op.opgetdevicelist = new GETDEVICELIST4args();
 
-        op.opgetdevicelist.gdla_cookie = new nfs_cookie4();
-        op.opgetdevicelist.gdla_cookie.value = new uint64_t(0);
+        op.opgetdevicelist.gdla_cookie = new nfs_cookie4(0);
 
         op.opgetdevicelist.gdla_cookieverf = new verifier4();
         op.opgetdevicelist.gdla_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
         op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
 
-        op.opgetdevicelist.gdla_maxdevices = new count4();
-        op.opgetdevicelist.gdla_maxdevices.value = new uint32_t(256);
+        op.opgetdevicelist.gdla_maxdevices = new count4(256);
 
         return op;
     }

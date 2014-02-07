@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.READDIR4args;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.utf8string;
 import org.dcache.nfs.v4.xdr.nfs_impl_id4;
 import org.dcache.nfs.v4.xdr.callback_sec_parms4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -44,7 +43,6 @@ import org.dcache.nfs.v4.xdr.layoutiomode4;
 import org.dcache.nfs.v4.xdr.PUTFH4args;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.GETDEVICELIST4args;
-import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.GETATTR4args;
 import org.dcache.nfs.v4.xdr.open_claim4;
 import org.dcache.nfs.v4.xdr.stateid4;
@@ -73,7 +71,6 @@ import org.dcache.nfs.v4.xdr.REMOVE4args;
 import org.dcache.nfs.v4.xdr.component4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4args;
 import org.dcache.nfs.v4.xdr.OPEN4args;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.READ4args;
 import org.dcache.nfs.v4.xdr.state_owner4;
@@ -104,13 +101,13 @@ import org.glassfish.grizzly.Buffer;
 
 public class CompoundBuilder {
 
-    private final utf8string NO_TAG = new utf8string(new byte[0]);
-    private utf8string tag = NO_TAG;
+    private final String NO_TAG = "";
+    private String tag = NO_TAG;
     private int minorversion = 1;
     private List<nfs_argop4> ops = new ArrayList<>();
 
     public CompoundBuilder withTag(String tag) {
-        this.tag = new utf8string(tag);
+        this.tag = tag;
         return this;
     }
 
@@ -126,7 +123,7 @@ public class CompoundBuilder {
             op.argop = nfs_opnum4.OP_LOOKUP;
             op.oplookup = new LOOKUP4args();
 
-            op.oplookup.objname = new component4(new utf8str_cs(s));
+            op.oplookup.objname = new component4(s);
             ops.add(op);
         }
 
@@ -148,9 +145,9 @@ public class CompoundBuilder {
 
         nfs_argop4 op = new nfs_argop4();
         op.opreaddir = new READDIR4args();
-        op.opreaddir.cookie = new nfs_cookie4(new uint64_t(cookie));
-        op.opreaddir.dircount = new count4(new uint32_t(8192));
-        op.opreaddir.maxcount = new count4(new uint32_t(256));
+        op.opreaddir.cookie = new nfs_cookie4(cookie);
+        op.opreaddir.dircount = new count4(8192);
+        op.opreaddir.maxcount = new count4(256);
         op.opreaddir.attr_request = new bitmap4(new uint32_t[]{new uint32_t(0), new uint32_t(0)});
         op.opreaddir.cookieverf = verifier;
 
@@ -226,12 +223,12 @@ public class CompoundBuilder {
         op.opcreate_session = new CREATE_SESSION4args();
 
         channel_attrs4 chan_attrs = new channel_attrs4();
-        chan_attrs.ca_headerpadsize = new count4(new uint32_t(0));
-        chan_attrs.ca_maxoperations = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxrequests = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxrequestsize = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxresponsesize = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxresponsesize_cached = new count4(new uint32_t(8));
+        chan_attrs.ca_headerpadsize = new count4(0);
+        chan_attrs.ca_maxoperations = new count4(8192);
+        chan_attrs.ca_maxrequests = new count4(8192);
+        chan_attrs.ca_maxrequestsize = new count4(8192);
+        chan_attrs.ca_maxresponsesize = new count4(8192);
+        chan_attrs.ca_maxresponsesize_cached = new count4(8);
         chan_attrs.ca_rdma_ird = new uint32_t[0];
 
         op.opcreate_session.csa_clientid = clientid;
@@ -256,12 +253,10 @@ public class CompoundBuilder {
         op.opsequence = new SEQUENCE4args();
         op.opsequence.sa_cachethis = CacheThis;
 
-        slotid4 sId = new slotid4();
-        sId.value = new uint32_t(slotid);
+        slotid4 sId = new slotid4(slotid);
         op.opsequence.sa_slotid = sId;
 
-        slotid4 HsId = new slotid4();
-        HsId.value = new uint32_t(highSlotid);
+        slotid4 HsId = new slotid4(highSlotid);
         op.opsequence.sa_highest_slotid = HsId;
 
         sequenceid4 seq = new sequenceid4();
@@ -323,9 +318,7 @@ public class CompoundBuilder {
     public CompoundBuilder withRemove(String path) {
         REMOVE4args args = new REMOVE4args();
 
-        args.target = new component4();
-        args.target.value = new utf8str_cs(path);
-
+        args.target = new component4(path);
         nfs_argop4 op = new nfs_argop4();
 
         op.argop = nfs_opnum4.OP_REMOVE;
@@ -339,7 +332,7 @@ public class CompoundBuilder {
 
         args.stable = stable_how4.FILE_SYNC4;
 
-        args.offset = new offset4(new uint64_t(offset));
+        args.offset = new offset4(offset);
 
         args.stateid = stateid;
 
@@ -355,8 +348,8 @@ public class CompoundBuilder {
 
     public CompoundBuilder withRead(int count, long offset, stateid4 stateid) {
         READ4args args = new READ4args();
-        args.count = new count4(new uint32_t(count));
-        args.offset = new offset4(new uint64_t(offset));
+        args.count = new count4(count);
+        args.offset = new offset4(offset);
 
         args.stateid = stateid;
 
@@ -372,16 +365,13 @@ public class CompoundBuilder {
         op.argop = nfs_opnum4.OP_GETDEVICELIST;
         op.opgetdevicelist = new GETDEVICELIST4args();
 
-        op.opgetdevicelist.gdla_cookie = new nfs_cookie4();
-        op.opgetdevicelist.gdla_cookie.value = new uint64_t(0);
+        op.opgetdevicelist.gdla_cookie = new nfs_cookie4(0);
 
         op.opgetdevicelist.gdla_cookieverf = new verifier4();
         op.opgetdevicelist.gdla_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
         op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
-
-        op.opgetdevicelist.gdla_maxdevices = new count4();
-        op.opgetdevicelist.gdla_maxdevices.value = new uint32_t(256);
+        op.opgetdevicelist.gdla_maxdevices = new count4(256);
         ops.add(op);
         return this;
     }
@@ -394,9 +384,7 @@ public class CompoundBuilder {
         op.opgetdeviceinfo.gdia_device_id = devId;
         op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
 
-        count4 cn = new count4();
-        cn.value = new uint32_t(1024);
-        op.opgetdeviceinfo.gdia_maxcount = cn;
+        op.opgetdeviceinfo.gdia_maxcount = new count4(1024);
         op.opgetdeviceinfo.gdia_notify_types = new bitmap4();
         op.opgetdeviceinfo.gdia_notify_types.value = new uint32_t[1];
         op.opgetdeviceinfo.gdia_notify_types.value[0] = new uint32_t(0);
@@ -417,8 +405,8 @@ public class CompoundBuilder {
         op.oplayoutreturn.lora_layoutreturn = new layoutreturn4();
         op.oplayoutreturn.lora_layoutreturn.lr_returntype = layoutreturn_type4.LAYOUTRETURN4_FILE;
         op.oplayoutreturn.lora_layoutreturn.lr_layout = new layoutreturn_file4();
-        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_offset = new offset4(new uint64_t(offset));
-        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_length = new length4(new uint64_t(len));
+        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_offset = new offset4(offset);
+        op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_length = new length4(len);
         op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_body = body;
         op.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid = stateid;
 
@@ -479,7 +467,7 @@ public class CompoundBuilder {
 
         open_claim4 claim = new open_claim4();
         claim.claim = open_claim_type4.CLAIM_NULL;
-        claim.file = new component4(new utf8str_cs(path));
+        claim.file = new component4(path);
         claim.delegate_type = nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
         claim.file_delegate_prev = null;
         claim.oc_delegate_stateid = null;
@@ -494,7 +482,7 @@ public class CompoundBuilder {
     public CompoundBuilder withMakedir(String path) {
         CREATE4args args = new CREATE4args();
 
-        args.objname = new component4(new utf8str_cs(path));
+        args.objname = new component4(path);
         args.objtype = new createtype4();
         args.objtype.type = nfs_ftype4.NF4DIR;
         args.createattrs = new fattr4();
@@ -543,7 +531,7 @@ public class CompoundBuilder {
 
         open_claim4 claim = new open_claim4();
         claim.claim = open_claim_type4.CLAIM_NULL;
-        claim.file = new component4(new utf8str_cs(path));
+        claim.file = new component4(path);
         claim.delegate_type = nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
         claim.file_delegate_prev = null;
         claim.oc_delegate_stateid = null;
@@ -566,23 +554,10 @@ public class CompoundBuilder {
         op.oplayoutget.loga_layout_type = layout_type;
         op.oplayoutget.loga_iomode = iomode;
 
-        offset4 off = new offset4();
-        uint64_t u64 = new uint64_t(offset);
-        off.value = u64;
-
-        length4 cnLong = new length4();
-        cnLong.value = new uint64_t(length);
-
-        length4 cnZero = new length4();
-        cnZero.value = new uint64_t(minlength);
-
-        count4 cnShort = new count4();
-        cnShort.value = new uint32_t(maxcount);
-
-        op.oplayoutget.loga_offset = off;
-        op.oplayoutget.loga_length = cnLong;
-        op.oplayoutget.loga_minlength = cnZero;
-        op.oplayoutget.loga_maxcount = cnShort;
+        op.oplayoutget.loga_offset = new offset4(offset);
+        op.oplayoutget.loga_length = new length4(length);
+        op.oplayoutget.loga_minlength = new length4(minlength);
+        op.oplayoutget.loga_maxcount = new count4(maxcount);
 
         op.oplayoutget.loga_stateid = stateid;
         ops.add(op);
@@ -636,10 +611,8 @@ public class CompoundBuilder {
         try {
             xdr.beginEncoding();
 
-            mode4 fmode = new mode4();
-            fmode.value = new uint32_t(0755);
-            fattr4_mode mode = new fattr4_mode(fmode);
-            fattr4_size size = new fattr4_size(new uint64_t(0));
+            fattr4_mode mode = new fattr4_mode(0755);
+            fattr4_size size = new fattr4_size(0);
 
             size.xdrEncode(xdr);
             mode.xdrEncode(xdr);

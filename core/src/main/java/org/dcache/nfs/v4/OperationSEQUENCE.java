@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -60,21 +60,20 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         }
 
         int opCount = context.getTotalOperationCount();
-        context.setCache(session.checkCacheSlot(_args.opsequence.sa_slotid.value.value,
+        context.setCache(session.checkCacheSlot(_args.opsequence.sa_slotid.value,
                 _args.opsequence.sa_sequenceid.value.value, opCount > 1));
 
         context.setCacheThis(_args.opsequence.sa_cachethis);
         client.updateLeaseTime();
 
         context.setSession(session);
-        context.setSlotId(_args.opsequence.sa_slotid.value.value);
+        context.setSlotId(_args.opsequence.sa_slotid.value);
 
         res.sr_resok4 = new SEQUENCE4resok();
 
-        final uint32_t highestSlot = new uint32_t(session.getHighestSlot());
-        res.sr_resok4.sr_highest_slotid = new slotid4(highestSlot);
+        res.sr_resok4.sr_highest_slotid = new slotid4(session.getHighestSlot());
         res.sr_resok4.sr_slotid = new slotid4(_args.opsequence.sa_slotid.value);
-        res.sr_resok4.sr_target_highest_slotid = new slotid4(highestSlot);
+        res.sr_resok4.sr_target_highest_slotid = new slotid4(session.getHighestSlot());
         res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
 
         //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );

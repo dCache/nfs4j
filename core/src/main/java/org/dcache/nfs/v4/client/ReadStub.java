@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,8 +25,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.uint64_t;
 
 public class ReadStub {
 
@@ -40,8 +38,8 @@ public class ReadStub {
     public static nfs_argop4 generateRequest(int count,  long offset, stateid4 stateid) {
 
         READ4args args = new READ4args();
-        args.count = new count4(new uint32_t(count));
-        args.offset = new offset4(new uint64_t(offset));
+        args.count = new count4(count);
+        args.offset = new offset4(offset);
 
         args.stateid = stateid;
 

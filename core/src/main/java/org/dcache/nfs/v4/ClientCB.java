@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -114,9 +114,9 @@ class ClientCB {
         _sequenceid++;
         CB_SEQUENCE4args cbSequence = new CB_SEQUENCE4args();
         cbSequence.csa_cachethis = false;
-        cbSequence.csa_highest_slotid = new slotid4(new uint32_t(_highestSlotId));
+        cbSequence.csa_highest_slotid = new slotid4(_highestSlotId);
         cbSequence.csa_sequenceid = new sequenceid4(new uint32_t(_sequenceid));
-        cbSequence.csa_slotid = new slotid4(new uint32_t(0));
+        cbSequence.csa_slotid = new slotid4(0);
         cbSequence.csa_sessionid = _session;
         cbSequence.csa_referring_call_lists = new referring_call_list4[0];
 

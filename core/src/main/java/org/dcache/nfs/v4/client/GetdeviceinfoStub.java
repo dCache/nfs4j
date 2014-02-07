@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,10 +37,7 @@ public class GetdeviceinfoStub {
 
         op.opgetdeviceinfo.gdia_device_id = devId;
         op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
-
-        count4 cn = new count4();
-        cn.value = new uint32_t(0xffffff);
-        op.opgetdeviceinfo.gdia_maxcount = cn;
+        op.opgetdeviceinfo.gdia_maxcount = new count4(0xffffff);
         op.opgetdeviceinfo.gdia_notify_types = new bitmap4();
         op.opgetdeviceinfo.gdia_notify_types.value = new uint32_t[1];
         op.opgetdeviceinfo.gdia_notify_types.value[0] = new uint32_t(0);

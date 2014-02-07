@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-        String newName = NameFilter.convert(_args.oplink.newname.value.value.value);
+        String newName = NameFilter.convert(_args.oplink.newname.value);
 
         context.getFs().link(context.currentInode(), context.savedInode(), newName,
                 context.getUser().getUID(), context.getUser().getGID());

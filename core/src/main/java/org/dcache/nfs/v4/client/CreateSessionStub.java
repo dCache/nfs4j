@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,12 +39,12 @@ public class CreateSessionStub {
         op.opcreate_session = new CREATE_SESSION4args();
 
         channel_attrs4 chan_attrs = new channel_attrs4();
-        chan_attrs.ca_headerpadsize = new count4(new uint32_t(0));
-        chan_attrs.ca_maxoperations = new count4(new uint32_t(128));
-        chan_attrs.ca_maxrequests = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxrequestsize = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxresponsesize = new count4(new uint32_t(8192));
-        chan_attrs.ca_maxresponsesize_cached = new count4(new uint32_t(8));
+        chan_attrs.ca_headerpadsize = new count4(0);
+        chan_attrs.ca_maxoperations = new count4(128);
+        chan_attrs.ca_maxrequests = new count4(8192);
+        chan_attrs.ca_maxrequestsize = new count4(8192);
+        chan_attrs.ca_maxresponsesize = new count4(8192);
+        chan_attrs.ca_maxresponsesize_cached = new count4(8);
         chan_attrs.ca_rdma_ird = new uint32_t[0];
 
         op.opcreate_session.csa_clientid = eir_clientid;

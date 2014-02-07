@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@ import org.dcache.nfs.v4.xdr.LOOKUP4args;
 import org.dcache.nfs.v4.xdr.component4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
 
 public class LookupStub {
 
@@ -32,7 +31,7 @@ public class LookupStub {
         op.argop = nfs_opnum4.OP_LOOKUP;
         op.oplookup = new LOOKUP4args();
 
-        op.oplookup.objname = new component4(new utf8str_cs(path));
+        op.oplookup.objname = new component4(path);
 
         return op;
     }

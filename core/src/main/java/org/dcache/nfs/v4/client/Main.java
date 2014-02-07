@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -622,8 +622,8 @@ public class Main {
 
             entry4 dirEntry = compound4res.resarray.get(2).opreaddir.resok4.reply.entries;
             while (dirEntry != null) {
-                cookie = dirEntry.cookie.value.value;
-                list.add(new String(dirEntry.name.value.value.value));
+                cookie = dirEntry.cookie.value;
+                list.add(new String(dirEntry.name.value));
                 dirEntry = dirEntry.nextentry;
             }
 
@@ -656,8 +656,8 @@ public class Main {
 
             entry4 dirEntry = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.entries;
             while (dirEntry != null) {
-                cookie = dirEntry.cookie.value.value;
-                list.add(new String(dirEntry.name.value.value.value));
+                cookie = dirEntry.cookie.value;
+                list.add(new String(dirEntry.name.value));
                 dirEntry = dirEntry.nextentry;
             }
 
@@ -926,8 +926,8 @@ public class Main {
 
             _ioFH = fileDevice.nfl_fh_list[0];
             System.out.println("     io fh: " + Bytes.toHexString(_ioFH.value));
-            System.out.println("    length: " + l.lo_length.value.value);
-            System.out.println("    offset: " + l.lo_offset.value.value);
+            System.out.println("    length: " + l.lo_length.value);
+            System.out.println("    offset: " + l.lo_offset.value);
             System.out.println("    type  : " + l.lo_content.loc_type);
             System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
             System.out.println("    commit: "
@@ -935,8 +935,8 @@ public class Main {
 
             deviceid4 deviceID = fileDevice.nfl_deviceid;
             Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0],
-                    l.lo_length.value.value, l.lo_offset.value.value,
-                    fileDevice.nfl_pattern_offset.value.value,
+                    l.lo_length.value, l.lo_offset.value,
+                    fileDevice.nfl_pattern_offset.value,
                     fileDevice.nfl_util.value.value,
                     fileDevice.nfl_first_stripe_index.value);
             stripeMap.addStripe(stripe);
@@ -1144,7 +1144,7 @@ public class Main {
 
         mode4 mode = attrs.get(nfs4_prot.FATTR4_MODE);
         if (mode != null) {
-            System.out.println("mode: 0" + Integer.toOctalString(mode.value.value));
+            System.out.println("mode: 0" + Integer.toOctalString(mode.value));
         }
     }
 

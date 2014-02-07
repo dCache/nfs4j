@@ -21,30 +21,18 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class fattr4_size implements XdrAble {
-
-    public uint64_t value;
+public class fattr4_size extends uint64_t {
 
     public fattr4_size() {
     }
 
-    public fattr4_size(uint64_t value) {
-        this.value = value;
+    public fattr4_size(long value) {
+        super(value);
     }
 
     public fattr4_size(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        xdrDecode(xdr);
-    }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new uint64_t(xdr);
+        super(xdr);
     }
 
 }

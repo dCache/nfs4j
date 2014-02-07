@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 
 public class WriteStub {
 
@@ -37,7 +36,7 @@ public class WriteStub {
 
         args.stable = stable_how4.FILE_SYNC4;
 
-        args.offset = new offset4(new uint64_t(offset));
+        args.offset = new offset4(offset);
 
         args.stateid = stateid;
 

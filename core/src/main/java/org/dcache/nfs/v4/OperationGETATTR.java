@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -67,7 +67,6 @@ import org.dcache.nfs.v4.xdr.fattr4_files_total;
 import org.dcache.nfs.v4.xdr.fattr4_filehandle;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfstime4;
-import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.fattr4_link_support;
 import org.dcache.nfs.v4.xdr.fattr4_time_modify;
 import org.dcache.nfs.v4.xdr.fattr4_no_trunc;
@@ -209,7 +208,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fattr4_change change = new fattr4_change(cid);
                 return Optional.of(change);
             case nfs4_prot.FATTR4_SIZE:
-                fattr4_size size = new fattr4_size(new uint64_t(stat.getSize()));
+                fattr4_size size = new fattr4_size(stat.getSize());
                 return Optional.of(size);
             case nfs4_prot.FATTR4_LINK_SUPPORT:
                 fattr4_link_support link_support = new fattr4_link_support(true);
@@ -288,9 +287,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MIMETYPE:
                 return Optional.absent();
             case nfs4_prot.FATTR4_MODE:
-                mode4 fmode = new mode4();
-                fmode.value = new uint32_t(stat.getMode() & 07777);
-                return Optional.of(new fattr4_mode(fmode));
+                return Optional.of(new fattr4_mode(stat.getMode() & 07777));
             case nfs4_prot.FATTR4_NO_TRUNC:
                 return Optional.of(new fattr4_no_trunc(true));
             case nfs4_prot.FATTR4_NUMLINKS:

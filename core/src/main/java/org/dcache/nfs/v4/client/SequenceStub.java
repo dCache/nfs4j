@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,12 +37,10 @@ public class SequenceStub {
         op.opsequence = new SEQUENCE4args();
         op.opsequence.sa_cachethis = CacheThis;
 
-        slotid4 sId = new slotid4();
-        sId.value = new uint32_t(SlotId);
+        slotid4 sId = new slotid4(SlotId);
         op.opsequence.sa_slotid = sId;
 
-        slotid4 HsId = new slotid4();
-        HsId.value = new uint32_t(HighestSlot);
+        slotid4 HsId = new slotid4(HighestSlot);
         op.opsequence.sa_highest_slotid = HsId;
 
         sequenceid4 seq = new sequenceid4();
