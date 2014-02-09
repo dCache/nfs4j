@@ -30,10 +30,10 @@ import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.nfs.v4.xdr.EXCHANGE_ID4args;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.int64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.client_owner4;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.dcache.utils.Bytes;
 
 public class ExchangeIDStub {
@@ -53,8 +53,8 @@ public class ExchangeIDStub {
         op.opexchange_id.eia_client_impl_id[0] = n4;
 
         nfstime4 releaseDate = new nfstime4();
-        releaseDate.nseconds = new uint32_t(0);
-        releaseDate.seconds = new int64_t(System.currentTimeMillis() / 1000);
+        releaseDate.nseconds = 0;
+        releaseDate.seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 
         op.opexchange_id.eia_client_impl_id[0].nii_date = releaseDate;
         op.opexchange_id.eia_clientowner = new client_owner4();

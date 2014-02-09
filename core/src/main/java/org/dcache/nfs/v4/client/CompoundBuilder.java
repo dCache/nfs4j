@@ -82,7 +82,6 @@ import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.layoutreturn_type4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.layouttype4;
-import org.dcache.nfs.v4.xdr.int64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.openflag4;
@@ -93,6 +92,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
@@ -177,8 +177,8 @@ public class CompoundBuilder {
         op.opexchange_id.eia_client_impl_id[0] = n4;
 
         nfstime4 releaseDate = new nfstime4();
-        releaseDate.nseconds = new uint32_t(0);
-        releaseDate.seconds = new int64_t(System.currentTimeMillis() / 1000);
+        releaseDate.nseconds = 0;
+        releaseDate.seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 
         op.opexchange_id.eia_client_impl_id[0].nii_date = releaseDate;
         op.opexchange_id.eia_clientowner = new client_owner4();
@@ -186,7 +186,7 @@ public class CompoundBuilder {
 
         op.opexchange_id.eia_clientowner.co_verifier = new verifier4();
         op.opexchange_id.eia_clientowner.co_verifier.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
-        Bytes.putLong(op.opexchange_id.eia_clientowner.co_verifier.value, 0, releaseDate.seconds.value);
+        Bytes.putLong(op.opexchange_id.eia_clientowner.co_verifier.value, 0, releaseDate.seconds);
 
         op.opexchange_id.eia_flags = new uint32_t(flags);
         op.opexchange_id.eia_state_protect = new state_protect4_a();

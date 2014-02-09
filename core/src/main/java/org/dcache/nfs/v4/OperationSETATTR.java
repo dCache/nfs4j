@@ -194,8 +194,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_TIME_CREATE :
                 nfstime4 ctime = new nfstime4();
                 ctime.xdrDecode(xdr);
-                stat.setCTime( TimeUnit.MILLISECONDS.convert(ctime.seconds.value, TimeUnit.SECONDS) +
-                        TimeUnit.MILLISECONDS.convert(ctime.nseconds.value, TimeUnit.NANOSECONDS));
+                stat.setCTime( TimeUnit.MILLISECONDS.convert(ctime.seconds, TimeUnit.SECONDS) +
+                        TimeUnit.MILLISECONDS.convert(ctime.nseconds, TimeUnit.NANOSECONDS));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET :
@@ -206,8 +206,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 if( setMtime.set_it == time_how4.SET_TO_SERVER_TIME4 ) {
                     realMtime = System.currentTimeMillis();
                 }else{
-                    realMtime = TimeUnit.MILLISECONDS.convert(setMtime.time.seconds.value, TimeUnit.SECONDS) +
-                            TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds.value, TimeUnit.NANOSECONDS);
+                    realMtime = TimeUnit.MILLISECONDS.convert(setMtime.time.seconds, TimeUnit.SECONDS) +
+                            TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds, TimeUnit.NANOSECONDS);
                 }
 
                 stat.setMTime( realMtime );

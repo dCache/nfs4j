@@ -22,8 +22,8 @@ import org.dcache.xdr.*;
 import java.io.IOException;
 
 public class nfstime4 implements XdrAble {
-    public int64_t seconds;
-    public uint32_t nseconds;
+    public long seconds;
+    public int nseconds;
 
     public nfstime4() {
     }
@@ -35,14 +35,14 @@ public class nfstime4 implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        seconds.xdrEncode(xdr);
-        nseconds.xdrEncode(xdr);
+	xdr.xdrEncodeLong(seconds);
+	xdr.xdrEncodeLong(nseconds);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        seconds = new int64_t(xdr);
-        nseconds = new uint32_t(xdr);
+        seconds = xdr.xdrDecodeLong();
+        nseconds = xdr.xdrDecodeInt();
     }
 
 }

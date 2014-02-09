@@ -39,7 +39,6 @@ import org.dcache.nfs.v4.xdr.fattr4_unique_handles;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.fattr4_fh_expire_type;
-import org.dcache.nfs.v4.xdr.int64_t;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.fattr4_named_attr;
@@ -66,7 +65,6 @@ import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.fattr4_files_total;
 import org.dcache.nfs.v4.xdr.fattr4_filehandle;
 import org.dcache.nfs.v4.xdr.fattr4;
-import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.fattr4_link_support;
 import org.dcache.nfs.v4.xdr.fattr4_time_modify;
 import org.dcache.nfs.v4.xdr.fattr4_no_trunc;
@@ -328,29 +326,29 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SYSTEM:
                 return Optional.of(new fattr4_system(false));
             case nfs4_prot.FATTR4_TIME_ACCESS:
-                nfstime4 atime = new nfstime4();
-                atime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getATime(), TimeUnit.MILLISECONDS));
-                atime.nseconds = new uint32_t(0);
-                return Optional.of(new fattr4_time_access(atime));
+                fattr4_time_access atime = new fattr4_time_access();
+                atime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getATime());
+                atime.nseconds = 0;
+                return Optional.of(atime);
             case nfs4_prot.FATTR4_TIME_BACKUP:
                 return Optional.absent();
             case nfs4_prot.FATTR4_TIME_CREATE:
-                nfstime4 ctime = new nfstime4();
-                ctime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime(), TimeUnit.MILLISECONDS));
-                ctime.nseconds = new uint32_t(0);
-                return Optional.of(new fattr4_time_create(ctime));
+                fattr4_time_create ctime = new fattr4_time_create();
+                ctime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getCTime());
+                ctime.nseconds = 0;
+                return Optional.of(ctime);
             case nfs4_prot.FATTR4_TIME_DELTA:
                 return Optional.absent();
             case nfs4_prot.FATTR4_TIME_METADATA:
-                nfstime4 mdtime = new nfstime4();
-                mdtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getCTime(), TimeUnit.MILLISECONDS));
-                mdtime.nseconds = new uint32_t(0);
-                return Optional.of(new fattr4_time_metadata(mdtime));
+                fattr4_time_metadata mdtime = new fattr4_time_metadata();
+                mdtime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getCTime());
+                mdtime.nseconds = 0;
+                return Optional.of(mdtime);
             case nfs4_prot.FATTR4_TIME_MODIFY:
-                nfstime4 mtime = new nfstime4();
-                mtime.seconds = new int64_t(TimeUnit.SECONDS.convert(stat.getMTime(), TimeUnit.MILLISECONDS));
-                mtime.nseconds = new uint32_t(0);
-                return Optional.of(new fattr4_time_modify(mtime));
+                fattr4_time_modify mtime = new fattr4_time_modify();
+                mtime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getMTime());
+                mtime.nseconds = 0;
+                return Optional.of(mtime);
             case nfs4_prot.FATTR4_MOUNTED_ON_FILEID:
 
                 /*

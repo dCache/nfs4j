@@ -21,30 +21,14 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class fattr4_time_metadata implements XdrAble {
-
-    public nfstime4 value;
+public class fattr4_time_metadata extends nfstime4 {
 
     public fattr4_time_metadata() {
-    }
-
-    public fattr4_time_metadata(nfstime4 value) {
-        this.value = value;
     }
 
     public fattr4_time_metadata(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);
-    }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new nfstime4(xdr);
     }
 
 }
