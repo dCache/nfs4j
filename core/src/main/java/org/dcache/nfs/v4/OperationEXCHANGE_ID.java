@@ -45,7 +45,6 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.Principal;
 import java.security.ProtectionDomain;
-import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -247,10 +246,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         res.eir_resok4.eir_server_impl_id[0] = new nfs_impl_id4();
         res.eir_resok4.eir_server_impl_id[0].nii_domain = new utf8str_cis(NFS4_IMPLEMENTATION_DOMAIN);
         res.eir_resok4.eir_server_impl_id[0].nii_name = new utf8str_cs(NFS4_IMPLEMENTATION_ID + " build-time " + COMPILTE_TIME);
-        nfstime4 releaseDate = new nfstime4();
-        releaseDate.nseconds = 0;
-        releaseDate.seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-        res.eir_resok4.eir_server_impl_id[0].nii_date = releaseDate;
+        res.eir_resok4.eir_server_impl_id[0].nii_date = new nfstime4(System.currentTimeMillis());
 
         res.eir_resok4.eir_state_protect = new state_protect4_r();
         res.eir_resok4.eir_state_protect.spr_how = state_protect_how4.SP4_NONE;

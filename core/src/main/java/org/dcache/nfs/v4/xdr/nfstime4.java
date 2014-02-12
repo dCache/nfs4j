@@ -28,6 +28,15 @@ public class nfstime4 implements XdrAble {
     public nfstime4() {
     }
 
+    /**
+     * Create a new nfstime4 from given millis.
+     * @param millis
+     */
+    public nfstime4(long millis) {
+	seconds = millis / 1000;
+	nseconds = (int)((millis % 1000) * 1000000);
+    }
+
     public nfstime4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);

@@ -26,6 +26,10 @@ public class fattr4_time_modify extends nfstime4 {
     public fattr4_time_modify() {
     }
 
+    public fattr4_time_modify(long millis) {
+	super(millis);
+    }
+
     public fattr4_time_modify(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);

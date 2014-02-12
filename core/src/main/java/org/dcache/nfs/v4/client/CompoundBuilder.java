@@ -92,7 +92,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
@@ -176,9 +175,7 @@ public class CompoundBuilder {
         n4.nii_name = new utf8str_cs(nii_name);
         op.opexchange_id.eia_client_impl_id[0] = n4;
 
-        nfstime4 releaseDate = new nfstime4();
-        releaseDate.nseconds = 0;
-        releaseDate.seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        nfstime4 releaseDate = new nfstime4(System.currentTimeMillis());
 
         op.opexchange_id.eia_client_impl_id[0].nii_date = releaseDate;
         op.opexchange_id.eia_clientowner = new client_owner4();

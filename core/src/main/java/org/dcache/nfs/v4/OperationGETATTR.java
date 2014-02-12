@@ -86,7 +86,6 @@ import org.dcache.nfs.v4.xdr.fsid4;
 import org.dcache.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.nfs.v4.xdr.GETATTR4res;
 import org.dcache.nfs.ChimeraNFSException;
-import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
@@ -326,28 +325,20 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SYSTEM:
                 return Optional.of(new fattr4_system(false));
             case nfs4_prot.FATTR4_TIME_ACCESS:
-                fattr4_time_access atime = new fattr4_time_access();
-                atime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getATime());
-                atime.nseconds = 0;
+                fattr4_time_access atime = new fattr4_time_access(stat.getATime());
                 return Optional.of(atime);
             case nfs4_prot.FATTR4_TIME_BACKUP:
                 return Optional.absent();
             case nfs4_prot.FATTR4_TIME_CREATE:
-                fattr4_time_create ctime = new fattr4_time_create();
-                ctime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getCTime());
-                ctime.nseconds = 0;
+                fattr4_time_create ctime = new fattr4_time_create(stat.getCTime());
                 return Optional.of(ctime);
             case nfs4_prot.FATTR4_TIME_DELTA:
                 return Optional.absent();
             case nfs4_prot.FATTR4_TIME_METADATA:
-                fattr4_time_metadata mdtime = new fattr4_time_metadata();
-                mdtime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getCTime());
-                mdtime.nseconds = 0;
+                fattr4_time_metadata mdtime = new fattr4_time_metadata(stat.getCTime());
                 return Optional.of(mdtime);
             case nfs4_prot.FATTR4_TIME_MODIFY:
-                fattr4_time_modify mtime = new fattr4_time_modify();
-                mtime.seconds = TimeUnit.MILLISECONDS.toSeconds(stat.getMTime());
-                mtime.nseconds = 0;
+                fattr4_time_modify mtime = new fattr4_time_modify(stat.getMTime());
                 return Optional.of(mtime);
             case nfs4_prot.FATTR4_MOUNTED_ON_FILEID:
 

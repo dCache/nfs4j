@@ -33,7 +33,6 @@ import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.client_owner4;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import org.dcache.utils.Bytes;
 
 public class ExchangeIDStub {
@@ -52,11 +51,7 @@ public class ExchangeIDStub {
         n4.nii_name = new utf8str_cs(nii_name);
         op.opexchange_id.eia_client_impl_id[0] = n4;
 
-        nfstime4 releaseDate = new nfstime4();
-        releaseDate.nseconds = 0;
-        releaseDate.seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-
-        op.opexchange_id.eia_client_impl_id[0].nii_date = releaseDate;
+        op.opexchange_id.eia_client_impl_id[0].nii_date = new nfstime4(System.currentTimeMillis());
         op.opexchange_id.eia_clientowner = new client_owner4();
         op.opexchange_id.eia_clientowner.co_ownerid = co_ownerid.getBytes();
 
