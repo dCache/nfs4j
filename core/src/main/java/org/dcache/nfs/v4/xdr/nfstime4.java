@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ public class nfstime4 implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
 	xdr.xdrEncodeLong(seconds);
-	xdr.xdrEncodeLong(nseconds);
+	xdr.xdrEncodeInt(nseconds);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
