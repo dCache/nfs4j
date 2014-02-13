@@ -25,7 +25,6 @@ import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 
 public class ReaddirStub {
@@ -39,7 +38,7 @@ public class ReaddirStub {
         op.opreaddir.cookie = new nfs_cookie4(cookie) ;
         op.opreaddir.dircount = new count4(1024);
         op.opreaddir.maxcount = new count4(256);
-        op.opreaddir.attr_request = new bitmap4( new uint32_t[] { new uint32_t(0), new uint32_t(0) });
+        op.opreaddir.attr_request = new bitmap4( new int[] {0, 0});
         op.opreaddir.cookieverf =  verifier;
 
         op.argop = nfs_opnum4.OP_READDIR;

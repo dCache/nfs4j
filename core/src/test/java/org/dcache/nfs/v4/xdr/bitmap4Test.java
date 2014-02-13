@@ -36,7 +36,7 @@ public class bitmap4Test {
 
     @Test
     public void testIterratorZeroValues() {
-        bitmap4 bitmap = new bitmap4( new uint32_t[] {new uint32_t(0), new uint32_t(0)});
+        bitmap4 bitmap = new bitmap4( new int[] {0, 0});
         assertFalse(bitmap.iterator().hasNext());
     }
 

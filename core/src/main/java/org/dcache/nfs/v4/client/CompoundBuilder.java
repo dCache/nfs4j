@@ -147,7 +147,7 @@ public class CompoundBuilder {
         op.opreaddir.cookie = new nfs_cookie4(cookie);
         op.opreaddir.dircount = new count4(8192);
         op.opreaddir.maxcount = new count4(256);
-        op.opreaddir.attr_request = new bitmap4(new uint32_t[]{new uint32_t(0), new uint32_t(0)});
+        op.opreaddir.attr_request = new bitmap4(new int[]{0, 0});
         op.opreaddir.cookieverf = verifier;
 
         op.argop = nfs_opnum4.OP_READDIR;
@@ -383,8 +383,7 @@ public class CompoundBuilder {
 
         op.opgetdeviceinfo.gdia_maxcount = new count4(1024);
         op.opgetdeviceinfo.gdia_notify_types = new bitmap4();
-        op.opgetdeviceinfo.gdia_notify_types.value = new uint32_t[1];
-        op.opgetdeviceinfo.gdia_notify_types.value[0] = new uint32_t(0);
+        op.opgetdeviceinfo.gdia_notify_types.value = new int[] {1};
 
         ops.add(op);
         return this;
@@ -580,13 +579,11 @@ public class CompoundBuilder {
 
 
         bitmap4 afttrBitmap = new bitmap4();
-        afttrBitmap.value = new uint32_t[2];
-        afttrBitmap.value[0] = new uint32_t();
-        afttrBitmap.value[1] = new uint32_t();
+        afttrBitmap.value = new int[2];
 
         for (Integer mask : attrs) {
             int bit;
-            uint32_t bitmap;
+            int bitmap;
             if (mask > 31) {
                 bit = mask - 32;
                 bitmap = afttrBitmap.value[1];
@@ -595,7 +592,7 @@ public class CompoundBuilder {
                 bitmap = afttrBitmap.value[0];
             }
 
-            bitmap.value |= 1 << bit;
+            bitmap |= 1 << bit;
 
         }
 

@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -69,8 +68,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         res.gdir_resok4.gdir_device_addr = deviceInfo;
         res.gdir_resok4.gdir_device_addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
         res.gdir_resok4.gdir_notification = new bitmap4();
-        res.gdir_resok4.gdir_notification.value = new uint32_t[1];
-        res.gdir_resok4.gdir_notification.value[0] = new uint32_t(0);
+        res.gdir_resok4.gdir_notification.value = new int[] {0};
 
         res.gdir_status = nfsstat.NFS_OK;
     }

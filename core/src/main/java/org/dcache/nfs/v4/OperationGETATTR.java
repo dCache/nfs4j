@@ -128,7 +128,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         /*
          * bitmap we send back. can't be uninitialized.
          */
-        bitmap4 processedAttributes = new bitmap4(new uint32_t[0]);
+        bitmap4 processedAttributes = new bitmap4(new int[0]);
 
         XdrBuffer xdr = new XdrBuffer(1024);
         xdr.beginEncoding();
@@ -189,9 +189,10 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
                 bitmap4 bitmap = new bitmap4();
-                bitmap.value = new uint32_t[2];
-                bitmap.value[0] = new uint32_t(NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0);
-                bitmap.value[1] = new uint32_t(NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1);
+                bitmap.value = new int[] {
+		    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+		    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1
+		};
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
                 fattr4_type type = new fattr4_type(unixType2NFS(stat.getMode()));

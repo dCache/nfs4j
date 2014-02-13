@@ -28,7 +28,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.fattr4_acl;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.settime4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.time_how4;
 import org.dcache.nfs.v4.xdr.nfstime4;
@@ -69,10 +68,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode(), context);
 
         } catch (ChimeraNFSException e) {
-            res.attrsset = new bitmap4();
-            res.attrsset.value = new uint32_t[2];
-            res.attrsset.value[0] = new uint32_t(0);
-            res.attrsset.value[1] = new uint32_t(0);
+            res.attrsset = new bitmap4(new int[] {0, 0});
             throw e;
         }
     }
@@ -85,7 +81,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         /*
          * bitmap we send back. can't be uninitialized.
          */
-        bitmap4 processedAttributes = new bitmap4(new uint32_t[0]);
+        bitmap4 processedAttributes = new bitmap4(new int[0]);
         Stat stat = context.getFs().getattr(inode);
 
         for (int i : attributes.attrmask) {

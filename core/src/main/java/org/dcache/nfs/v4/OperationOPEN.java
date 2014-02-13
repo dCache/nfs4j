@@ -77,9 +77,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             res.resok4 = new OPEN4resok();
             res.resok4.attrset = new bitmap4();
-            res.resok4.attrset.value = new uint32_t[2];
-            res.resok4.attrset.value[0] = new uint32_t(0);
-            res.resok4.attrset.value[1] = new uint32_t(0);
+            res.resok4.attrset.value = new int[] {0, 0};
             res.resok4.delegation = new open_delegation4();
             res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_NONE;
 

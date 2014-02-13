@@ -76,14 +76,11 @@ public class MkdirStub {
 
         attrs.add(nfs4_prot.FATTR4_MODE);
 
-        bitmap4 afttrBitmap = new bitmap4();
-        afttrBitmap.value = new uint32_t[2];
-        afttrBitmap.value[0] = new uint32_t();
-        afttrBitmap.value[1] = new uint32_t();
+        bitmap4 afttrBitmap = new bitmap4(new int[2]);
 
         for( Integer mask : attrs) {
             int bit;
-            uint32_t bitmap;
+            int bitmap;
             if( mask > 31 ) {
                 bit = mask - 32;
                 bitmap = afttrBitmap.value[1];
@@ -92,7 +89,7 @@ public class MkdirStub {
                 bitmap = afttrBitmap.value[0];
             }
 
-            bitmap.value |= 1 << bit;
+            bitmap |= 1 << bit;
 
         }
 

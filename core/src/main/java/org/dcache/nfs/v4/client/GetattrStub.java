@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_fs_locations;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
-import org.dcache.nfs.v4.xdr.fattr4_mode;
 import org.dcache.nfs.v4.xdr.fattr4_type;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -86,11 +84,7 @@ public class GetattrStub {
 
         Map<Integer,Object> attr = new HashMap<>();
 
-
-        int[] mask = new int[attributes.attrmask.value.length];
-        for( int i = 0; i < mask.length; i++) {
-            mask[i] = attributes.attrmask.value[i].value;
-        }
+        int[] mask = attributes.attrmask.value;
 
         XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
         xdr.beginDecoding();

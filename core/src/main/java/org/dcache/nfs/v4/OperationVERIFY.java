@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.bitmap4;
@@ -78,9 +77,9 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
 
         boolean set = false;
 
-        for (uint32_t mask : bitmask.value) {
+        for (int mask : bitmask.value) {
 
-            if (mask.value != 0) {
+            if (mask != 0) {
                 set = true;
                 break;
             }

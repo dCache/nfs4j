@@ -26,7 +26,6 @@ import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 
 public class GetdeviceinfoStub {
 
@@ -38,9 +37,7 @@ public class GetdeviceinfoStub {
         op.opgetdeviceinfo.gdia_device_id = devId;
         op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
         op.opgetdeviceinfo.gdia_maxcount = new count4(0xffffff);
-        op.opgetdeviceinfo.gdia_notify_types = new bitmap4();
-        op.opgetdeviceinfo.gdia_notify_types.value = new uint32_t[1];
-        op.opgetdeviceinfo.gdia_notify_types.value[0] = new uint32_t(0);
+        op.opgetdeviceinfo.gdia_notify_types = new bitmap4( new int[] {0});
 
         return op;
 

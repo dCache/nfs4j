@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,12 +25,12 @@ import java.util.NoSuchElementException;
 
 public class bitmap4 implements XdrAble, Iterable<Integer> {
 
-    public uint32_t [] value;
+    public int[] value;
 
     public bitmap4() {
     }
 
-    public bitmap4(uint32_t [] value) {
+    public bitmap4(int [] value) {
         this.value = value;
     }
 
@@ -41,12 +41,12 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        { int $size = value.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx].xdrEncode(xdr); } }
+        { int $size = value.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { xdr.xdrEncodeInt(value[$idx]); } }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); value = new uint32_t[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx] = new uint32_t(xdr); } }
+        { int $size = xdr.xdrDecodeInt(); value = new int[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx] = xdr.xdrDecodeInt(); } }
     }
 
     /**
@@ -73,17 +73,14 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
          * ceate a bitmap to hold values
          */
         int n = max/Integer.SIZE + 1;
-        bitmap4 bitmap = new bitmap4(new uint32_t[n]);
-        for(int i = 0; i < n; i++) {
-            bitmap.value[i] = new uint32_t();
-        }
+        bitmap4 bitmap = new bitmap4(new int[n]);
 
         /*
          * and populate them
          */
         for (int v : values) {
             int bit = v % Integer.SIZE;
-            bitmap.value[v / Integer.SIZE].value |= 1 << bit;
+            bitmap.value[v / Integer.SIZE] |= 1 << bit;
         }
         return bitmap;
     }
@@ -95,7 +92,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
      */
     public void set(int bit) {
         ensureCapacity(bit);
-        value[bit / Integer.SIZE].value |= 1 << bit % Integer.SIZE;
+        value[bit / Integer.SIZE] |= 1 << bit % Integer.SIZE;
     }
 
     /**
@@ -110,7 +107,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
         if (value == null || bitmapIdx  + 1 > value.length) {
             return false;
         }
-        return ((value[bitmapIdx].value >> bit % Integer.SIZE) & 1) > 0;
+        return ((value[bitmapIdx] >> bit % Integer.SIZE) & 1) > 0;
     }
 
     private void ensureCapacity(int bit) {
@@ -118,13 +115,9 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
         int expected = bit / Integer.SIZE + 1;
 
         if (value == null || value.length < expected) {
-            uint32_t[] newBitmap = new uint32_t[expected];
-            int initIndex = value == null ? 0 : value.length;
+            int[] newBitmap = new int[expected];
             if (value != null) {
                 System.arraycopy(value, 0, newBitmap, 0, value.length);
-            }
-            for (int i = initIndex; i < newBitmap.length; i++) {
-                newBitmap[i] = new uint32_t(0);
             }
             value = newBitmap;
         }
@@ -148,7 +141,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
                 currentIndex++;
                 for (; currentIndex < value.length * Integer.SIZE; currentIndex++) {
                     int bitmapIdx = currentIndex / Integer.SIZE;
-                    int bit = (value[bitmapIdx].value >> currentIndex % Integer.SIZE) & 1;
+                    int bit = (value[bitmapIdx] >> currentIndex % Integer.SIZE) & 1;
                     if (bit != 0) {
                         return true;
                     }
