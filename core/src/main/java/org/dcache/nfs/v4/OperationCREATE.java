@@ -24,7 +24,6 @@ import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.nfs.v4.xdr.fattr4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.changeid4;
@@ -124,8 +123,8 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         res.resok4.attrset = OperationSETATTR.setAttributes(objAttr, inode, context);
         res.resok4.cinfo = new change_info4();
         res.resok4.cinfo.atomic = true;
-        res.resok4.cinfo.before = new changeid4(new uint64_t(stat.getMTime()));
-        res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
+        res.resok4.cinfo.before = new changeid4(stat.getMTime());
+        res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
 
         context.currentInode(inode);
     }

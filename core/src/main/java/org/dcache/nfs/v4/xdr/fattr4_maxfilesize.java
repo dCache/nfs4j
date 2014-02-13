@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,31 +21,18 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class fattr4_maxfilesize implements XdrAble {
-
-    public uint64_t value;
+public class fattr4_maxfilesize extends uint64_t {
 
     public fattr4_maxfilesize() {
     }
 
-    public fattr4_maxfilesize(uint64_t value) {
-        this.value = value;
+    public fattr4_maxfilesize(long value) {
+        super();
     }
 
     public fattr4_maxfilesize(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        xdrDecode(xdr);
+        super(xdr);
     }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new uint64_t(xdr);
-    }
-
 }
 // End of fattr4_maxfilesize.java

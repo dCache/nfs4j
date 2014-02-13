@@ -31,7 +31,6 @@ import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.opentype4;
 import org.dcache.nfs.v4.xdr.open_claim_type4;
 import org.dcache.nfs.v4.xdr.open_delegation4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.createmode4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.OPEN4resok;
@@ -224,8 +223,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             res.resok4.cinfo = new change_info4();
             res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4(new uint64_t(context.getFs().getattr(context.currentInode()).getMTime()));
-            res.resok4.cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
+            res.resok4.cinfo.before = new changeid4(context.getFs().getattr(context.currentInode()).getMTime());
+            res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
 
             /*
              * if it's v4.0, then client have to confirm

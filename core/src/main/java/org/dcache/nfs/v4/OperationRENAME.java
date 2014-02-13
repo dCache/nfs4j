@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.changeid4;
@@ -96,13 +95,13 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
             res.resok4.source_cinfo = new change_info4();
             res.resok4.source_cinfo.atomic = true;
-            res.resok4.source_cinfo.before = new changeid4(new uint64_t(sourceStat.getMTime()));
-            res.resok4.source_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
+            res.resok4.source_cinfo.before = new changeid4(sourceStat.getMTime());
+            res.resok4.source_cinfo.after = new changeid4(System.currentTimeMillis());
 
             res.resok4.target_cinfo = new change_info4();
             res.resok4.target_cinfo.atomic = true;
-            res.resok4.target_cinfo.before = new changeid4(new uint64_t(destStat.getMTime()));
-            res.resok4.target_cinfo.after = new changeid4(new uint64_t(System.currentTimeMillis()));
+            res.resok4.target_cinfo.before = new changeid4(destStat.getMTime());
+            res.resok4.target_cinfo.after = new changeid4(System.currentTimeMillis());
 
             res.status = nfsstat.NFS_OK;
 

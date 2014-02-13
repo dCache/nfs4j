@@ -60,7 +60,6 @@ import org.dcache.nfs.v4.xdr.fattr4_change;
 import org.dcache.nfs.v4.xdr.fattr4_symlink_support;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.fattr4_case_preserving;
-import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.fattr4_files_total;
 import org.dcache.nfs.v4.xdr.fattr4_filehandle;
@@ -90,6 +89,7 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.nfs.v4.xdr.fattr4_space_avail;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
@@ -201,8 +201,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fattr4_fh_expire_type fh_expire_type = new fattr4_fh_expire_type(fh_type);
                 return Optional.of(fh_expire_type);
             case nfs4_prot.FATTR4_CHANGE:
-                changeid4 cid = new changeid4(new uint64_t(stat.getCTime()));
-                fattr4_change change = new fattr4_change(cid);
+                fattr4_change change = new fattr4_change(stat.getCTime());
                 return Optional.of(change);
             case nfs4_prot.FATTR4_SIZE:
                 fattr4_size size = new fattr4_size(stat.getSize());
@@ -252,18 +251,18 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
                 return Optional.absent();
             case nfs4_prot.FATTR4_FILEID:
-                return Optional.of(new fattr4_fileid(new uint64_t(stat.getFileId())));
+                return Optional.of(new fattr4_fileid(stat.getFileId()));
             case nfs4_prot.FATTR4_FILES_AVAIL:
                 fsStat = getFsStat(fsStat, fs);
-                fattr4_files_avail files_avail = new fattr4_files_avail(new uint64_t(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
+                fattr4_files_avail files_avail = new fattr4_files_avail(fsStat.getTotalFiles() - fsStat.getUsedFiles());
                 return Optional.of(files_avail);
             case nfs4_prot.FATTR4_FILES_FREE:
                 fsStat = getFsStat(fsStat, fs);
-                fattr4_files_free files_free = new fattr4_files_free(new uint64_t(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
+                fattr4_files_free files_free = new fattr4_files_free(fsStat.getTotalFiles() - fsStat.getUsedFiles());
                 return Optional.of(files_free);
             case nfs4_prot.FATTR4_FILES_TOTAL:
                 fsStat = getFsStat(fsStat, fs);
-                return Optional.of(new fattr4_files_total(new uint64_t(fsStat.getTotalFiles())));
+                return Optional.of(new fattr4_files_total(fsStat.getTotalFiles()));
             case nfs4_prot.FATTR4_FS_LOCATIONS:
                 return Optional.absent();
             case nfs4_prot.FATTR4_HIDDEN:
@@ -271,13 +270,13 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_HOMOGENEOUS:
                 return Optional.of(new fattr4_homogeneous(true));
             case nfs4_prot.FATTR4_MAXFILESIZE:
-                return Optional.of(new fattr4_maxfilesize(new uint64_t(NFSv4Defaults.NFS4_MAXFILESIZE)));
+                return Optional.of(new fattr4_maxfilesize(NFSv4Defaults.NFS4_MAXFILESIZE));
             case nfs4_prot.FATTR4_MAXLINK:
-                return Optional.of(new fattr4_maxlink(new uint32_t(NFSv4Defaults.NFS4_MAXLINK)));
+                return Optional.of(new fattr4_maxlink(NFSv4Defaults.NFS4_MAXLINK));
             case nfs4_prot.FATTR4_MAXNAME:
-                return Optional.of(new fattr4_maxname(new uint32_t(NFSv4Defaults.NFS4_MAXFILENAME)));
+                return Optional.of(new fattr4_maxname(NFSv4Defaults.NFS4_MAXFILENAME));
             case nfs4_prot.FATTR4_MAXREAD:
-                return Optional.of(new fattr4_maxread(new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE)));
+                return Optional.of(new fattr4_maxread(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE));
             case nfs4_prot.FATTR4_MAXWRITE:
                 fattr4_maxwrite maxwrite = new fattr4_maxwrite(new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE));
                 return Optional.of(maxwrite);
@@ -311,17 +310,17 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(new fattr4_rawdev(dev));
             case nfs4_prot.FATTR4_SPACE_AVAIL:
                 fsStat = getFsStat(fsStat, fs);
-                uint64_t spaceAvail = new uint64_t(fsStat.getTotalSpace() - fsStat.getUsedSpace());
+                fattr4_space_avail spaceAvail = new fattr4_space_avail(fsStat.getTotalSpace() - fsStat.getUsedSpace());
                 return Optional.of(spaceAvail);
             case nfs4_prot.FATTR4_SPACE_FREE:
                 fsStat = getFsStat(fsStat, fs);
-                fattr4_space_free space_free = new fattr4_space_free(new uint64_t(fsStat.getTotalSpace() - fsStat.getUsedSpace()));
+                fattr4_space_free space_free = new fattr4_space_free(fsStat.getTotalSpace() - fsStat.getUsedSpace());
                 return Optional.of(space_free);
             case nfs4_prot.FATTR4_SPACE_TOTAL:
                 fsStat = getFsStat(fsStat, fs);
-                return Optional.of(new fattr4_space_total(new uint64_t(fsStat.getTotalSpace())));
+                return Optional.of(new fattr4_space_total(fsStat.getTotalSpace()));
             case nfs4_prot.FATTR4_SPACE_USED:
-                return Optional.of(new fattr4_space_used(new uint64_t(stat.getSize())));
+                return Optional.of(new fattr4_space_used(stat.getSize()));
             case nfs4_prot.FATTR4_SYSTEM:
                 return Optional.of(new fattr4_system(false));
             case nfs4_prot.FATTR4_TIME_ACCESS:
