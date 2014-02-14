@@ -115,7 +115,7 @@ class ClientCB {
         CB_SEQUENCE4args cbSequence = new CB_SEQUENCE4args();
         cbSequence.csa_cachethis = false;
         cbSequence.csa_highest_slotid = new slotid4(_highestSlotId);
-        cbSequence.csa_sequenceid = new sequenceid4(new uint32_t(_sequenceid));
+        cbSequence.csa_sequenceid = new sequenceid4(_sequenceid);
         cbSequence.csa_slotid = new slotid4(0);
         cbSequence.csa_sessionid = _session;
         cbSequence.csa_referring_call_lists = new referring_call_list4[0];

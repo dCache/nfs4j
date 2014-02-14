@@ -48,7 +48,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
         final CREATE_SESSION4res res = result.opcreate_session;
 
-        Long clientId = Long.valueOf(_args.opcreate_session.csa_clientid.value.value);
+        Long clientId = _args.opcreate_session.csa_clientid.value;
 
         /*
          * check for correct arguments
@@ -104,7 +104,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "client already in use: " + client.principal() + " " + context.getPrincipal());
         }
 
-        NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value.value,
+        NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value,
                 _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value);
         _log.debug("adding new session [{}]", session);
         context.getStateHandler().sessionById(session.id(), session);

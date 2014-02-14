@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,31 +21,18 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class nfs_lease4 implements XdrAble {
-
-    public uint32_t value;
+public class nfs_lease4 extends uint32_t {
 
     public nfs_lease4() {
     }
 
-    public nfs_lease4(uint32_t value) {
+    public nfs_lease4(int value) {
         this.value = value;
     }
 
     public nfs_lease4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        xdrDecode(xdr);
+        super(xdr);
     }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new uint32_t(xdr);
-    }
-
 }
 // End of nfs_lease4.java

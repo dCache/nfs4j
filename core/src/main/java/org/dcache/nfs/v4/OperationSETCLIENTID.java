@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -62,8 +61,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                 _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, null);
 
         res.resok4 = new SETCLIENTID4resok();
-        res.resok4.clientid = new clientid4();
-        res.resok4.clientid.value = new uint64_t(client.getId());
+        res.resok4.clientid = new clientid4(client.getId());
         res.resok4.setclientid_confirm = client.verifier();
         res.status = nfsstat.NFS_OK;
     }

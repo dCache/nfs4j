@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,8 +22,8 @@ import org.dcache.xdr.*;
 import java.io.IOException;
 
 public class specdata4 implements XdrAble {
-    public uint32_t specdata1;
-    public uint32_t specdata2;
+    public int specdata1;
+    public int specdata2;
 
     public specdata4() {
     }
@@ -35,14 +35,14 @@ public class specdata4 implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        specdata1.xdrEncode(xdr);
-        specdata2.xdrEncode(xdr);
+        xdr.xdrEncodeInt(specdata1);
+        xdr.xdrEncodeInt(specdata2);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        specdata1 = new uint32_t(xdr);
-        specdata2 = new uint32_t(xdr);
+        specdata1 = xdr.xdrDecodeInt();
+        specdata2 = xdr.xdrDecodeInt();
     }
 
 }

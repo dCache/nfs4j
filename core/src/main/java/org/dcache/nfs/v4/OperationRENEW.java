@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@ public class OperationRENEW extends AbstractNFSv4Operation {
 
         final RENEW4res res = result.oprenew;
 
-        Long clientid = Long.valueOf(_args.oprenew.clientid.value.value);
+        Long clientid = _args.oprenew.clientid.value;
 
         NFS4Client client = context.getStateHandler().getClientByID(clientid);
         if (client == null) {

@@ -21,31 +21,18 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class clientid4 implements XdrAble {
-
-    public uint64_t value;
+public class clientid4 extends uint64_t {
 
     public clientid4() {
     }
 
-    public clientid4(uint64_t value) {
-        this.value = value;
+    public clientid4(long value) {
+        super(value);
     }
 
     public clientid4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        xdrDecode(xdr);
+        super(xdr);
     }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new uint64_t(xdr);
-    }
-
 }
 // End of clientid4.java

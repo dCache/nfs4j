@@ -28,7 +28,6 @@ import org.dcache.nfs.v4.xdr.fattr4_aclsupport;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.nfs.v4.xdr.attrlist4;
 import org.dcache.nfs.v4.xdr.fattr4_case_insensitive;
-import org.dcache.nfs.v4.xdr.nfs_lease4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.fattr4_rawdev;
 import org.dcache.nfs.v4.xdr.fattr4_maxname;
@@ -198,8 +197,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fattr4_type type = new fattr4_type(unixType2NFS(stat.getMode()));
                 return Optional.of(type);
             case nfs4_prot.FATTR4_FH_EXPIRE_TYPE:
-                uint32_t fh_type = new uint32_t(nfs4_prot.FH4_PERSISTENT);
-                fattr4_fh_expire_type fh_expire_type = new fattr4_fh_expire_type(fh_type);
+                fattr4_fh_expire_type fh_expire_type = new fattr4_fh_expire_type(nfs4_prot.FH4_PERSISTENT);
                 return Optional.of(fh_expire_type);
             case nfs4_prot.FATTR4_CHANGE:
                 fattr4_change change = new fattr4_change(stat.getCTime());
@@ -224,7 +222,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_UNIQUE_HANDLES:
                 return Optional.of(new fattr4_unique_handles(true));
             case nfs4_prot.FATTR4_LEASE_TIME:
-                return Optional.of(new fattr4_lease_time(new nfs_lease4(new uint32_t(NFSv4Defaults.NFS4_LEASE_TIME))));
+                return Optional.of(new fattr4_lease_time(NFSv4Defaults.NFS4_LEASE_TIME));
             case nfs4_prot.FATTR4_RDATTR_ERROR:
                 //enum is an integer
                 return Optional.of(new fattr4_rdattr_error(0));
@@ -236,10 +234,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 nfsace4[] aces = context.getFs().getAcl(inode);
                 return Optional.of(new fattr4_acl(aces));
             case nfs4_prot.FATTR4_ACLSUPPORT:
-                fattr4_aclsupport aclSupport = new fattr4_aclsupport();
-                aclSupport.value = new uint32_t();
-                aclSupport.value.value = nfs4_prot.ACL4_SUPPORT_ALLOW_ACL
-                        | nfs4_prot.ACL4_SUPPORT_DENY_ACL;
+                fattr4_aclsupport aclSupport = new fattr4_aclsupport(
+			nfs4_prot.ACL4_SUPPORT_ALLOW_ACL| nfs4_prot.ACL4_SUPPORT_DENY_ACL);
                 return Optional.of(aclSupport);
             case nfs4_prot.FATTR4_ARCHIVE:
                 return Optional.absent();
@@ -279,7 +275,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MAXREAD:
                 return Optional.of(new fattr4_maxread(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE));
             case nfs4_prot.FATTR4_MAXWRITE:
-                fattr4_maxwrite maxwrite = new fattr4_maxwrite(new uint64_t(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE));
+                fattr4_maxwrite maxwrite = new fattr4_maxwrite(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE);
                 return Optional.of(maxwrite);
             case nfs4_prot.FATTR4_MIMETYPE:
                 return Optional.absent();
@@ -306,8 +302,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.absent();
             case nfs4_prot.FATTR4_RAWDEV:
                 specdata4 dev = new specdata4();
-                dev.specdata1 = new uint32_t(0);
-                dev.specdata2 = new uint32_t(0);
+                dev.specdata1 = 0;
+                dev.specdata2 = 0;
                 return Optional.of(new fattr4_rawdev(dev));
             case nfs4_prot.FATTR4_SPACE_AVAIL:
                 fsStat = getFsStat(fsStat, fs);
@@ -352,8 +348,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                     mofi = 0x12345678;
                 }
 
-                uint64_t rootid = new uint64_t(mofi);
-                fattr4_mounted_on_fileid mounted_on_fileid = new fattr4_mounted_on_fileid(rootid);
+                fattr4_mounted_on_fileid mounted_on_fileid = new fattr4_mounted_on_fileid(mofi);
                 return Optional.of(mounted_on_fileid);
 
             /**

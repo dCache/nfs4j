@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@ public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
 
         final SETCLIENTID_CONFIRM4res res = result.opsetclientid_confirm;
 
-        Long clientid = Long.valueOf(_args.opsetclientid_confirm.clientid.value.value);
+        Long clientid = _args.opsetclientid_confirm.clientid.value;
 
         NFS4Client client = context.getStateHandler().getClientByID(clientid);
         if (client == null) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_impl_id4;
 import org.dcache.nfs.v4.xdr.utf8str_cis;
 import org.dcache.nfs.v4.xdr.state_protect4_r;
@@ -234,8 +233,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         client.updateLeaseTime();
 
         res.eir_resok4 = new EXCHANGE_ID4resok();
-        res.eir_resok4.eir_clientid = new clientid4(new uint64_t(client.getId()));
-        res.eir_resok4.eir_sequenceid = new sequenceid4(new uint32_t(client.currentSeqID()));
+        res.eir_resok4.eir_clientid = new clientid4(client.getId());
+        res.eir_resok4.eir_sequenceid = new sequenceid4(client.currentSeqID());
         res.eir_resok4.eir_flags = new uint32_t(_flag);
 
         ServerIdProvider serverIdProvider = context.getServerIdProvider();

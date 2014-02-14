@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,20 +19,13 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.OperationCREATE_SESSION;
-import org.dcache.nfs.v4.OperationDESTROY_SESSION;
-import org.dcache.nfs.v4.NFSv4StateHandler;
-import org.dcache.nfs.v4.CompoundContext;
-import org.dcache.nfs.v4.OperationEXCHANGE_ID;
 import org.dcache.nfs.v4.xdr.sequenceid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.state_protect_how4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import java.util.UUID;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.client.CreateSessionStub;
@@ -90,7 +83,7 @@ public class OperationCREATE_SESSIONTest {
         nfs_resop4 result;
 
         nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                new clientid4( new uint64_t(0)), new sequenceid4( new uint32_t(0)));
+                new clientid4(0), new sequenceid4(0));
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -115,9 +108,7 @@ public class OperationCREATE_SESSIONTest {
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
-        sequenceid4 badSequence = new sequenceid4(
-                new uint32_t(result.opexchange_id.eir_resok4.eir_sequenceid.value.value +1)
-                );
+        sequenceid4 badSequence = new sequenceid4(result.opexchange_id.eir_resok4.eir_sequenceid.value + 1);
         nfs_argop4 cretaesession_args = CreateSessionStub.standard(
                 result.opexchange_id.eir_resok4.eir_clientid, badSequence);
 

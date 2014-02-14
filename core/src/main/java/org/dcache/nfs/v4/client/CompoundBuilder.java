@@ -255,10 +255,7 @@ public class CompoundBuilder {
 
         slotid4 HsId = new slotid4(highSlotid);
         op.opsequence.sa_highest_slotid = HsId;
-
-        sequenceid4 seq = new sequenceid4();
-        seq.value = new uint32_t(++sequence);
-        op.opsequence.sa_sequenceid = seq;
+        op.opsequence.sa_sequenceid = new sequenceid4(++sequence);
 
         op.opsequence.sa_sessionid = sessionid;
         ops.add(op);

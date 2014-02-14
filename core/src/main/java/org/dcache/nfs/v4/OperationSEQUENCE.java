@@ -61,7 +61,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
         int opCount = context.getTotalOperationCount();
         context.setCache(session.checkCacheSlot(_args.opsequence.sa_slotid.value,
-                _args.opsequence.sa_sequenceid.value.value, opCount > 1));
+                _args.opsequence.sa_sequenceid.value, opCount > 1));
 
         context.setCacheThis(_args.opsequence.sa_cachethis);
         client.updateLeaseTime();

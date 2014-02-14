@@ -25,7 +25,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.sequenceid4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.slotid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 
 public class SequenceStub {
 
@@ -42,10 +41,7 @@ public class SequenceStub {
 
         slotid4 HsId = new slotid4(HighestSlot);
         op.opsequence.sa_highest_slotid = HsId;
-
-        sequenceid4 seq = new sequenceid4();
-        seq.value = new uint32_t(++SeqId);
-        op.opsequence.sa_sequenceid = seq;
+        op.opsequence.sa_sequenceid = new sequenceid4(++SeqId);
 
         sessionid4 sess = new sessionid4();
         sess.value = SessId;

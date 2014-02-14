@@ -58,7 +58,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         final OPEN4res res = result.opopen;
 
         try {
-            Long clientid = Long.valueOf(_args.opopen.owner.value.clientid.value.value);
+            Long clientid = _args.opopen.owner.value.clientid.value;
             NFS4Client client;
 
             if (context.getMinorversion() > 0) {
