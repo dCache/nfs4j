@@ -167,7 +167,11 @@ public class ChimeraVfs implements VirtualFileSystem {
 
     @Override
     public Inode parentOf(Inode inode) throws IOException {
-        return toInode(toFsInode(inode).getParent());
+	FsInode parent = toFsInode(inode).getParent();
+	if (parent == null) {
+	    throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "no parent");
+	}
+        return toInode(parent);
     }
 
     @Override
