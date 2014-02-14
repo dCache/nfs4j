@@ -114,7 +114,8 @@ public class Main {
             "write",
             "fs_locations",
             "getattr",
-            "openbomb"
+            "openbomb",
+            "read-nostate"
         };
 
         PrintWriter out = new PrintWriter(System.out);
@@ -267,6 +268,19 @@ public class Main {
                         continue;
                     }
                     nfsClient.readatonce(commandArgs[1]);
+
+                } else if (commandArgs[0].equals("read-nostate")) {
+
+                    if (nfsClient == null) {
+                        System.out.println("Not mounted");
+                        continue;
+                    }
+
+                    if (commandArgs.length != 2) {
+                        System.out.println("usage: readatonce <file>");
+                        continue;
+                    }
+                    nfsClient.readNoState(commandArgs[1]);
 
                 } else if (commandArgs[0].equals("fs_locations")) {
 
@@ -770,6 +784,12 @@ public class Main {
         }
         close(or.fh(), or.stateid());
 
+    }
+
+    private void readNoState(String path) throws OncRpcException, IOException {
+	OpenReply or = open(path);
+        nfsRead(or.fh(), Stateids.ZeroStateId());
+	close(or.fh(), or.stateid());
     }
 
     private void readatonce(String path) throws OncRpcException, IOException {

@@ -32,6 +32,8 @@ public class Stateids {
             new stateid4(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1);
     private final static stateid4 INVAL_STATEID =
             new stateid4(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nfs4_prot.NFS4_UINT32_MAX);
+    private final static stateid4 ZERO_STATEID =
+	    new stateid4(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0);
 
     public static stateid4 uptodateOf(stateid4 stateid) {
         return new stateid4(stateid.other, 0);
@@ -43,6 +45,10 @@ public class Stateids {
 
     public static stateid4 invalidStateId() {
         return INVAL_STATEID;
+    }
+
+    public static stateid4 ZeroStateId() {
+	return ZERO_STATEID;
     }
 
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
