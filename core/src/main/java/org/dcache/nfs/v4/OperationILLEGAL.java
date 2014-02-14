@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -35,7 +36,7 @@ public class OperationILLEGAL extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
-        result.opillegal.status = nfsstat.NFSERR_OP_ILLEGAL;
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+	throw new ChimeraNFSException(nfsstat.NFSERR_OP_ILLEGAL, "illegal operation");
     }
 }
