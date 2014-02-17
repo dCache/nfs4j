@@ -980,6 +980,7 @@ public class nfs_resop4 implements XdrAble {
                 resop.opillegal = new ILLEGAL4res();
                 break;
             default:
+		resop.resop = nfs_opnum4.OP_ILLEGAL;
                 resop.opillegal = new ILLEGAL4res();
         }
         return resop;
