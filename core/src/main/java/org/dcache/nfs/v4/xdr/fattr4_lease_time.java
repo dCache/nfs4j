@@ -27,7 +27,7 @@ public class fattr4_lease_time extends nfs_lease4 {
     }
 
     public fattr4_lease_time(int value) {
-        super();
+        super(value);
     }
 
     public fattr4_lease_time(XdrDecodingStream xdr)

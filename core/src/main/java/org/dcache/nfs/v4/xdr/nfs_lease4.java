@@ -27,7 +27,7 @@ public class nfs_lease4 extends uint32_t {
     }
 
     public nfs_lease4(int value) {
-        this.value = value;
+        super(value);
     }
 
     public nfs_lease4(XdrDecodingStream xdr)
