@@ -80,7 +80,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * made to any client records on the server. Otherwise, the server goes
          * to phase 2.
          */
-        if (client == null) {
+        if (client == null || !client.isLeaseValid()) {
             throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "client not known");
         }
 
