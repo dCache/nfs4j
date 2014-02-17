@@ -37,6 +37,7 @@ import org.dcache.nfs.v4.xdr.qop4;
 import org.dcache.nfs.v4.xdr.rpcsec_gss_info;
 import org.dcache.nfs.v4.xdr.sec_oid4;
 import org.dcache.nfs.v4.xdr.secinfo4;
+import org.dcache.nfs.v4.xdr.secinfo_style4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.xdr.OncRpcException;
@@ -70,8 +71,10 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
             SECINFO_NO_NAME4res res = result.opsecinfo_no_name;
             Inode inode = context.currentInode();
             switch (_args.opsecinfo_no_name.value) {
-                case 0:
-                case 1:
+                case secinfo_style4.SECINFO_STYLE4_PARENT:
+		    inode = context.getFs().parentOf(inode);
+		    // fall through
+                case secinfo_style4.SECINFO_STYLE4_CURRENT_FH:
                     res.status = nfsstat.NFS_OK;
                     res.resok4 = new SECINFO4resok();
                     res.resok4.value = secinfosOf(inode, context);
@@ -83,6 +86,7 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
         } catch (GSSException e) {
             throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
         }
+	context.clearCurrentInode();
     }
 
     static secinfo4[] secinfosOf(Inode inode, CompoundContext context) throws GSSException {
