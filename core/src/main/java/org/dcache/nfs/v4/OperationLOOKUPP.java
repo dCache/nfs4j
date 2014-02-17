@@ -44,8 +44,13 @@ public class OperationLOOKUPP extends AbstractNFSv4Operation {
         final LOOKUPP4res res = result.oplookupp;
 
         Stat stat = context.getFs().getattr(context.currentInode());
+
+	if (stat.type() == Stat.Type.SYMLINK) {
+	    throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "get parent on a symlink");
+	}
+
         if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
         }
 
         Inode parent = context.getFs().parentOf(context.currentInode());
