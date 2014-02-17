@@ -85,6 +85,10 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 case open_claim_type4.CLAIM_NULL:
 
+		    if (client.needReclaim() && !context.getStateHandler().hasGracePeriodExpired()) {
+			throw new ChimeraNFSException(nfsstat.NFSERR_GRACE, "Server in grace period");
+		    }
+
                     Stat stat = context.getFs().getattr(context.currentInode());
                     if (stat.type() != Stat.Type.DIRECTORY) {
                         throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
