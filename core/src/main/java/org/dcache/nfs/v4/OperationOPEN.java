@@ -181,6 +181,9 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 		    if (context.getStateHandler().hasGracePeriodExpired()) {
 			throw new ChimeraNFSException(nfsstat.NFSERR_NO_GRACE, "Server not in grace period");
 		    }
+		    if (!client.needReclaim()) {
+			throw new ChimeraNFSException(nfsstat.NFSERR_NO_GRACE, "CLAIM open after 'reclaim complete'");
+		    }
                 case open_claim_type4.CLAIM_FH:
 
                     _log.debug("open by Inode for : {}", context.currentInode());
