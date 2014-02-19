@@ -35,11 +35,14 @@ import org.dcache.auth.Subjects;
 import org.dcache.chimera.ChimeraFsException;
 import org.dcache.chimera.DirNotEmptyHimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
+import org.dcache.chimera.DirNotEmptyHimeraFsException;
+import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.HimeraDirectoryEntry;
 import org.dcache.chimera.JdbcFs;
+import org.dcache.chimera.NotDirChimeraException;
 import org.dcache.chimera.StorageGenericLocation;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.ChimeraNFSException;
@@ -125,7 +128,15 @@ public class ChimeraVfs implements VirtualFileSystem {
     public void move(Inode src, String oldName, Inode dest, String newName) throws IOException {
         FsInode from = toFsInode(src);
         FsInode to = toFsInode(dest);
-        _fs.move(from, oldName, to, newName);
+	try {
+	    _fs.move(from, oldName, to, newName);
+	} catch (NotDirChimeraException e) {
+	    throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
+	} catch (FileExistsChimeraFsException e) {
+	    throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "destination exists");
+	} catch (DirNotEmptyHimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory exist and not empty");
+        }
     }
 
     @Override
