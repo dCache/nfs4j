@@ -22,18 +22,9 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.ds.DSOperationCOMMIT;
-import org.dcache.nfs.v4.ds.DSOperationREAD;
-import org.dcache.nfs.v4.ds.DSOperationWRITE;
-import org.dcache.nfs.vfs.FsCache;
 
 public class MDSOperationFactory implements NFSv4OperationFactory {
 
-    private final FsCache _fs;
-
-    public MDSOperationFactory(FsCache fs) {
-        _fs = fs;
-    }
 
     @Override
     public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
@@ -44,7 +35,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_CLOSE:
                 return new OperationCLOSE(op);
             case nfs_opnum4.OP_COMMIT:
-                return new DSOperationCOMMIT(op, _fs);
+                return new OperationCOMMIT(op);
             case nfs_opnum4.OP_CREATE:
                 return new OperationCREATE(op);
             case nfs_opnum4.OP_DELEGPURGE:
@@ -84,7 +75,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_PUTROOTFH:
                 return new OperationPUTROOTFH(op);
             case nfs_opnum4.OP_READ:
-                return new DSOperationREAD(op, _fs);
+                return new OperationREAD(op);
             case nfs_opnum4.OP_READDIR:
                 return new OperationREADDIR(op);
             case nfs_opnum4.OP_READLINK:
@@ -110,7 +101,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_VERIFY:
                 return new OperationVERIFY(op);
             case nfs_opnum4.OP_WRITE:
-                return new DSOperationWRITE(op, _fs);
+                return new OperationWRITE(op);
             /*            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
             nRes.oprelease_lockowner = new RELEASE_LOCKOWNER4res();
             res = new NFSv4OperationResult(nRes, nfsstat4.NFS4ERR_NOTSUPP);

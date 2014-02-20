@@ -91,7 +91,7 @@
     <!--
         NFSv4.1 Operation factory
     -->
-    <bean id="mds-factory-inner" class="org.dcache.nfs.v4.MDSOperationFactory">
+    <bean id="mds-factory-inner" class="org.dcache.nfs.v4.LocalIoOperationFactory">
         <description>MDS operation factory</description>
         <constructor-arg ref="ds-data-pool" />
     </bean>
