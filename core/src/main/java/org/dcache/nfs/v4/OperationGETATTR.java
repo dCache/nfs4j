@@ -284,8 +284,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_NO_TRUNC:
                 return Optional.of(new fattr4_no_trunc(true));
             case nfs4_prot.FATTR4_NUMLINKS:
-                uint32_t nlinks = new uint32_t(stat.getNlink());
-                return Optional.of(new fattr4_numlinks(nlinks));
+                return Optional.of(new fattr4_numlinks(stat.getNlink()));
             case nfs4_prot.FATTR4_OWNER:
                 String owner_s = context.getIdMapping().uidToPrincipal(stat.getUid());
                 utf8str_mixed user = new utf8str_mixed(owner_s);
