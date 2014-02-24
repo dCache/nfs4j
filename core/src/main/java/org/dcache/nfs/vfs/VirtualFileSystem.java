@@ -41,7 +41,7 @@ public interface VirtualFileSystem {
 
     Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException;
 
-    void move(Inode src, String oldName, Inode dest, String newName) throws IOException;
+    boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException;
 
     Inode parentOf(Inode inode) throws IOException;
 

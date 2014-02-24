@@ -83,25 +83,29 @@ public class OperationRENAME extends AbstractNFSv4Operation {
                 throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
             }
 
-            _log.debug("Rename: src={} name={} dest={} name={}",
-                        sourceDir,
-                        oldName,
-                        destDir,
-                        newName);
+	    _log.debug("Rename: src={} name={} dest={} name={}",
+		    sourceDir,
+		    oldName,
+		    destDir,
+		    newName);
 
-            context.getFs().move(sourceDir, oldName, destDir, newName);
+	    boolean isChanged = context.getFs().move(sourceDir, oldName, destDir, newName);
+	    long now = 0;
+	    if (isChanged) {
+		now = System.currentTimeMillis();
+	    }
 
             res.resok4 = new RENAME4resok();
 
             res.resok4.source_cinfo = new change_info4();
             res.resok4.source_cinfo.atomic = true;
-            res.resok4.source_cinfo.before = new changeid4(sourceStat.getMTime());
-            res.resok4.source_cinfo.after = new changeid4(System.currentTimeMillis());
+            res.resok4.source_cinfo.before = new changeid4(sourceStat.getCTime());
+            res.resok4.source_cinfo.after = new changeid4(isChanged ? now : sourceStat.getCTime());
 
             res.resok4.target_cinfo = new change_info4();
             res.resok4.target_cinfo.atomic = true;
-            res.resok4.target_cinfo.before = new changeid4(destStat.getMTime());
-            res.resok4.target_cinfo.after = new changeid4(System.currentTimeMillis());
+            res.resok4.target_cinfo.before = new changeid4(destStat.getCTime());
+            res.resok4.target_cinfo.after = new changeid4(isChanged ? now : destStat.getCTime());
 
             res.status = nfsstat.NFS_OK;
 

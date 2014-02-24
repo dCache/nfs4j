@@ -125,11 +125,11 @@ public class ChimeraVfs implements VirtualFileSystem {
     }
 
     @Override
-    public void move(Inode src, String oldName, Inode dest, String newName) throws IOException {
+    public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
         FsInode from = toFsInode(src);
         FsInode to = toFsInode(dest);
 	try {
-	    _fs.move(from, oldName, to, newName);
+	    return _fs.move(from, oldName, to, newName);
 	} catch (NotDirChimeraException e) {
 	    throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
 	} catch (FileExistsChimeraFsException e) {

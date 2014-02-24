@@ -76,10 +76,10 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public void move(Inode src, String oldName, Inode dest, String newName) throws IOException {
+    public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
         invalidateCache(src, oldName);
         invalidateCache(dest,newName);
-        _inner.move(src, oldName, dest, newName);
+        return _inner.move(src, oldName, dest, newName);
     }
 
     @Override

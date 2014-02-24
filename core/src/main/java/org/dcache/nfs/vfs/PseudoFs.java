@@ -193,10 +193,10 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public void move(Inode src, String oldName, Inode dest, String newName) throws IOException {
+    public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
         checkAccess(src, ACE4_DELETE_CHILD);
         checkAccess(dest, ACE4_ADD_FILE | ACE4_DELETE_CHILD);
-        _inner.move(src, oldName, dest, newName);
+        return _inner.move(src, oldName, dest, newName);
     }
 
     @Override
