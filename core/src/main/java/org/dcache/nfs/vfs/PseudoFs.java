@@ -201,12 +201,17 @@ public class PseudoFs implements VirtualFileSystem {
 
     @Override
     public Inode parentOf(Inode inode) throws IOException {
-        /*
-         * FIXME:
-         * we have mess up here with export id,
-         * but it' good enough for Solaris client
-         */
-        return pushExportIndex(inode, _inner.parentOf(inode));
+
+	Inode parent = _inner.parentOf(inode);
+	Inode asPseudo = realToPseudo(parent);
+	if (isPseudoDirectory(asPseudo)) {
+	    /*
+	     * if parent is a path of export tree
+	     */
+	    return asPseudo;
+	} else {
+	    return pushExportIndex(inode, parent);
+	}
     }
 
     @Override
@@ -376,6 +381,17 @@ public class PseudoFs implements VirtualFileSystem {
             }
         }
         throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
+    }
+
+    private boolean isPseudoDirectory(Inode dir) throws IOException {
+	Set<PseudoFsNode> nodes = prepareExportTree();
+
+	for (PseudoFsNode node : nodes) {
+	    if (node.id().equals(dir)) {
+		return true;
+	    }
+	}
+	return false;
     }
 
     public static Inode pseudoIdToReal(Inode inode, int index) {
