@@ -80,10 +80,6 @@
             <artifactId>oncrpc4j-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.jna</groupId>
-            <artifactId>jna</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.dcache.chimera</groupId>
             <artifactId>chimera-core</artifactId>
         </dependency>

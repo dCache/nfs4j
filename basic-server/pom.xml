@@ -82,10 +82,6 @@
             <artifactId>oncrpc4j-spring</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.jna</groupId>
-            <artifactId>jna</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.dcache.chimera</groupId>
             <artifactId>chimera-core</artifactId>
         </dependency>
