@@ -98,6 +98,14 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
             }
 
+	    if (arg1.argarray.length >= NFSv4Defaults.NFS4_MAX_OPS && minorversion == 0) {
+		/*
+		   in 4.1 maxops handled per session
+		*/
+		throw new ChimeraNFSException(nfsstat.NFSERR_RESOURCE,
+			String.format("Too many ops [%d]", arg1.argarray.length));
+	    }
+
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
                 fs, _statHandler, _deviceManager, call$, _idMapping,
@@ -119,6 +127,11 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                             /*
                              * at this point we already have to have a session
                              */
+			    if (arg1.argarray.length > context.getSession().getMaxOps()) {
+				throw new ChimeraNFSException(nfsstat.NFSERR_TOO_MANY_OPS,
+					String.format("Too many ops [%d]", arg1.argarray.length));
+			    }
+
                             List<nfs_resop4> cache = context.getCache();
                             if (cache != null) {
                                 res.resarray.addAll(cache.subList(position, cache.size()));

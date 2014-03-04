@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -56,4 +56,8 @@ public interface NFSv4Defaults {
      */
     public final static long NFS4_IMPLEMENTATION_DATE = System.currentTimeMillis();
 
+    /**
+     * Maximal number of operations in a compound call
+     */
+    public final static int NFS4_MAX_OPS = 128;
 }

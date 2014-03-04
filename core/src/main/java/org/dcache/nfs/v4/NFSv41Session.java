@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -40,10 +40,12 @@ public class NFSv41Session {
      */
     private final SessionSlot[] _slots;
     private final NFS4Client _client;
+    private final int _maxOps;
+    private final int _maxCbOps;
 
     private final int _sequence;
 
-    public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize) {
+    public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize, int maxOps, int maxCbOps) {
         _client = client;
         _sequence = sequence;
         _slots = new SessionSlot[replyCacheSize];
@@ -52,6 +54,8 @@ public class NFSv41Session {
         Bytes.putLong(id, 0, client.getId());
         Bytes.putInt(id, 12, sequence);
         _session = new sessionid4(id);
+	_maxOps = maxOps;
+	_maxCbOps = maxCbOps;
     }
 
     public sessionid4 id() {
@@ -110,6 +114,23 @@ public class NFSv41Session {
 
     public int getSequence() {
         return _sequence;
+    }
+
+    /**
+     * Get maximal number of operations server will accept for this session.
+     * @return number of operations
+     */
+    public int getMaxOps() {
+	return _maxOps;
+    }
+
+    /**
+     * Get maximal number of call-back operations client will accept for this session.
+     *
+     * @return number of operations
+     */
+    public int getMaxCbOps() {
+	return _maxCbOps;
     }
 
     @Override

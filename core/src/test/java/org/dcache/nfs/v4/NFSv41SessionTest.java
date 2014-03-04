@@ -40,7 +40,7 @@ public class NFSv41SessionTest {
     @Before
     public void setUp() throws UnknownHostException, ChimeraNFSException {
         _client = createClient();
-        _session = _client.createSession(1, 10);
+        _session = _client.createSession(1, 10, 8, 8);
     }
 
     @Test

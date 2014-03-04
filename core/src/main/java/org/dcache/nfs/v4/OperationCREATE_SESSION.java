@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.CREATE_SESSION4resok;
 import org.dcache.nfs.v4.xdr.CREATE_SESSION4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,7 +106,9 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         }
 
         NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value,
-                _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value);
+                _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value,
+                Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_fore_chan_attrs.ca_maxoperations.value),
+                Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_back_chan_attrs.ca_maxoperations.value));
         _log.debug("adding new session [{}]", session);
         context.getStateHandler().sessionById(session.id(), session);
 
@@ -148,7 +151,10 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          */
 
         res.csr_resok4.csr_fore_chan_attrs = _args.opcreate_session.csa_fore_chan_attrs;
+	res.csr_resok4.csr_fore_chan_attrs.ca_maxoperations = new count4(session.getMaxOps());
+
         res.csr_resok4.csr_back_chan_attrs = _args.opcreate_session.csa_back_chan_attrs;
+	res.csr_resok4.csr_back_chan_attrs.ca_maxoperations = new count4(session.getMaxCbOps());
 
         res.csr_status = nfsstat.NFS_OK;
     }
