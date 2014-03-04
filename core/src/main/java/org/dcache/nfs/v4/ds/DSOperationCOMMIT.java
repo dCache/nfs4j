@@ -33,6 +33,7 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.FsCache;
 import java.nio.channels.FileChannel;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.xdr.OncRpcException;
 
@@ -51,8 +52,19 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
 
         final COMMIT4res res = result.opcommit;
         if (context.getFs() != null) {
-            FileChannel out = _fsCache.get(context.currentInode());
-            Stat stat = context.getFs().getattr(context.currentInode());
+	    Inode inode = context.currentInode();
+            Stat stat = context.getFs().getattr(inode);
+
+	    if (stat.type() == Stat.Type.DIRECTORY) {
+		throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Invalid can't commit a directory");
+	    }
+
+	    if (stat.type() != Stat.Type.REGULAR) {
+		throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid object type");
+	    }
+
+            FileChannel out = _fsCache.get(inode);
+
             stat.setSize(out.size());
             context.getFs().setattr(context.currentInode(), stat);
         }
