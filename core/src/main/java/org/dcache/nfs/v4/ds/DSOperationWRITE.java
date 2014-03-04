@@ -32,10 +32,12 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.FsCache;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +59,18 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
 
         long offset = _args.opwrite.offset.value;
 
-        FileChannel out = _fsCache.get(context.currentInode());
+        Inode inode = context.currentInode();
+        Stat stat = context.getFs().getattr(inode);
+
+        if (stat.type() == Stat.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Can't WRITE into a directory inode");
+        }
+
+        if (stat.type() != Stat.Type.REGULAR) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid object type");
+        }
+
+        FileChannel out = _fsCache.get(inode);
 
         _args.opwrite.data.rewind();
         int bytesWritten = out.write(_args.opwrite.data, offset);
@@ -74,7 +87,6 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
         if (_args.opwrite.stable != stable_how4.UNSTABLE4) {
-            Stat stat = context.getFs().getattr(context.currentInode());
             stat.setSize(out.size());
             context.getFs().setattr(context.currentInode(), stat);
         }

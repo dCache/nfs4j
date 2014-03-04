@@ -33,6 +33,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.vfs.FsCache;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,15 +52,25 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final READ4res res = result.opread;
 
-        Stat inodeStat = context.getFs().getattr(context.currentInode());
+        Inode inode = context.currentInode();
+        Stat stat = context.getFs().getattr(inode);
+
+        if (stat.type() == Stat.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Can't READ a directory inode");
+        }
+
+        if (stat.type() != Stat.Type.REGULAR) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid object type");
+        }
+
+
         boolean eof = false;
 
         long offset = _args.opread.offset.value;
         int count = _args.opread.count.value;
 
         ByteBuffer bb = ByteBuffer.allocateDirect(count);
-
-        FileChannel in = _fsCache.get(context.currentInode());
+        FileChannel in = _fsCache.get(inode);
 
         int bytesReaded = in.read(bb, offset);
         if (bytesReaded < 0) {
@@ -71,7 +82,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         res.resok4 = new READ4resok();
         res.resok4.data = bb;
 
-        if (offset + bytesReaded == inodeStat.getSize()) {
+        if (offset + bytesReaded == stat.getSize()) {
             eof = true;
         }
         res.resok4.eof = eof;
