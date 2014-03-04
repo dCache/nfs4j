@@ -19,8 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.NFSv4Defaults;
-import org.dcache.nfs.v4.NameFilter;
+import com.google.common.base.Charsets;
 import org.dcache.nfs.ChimeraNFSException;
 import org.junit.Test;
 
@@ -34,9 +33,12 @@ public class NameFilterTest {
         (byte) 0x80,
         (byte) 0xaf
     };
-    private static final byte[] GOOD_UTF8 = "a normal string".getBytes();
+    private static final byte[] GOOD_UTF8 = "a normal string".getBytes(Charsets.UTF_8);
     private static final byte[] EMPTY_NAME = new byte[0];
     private static final byte[] NAME_TOO_LONG = new byte[NFSv4Defaults.NFS4_MAXFILENAME + 1];
+    private static final byte[] DOT = ".".getBytes(Charsets.UTF_8);
+    private static final byte[] DOT_DOT = "..".getBytes(Charsets.UTF_8);
+    private static final byte[] WITH_SLASH = "foo/bar".getBytes(Charsets.UTF_8);
 
     @Test
     public void testGoodUtf8() throws ChimeraNFSException {
@@ -56,6 +58,21 @@ public class NameFilterTest {
     @Test(expected = ChimeraNFSException.class)
     public void testEmptyName() throws ChimeraNFSException {
         NameFilter.convert(EMPTY_NAME);
+    }
+
+    @Test(expected = ChimeraNFSException.class)
+    public void testDot() throws ChimeraNFSException {
+        NameFilter.convert(DOT);
+    }
+
+    @Test(expected = ChimeraNFSException.class)
+    public void testDotDot() throws ChimeraNFSException {
+        NameFilter.convert(DOT_DOT);
+    }
+
+    @Test(expected = ChimeraNFSException.class)
+    public void testNameWithSlash() throws ChimeraNFSException {
+        NameFilter.convert(WITH_SLASH);
     }
 //
 }

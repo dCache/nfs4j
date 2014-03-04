@@ -59,21 +59,8 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(context.currentInode());
         String name = NameFilter.convert(_args.opcreate.objname.value);
 
-        if (name.length() == 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");
-        }
-
-        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
-        }
-
         if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
-        }
-
-
-        if (name.equals(".") || name.equals("..")) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
         }
 
         try {

@@ -57,7 +57,25 @@ class NameFilter {
             cd.onMalformedInput(CodingErrorAction.REPORT);
             ByteBuffer uniBuf = ByteBuffer.wrap(bytes);
             CharBuffer charBuf = cd.decode(uniBuf);
-            return new String(charBuf.array(), 0, charBuf.length());
+            String name = new String(charBuf.array(), 0, charBuf.length());
+
+            if (name.length() == 0) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");
+            }
+
+            if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
+            }
+
+            if (name.equals(".") || name.equals("..")) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
+            }
+
+            if (name.indexOf('/') != -1) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "name with slash '/'");
+            }
+
+            return name;
         } catch (CharacterCodingException e) {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid utf8 name");
         }

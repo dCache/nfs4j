@@ -66,23 +66,6 @@ public class OperationRENAME extends AbstractNFSv4Operation {
             String oldName = NameFilter.convert(_args.oprename.oldname.value);
             String newName = NameFilter.convert(_args.oprename.newname.value);
 
-            if (oldName.length() == 0) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
-            }
-
-            if (newName.length() == 0) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
-            }
-
-
-            if (oldName.equals(".") || oldName.equals("..")) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-            }
-
-            if (newName.equals(".") || newName.equals("..")) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-            }
-
 	    _log.debug("Rename: src={} name={} dest={} name={}",
 		    sourceDir,
 		    oldName,

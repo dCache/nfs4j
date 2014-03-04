@@ -56,18 +56,6 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
 
         String name = NameFilter.convert(_args.opremove.target.value);
 
-        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
-        }
-
-        if (name.length() == 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
-        }
-
-        if (name.equals(".") || name.equals("..")) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-        }
-
         _log.debug("REMOVE: {} : {}", parentInode, name);
 
         context.getFs().remove(parentInode, name);

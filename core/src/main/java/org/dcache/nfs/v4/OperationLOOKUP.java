@@ -56,18 +56,6 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
         }
 
-        if (name.length() < 1) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid path");
-        }
-
-        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "path too long");
-        }
-
-        if (name.equals(".") || name.equals("..")) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
-        }
-
         Inode newInode = context.getFs().lookup(context.currentInode(), name);
 
         context.currentInode(newInode);
