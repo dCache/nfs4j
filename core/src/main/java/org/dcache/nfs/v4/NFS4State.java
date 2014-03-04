@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.utils.Bytes;
 
 public class NFS4State {
@@ -46,6 +47,7 @@ public class NFS4State {
     private final stateid4 _stateid;
     private boolean _isConfimed = false;
     private boolean _disposed = false;
+    private final uint32_t _openSeqid;
 
     private final List<StateDisposeListener> _disposeListeners;
 
@@ -54,13 +56,14 @@ public class NFS4State {
      */
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public NFS4State(stateid4 stateid) {
+    public NFS4State(stateid4 stateid, uint32_t openSeqid) {
         _stateid = stateid;
         _disposeListeners = new ArrayList<>();
+        _openSeqid = openSeqid;
     }
 
-    public NFS4State(long clientid, int seqid) {
-        this( new stateid4(generateState(clientid), seqid));
+    public NFS4State(long clientid, int seqid, uint32_t openSeqid) {
+        this( new stateid4(generateState(clientid), seqid), openSeqid);
     }
 
     private static byte[] generateState(long clientid) {
@@ -82,6 +85,13 @@ public class NFS4State {
     
     public boolean isConfimed() {
     	return _isConfimed;
+    }
+
+    /**
+     * Returns the seqid value the client sent us in their OPEN call.
+     */
+    public uint32_t getOpenSeqid() {
+        return _openSeqid;
     }
 
     /**
