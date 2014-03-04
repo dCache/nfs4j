@@ -43,6 +43,7 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.utils.Opaque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -293,13 +294,13 @@ public class NFS4Client {
         return _sessionSequence;
     }
 
-    public NFS4State createState() throws ChimeraNFSException {
+    public NFS4State createState(uint32_t openSeqid) throws ChimeraNFSException {
         if (_clientStates.size() >= MAX_OPEN_STATES) {
             throw new ChimeraNFSException(nfsstat.NFSERR_RESOURCE,
                     "Too many states.");
         }
 
-        NFS4State state = new NFS4State(_clientId, _openStateId);
+        NFS4State state = new NFS4State(_clientId, _openStateId, openSeqid);
         _openStateId++;
         _clientStates.put(state.stateid(), state);
         return state;

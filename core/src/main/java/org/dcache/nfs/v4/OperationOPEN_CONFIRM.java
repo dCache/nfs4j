@@ -66,7 +66,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         }
 
         NFS4State state = client.state(stateid);
-        if (state.stateid().seqid.value != _args.opopen_confirm.seqid.value.value) {
+        if (state.getOpenSeqid().value + 1 != _args.opopen_confirm.seqid.value.value) {
             throw new ChimeraNFSException(nfsstat.NFSERR_BAD_SEQID, "bad seqid.");
         }
 

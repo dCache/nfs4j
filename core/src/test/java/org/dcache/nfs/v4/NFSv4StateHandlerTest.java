@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,13 +44,13 @@ public class NFSv4StateHandlerTest {
 
     @Test
     public void testGetByStateId() throws Exception {
-        stateid4 state = _client.createState().stateid();
+        stateid4 state = _client.createState(new uint32_t(0)).stateid();
         _stateHandler.getClientIdByStateId(state);
     }
 
     @Test
     public void testGetByVerifier() throws Exception {
-        stateid4 state = _client.createState().stateid();
+        stateid4 state = _client.createState(new uint32_t(0)).stateid();
         assertEquals(_client, _stateHandler.getClientByVerifier(_client.verifier()));
     }
 
@@ -71,7 +72,7 @@ public class NFSv4StateHandlerTest {
 
     @Test
     public void testUpdateLeaseTime() throws Exception {
-        NFS4State state = _client.createState();
+        NFS4State state = _client.createState(new uint32_t(0));
         stateid4 stateid = state.stateid();
         state.confirm();
         _stateHandler.updateClientLeaseTime(stateid);
@@ -79,7 +80,7 @@ public class NFSv4StateHandlerTest {
 
     @Test(expected=ChimeraNFSException.class)
     public void testUpdateLeaseTimeNotConfirmed() throws Exception {
-        NFS4State state = _client.createState();
+        NFS4State state = _client.createState(new uint32_t(0));
         stateid4 stateid = state.stateid();
 
         _stateHandler.updateClientLeaseTime(stateid);
@@ -87,7 +88,7 @@ public class NFSv4StateHandlerTest {
 
     @Test(expected=ChimeraNFSException.class)
     public void testUpdateLeaseTimeNotExists() throws Exception {
-        stateid4 state = _client.createState().stateid();
+        stateid4 state = _client.createState(new uint32_t(0)).stateid();
         _stateHandler.updateClientLeaseTime(state);
     }
 }
