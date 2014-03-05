@@ -36,7 +36,6 @@ import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETATTR4res;
 import org.dcache.nfs.ChimeraNFSException;
-import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.v4.acl.Acls;
 
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -190,23 +189,17 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_TIME_CREATE :
                 nfstime4 ctime = new nfstime4();
                 ctime.xdrDecode(xdr);
-                stat.setCTime( TimeUnit.MILLISECONDS.convert(ctime.seconds, TimeUnit.SECONDS) +
-                        TimeUnit.MILLISECONDS.convert(ctime.nseconds, TimeUnit.NANOSECONDS));
+                stat.setCTime(ctime.toMillis());
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET :
                 settime4 setMtime = new settime4();
                 setMtime.xdrDecode(xdr);
 
-                long realMtime = 0;
-                if( setMtime.set_it == time_how4.SET_TO_SERVER_TIME4 ) {
-                    realMtime = System.currentTimeMillis();
-                }else{
-                    realMtime = TimeUnit.MILLISECONDS.convert(setMtime.time.seconds, TimeUnit.SECONDS) +
-                            TimeUnit.MILLISECONDS.convert(setMtime.time.nseconds, TimeUnit.NANOSECONDS);
-                }
+                long realMtime = setMtime.set_it == time_how4.SET_TO_SERVER_TIME4 ?
+                    System.currentTimeMillis() : setMtime.time.toMillis();
 
-                stat.setMTime( realMtime );
+                stat.setMTime(realMtime);
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:

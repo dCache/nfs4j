@@ -20,8 +20,17 @@
 package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
 
 public class nfstime4 implements XdrAble {
+    /**
+     * max allowed value for nseconds
+     * @see  https://tools.ietf.org/html/rfc5661#section-3.3.1
+     */
+    private static final int MAX_VALID_NSECONDS = 999999999;
+
     public long seconds;
     public int nseconds;
 
@@ -52,6 +61,15 @@ public class nfstime4 implements XdrAble {
            throws OncRpcException, IOException {
         seconds = xdr.xdrDecodeLong();
         nseconds = xdr.xdrDecodeInt();
+    }
+
+    public long toMillis() throws ChimeraNFSException {
+        if (nseconds < 0 || nseconds > MAX_VALID_NSECONDS ) {
+            throw  new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid value for nseconds");
+        }
+
+        return TimeUnit.MILLISECONDS.convert(seconds, TimeUnit.SECONDS)
+                + TimeUnit.MILLISECONDS.convert(nseconds, TimeUnit.NANOSECONDS);
     }
 
 }
