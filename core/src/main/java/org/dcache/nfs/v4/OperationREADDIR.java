@@ -93,6 +93,11 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
     private static final int DIRLIST4_SIZE = 4 + nfs4_prot.NFS4_VERIFIER_SIZE + 4 + ENTRY4_SIZE + 4;
     private static final int READDIR4RESOK_SIZE = DIRLIST4_SIZE + ENTRY4_SIZE;
 
+    /**
+     * The valid cookie values are zero, or >=3
+     */
+    private static final long COOKIE_OFFSET = 3;
+
     private static final Cache<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
             CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -147,7 +152,10 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
          * we have to fake cookie values, while '0' and '1' is reserved so we
          * start with 3
          */
-        final long COOKIE_OFFSET = 3;
+        if (startValue == 1 ||  startValue == 2) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie : " + startValue);
+        }
+
         if (startValue != 0) {
 
             // while client sends to us last cookie, we have to continue from the next one
