@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LINK4resok;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,13 +45,24 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
         String newName = NameFilter.convert(_args.oplink.newname.value);
 
+        Stat parentDirStat = context.getFs().getattr(context.currentInode());
+        Stat inodeStat = context.getFs().getattr(context.savedInode());
+
+        if (parentDirStat.type() != Stat.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Can't create a hard-link in non directory object");
+        }
+
+        if (inodeStat.type() == Stat.Type.DIRECTORY) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Can't hard-link a directory");
+        }
+
         context.getFs().link(context.currentInode(), context.savedInode(), newName,
                 context.getUser().getUID(), context.getUser().getGID());
 
         result.oplink.resok4 = new LINK4resok();
         result.oplink.resok4.cinfo = new change_info4();
         result.oplink.resok4.cinfo.atomic = true;
-        result.oplink.resok4.cinfo.before = new changeid4(context.getFs().getattr(context.currentInode()).getMTime());
+        result.oplink.resok4.cinfo.before = new changeid4(parentDirStat.getCTime());
         result.oplink.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
 
         result.oplink.status = nfsstat.NFS_OK;

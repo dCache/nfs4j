@@ -107,8 +107,14 @@ public class ChimeraVfs implements VirtualFileSystem {
     public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode linkInode = toFsInode(link);
-        FsInode fsInode = _fs.createHLink(parentFsInode, linkInode, path);
-        return toInode(fsInode);
+        try {
+            FsInode fsInode = _fs.createHLink(parentFsInode, linkInode, path);
+            return toInode(fsInode);
+        }catch (NotDirChimeraException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+        } catch (FileExistsChimeraFsException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "path already exists");
+        }
     }
 
     @Override
