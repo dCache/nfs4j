@@ -55,8 +55,23 @@ class NameFilter {
         try {
             CharsetDecoder cd = UTF8.newDecoder();
             cd.onMalformedInput(CodingErrorAction.REPORT);
+            cd.onUnmappableCharacter(CodingErrorAction.REPORT);
             ByteBuffer uniBuf = ByteBuffer.wrap(bytes);
             CharBuffer charBuf = cd.decode(uniBuf);
+
+            /*
+             * Java uses internally UTF-16 and, as a result, encode accepts non valid
+             * surrogate bytes as well. For NFs such sequences are invalid.
+             *
+             * See: http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html#Modified_UTF-8
+             *
+             */
+            for (char c : charBuf.array()) {
+                if (Character.isSurrogate(c)) {
+                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid utf8 name");
+                }
+            }
+
             String name = new String(charBuf.array(), 0, charBuf.length());
 
             if (name.length() == 0) {
