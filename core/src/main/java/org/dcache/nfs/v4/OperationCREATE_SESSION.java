@@ -106,7 +106,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         }
 
         NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value,
-                _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value,
+                Math.min(NFSv4Defaults.NFS4_MAX_SESSION_SLOTS, _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value),
                 Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_fore_chan_attrs.ca_maxoperations.value),
                 Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_back_chan_attrs.ca_maxoperations.value));
         _log.debug("adding new session [{}]", session);
@@ -152,9 +152,11 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
         res.csr_resok4.csr_fore_chan_attrs = _args.opcreate_session.csa_fore_chan_attrs;
 	res.csr_resok4.csr_fore_chan_attrs.ca_maxoperations = new count4(session.getMaxOps());
+        res.csr_resok4.csr_fore_chan_attrs.ca_maxrequests = new count4(session.getHighestSlot() +1);
 
         res.csr_resok4.csr_back_chan_attrs = _args.opcreate_session.csa_back_chan_attrs;
 	res.csr_resok4.csr_back_chan_attrs.ca_maxoperations = new count4(session.getMaxCbOps());
+        res.csr_resok4.csr_back_chan_attrs.ca_maxrequests = new count4(session.getHighestSlot() +1);
 
         res.csr_status = nfsstat.NFS_OK;
     }

@@ -60,4 +60,9 @@ public interface NFSv4Defaults {
      * Maximal number of operations in a compound call
      */
     public final static int NFS4_MAX_OPS = 128;
+
+    /**
+     * Maximal number of session slots
+     */
+    public final static int NFS4_MAX_SESSION_SLOTS = 16;
 }
