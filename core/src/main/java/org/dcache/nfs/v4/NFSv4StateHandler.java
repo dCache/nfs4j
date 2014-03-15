@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.verifier4;
@@ -42,8 +41,6 @@ import org.slf4j.LoggerFactory;
 public class NFSv4StateHandler {
 
     private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
-
-    private final List<NFS4Client> _clients = new ArrayList<>();
 
     // all seen by server
     private final Map<verifier4, NFS4Client> _clientsByVerifier = new HashMap<>();
@@ -88,12 +85,10 @@ public class NFSv4StateHandler {
         _clientsByServerId.remove(client.getId());
         _clientByOwner.remove(client.getOwner());
         _clientsByVerifier.remove(client.verifier()) ;
-        _clients.remove(client);
         client.tryDispose();
     }
 
     private synchronized void addClient(NFS4Client newClient) {
-        _clients.add(newClient);
         _clientsByServerId.put(newClient.getId(), newClient);
         _clientsByVerifier.put(newClient.verifier(), newClient);
         _clientByOwner.put( newClient.getOwner(), newClient);
@@ -151,7 +146,7 @@ public class NFSv4StateHandler {
     }
 
     public synchronized List<NFS4Client> getClients() {
-        return new CopyOnWriteArrayList<>(_clients);
+        return new ArrayList<>(_clientsByServerId.values());
     }
 
     public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress,
