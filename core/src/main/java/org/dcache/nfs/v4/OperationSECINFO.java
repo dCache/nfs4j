@@ -45,13 +45,16 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final SECINFO4res res = result.opsecinfo;
-        Inode inode = context.currentInode();
-        context.clearCurrentInode();
-        Stat stat = context.getFs().getattr(inode);
-
+        Inode dir = context.currentInode();
+        Stat stat = context.getFs().getattr(dir);
         if (stat.type() != Stat.Type.DIRECTORY) {
             throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
         }
+
+        context.clearCurrentInode();
+
+        String name = NameFilter.convert(_args.opsecinfo.name.value);
+        Inode inode = context.getFs().lookup(dir, name);
 
         try {
             res.resok4 = new SECINFO4resok();
