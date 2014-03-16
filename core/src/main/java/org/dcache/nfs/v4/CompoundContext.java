@@ -294,6 +294,10 @@ public class CompoundContext {
         _currentStateid = currentStateid;
     }
 
+    public void clearCurrentStateid() {
+        _currentStateid = null;
+    }
+
     public ExportFile getExportFile() {
         return _exportFile;
     }

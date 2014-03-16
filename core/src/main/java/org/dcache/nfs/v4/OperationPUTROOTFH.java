@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -43,6 +43,7 @@ public class OperationPUTROOTFH extends AbstractNFSv4Operation {
         final PUTROOTFH4res res = result.opputrootfh;
 
         context.currentInode(context.getFs().getRootInode());
+        context.clearCurrentStateid();
         res.status = nfsstat.NFS_OK;
     }
 }

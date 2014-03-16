@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,10 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.PUTPUBFH4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -35,7 +38,11 @@ public class OperationPUTPUBFH extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
-        result.opputpubfh.status = nfsstat.NFSERR_NOTSUPP;
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+        final PUTPUBFH4res res = result.opputpubfh;
+
+        context.currentInode(context.getFs().getRootInode());
+        context.clearCurrentStateid();
+        res.status = nfsstat.NFS_OK;
     }
 }
