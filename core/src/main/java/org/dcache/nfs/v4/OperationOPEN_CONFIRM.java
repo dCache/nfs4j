@@ -61,10 +61,6 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         _log.debug("confirmed stateID: {}", stateid);
 
         NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
-        if (client == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "bad client id.");
-        }
-
         NFS4State state = client.state(stateid);
         if (state.getOpenSeqid().value + 1 != _args.opopen_confirm.seqid.value.value) {
             throw new ChimeraNFSException(nfsstat.NFSERR_BAD_SEQID, "bad seqid.");

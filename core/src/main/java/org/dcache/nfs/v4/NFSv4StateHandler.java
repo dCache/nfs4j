@@ -102,8 +102,12 @@ public class NFSv4StateHandler {
         return client;
     }
 
-    public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
-        return getClientByID(Bytes.getLong(stateId.other, 0));
+    public synchronized NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
+        NFS4Client client = _clientsByServerId.get(Bytes.getLong(stateId.other, 0));
+        if (client == null) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "no client for stateid.");
+        }
+        return client;
     }
 
     public synchronized NFS4Client getClientByVerifier(verifier4 verifier) {
