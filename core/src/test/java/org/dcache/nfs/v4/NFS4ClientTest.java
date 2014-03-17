@@ -54,7 +54,7 @@ public class NFS4ClientTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        NFSv41Session session = nfsClient.createSession(1, 2, 8, 8);
+        NFSv41Session session = nfsClient.createSession(1, 2, 1, 8, 8);
         NFS4State state = nfsClient.createState(new uint32_t(0));
 
         nfs_argop4 close_args = CloseStub.generateRequest(state.stateid());

@@ -340,7 +340,7 @@ public class NFS4Client {
         return _sessions.values();
     }
 
-    public NFSv41Session createSession(int sequence, int cacheSize, int maxOps, int maxCbOps) throws ChimeraNFSException {
+    public NFSv41Session createSession(int sequence, int cacheSize, int cbCacheSize, int maxOps, int maxCbOps) throws ChimeraNFSException {
 
         /*
          * For unconfirmed cleints server expects sequence number to be equal to
@@ -367,7 +367,7 @@ public class NFS4Client {
                     "bad sequence id: " + _sessionSequence + " / " + sequence);
         }
 
-        NFSv41Session session = new NFSv41Session(this, _sessionSequence, cacheSize, maxOps, maxCbOps);
+        NFSv41Session session = new NFSv41Session(this, _sessionSequence, cacheSize, cbCacheSize, maxOps, maxCbOps);
         _sessions.put(_sessionSequence, session);
         _sessionSequence++;
 

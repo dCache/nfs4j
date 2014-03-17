@@ -43,9 +43,10 @@ public class NFSv41Session {
     private final int _maxOps;
     private final int _maxCbOps;
 
+    private final int _cbReplyCacheSize;
     private final int _sequence;
 
-    public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize, int maxOps, int maxCbOps) {
+    public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize, int cbReplyCacheSize, int maxOps, int maxCbOps) {
         _client = client;
         _sequence = sequence;
         _slots = new SessionSlot[replyCacheSize];
@@ -56,6 +57,7 @@ public class NFSv41Session {
         _session = new sessionid4(id);
 	_maxOps = maxOps;
 	_maxCbOps = maxCbOps;
+        _cbReplyCacheSize = cbReplyCacheSize;
     }
 
     public sessionid4 id() {
@@ -72,6 +74,11 @@ public class NFSv41Session {
      */
     public int getHighestSlot() {
         return _slots.length - 1;
+    }
+
+    public int getCbHighestSlot() {
+        // FIXME: currently we do not support call-backs, but have to keep client happy
+        return _cbReplyCacheSize - 1;
     }
 
     /**
