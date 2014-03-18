@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4.client;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,11 +34,7 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrDecodingStream;
-import org.dcache.xdr.XdrEncodingStream;
 import org.glassfish.grizzly.Buffer;
 
 public class MkdirStub {
@@ -104,7 +99,7 @@ public class MkdirStub {
             fattr4_mode mode = new fattr4_mode(0755);
             mode.xdrEncode(xdr);
 
-        }catch(OncRpcException | IOException never_happens) {
+        }catch(IOException never_happens) {
             // ignore
         }
 

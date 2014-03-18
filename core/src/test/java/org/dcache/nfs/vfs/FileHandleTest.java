@@ -19,6 +19,7 @@ package org.dcache.nfs.vfs;
 import java.nio.charset.Charset;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.dcache.utils.Bytes.fromHexString;
 
 /**
  *
@@ -101,36 +102,5 @@ public class FileHandleTest {
         assertEquals(0, fh.getExportIdx());
         assertEquals(1, fh.getType());
         assertEquals(oldIdReg, new String(opaque, ACSII));
-    }
-
-    private static byte[] fromHexString(String s) {
-
-        if (s.length() % 2 != 0) {
-            throw new IllegalArgumentException("The string needs to be even-length: " + s);
-        }
-
-        int len = s.length() / 2;
-        byte[] bytes = new byte[len];
-
-        for (int i = 0; i < len; i++) {
-            final int charIndex = i * 2;
-            final int d0 = toDigit(s.charAt(charIndex));
-            final int d1 = toDigit(s.charAt(charIndex + 1));
-            bytes[i] = (byte) ((d0 << 4) + d1);
-        }
-        return bytes;
-    }
-
-    private static int toDigit(char ch) throws NumberFormatException {
-        if (ch >= '0' && ch <= '9') {
-            return ch - '0';
-        }
-        if (ch >= 'A' && ch <= 'F') {
-            return ch - 'A' + 10;
-        }
-        if (ch >= 'a' && ch <= 'f') {
-            return ch - 'a' + 10;
-        }
-        throw new NumberFormatException("illegal character '" + ch + "'");
     }
 }

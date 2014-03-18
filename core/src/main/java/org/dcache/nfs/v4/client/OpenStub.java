@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4.client;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,9 +45,7 @@ import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrEncodingStream;
 import org.glassfish.grizzly.Buffer;
 
 public class OpenStub {
@@ -187,7 +184,7 @@ public class OpenStub {
             size.xdrEncode(xdr);
             mode.xdrEncode(xdr);
 
-        } catch (OncRpcException | IOException never_happens) {
+        } catch (IOException never_happens) {
             // ignore
         }
 

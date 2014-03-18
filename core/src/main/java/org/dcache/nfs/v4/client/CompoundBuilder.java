@@ -93,9 +93,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.utils.Bytes;
-import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrEncodingStream;
 import org.glassfish.grizzly.Buffer;
 
 public class CompoundBuilder {
@@ -608,7 +606,7 @@ public class CompoundBuilder {
             size.xdrEncode(xdr);
             mode.xdrEncode(xdr);
 
-        } catch (OncRpcException | IOException never_happens) {
+        } catch (IOException never_happens) {
             // ignore
         }
 

@@ -34,8 +34,6 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.uint64_t;
-import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.glassfish.grizzly.Buffer;
 
@@ -138,7 +136,7 @@ public class Layout {
 
         try {
             layout.xdrEncode(xdr);
-        } catch (IOException | OncRpcException e) {
+        } catch (IOException e) {
             throw new ChimeraNFSException(nfsstat.NFSERR_SERVERFAULT,
                     "failed to encode layout body");
         }
