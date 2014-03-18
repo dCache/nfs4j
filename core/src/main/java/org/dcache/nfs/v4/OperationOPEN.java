@@ -164,6 +164,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         if (stat.type() == Stat.Type.SYMLINK) {
                             throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "path is a symlink");
                         }
+
+                        if (stat.type() != Stat.Type.REGULAR) {
+                            int err = context.getMinorversion() == 0 ?
+                                    nfsstat.NFSERR_SYMLINK : nfsstat.NFSERR_WRONG_TYPE;
+
+                            throw new ChimeraNFSException(err, "wrong type");
+                        }
                     }
 
                     context.currentInode(inode);
