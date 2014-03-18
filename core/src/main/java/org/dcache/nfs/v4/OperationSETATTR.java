@@ -42,6 +42,7 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
+import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.slf4j.Logger;
@@ -74,7 +75,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException, OncRpcException {
 
-        XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
+        XdrBuffer xdr = new XdrBuffer(attributes.attr_vals.value);
         xdr.beginDecoding();
 
         /*
@@ -82,17 +83,23 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
          */
         bitmap4 processedAttributes = new bitmap4(new int[0]);
         Stat stat = context.getFs().getattr(inode);
-
-        for (int i : attributes.attrmask) {
-            if (xdr2fattr(i, stat, inode, context, xdr)) {
-                _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
-                processedAttributes.set(i);
-            } else {
-                _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
-                throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "attribute " + OperationGETATTR.attrMask2String(i) + " not supported");
+        try {
+            for (int i : attributes.attrmask) {
+                if (xdr2fattr(i, stat, inode, context, xdr)) {
+                    _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
+                    processedAttributes.set(i);
+                } else {
+                    _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
+                    throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "attribute " + OperationGETATTR.attrMask2String(i) + " not supported");
+                }
             }
+        }catch (BadXdrOncRpcException e) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, e.getMessage());
         }
 
+        if (xdr.hasMoreData()) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "garbage in attr bitmap");
+        }
         xdr.endDecoding();
 
         context.getFs().setattr(inode, stat);
