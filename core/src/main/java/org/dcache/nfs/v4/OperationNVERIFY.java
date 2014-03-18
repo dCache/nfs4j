@@ -20,6 +20,8 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+import java.util.Arrays;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -46,6 +48,10 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
         fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opnverify.obj_attributes.attrmask,
                 context.getFs(),
                 context.currentInode(), context);
+
+        if (!Arrays.equals(_args.opnverify.obj_attributes.attrmask.value, currentAttr.attrmask.value)) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "check for not supported attribute");
+        }
 
         res.status = nfsstat.NFSERR_SAME;
 

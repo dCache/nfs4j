@@ -60,6 +60,10 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
                     context.getFs(),
                     context.currentInode(), context);
 
+            if (!Arrays.equals(_args.opverify.obj_attributes.attrmask.value, currentAttr.attrmask.value)) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "check for not supported attribute");
+            }
+
             if (Arrays.equals(_args.opverify.obj_attributes.attr_vals.value, currentAttr.attr_vals.value)) {
                 res.status = nfsstat.NFS_OK;
             } else {
