@@ -22,8 +22,6 @@ package org.dcache.nfs.v4;
 import com.google.common.base.Optional;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.fattr4_numlinks;
-import org.dcache.nfs.v4.xdr.fattr4_hidden;
-import org.dcache.nfs.v4.xdr.fattr4_system;
 import org.dcache.nfs.v4.xdr.fattr4_aclsupport;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.nfs.v4.xdr.attrlist4;
@@ -45,7 +43,6 @@ import org.dcache.nfs.v4.xdr.specdata4;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.fattr4_homogeneous;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.fattr4_maxread;
 import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
@@ -263,7 +260,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_FS_LOCATIONS:
                 return Optional.absent();
             case nfs4_prot.FATTR4_HIDDEN:
-                return Optional.of(new fattr4_hidden(false));
+                return Optional.absent();
             case nfs4_prot.FATTR4_HOMOGENEOUS:
                 return Optional.of(new fattr4_homogeneous(true));
             case nfs4_prot.FATTR4_MAXFILESIZE:
@@ -318,7 +315,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SPACE_USED:
                 return Optional.of(new fattr4_space_used(stat.getSize()));
             case nfs4_prot.FATTR4_SYSTEM:
-                return Optional.of(new fattr4_system(false));
+                return Optional.absent();
             case nfs4_prot.FATTR4_TIME_ACCESS:
                 fattr4_time_access atime = new fattr4_time_access(stat.getATime());
                 return Optional.of(atime);
