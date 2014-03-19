@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
@@ -177,6 +178,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                         }
                     });
         } catch (ExecutionException e) {
+            Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
             throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
         }
 
