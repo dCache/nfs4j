@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v3;
 
+import com.google.common.base.Throwables;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.InodeCacheEntry;
 import org.dcache.nfs.nfsstat;
@@ -800,6 +801,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                             }
                         });
             } catch (ExecutionException e) {
+                Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
                 throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
             }
 
@@ -945,6 +947,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                             }
                         });
             } catch (ExecutionException e) {
+                Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
                 throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
             }
 
