@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.VERIFY4res;
 import org.dcache.nfs.ChimeraNFSException;
@@ -56,7 +55,7 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
          *
          */
 
-        if (bitSet(_args.opverify.obj_attributes.attrmask)) {
+        if (!_args.opverify.obj_attributes.attrmask.isEmpty()) {
             fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opverify.obj_attributes.attrmask,
                     context.getFs(),
                     context.currentInode(), context);
@@ -78,22 +77,5 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
         }
 
         _log.debug("{} is same? {}", context.currentInode(), res.status);
-    }
-
-
-
-    private static boolean bitSet(bitmap4 bitmask) {
-
-        boolean set = false;
-
-        for (int mask : bitmask.value) {
-
-            if (mask != 0) {
-                set = true;
-                break;
-            }
-        }
-
-        return set;
     }
 }

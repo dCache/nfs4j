@@ -124,6 +124,25 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
     }
 
     /**
+     * Returns <tt>true</tt> if, and only if, none of the bits are set.
+     * @return <tt>true</tt> if none of the bits are set, otherwise
+     * <tt>false</tt>
+     */
+    public boolean isEmpty() {
+
+        if (value == null) {
+            return true;
+        }
+
+        for (int mask : value) {
+            if (mask != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Create an {@link Iterator} over all set bits.
      */
     @Override
