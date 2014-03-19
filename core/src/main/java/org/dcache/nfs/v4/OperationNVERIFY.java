@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.NVERIFY4res;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
@@ -51,6 +52,10 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
 
         if (!Arrays.equals(_args.opnverify.obj_attributes.attrmask.value, currentAttr.attrmask.value)) {
             throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "check for not supported attribute");
+        }
+
+        if (_args.opnverify.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
+            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "RDATTR_ERROR can be used with readdir only");
         }
 
         res.status = nfsstat.NFSERR_SAME;
