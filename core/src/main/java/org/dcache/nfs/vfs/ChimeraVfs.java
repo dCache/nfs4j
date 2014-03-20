@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -290,7 +290,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         if ((mode & (ACCESS4_MODIFY | ACCESS4_EXTEND)) != 0) {
 
             FsInode fsInode = toFsInode(inode);
-            if (!fsInode.isDirectory() && (!_fs.getInodeLocations(fsInode, StorageGenericLocation.TAPE).isEmpty()
+            if ((fsInode.type() == FsInodeType.INODE) && !fsInode.isDirectory() && (!_fs.getInodeLocations(fsInode, StorageGenericLocation.TAPE).isEmpty()
                     || !_fs.getInodeLocations(fsInode, StorageGenericLocation.DISK).isEmpty())) {
 
                 accessmask ^= (ACCESS4_MODIFY | ACCESS4_EXTEND);
