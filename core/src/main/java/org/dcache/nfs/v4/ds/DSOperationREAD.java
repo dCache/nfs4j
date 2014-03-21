@@ -32,6 +32,7 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -63,6 +64,15 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
             throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid object type");
         }
 
+        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opread.stateid) && !Stateids.OneStateId().equalsWithSeq(_args.opread.stateid)) {
+            /*
+             *  The NFSv4.0 spec requires to update lease time as long as client
+             * needs the file. This is done through READ, WRITE and RENEW
+             * opertations. With introduction of sessions in v4.1 update of the
+             * lease time done through SEQUENCE operation.
+             */
+            context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
+        }
 
         boolean eof = false;
 
