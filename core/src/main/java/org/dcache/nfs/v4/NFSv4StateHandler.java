@@ -146,6 +146,7 @@ public class NFSv4StateHandler {
             throw new ChimeraNFSException( nfsstat.NFSERR_BAD_STATEID, "State is not confirmed"  );
         }
 
+        Stateids.checkStateId(state.stateid(), stateid);
         client.updateLeaseTime();
     }
 
