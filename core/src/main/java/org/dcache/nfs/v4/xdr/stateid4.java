@@ -67,6 +67,21 @@ public class stateid4 implements XdrAble, Serializable {
         return Arrays.equals(this.other, other_id.other);
     }
 
+    /**
+     * Check state for equality including sequence id.
+     * @param otherState
+     * @return <tt>true</tt> if and only if oterhState has equal <tt>other</tt> field
+     * and sequence id.
+     */
+    public boolean equalsWithSeq(stateid4 otherState) {
+
+        if (otherState == this) {
+            return true;
+        }
+
+        return otherState.seqid.value == this.seqid.value && Arrays.equals(this.other, otherState.other);
+    }
+
     @Override
     public int hashCode() {
         return Arrays.hashCode(other);

@@ -40,6 +40,7 @@ public class stateid4Test {
 
         assertTrue("equal keys not equal", stateidA.equals(stateidB));
         assertTrue("equal, but different hashCode", stateidA.hashCode() == stateidB.hashCode() );
+        assertTrue("not equal by other and seqid must", stateidA.equalsWithSeq(stateidB));
     }
 
     @Test
@@ -64,6 +65,7 @@ public class stateid4Test {
         stateidB.other = "state".getBytes();
 
         assertTrue("differ by sequence should still be equal", stateidA.equals(stateidB));
+        assertFalse("differ by sequence can't be equal", stateidA.equalsWithSeq(stateidB));
     }
 
     @Test
