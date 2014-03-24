@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,14 +19,16 @@
  */
 package org.dcache.utils;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -54,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of cached values
  */
-public class Cache<K, V> extends  TimerTask {
+public class Cache<K, V> implements Runnable {
 
     private static final Logger _log = LoggerFactory.getLogger(Cache.class);
 
@@ -119,10 +121,9 @@ public class Cache<K, V> extends  TimerTask {
     private final Map<K, CacheElement<V>> _storage;
 
     /**
-     * 'Expire threads' used to detect and remove expired entries.
+     * 'Expire thread' used to detect and remove expired entries.
      */
-    private final Timer _cleaner = new Timer();
-
+    private final ScheduledExecutorService _cleanerScheduler;
     /**
      * Internal storage access lock.
      */
@@ -169,7 +170,7 @@ public class Cache<K, V> extends  TimerTask {
      * @param timeUnit a {@link TimeUnit} determining how to interpret the
      * <code>timeValue</code> parameter.
      */
-    public Cache(String name, int size, long entryLifeTime, long entryIdleTime,
+    public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
             CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit) {
         _name = name;
         _size = size;
@@ -178,7 +179,12 @@ public class Cache<K, V> extends  TimerTask {
         _storage = new HashMap<>(_size);
         _eventListener = eventListener;
         _mxBean = new CacheMXBeanImpl<>(this);
-        _cleaner.schedule(this, 0, timeUnit.toMillis(timeValue));
+        _cleanerScheduler = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat(name + " periodic cleanup")
+                        .build()
+        );
+        _cleanerScheduler.scheduleAtFixedRate(this, timeValue, timeValue, timeUnit);
     }
 
     /**
@@ -370,5 +376,15 @@ public class Cache<K, V> extends  TimerTask {
 
     public long lastClean() {
         return _lastClean.get();
+    }
+
+    /**
+     * Shutdown cache cleanup thread.
+     *
+     * Note that cache still can be used, but there will be no automatic cleanup
+     * performed.
+     */
+    public void shutdown() {
+        _cleanerScheduler.shutdown();
     }
 }
