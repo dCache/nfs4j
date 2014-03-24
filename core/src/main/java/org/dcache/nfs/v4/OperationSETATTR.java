@@ -113,8 +113,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                     throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
                 }
 
-                if( stat.type() == Stat.Type.SYMLINK ) {
-                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symbolic link");
+                if( stat.type() != Stat.Type.REGULAR ) {
+                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "can't set size on non file object");
                 }
 
                 uint64_t size = new uint64_t();
