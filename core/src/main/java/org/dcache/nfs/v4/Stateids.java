@@ -58,6 +58,10 @@ public class Stateids {
         return ONE_STATEID;
     }
 
+    public static boolean isStateLess(stateid4 stateid) {
+        return stateid.equalsWithSeq(ZERO_STATEID) || stateid.equalsWithSeq(ONE_STATEID);
+    }
+
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
         if (expected.seqid.value > stateid.seqid.value) {
             throw new ChimeraNFSException(nfsstat.NFSERR_OLD_STATEID, "old stateid");
