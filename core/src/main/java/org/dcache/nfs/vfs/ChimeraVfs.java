@@ -295,9 +295,7 @@ public class ChimeraVfs implements VirtualFileSystem {
         if ((mode & (ACCESS4_MODIFY | ACCESS4_EXTEND)) != 0) {
 
             FsInode fsInode = toFsInode(inode);
-            if ((fsInode.type() == FsInodeType.INODE) && !fsInode.isDirectory() && (!_fs.getInodeLocations(fsInode, StorageGenericLocation.TAPE).isEmpty()
-                    || !_fs.getInodeLocations(fsInode, StorageGenericLocation.DISK).isEmpty())) {
-
+            if (shouldRejectUpdates(fsInode)) {
                 accessmask ^= (ACCESS4_MODIFY | ACCESS4_EXTEND);
             }
         }
@@ -305,10 +303,18 @@ public class ChimeraVfs implements VirtualFileSystem {
         return accessmask;
     }
 
+    private boolean shouldRejectUpdates(FsInode fsInode) throws ChimeraFsException {
+        return fsInode.type() == FsInodeType.INODE
+                && fsInode.getLevel() == 0
+                && !fsInode.isDirectory()
+                && (!_fs.getInodeLocations(fsInode, StorageGenericLocation.TAPE).isEmpty()
+                    || !_fs.getInodeLocations(fsInode, StorageGenericLocation.DISK).isEmpty());
+    }
+
     @Override
     public boolean hasIOLayout(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        return fsInode.type() == FsInodeType.INODE;
+        return fsInode.type() == FsInodeType.INODE && fsInode.getLevel() == 0;
     }
 
     private class ChimeraDirectoryEntryToVfs implements Function<HimeraDirectoryEntry, DirectoryEntry> {
