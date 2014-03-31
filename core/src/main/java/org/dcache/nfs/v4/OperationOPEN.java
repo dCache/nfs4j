@@ -80,6 +80,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             res.resok4.attrset.value = new int[] {0, 0};
             res.resok4.delegation = new open_delegation4();
             res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_NONE;
+            res.resok4.cinfo = new change_info4();
+            res.resok4.cinfo.atomic = true;
 
             switch (_args.opopen.claim.claim) {
 
@@ -93,7 +95,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     if (stat.type() != Stat.Type.DIRECTORY) {
                         throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
                     }
-
+                    res.resok4.cinfo.before = new changeid4(stat.getCTime());
                     String name = NameFilter.convert(_args.opopen.claim.file.value);
                     _log.debug("regular open for : {}", name);
 
@@ -110,6 +112,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                     name, context.getUser().getUID(),
                                     context.getUser().getGID(), 0600);
 
+                            res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
                             // FIXME: proper implementation required
                             switch (_args.opopen.openhow.how.mode) {
                                 case createmode4.UNCHECKED4:
@@ -124,6 +127,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             if (exclusive) {
                                 throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "file already exist");
                             }
+                            // no changes from us, old stat info is still good enough
+                            res.resok4.cinfo.after = new changeid4(stat.getCTime());
 
                             inode = context.getFs().lookup(context.currentInode(), name);
                             if (_log.isDebugEnabled()) {
@@ -143,6 +148,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         }
 
                     } else {
+                        // no changes from us, old stat info is still good enough
+                        res.resok4.cinfo.after = new changeid4(stat.getCTime());
 
                         inode = context.getFs().lookup(context.currentInode(), name);
                         stat = context.getFs().getattr(inode);
@@ -199,6 +206,15 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                     _log.debug("open by Inode for : {}", context.currentInode());
 
+                    /*
+                     * Send some dummy values for cinfo, as client
+                     * does not really expect something. We can do a stat on parent,
+                     * by this will be an extra fileststem (db) call which client
+                     * will not use.
+                     */
+                    res.resok4.cinfo.before = new changeid4(0);
+                    res.resok4.cinfo.after = new changeid4(0);
+
                     inode = context.currentInode();
                     stat = context.getFs().getattr(inode);
 
@@ -233,11 +249,6 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             }
 
-            res.resok4.cinfo = new change_info4();
-            res.resok4.cinfo.atomic = true;
-            res.resok4.cinfo.before = new changeid4(context.getFs().getattr(context.currentInode()).getMTime());
-            res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
-
             /*
              * if it's v4.0, then client have to confirm
              */
@@ -245,7 +256,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
             }else {
                 res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX
-                        | nfs4_prot.OPEN4_RESULT_CONFIRM);                
+                        | nfs4_prot.OPEN4_RESULT_CONFIRM);
             }
 
             NFS4State nfs4state = client.createState(_args.opopen.seqid.value);
