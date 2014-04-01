@@ -289,7 +289,6 @@ public class PseudoFs implements VirtualFileSystem {
     private void checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
-        Stat stat = _inner.getattr(inode);
         boolean aclMatched = false;
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
@@ -331,6 +330,7 @@ public class PseudoFs implements VirtualFileSystem {
         }
 
         if (!aclMatched) {
+            Stat stat = _inner.getattr(inode);
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
