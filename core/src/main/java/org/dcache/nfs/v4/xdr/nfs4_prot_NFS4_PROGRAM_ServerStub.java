@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,15 +29,13 @@ import org.dcache.xdr.XdrVoid;
  */
 public abstract class nfs4_prot_NFS4_PROGRAM_ServerStub implements RpcDispatchable {
 
-
+    @Override
     public void dispatchOncRpcCall(RpcCall call)
            throws OncRpcException, IOException {
 
-        int version = call.getProgramVersion();
         int procedure = call.getProcedure();
 
-        if ( version == 4 ) {
-            switch ( procedure ) {
+        switch ( procedure ) {
             case 0: {
                 call.retrieveCall(XdrVoid.XDR_VOID);
                 NFSPROC4_NULL_4(call);
@@ -53,9 +51,6 @@ public abstract class nfs4_prot_NFS4_PROGRAM_ServerStub implements RpcDispatchab
             }
             default:
                 call.failProcedureUnavailable();
-            }
-        } else {
-            call.failProgramUnavailable();
         }
     }
 

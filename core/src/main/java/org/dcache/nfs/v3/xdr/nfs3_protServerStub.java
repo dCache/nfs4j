@@ -29,14 +29,13 @@ import org.dcache.xdr.XdrVoid;
  */
 public abstract class nfs3_protServerStub implements RpcDispatchable {
 
+    @Override
     public void dispatchOncRpcCall(RpcCall call)
             throws OncRpcException, IOException {
 
-        int version = call.getProgramVersion();
         int procedure = call.getProcedure();
 
-        if ( version == 3 ) {
-            switch ( procedure ) {
+        switch ( procedure ) {
             case 0: {
                 call.retrieveCall(XdrVoid.XDR_VOID);
                 NFSPROC3_NULL_3(call);
@@ -192,9 +191,6 @@ public abstract class nfs3_protServerStub implements RpcDispatchable {
             }
             default:
                 call.failProcedureUnavailable();
-            }
-        } else {
-            call.failProgramUnavailable();
         }
     }
 
