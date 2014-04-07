@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,13 +19,13 @@
  */
 package org.dcache.nfs.vfs;
 
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.dcache.nfs.v4.xdr.nfsace4;
 
 /**
@@ -33,15 +33,24 @@ import org.dcache.nfs.v4.xdr.nfsace4;
  */
 public class VfsCache implements VirtualFileSystem {
 
-    private final LoadingCache<CacheKey, Inode> _lookupCache;
+    private final Cache<CacheKey, Inode> _lookupCache;
+    private final Cache<Inode, Stat> _statCache;
+
     private final VirtualFileSystem _inner;
 
-    public VfsCache(VirtualFileSystem inner) {
+    public VfsCache(VirtualFileSystem inner, VfsCacheConfig cacheConfig) {
         _inner = inner;
-        _lookupCache = CacheBuilder.newBuilder()
-                .maximumSize(8192)
-                .expireAfterWrite(1, TimeUnit.MINUTES)
-                .build(new FsCacheLoader());
+	_lookupCache = CacheBuilder.newBuilder()
+		.maximumSize(cacheConfig.getMaxEntries())
+		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
+		.softValues()
+		.build();
+
+	_statCache = CacheBuilder.newBuilder()
+		.maximumSize(cacheConfig.getMaxEntries())
+		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
+		.softValues()
+		.build();
     }
 
     @Override
@@ -51,13 +60,18 @@ public class VfsCache implements VirtualFileSystem {
 
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
-        return _inner.symlink(parent, path, link, uid, gid, mode);
+        Inode inode = _inner.symlink(parent, path, link, uid, gid, mode);
+	invalidateStatCache(parent);
+	return inode;
     }
 
     @Override
     public void remove(Inode parent, String path) throws IOException {
+	Inode inode = lookup(parent, path);
         _inner.remove(parent, path);
-        invalidateCache(parent, path);
+        invalidateLookupCache(parent, path);
+	invalidateStatCache(parent);
+	invalidateStatCache(inode);
     }
 
     @Override
@@ -77,15 +91,22 @@ public class VfsCache implements VirtualFileSystem {
 
     @Override
     public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
-        invalidateCache(src, oldName);
-        invalidateCache(dest,newName);
-        return _inner.move(src, oldName, dest, newName);
+
+        boolean isChanged = _inner.move(src, oldName, dest, newName);
+	if (isChanged) {
+	    invalidateLookupCache(src, oldName);
+	    invalidateLookupCache(dest, newName);
+	    invalidateStatCache(src);
+	    invalidateStatCache(dest);
+	}
+	return isChanged;
     }
 
     @Override
     public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
         Inode inode = _inner.mkdir(parent, path, uid, gid, mode);
-        updateCache(parent, path, inode);
+        updateLookupCache(parent, path, inode);
+	invalidateStatCache(parent);
         return inode;
     }
 
@@ -97,13 +118,15 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
         Inode inode = _inner.link(parent, link, path, uid, gid);
-        updateCache(parent, path, inode);
+        updateLookupCache(parent, path, inode);
+	invalidateStatCache(parent);
+	invalidateStatCache(inode);
         return inode;
     }
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        return getFromCache(parent, path);
+        return lookupFromCacheOrLoad(parent, path);
     }
 
     @Override
@@ -119,29 +142,9 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         Inode inode = _inner.create(parent, type, path, uid, gid, mode);
-        updateCache(parent, path, inode);
+        updateLookupCache(parent, path, inode);
+	invalidateStatCache(parent);
         return inode;
-
-    }
-
-    private Inode getFromCache(Inode parent, String path) throws IOException {
-        try {
-            return _lookupCache.getUnchecked(new CacheKey(parent, path));
-        } catch (UncheckedExecutionException e) {
-            Throwable t = e.getCause();
-            if (t instanceof IOException) {
-                throw (IOException) t;
-            }
-            throw new IOException(e.getMessage(), t);
-        }
-    }
-
-    private void invalidateCache(Inode parent, String path) {
-        _lookupCache.invalidate(new CacheKey(parent, path));
-    }
-
-    private void updateCache(Inode parent, String path, Inode inode) {
-        _lookupCache.asMap().put(new CacheKey(parent, path), inode);
     }
 
     @Override
@@ -151,12 +154,13 @@ public class VfsCache implements VirtualFileSystem {
 
     @Override
     public Stat getattr(Inode inode) throws IOException {
-        return _inner.getattr(inode);
+        return statFromCacheOrLoad(inode);
     }
 
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
         _inner.setattr(inode, stat);
+	invalidateStatCache(inode);
     }
 
     @Override
@@ -172,6 +176,56 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public boolean hasIOLayout(Inode inode) throws IOException {
         return _inner.hasIOLayout(inode);
+    }
+
+
+    /*
+       Utility methods for cache manipulation.
+     */
+
+    private void invalidateLookupCache(Inode parent, String path) {
+	_lookupCache.invalidate(new CacheKey(parent, path));
+    }
+
+    private void updateLookupCache(Inode parent, String path, Inode inode) {
+	_lookupCache.put(new CacheKey(parent, path), inode);
+    }
+
+    private void invalidateStatCache(final Inode inode) {
+	_statCache.invalidate(inode);
+    }
+
+    private Inode lookupFromCacheOrLoad(final Inode parent, final String path) throws IOException {
+	try {
+	    return _lookupCache.get(new CacheKey(parent, path), new Callable<Inode>() {
+
+		@Override
+		public Inode call() throws Exception {
+		    return _inner.lookup(parent, path);
+		}
+
+	    });
+	} catch (ExecutionException e) {
+	    Throwable t = e.getCause();
+	    Throwables.propagateIfInstanceOf(t, IOException.class);
+	    throw new IOException(e.getMessage(), t);
+	}
+    }
+
+    private Stat statFromCacheOrLoad(final Inode inode) throws IOException {
+	try {
+	    return _statCache.get(inode, new Callable<Stat>() {
+
+		@Override
+		public Stat call() throws Exception {
+		    return _inner.getattr(inode);
+		}
+	    });
+	} catch (ExecutionException e) {
+	    Throwable t = e.getCause();
+	    Throwables.propagateIfInstanceOf(t, IOException.class);
+	    throw new IOException(e.getMessage(), t);
+	}
     }
 
     /**
@@ -213,14 +267,6 @@ public class VfsCache implements VirtualFileSystem {
 
         public Inode getParent() {
             return _parent;
-        }
-    }
-
-    private class FsCacheLoader extends CacheLoader<CacheKey, Inode> {
-
-        @Override
-        public Inode load(CacheKey k) throws Exception {
-            return _inner.lookup(k.getParent(), k.getName());
         }
     }
 }

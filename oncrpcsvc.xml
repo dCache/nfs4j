@@ -74,9 +74,16 @@
         <constructor-arg ref="idmapd"/>
     </bean>
 
+    <bean id="cache-config" class="org.dcache.nfs.vfs.VfsCacheConfig">
+	<property name="maxEntries" value="${nfs.attribute-cache.size}" />
+	<property name="lifeTime" value="${nfs.attribute-cache.time}" />
+	<property name="timeUnit" value="${nfs.attribute-cache.unit}" />
+    </bean>
+
     <bean id="vfs" class="org.dcache.nfs.vfs.VfsCache">
         <description>VFS Cache</description>
         <constructor-arg ref="vfs-intern"/>
+	<constructor-arg ref="cache-config"/>
     </bean>
 
     <bean id="export" class="org.dcache.nfs.ExportFile">
