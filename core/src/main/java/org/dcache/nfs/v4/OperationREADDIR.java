@@ -159,33 +159,42 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         if (startValue != 0) {
 
+            verifier = _args.opreaddir.cookieverf;
+            dirList = _dlCache.getIfPresent(new InodeCacheEntry<>(dir, verifier));
+            if (dirList == null) {
+                /*
+                 * We do not have cached snapshot for this verifier - tell
+                 * the client to start over.
+                 *
+                 * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
+                 * the only one which we can use to force client to re-try.
+                 */
+                throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "readdir verifier expired");
+            }
+
             // while client sends to us last cookie, we have to continue from the next one
             ++startValue;
-            verifier = _args.opreaddir.cookieverf;
-            checkVerifier(stat, verifier);
+
+            // the cookie==1,2 is reserved
+            if ((startValue > dirList.size() + COOKIE_OFFSET) || (startValue < COOKIE_OFFSET)) {
+                throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie : " + startValue + " " + dirList.size());
+            }
         } else {
             verifier = generateDirectoryVerifier(stat);
             startValue = COOKIE_OFFSET;
-        }
-
-        InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
-        try {
-            dirList = _dlCache.get(cacheKey,
-                    new Callable<List<DirectoryEntry>>() {
-                        @Override
-                        public List<DirectoryEntry> call() throws Exception {
-                            return context.getFs().list(dir);
-                        }
-                    });
-        } catch (ExecutionException e) {
-            Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-            throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
-        }
-
-
-        // the cookie==1,2 is reserved
-        if ((startValue > dirList.size() + COOKIE_OFFSET) || (startValue < COOKIE_OFFSET)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie : " + startValue + " " + dirList.size());
+            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
+            try {
+                dirList = _dlCache.get(cacheKey,
+                        new Callable<List<DirectoryEntry>>() {
+                            @Override
+                            public List<DirectoryEntry> call() throws Exception {
+                                return context.getFs().list(dir);
+                            }
+                        });
+            } catch (ExecutionException e) {
+                Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
+                throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+            }
         }
 
         if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
@@ -288,28 +297,5 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
         Bytes.putLong(verifier, 0, stat.getMTime());
         return new verifier4(verifier);
-    }
-
-    /**
-     * Check verifier validity. As there is no BAD_VERIFIER error the NFS4ERR_BAD_COOKIE is
-     * the only one which we can use to force client to re-try.
-     * @param dir
-     * @param verifier
-     * @throws ChimeraNFSException
-     * @throws ChimeraFsException
-     */
-    private void checkVerifier(Stat stat, verifier4 verifier) throws ChimeraNFSException, IOException {
-        long mtime = Bytes.getLong(verifier.value, 0);
-        if( mtime > stat.getMTime() )
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie");
-
-        /*
-         * To be spec compliant we have to fail with nfsstat3.NFS4ERR_BAD_COOKIE in case
-         * if mtime  < dir.statCache().getMTime(). But this can produce an infinite loop if
-         * the directory changes too fast.
-         *
-         * The code currently produces snapshot like behavior which is compliant with spec.
-         * It's the client responsibility to keep track of directory changes.
-         */
     }
 }

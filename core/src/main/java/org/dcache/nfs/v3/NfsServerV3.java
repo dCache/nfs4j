@@ -723,30 +723,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
         return new cookieverf3(verifier);
     }
 
-    /**
-     * Check verifier validity. As there is no BAD_VERIFIER error the NFS3ERR_BAD_COOKIE is
-     * the only one which we can use to force client to re-try.
-     * @param dir
-     * @param verifier
-     * @throws ChimeraNFSException
-     * @throws ChimeraFsException
-     */
-    private void checkVerifier(Inode dir, VirtualFileSystem fs, cookieverf3 verifier) throws ChimeraNFSException, IOException {
-        long mtime = Bytes.getLong(verifier.value, 0);
-        if (mtime > fs.getattr(dir).getMTime()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie");
-        }
-
-        /*
-         * To be spec compliant we have to fail with nfsstat.NFSERR_BAD_COOKIE in case
-         * if mtime  < dir.statCache().getMTime(). But this can produce an infinite loop if
-         * the directory changes too fast.
-         *
-         * The code currently produces snapshot like behavior which is compliant with spec.
-         * It's the client responsibility to keep track of directory changes.
-         */
-    }
-
     /*
      * to simulate snapshot-like list following trick is used:
      *
@@ -786,23 +762,32 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (startValue != 0) {
                 ++startValue;
                 cookieverf = arg1.cookieverf;
-                checkVerifier(dir, fs, cookieverf);
+                dirList = _dlCacheFull.getIfPresent(new InodeCacheEntry<>(dir, cookieverf));
+                if (dirList == null) {
+                    /*
+                     * We do not have cached snapshot for this verifier - tell
+                     * the client to start over.
+                     *
+                     * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
+                     * the only one which we can use to force client to re-try.
+                     */
+                    throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "readdir verifier expired");
+                }
             } else {
                 cookieverf = generateDirectoryVerifier(dir, fs);
-            }
-
-            InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-            try {
-                dirList = _dlCacheFull.get(cacheKey,
-                        new Callable<List<DirectoryEntry>>() {
-                            @Override
-                            public List<DirectoryEntry> call() throws Exception {
-                                return fs.list(dir);
-                            }
-                        });
-            } catch (ExecutionException e) {
-                Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
+                try {
+                    dirList = _dlCacheFull.get(cacheKey,
+                            new Callable<List<DirectoryEntry>>() {
+                                @Override
+                                public List<DirectoryEntry> call() throws Exception {
+                                    return fs.list(dir);
+                                }
+                            });
+                } catch (ExecutionException e) {
+                    Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                }
             }
 
             if (startValue > dirList.size()) {
@@ -932,23 +917,32 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (startValue != 0) {
                 ++startValue;
                 cookieverf = arg1.cookieverf;
-                checkVerifier(dir, fs, cookieverf);
+                dirList = _dlCacheFull.getIfPresent(new InodeCacheEntry<>(dir, cookieverf));
+                if (dirList == null) {
+                    /*
+                     * We do not have cached snapshot for this verifier - tell
+                     * the client to start over.
+                     *
+                     * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
+                     * the only one which we can use to force client to re-try.
+                     */
+                    throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "readdir verifier expired");
+                }
             } else {
                 cookieverf = generateDirectoryVerifier(dir, fs);
-            }
-
-            InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-            try {
-                dirList = _dlCacheFull.get(cacheKey,
-                        new Callable<List<DirectoryEntry>>() {
-                            @Override
-                            public List<DirectoryEntry> call() throws Exception {
-                                return fs.list(dir);
-                            }
-                        });
-            } catch (ExecutionException e) {
-                Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
+                try {
+                    dirList = _dlCacheFull.get(cacheKey,
+                            new Callable<List<DirectoryEntry>>() {
+                                @Override
+                                public List<DirectoryEntry> call() throws Exception {
+                                    return fs.list(dir);
+                                }
+                            });
+                } catch (ExecutionException e) {
+                    Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
+                    throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                }
             }
 
             if (startValue > dirList.size()) {
