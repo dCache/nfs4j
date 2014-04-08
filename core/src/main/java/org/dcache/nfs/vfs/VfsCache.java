@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.utils.Opaque;
 
 /**
  * Caching decorator.
@@ -34,7 +35,7 @@ import org.dcache.nfs.v4.xdr.nfsace4;
 public class VfsCache implements VirtualFileSystem {
 
     private final Cache<CacheKey, Inode> _lookupCache;
-    private final Cache<Inode, Stat> _statCache;
+    private final Cache<Opaque, Stat> _statCache;
 
     private final VirtualFileSystem _inner;
 
@@ -192,7 +193,7 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     private void invalidateStatCache(final Inode inode) {
-	_statCache.invalidate(inode);
+	_statCache.invalidate(new Opaque(inode.getFileId()));
     }
 
     private Inode lookupFromCacheOrLoad(final Inode parent, final String path) throws IOException {
@@ -214,7 +215,7 @@ public class VfsCache implements VirtualFileSystem {
 
     private Stat statFromCacheOrLoad(final Inode inode) throws IOException {
 	try {
-	    return _statCache.get(inode, new Callable<Stat>() {
+	    return _statCache.get(new Opaque(inode.getFileId()), new Callable<Stat>() {
 
 		@Override
 		public Stat call() throws Exception {
