@@ -179,6 +179,10 @@ public class VfsCache implements VirtualFileSystem {
         return _inner.hasIOLayout(inode);
     }
 
+    @Override
+    public AclCheckable getAclCheckable() {
+        return _inner.getAclCheckable();
+    }
 
     /*
        Utility methods for cache manipulation.

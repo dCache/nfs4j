@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@ import org.dcache.xdr.gss.RpcGssService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.dcache.nfs.vfs.AclCheckable.Access;
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
  * on top of an other file system based on export rules.
@@ -282,6 +283,11 @@ public class PseudoFs implements VirtualFileSystem {
         return _inner.hasIOLayout(inode);
     }
 
+    @Override
+    public AclCheckable getAclCheckable() {
+        return _inner.getAclCheckable();
+    }
+
     private void checkAccess(Inode inode, int requestedMask) throws IOException {
         checkAccess(inode, requestedMask, true);
     }
@@ -289,7 +295,7 @@ public class PseudoFs implements VirtualFileSystem {
     private void checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
-        boolean aclMatched = false;
+        Access aclMatched = Access.UNDEFINED;
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
             if (shouldLog) {
@@ -324,12 +330,17 @@ public class PseudoFs implements VirtualFileSystem {
             }
 
             if (export.checkAcls()) {
-                ChimeraVfs chimeraVfs = (ChimeraVfs) _inner;
-                aclMatched = chimeraVfs.checkAclAccess(_subject, inode, requestedMask);
+                aclMatched = _inner.getAclCheckable().checkAcl(_subject, inode, requestedMask);
+                if (aclMatched == Access.DENY) {
+                    if(shouldLog) {
+                        _log.warn("Access deny: {} {}", _subject, acemask4.toString(requestedMask));
+                    }
+                    throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+                }
             }
         }
 
-        if (!aclMatched) {
+        if (aclMatched == Access.UNDEFINED) {
             Stat stat = _inner.getattr(inode);
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {

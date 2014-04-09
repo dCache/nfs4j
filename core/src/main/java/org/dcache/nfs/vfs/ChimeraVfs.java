@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Interface to a virtual file system.
  */
-public class ChimeraVfs implements VirtualFileSystem {
+public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
 
     private final static Logger _log = LoggerFactory.getLogger(ChimeraVfs.class);
     private final JdbcFs _fs;
@@ -323,6 +323,11 @@ public class ChimeraVfs implements VirtualFileSystem {
         return fsInode.type() == FsInodeType.INODE && fsInode.getLevel() == 0;
     }
 
+    @Override
+    public AclCheckable getAclCheckable() {
+        return this;
+    }
+
     private class ChimeraDirectoryEntryToVfs implements Function<HimeraDirectoryEntry, DirectoryEntry> {
 
         @Override
@@ -395,14 +400,15 @@ public class ChimeraVfs implements VirtualFileSystem {
         return new ACE(AceType.valueOf(type), flags, mask, who, id, ACE.DEFAULT_ADDRESS_MSK);
     }
 
-    boolean checkAclAccess(Subject subject, Inode inode, int access) throws ChimeraNFSException, IOException {
+    @Override
+    public Access checkAcl(Subject subject, Inode inode, int access) throws IOException {
         FsInode fsInode = toFsInode(inode);
         List<ACE> acl = _fs.getACL(fsInode);
         org.dcache.chimera.posix.Stat stat = _fs.stat(fsInode);
         return checkAcl(subject, acl, stat.getUid(), stat.getGid(), access);
     }
 
-    private boolean checkAcl(Subject subject, List<ACE> acl, int owner, int group, int access) throws ChimeraNFSException {
+    private Access checkAcl(Subject subject, List<ACE> acl, int owner, int group, int access) {
 
         for (ACE ace : acl) {
 
@@ -429,15 +435,13 @@ public class ChimeraVfs implements VirtualFileSystem {
                     || (who == Who.USER & Subjects.hasUid(subject, ace.getWhoID()))) {
 
                 if (ace.getType() == AceType.ACCESS_DENIED_ACE_TYPE) {
-                    _log.warn("Access deny: {} {}", subject, acemask4.toString(access));
-                    throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+                    return Access.DENY;
                 } else {
-                    _log.debug("Access grant: {} {}", subject, acemask4.toString(access));
-                    return true;
+                    return Access.ALLOW;
                 }
             }
         }
 
-        return false;
+        return Access.UNDEFINED;
     }
 }
