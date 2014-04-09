@@ -197,7 +197,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fattr4_fh_expire_type fh_expire_type = new fattr4_fh_expire_type(nfs4_prot.FH4_PERSISTENT);
                 return Optional.of(fh_expire_type);
             case nfs4_prot.FATTR4_CHANGE:
-                fattr4_change change = new fattr4_change(stat.getCTime());
+                fattr4_change change = new fattr4_change(stat.getGeneration());
                 return Optional.of(change);
             case nfs4_prot.FATTR4_SIZE:
                 fattr4_size size = new fattr4_size(stat.getSize());

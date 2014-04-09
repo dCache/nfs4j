@@ -33,7 +33,6 @@ import org.dcache.acl.enums.AceType;
 import org.dcache.acl.enums.Who;
 import org.dcache.auth.Subjects;
 import org.dcache.chimera.ChimeraFsException;
-import org.dcache.chimera.DirNotEmptyHimeraFsException;
 import org.dcache.chimera.DirectoryStreamHelper;
 import org.dcache.chimera.DirNotEmptyHimeraFsException;
 import org.dcache.chimera.FileExistsChimeraFsException;
@@ -272,6 +271,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         stat.setRdev(pStat.getRdev());
         stat.setSize(pStat.getSize());
         stat.setFileid(fileid);
+        stat.setGeneration(pStat.getGeneration());
 
         return stat;
     }
@@ -291,6 +291,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         pStat.setNlink(stat.getNlink());
         pStat.setRdev(stat.getRdev());
         pStat.setSize(stat.getSize());
+        pStat.setGeneration(stat.getGeneration());
         return pStat;
     }
 

@@ -295,7 +295,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      */
     private verifier4 generateDirectoryVerifier(Stat stat) throws IllegalArgumentException, IOException {
         byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
-        Bytes.putLong(verifier, 0, stat.getMTime());
+        Bytes.putLong(verifier, 0, stat.getGeneration());
         return new verifier4(verifier);
     }
 }

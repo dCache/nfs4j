@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -71,7 +71,8 @@ public class Stat {
     private int _group = -1; //
     private int _rdev = -1; //
     private long _size = -1; //
-    private long _fileid = -1;
+    private long _fileid = -1; //
+    private long _generation = -1; //
 
     /*
      * Opposite to classic Unix, all times in milliseconds
@@ -174,6 +175,14 @@ public class Stat {
 
     public void setFileid(long fileid) {
         _fileid = fileid;
+    }
+
+    public long getGeneration() {
+        return _generation;
+    }
+
+    public void setGeneration(long generation) {
+        _generation = generation;
     }
 
     public Type type() {
