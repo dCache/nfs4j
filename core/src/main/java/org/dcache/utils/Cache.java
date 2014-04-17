@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  *
  * Typical usage is:
  * <pre>
- *     Cache cache  = new Cache<String, String>("test cache", 10, TimeUnit.HOURS.toMillis(1),
+ *     Cache&lt;String, String&gt; cache  = new Cache&lt;&gt;("test cache", 10, TimeUnit.HOURS.toMillis(1),
  *           TimeUnit.MINUTES.toMillis(5));
  *
  *     cache.put("key", "value");
