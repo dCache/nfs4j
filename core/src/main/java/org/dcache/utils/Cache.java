@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -166,7 +165,7 @@ public class Cache<K, V> implements Runnable {
      * @param entryLifeTime maximal time in milliseconds.
      * @param entryIdleTime maximal idle time in milliseconds.
      * @param eventListener {@link CacheEventListener}
-     * @param timeValue how oftem cleaner thread have to check for invalidated entries.
+     * @param timeValue how often cleaner thread have to check for invalidated entries.
      * @param timeUnit a {@link TimeUnit} determining how to interpret the
      * <code>timeValue</code> parameter.
      */
@@ -213,7 +212,7 @@ public class Cache<K, V> implements Runnable {
      * @param k key associated with the value.
      * @param v value associated with key.
      * @param entryMaxLifeTime maximal life time in milliseconds.
-     * @param entryIdleTime maximal idel time in milliseconds.
+     * @param entryIdleTime maximal idle time in milliseconds.
      *
      * @throws MissingResourceException if Cache limit is reached.
      */
@@ -365,9 +364,7 @@ public class Cache<K, V> implements Runnable {
         _accessLock.lock();
         try {
             entries = new ArrayList<>(_storage.size());
-            for(CacheElement<V> e: _storage.values()) {
-                entries.add(e);
-            }
+            entries.addAll(_storage.values());
         } finally {
             _accessLock.unlock();
         }
