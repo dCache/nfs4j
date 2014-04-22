@@ -29,6 +29,7 @@ import org.dcache.nfs.v4.xdr.RENAME4res;
 import org.dcache.nfs.v4.xdr.RENAME4resok;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
+import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -56,11 +57,11 @@ public class OperationRENAME extends AbstractNFSv4Operation {
             Stat destStat = context.getFs().getattr(destDir);
 
             if (sourceStat.type() != Stat.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "source path not a directory");
+                throw new NotDirException("source path not a directory");
             }
 
             if (destStat.type() != Stat.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "destination path  not a directory");
+                throw new NotDirException("destination path  not a directory");
             }
 
             String oldName = NameFilter.convert(_args.oprename.oldname.value);

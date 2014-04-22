@@ -24,6 +24,7 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.RENEW4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class OperationRENEW extends AbstractNFSv4Operation {
 
         NFS4Client client = context.getStateHandler().getClientByID(clientid);
         if (client == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "Bad client id");
+            throw new StaleClientidException();
         }
 
         client.updateLeaseTime();

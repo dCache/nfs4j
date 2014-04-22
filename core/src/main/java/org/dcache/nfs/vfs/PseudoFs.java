@@ -37,6 +37,7 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.NfsUser;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.xdr.RpcCall;
@@ -143,7 +144,7 @@ public class PseudoFs implements VirtualFileSystem {
          */
         if (Iterables.isEmpty(_exportFile.exportsFor(_inetAddress))) {
             _log.warn("Access denied: (no export) fs root for client {}", _inetAddress);
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "no exports");
+            throw new AccessException("no exports");
         }
 
         Inode inode = _inner.getRootInode();
@@ -165,7 +166,7 @@ public class PseudoFs implements VirtualFileSystem {
 	 */
 	FsExport export = _exportFile.getExport(parent.exportIndex(), _inetAddress);
 	if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
-	    throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "the dcap magic file is blocked");
+	    throw new NoEntException("the dcap magic file is blocked");
 	}
 
 	return pushExportIndex(parent, _inner.lookup(parent, path));
@@ -303,7 +304,7 @@ public class PseudoFs implements VirtualFileSystem {
                             inode, acemask4.toString(requestedMask),
                             effectiveSubject);
             }
-            throw new ChimeraNFSException(nfsstat.NFSERR_ROFS, "attempt to modify pseudofs");
+            throw new RoFs("attempt to modify pseudofs");
         }
 
         if (!inode.isPesudoInode()) {
@@ -313,7 +314,7 @@ public class PseudoFs implements VirtualFileSystem {
                 if (shouldLog) {
                     _log.warn("Access denied: (no export) to inode {} for client {}", inode, _inetAddress);
                 }
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
+                throw new AccessException("permission deny");
             }
 
             checkSecurityFlavor(_auth, export.getSec());
@@ -322,7 +323,7 @@ public class PseudoFs implements VirtualFileSystem {
                 if (shouldLog) {
                     _log.warn("Access denied: (RO export) inode {} for client {}", inode, _inetAddress);
                 }
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "read-only export");
+                throw new AccessException("read-only export");
             }
 
             if (export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
@@ -335,7 +336,7 @@ public class PseudoFs implements VirtualFileSystem {
                     if(shouldLog) {
                         _log.warn("Access deny: {} {}", _subject, acemask4.toString(requestedMask));
                     }
-                    throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+                    throw new AccessException();
                 }
             }
         }
@@ -349,7 +350,7 @@ public class PseudoFs implements VirtualFileSystem {
                                 acemask4.toString(requestedMask),
                                 acemask4.toString(unixAccessmask), _subject);
                 }
-                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "permission deny");
+                throw new AccessException("permission deny");
             }
         }
     }
@@ -391,7 +392,7 @@ public class PseudoFs implements VirtualFileSystem {
                 }
             }
         }
-        throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
+        throw new NoEntException();
     }
 
     private boolean isPseudoDirectory(Inode dir) throws IOException {
@@ -471,7 +472,7 @@ public class PseudoFs implements VirtualFileSystem {
                 }
             }
         }
-        throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "");
+        throw new NoEntException();
     }
 
     private Inode pushExportIndex(Inode inode, int index) {
@@ -558,7 +559,7 @@ public class PseudoFs implements VirtualFileSystem {
 
         if (nodes.isEmpty()) {
             _log.warn("No exports found for: {}", _inetAddress);
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "");
+            throw new AccessException();
         }
 
         nodes.add(root);
@@ -588,18 +589,15 @@ public class PseudoFs implements VirtualFileSystem {
                         usedFlavor = FsExport.Sec.KRB5P;
                         break;
                     default:
-                        throw new ChimeraNFSException(nfsstat.NFSERR_PERM,
-                                "Unsupported Authentication GSS service: " + authGss.getService());
+                        throw new PermException("Unsupported Authentication GSS service: " + authGss.getService());
                 }
                 break;
             default:
-                throw new ChimeraNFSException(nfsstat.NFSERR_PERM,
-                        "Unsupported Authentication flavor: " + auth.type());
+                throw new PermException("Unsupported Authentication flavor: " + auth.type());
         }
 
         if (usedFlavor.compareTo(minFlavor) < 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_PERM,
-                        "Authentication flavor too weak: "
+            throw new PermException("Authentication flavor too weak: "
                     + "allowed <" + minFlavor + "> provided <" + usedFlavor + ">");
         }
     }

@@ -42,6 +42,10 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.chimera.ChimeraFsException;
 
 import org.dcache.nfs.InodeCacheEntry;
+import org.dcache.nfs.status.BadCookieException;
+import org.dcache.nfs.status.NfsIoException;
+import org.dcache.nfs.status.NotDirException;
+import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.Inode;
@@ -133,7 +137,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(dir);
 
         if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
+            throw new NotDirException();
         }
 
         List<DirectoryEntry> dirList;
@@ -154,7 +158,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
          * start with 3
          */
         if (startValue == 1 ||  startValue == 2) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie : " + startValue);
+            throw new BadCookieException("bad cookie : " + startValue);
         }
 
         if (startValue != 0) {
@@ -169,7 +173,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                  * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
                  * the only one which we can use to force client to re-try.
                  */
-                throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "readdir verifier expired");
+                throw new BadCookieException("readdir verifier expired");
             }
 
             // while client sends to us last cookie, we have to continue from the next one
@@ -177,7 +181,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
             // the cookie==1,2 is reserved
             if ((startValue > dirList.size() + COOKIE_OFFSET) || (startValue < COOKIE_OFFSET)) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "bad cookie : " + startValue + " " + dirList.size());
+                throw new BadCookieException("bad cookie : " + startValue + " " + dirList.size());
             }
         } else {
             verifier = generateDirectoryVerifier(stat);
@@ -193,12 +197,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                         });
             } catch (ExecutionException e) {
                 Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                throw new NfsIoException(e.getMessage());
             }
         }
 
         if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_TOOSMALL, "maxcount too small");
+            throw new TooSmallException("maxcount too small");
         }
 
         res.resok4 = new READDIR4resok();

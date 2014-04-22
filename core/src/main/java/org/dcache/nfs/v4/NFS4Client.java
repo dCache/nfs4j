@@ -41,7 +41,6 @@ package org.dcache.nfs.v4;
  *  with great help of William A.(Andy) Adamson
  */
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.utils.Opaque;
@@ -55,6 +54,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.CompleteAlreadyException;
+import org.dcache.nfs.status.ExpiredException;
+import org.dcache.nfs.status.ResourceException;
+import org.dcache.nfs.status.SeqMisorderedException;
 import org.dcache.nfs.v4.xdr.verifier4;
 
 public class NFS4Client {
@@ -262,7 +266,7 @@ public class NFS4Client {
         long curentTime = System.currentTimeMillis();
         if ((curentTime - _cl_time) > _leaseTime) {
             _clientStates.clear();
-            throw new ChimeraNFSException(nfsstat.NFSERR_EXPIRED, "lease time expired");
+            throw new ExpiredException("lease time expired");
         }
         _cl_time = curentTime;
     }
@@ -296,8 +300,7 @@ public class NFS4Client {
 
     public NFS4State createState(uint32_t openSeqid) throws ChimeraNFSException {
         if (_clientStates.size() >= MAX_OPEN_STATES) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_RESOURCE,
-                    "Too many states.");
+            throw new ResourceException("Too many states.");
         }
 
         NFS4State state = new NFS4State(_clientId, _openStateId, openSeqid);
@@ -309,8 +312,7 @@ public class NFS4Client {
     public void releaseState(stateid4 stateid) throws ChimeraNFSException {
         NFS4State state = _clientStates.remove(stateid);
         if (state == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID,
-                    "State not known to the client.");
+            throw new BadStateidException("State not known to the client.");
         }
         state.tryDispose();
     }
@@ -318,8 +320,7 @@ public class NFS4Client {
     public NFS4State state(stateid4 stateid) throws ChimeraNFSException {
         NFS4State state = _clientStates.get(stateid);
         if(state == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID,
-                    "State not known to the client.");
+            throw new BadStateidException("State not known to the client.");
         }
         return state;
     }
@@ -348,13 +349,11 @@ public class NFS4Client {
          */
         _log.debug("session for sequience: {}", sequence);
         if (sequence > _sessionSequence && _isConfirmed) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_SEQ_MISORDERED,
-                    "bad sequence id: " + _sessionSequence + " / " + sequence);
+            throw new SeqMisorderedException("bad sequence id: " + _sessionSequence + " / " + sequence);
         }
 
         if (sequence == _sessionSequence - 1 && !_isConfirmed) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_SEQ_MISORDERED,
-                    "bad sequence id: " + _sessionSequence + " / " + sequence);
+            throw new SeqMisorderedException("bad sequence id: " + _sessionSequence + " / " + sequence);
         }
 
         if (sequence == _sessionSequence - 1) {
@@ -363,8 +362,7 @@ public class NFS4Client {
         }
 
         if (sequence != _sessionSequence ) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_SEQ_MISORDERED,
-                    "bad sequence id: " + _sessionSequence + " / " + sequence);
+            throw new SeqMisorderedException("bad sequence id: " + _sessionSequence + " / " + sequence);
         }
 
         NFSv41Session session = new NFSv41Session(this, _sessionSequence, cacheSize, cbCacheSize, maxOps, maxCbOps);
@@ -440,8 +438,7 @@ public class NFS4Client {
 
     public synchronized void reclaimComplete() throws ChimeraNFSException {
 	if (_reclaim_completed) {
-	    throw new ChimeraNFSException(nfsstat.NFSERR_COMPLETE_ALREADY,
-		"Duplicating reclaim");
+	    throw new CompleteAlreadyException("Duplicating reclaim");
 	}
 	_reclaim_completed = true;
     }

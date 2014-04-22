@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.REMOVE4resok;
 import org.dcache.nfs.v4.xdr.REMOVE4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -51,7 +52,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(parentInode);
 
         if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+            throw new NotDirException();
         }
 
         String name = NameFilter.convert(_args.opremove.target.value);

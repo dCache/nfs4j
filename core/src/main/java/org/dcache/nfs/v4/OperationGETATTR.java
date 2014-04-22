@@ -85,6 +85,7 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.chimera.UnixPermission;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.fattr4_space_avail;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.FsStat;
@@ -358,7 +359,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "getattr of write-only attributes");
+                throw new InvalException("getattr of write-only attributes");
             default:
                 _log.debug("GETATTR for #{}", fattr);
                 return Optional.absent();

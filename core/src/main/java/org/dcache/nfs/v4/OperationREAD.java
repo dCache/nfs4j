@@ -26,7 +26,9 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.READ4resok;
 import org.dcache.nfs.v4.xdr.READ4res;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
@@ -47,11 +49,11 @@ public class OperationREAD extends AbstractNFSv4Operation {
         Stat inodeStat = context.getFs().getattr(context.currentInode());
 
         if (inodeStat.type() == Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+            throw new IsDirException();
         }
 
         if (inodeStat.type() == Stat.Type.SYMLINK) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
+            throw new InvalException();
         }
 
         if (context.getMinorversion() == 0) {
@@ -73,7 +75,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
         int bytesReaded = context.getFs().read(context.currentInode(),
                 buf.array(), offset, count);
         if (bytesReaded < 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_IO, "IO not allowd");
+            throw new NfsIoException("IO not allowd");
         }
 
         /*

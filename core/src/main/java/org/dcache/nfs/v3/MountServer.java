@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -45,6 +45,7 @@ import org.dcache.chimera.ChimeraFsException;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
+import org.dcache.nfs.status.*;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.Stat;
@@ -103,7 +104,7 @@ public class MountServer extends mount_protServerStub {
             Inode rootInode = path2Inode(_vfs, mountPoint);
             Stat stat = _vfs.getattr(rootInode);
             if (stat.type() != Stat.Type.DIRECTORY) {
-                throw new ChimeraNFSException(mountstat3.MNT3ERR_NOTDIR, "Path is not a directory");
+                throw new NotDirException("Path is not a directory");
             }
 
             byte[] b = PseudoFs.pseudoIdToReal(rootInode, export.getIndex()).toNfsHandle();
@@ -268,7 +269,7 @@ public class MountServer extends mount_protServerStub {
             }
             return inode;
         } catch (ChimeraFsException e) {
-            throw new ChimeraNFSException(mountstat3.MNT3ERR_NOENT, e.getMessage());
+            throw new NoEntException(e.getMessage());
         }
     }
 
@@ -302,7 +303,7 @@ public class MountServer extends mount_protServerStub {
                 break;
             default:
                 // shuold never happen
-                throw new ChimeraNFSException(mountstat3.MNT3ERR_PERM, "Unsupported secutiry flavor");
+                throw new PermException("Unsupported secutiry flavor");
         }
         return supportedFlavors;
     }

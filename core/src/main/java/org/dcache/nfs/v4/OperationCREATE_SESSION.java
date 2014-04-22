@@ -27,6 +27,10 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.CREATE_SESSION4resok;
 import org.dcache.nfs.v4.xdr.CREATE_SESSION4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.status.ClidInUseException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
@@ -55,7 +59,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * check for correct arguments
          */
         if (_args.opcreate_session.csa_fore_chan_attrs.ca_rdma_ird.length > 1) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "bad size of rdma_ird");
+            throw new BadXdrException("bad size of rdma_ird");
         }
 
         /*
@@ -65,7 +69,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 & ~(nfs4_prot.CREATE_SESSION4_FLAG_PERSIST | nfs4_prot.CREATE_SESSION4_FLAG_CONN_RDMA
                 | nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN)) != 0) {
 
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad ceate_session flag");
+            throw new InvalException("bad ceate_session flag");
         }
 
         NFS4Client client = context.getStateHandler().getClientByID(clientId);
@@ -82,7 +86,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * to phase 2.
          */
         if (client == null || !client.isLeaseValid()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "client not known");
+            throw new StaleClientidException("client not known");
         }
 
         /*
@@ -102,7 +106,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          */
 
         if (!client.principal().equals(context.getPrincipal()) && !client.isConfirmed()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "client already in use: " + client.principal() + " " + context.getPrincipal());
+            throw new ClidInUseException("client already in use: " + client.principal() + " " + context.getPrincipal());
         }
 
         NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value,

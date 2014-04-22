@@ -25,6 +25,7 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.DESTROY_CLIENTID4res;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.ClientidBusyException;
 
 public class OperationDESTROY_CLIENTID extends AbstractNFSv4Operation {
 
@@ -42,7 +43,7 @@ public class OperationDESTROY_CLIENTID extends AbstractNFSv4Operation {
         NFSv4StateHandler stateHandler = context.getStateHandler();
         NFS4Client client = stateHandler.getClientByID(clientId);
         if (client.hasSessions()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_CLIENTID_BUSY, "client holds valid sessions");
+            throw new ClientidBusyException("client holds valid sessions");
         }
         stateHandler.removeClient(client);
         res.dcr_status = nfsstat.NFS_OK;

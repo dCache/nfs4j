@@ -24,7 +24,6 @@ import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.nfsstat;
 import org.dcache.chimera.posix.UnixUser;
 import org.dcache.xdr.RpcCall;
 import org.slf4j.Logger;
@@ -36,6 +35,9 @@ import javax.security.auth.kerberos.KerberosPrincipal;
 import org.dcache.auth.UidPrincipal;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.NfsUser;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.NoFileHandleException;
+import org.dcache.nfs.status.RestoreFhException;
 import org.dcache.nfs.v4.xdr.server_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
@@ -150,7 +152,7 @@ public class CompoundContext {
      */
     public Inode currentInode() throws ChimeraNFSException {
         if( _currentInode == null ) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOFILEHANDLE, "no file handle");
+            throw new NoFileHandleException("no file handle");
         }
         return _currentInode;
     }
@@ -192,7 +194,7 @@ public class CompoundContext {
      */
     public void restoreSavedInode() throws ChimeraNFSException {
         if( _savedInode == null ) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_RESTOREFH, "no saved file handle");
+            throw new RestoreFhException("no saved file handle");
         }
         _currentInode = _savedInode;
         _currentStateid = _savedStateid;
@@ -201,7 +203,7 @@ public class CompoundContext {
 
     public Inode savedInode() throws ChimeraNFSException {
         if( _savedInode == null ) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOFILEHANDLE, "no file handle");
+            throw new NoFileHandleException("no file handle");
         }
         return _savedInode;
     }
@@ -214,7 +216,7 @@ public class CompoundContext {
      */
     public void saveCurrentInode() throws ChimeraNFSException {
         if( _currentInode == null ) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOFILEHANDLE, "no file handle");
+            throw new NoFileHandleException("no file handle");
         }
         _savedInode = _currentInode;
         _savedStateid = _currentStateid;
@@ -286,7 +288,7 @@ public class CompoundContext {
 
     public stateid4 currentStateid() throws ChimeraNFSException {
         if(_currentStateid == null)
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "no current stateid");
+            throw new BadStateidException("no current stateid");
         return _currentStateid;
     }
 

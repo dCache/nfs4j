@@ -33,6 +33,10 @@ import org.dcache.nfs.v4.xdr.CREATE4res;
 import org.dcache.nfs.v4.xdr.CREATE4resok;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileExistsChimeraFsException;
+import org.dcache.nfs.status.BadTypeException;
+import org.dcache.nfs.status.ExistException;
+import org.dcache.nfs.status.NotDirException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -64,7 +68,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         String name = NameFilter.convert(_args.opcreate.objname.value);
 
         if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
+            throw new NotDirException();
         }
 
         AttributeMap attributeMap = new AttributeMap(objAttr);
@@ -107,15 +111,15 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                     break;
                 case nfs_ftype4.NF4ATTRDIR:
                 case nfs_ftype4.NF4NAMEDATTR:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_NOTSUPP, "create of this type not supported");
+                    throw new NotSuppException("create of this type not supported");
                 // regular files handled by OPEN
                 case nfs_ftype4.NF4REG:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "create of regular files handled by OPEN");
+                    throw new BadTypeException("create of regular files handled by OPEN");
                 default:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADTYPE, "bad file type");
+                    throw new BadTypeException("bad file type: " + type);
             }
         } catch (FileExistsChimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "path already exist");
+            throw new ExistException("path already exist");
         }
 
         res.status = nfsstat.NFS_OK;

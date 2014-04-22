@@ -27,6 +27,8 @@ import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LINK4resok;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
@@ -49,11 +51,11 @@ public class OperationLINK extends AbstractNFSv4Operation {
         Stat inodeStat = context.getFs().getattr(context.savedInode());
 
         if (parentDirStat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Can't create a hard-link in non directory object");
+            throw new NotDirException("Can't create a hard-link in non directory object");
         }
 
         if (inodeStat.type() == Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Can't hard-link a directory");
+            throw new IsDirException("Can't hard-link a directory");
         }
 
         context.getFs().link(context.currentInode(), context.savedInode(), newName,

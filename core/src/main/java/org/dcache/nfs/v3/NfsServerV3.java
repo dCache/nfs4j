@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -148,6 +148,7 @@ import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.chimera.posix.UnixUser;
+import org.dcache.nfs.status.*;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcCall;
@@ -277,7 +278,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             if (exists && (mode != createmode3.UNCHECKED)) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "File alredy exist.");
+                throw new ExistException("File alredy exist.");
             }
 
             parentStat = fs.getattr(parent);
@@ -556,7 +557,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             try {
                 inode = fs.lookup(parent, name);
             } catch (ChimeraFsException hfse) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
+                throw new NoEntException("Path do not exist.");
             }
 
             res.status = nfsstat.NFS_OK;
@@ -623,7 +624,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             try {
                 inode = fs.mkdir(parent, name, user.getUID(), user.getGID(), mode);
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "Directory already exist.");
+                throw new ExistException("Directory already exist.");
             }
 
             res.resok = new MKDIR3resok();
@@ -745,7 +746,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat dirStat = fs.getattr(dir);
 
             if (dirStat.type() != Stat.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
+                throw new NotDirException("Path is not a directory.");
             }
 
             long startValue = arg1.cookie.value.value;
@@ -771,7 +772,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                      * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
                      * the only one which we can use to force client to re-try.
                      */
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "readdir verifier expired");
+                    throw new BadCookieException("readdir verifier expired");
                 }
             } else {
                 cookieverf = generateDirectoryVerifier(dir, fs);
@@ -786,7 +787,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                             });
                 } catch (ExecutionException e) {
                     Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                    throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                    throw new NfsIoException(e.getMessage());
                 }
             }
 
@@ -900,7 +901,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat dirStat = fs.getattr(dir);
 
             if (dirStat.type() != Stat.Type.DIRECTORY) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "Path is not a directory.");
+                throw new NotDirException("Path is not a directory.");
             }
 
 
@@ -926,7 +927,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                      * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
                      * the only one which we can use to force client to re-try.
                      */
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BAD_COOKIE, "readdir verifier expired");
+                    throw new BadCookieException("readdir verifier expired");
                 }
             } else {
                 cookieverf = generateDirectoryVerifier(dir, fs);
@@ -941,7 +942,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                             });
                 } catch (ExecutionException e) {
                     Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                    throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+                    throw new NfsIoException(e.getMessage());
                 }
             }
 
@@ -1143,7 +1144,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 inodeStat = fs.getattr(inode);
                 parentStat = fs.getattr(parent);
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
+                throw new NoEntException("Path do not exist.");
             }
 
             fs.remove(parent, name);
@@ -1321,7 +1322,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             try {
                 stat = fs.getattr(inode);
             } catch (ChimeraFsException hfe) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path do not exist.");
+                throw new NoEntException("Path do not exist.");
             }
 
             HimeraNfsUtils.set_sattr(inode, fs, newAttr);

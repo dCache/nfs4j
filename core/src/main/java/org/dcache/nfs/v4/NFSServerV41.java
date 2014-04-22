@@ -41,6 +41,12 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.commons.stats.RequestExecutionTimeGauges;
+import org.dcache.nfs.status.MinorVersMismatchException;
+import org.dcache.nfs.status.NotOnlyOpException;
+import org.dcache.nfs.status.OpNotInSessionException;
+import org.dcache.nfs.status.ResourceException;
+import org.dcache.nfs.status.SequencePosException;
+import org.dcache.nfs.status.TooManyOpsException;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
@@ -94,16 +100,14 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
             int minorversion = arg1.minorversion.value;
             if ( minorversion > 1) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_MINOR_VERS_MISMATCH,
-                    String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
+                throw new MinorVersMismatchException(String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
             }
 
 	    if (arg1.argarray.length >= NFSv4Defaults.NFS4_MAX_OPS && minorversion == 0) {
 		/*
 		   in 4.1 maxops handled per session
 		*/
-		throw new ChimeraNFSException(nfsstat.NFSERR_RESOURCE,
-			String.format("Too many ops [%d]", arg1.argarray.length));
+		throw new ResourceException(String.format("Too many ops [%d]", arg1.argarray.length));
 	    }
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
@@ -128,8 +132,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                              * at this point we already have to have a session
                              */
 			    if (arg1.argarray.length > context.getSession().getMaxOps()) {
-				throw new ChimeraNFSException(nfsstat.NFSERR_TOO_MANY_OPS,
-					String.format("Too many ops [%d]", arg1.argarray.length));
+				throw new TooManyOpsException(String.format("Too many ops [%d]", arg1.argarray.length));
 			    }
 
                             List<nfs_resop4> cache = context.getCache();
@@ -228,7 +231,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 case nfs_opnum4.OP_DESTROY_CLIENTID:
                     break;
                 default:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_OP_NOT_IN_SESSION, "not in session");
+                    throw new OpNotInSessionException();
             }
 
             if (total > 1) {
@@ -236,7 +239,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     case nfs_opnum4.OP_CREATE_SESSION:
                     case nfs_opnum4.OP_DESTROY_CLIENTID:
                     case nfs_opnum4.OP_EXCHANGE_ID:
-                        throw new ChimeraNFSException(nfsstat.NFSERR_NOT_ONLY_OP, "not only op");
+                        throw new NotOnlyOpException();
                     default:
                     // NOP
                 }
@@ -245,7 +248,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         } else {
             switch (opCode) {
                 case nfs_opnum4.OP_SEQUENCE:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_SEQUENCE_POS, "not a first operation");
+                    throw new SequencePosException();
             }
         }
     }

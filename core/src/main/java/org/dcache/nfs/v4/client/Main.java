@@ -1018,10 +1018,7 @@ public class Main {
             }
         } while (compound4res.status == nfsstat.NFSERR_GRACE);
 
-        if (compound4res.status != nfsstat.NFS_OK) {
-            throw new ChimeraNFSException(compound4res.status, "");
-        }
-
+        nfsstat.throwIfNeeded(compound4res.status);
         return compound4res;
     }
 

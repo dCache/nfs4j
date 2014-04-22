@@ -25,7 +25,8 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LOOKUP4res;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.chimera.FileNotFoundHimeraFsException;
+import org.dcache.nfs.status.NotDirException;
+import org.dcache.nfs.status.SymlinkException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -49,11 +50,11 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
         Stat stat = context.getFs().getattr(context.currentInode());
         if (stat.type() == Stat.Type.SYMLINK) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "parent not a symbolic link");
+            throw new SymlinkException("parent not a symbolic link");
         }
 
         if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+            throw new NotDirException("parent not a directory");
         }
 
         Inode newInode = context.getFs().lookup(context.currentInode(), name);

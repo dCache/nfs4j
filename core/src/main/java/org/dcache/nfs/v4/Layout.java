@@ -30,7 +30,7 @@ import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.nfl_util4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.uint32_t;
@@ -137,8 +137,7 @@ public class Layout {
         try {
             layout.xdrEncode(xdr);
         } catch (IOException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_SERVERFAULT,
-                    "failed to encode layout body");
+            throw new ServerFaultException("failed to encode layout body");
         }
         xdr.endEncoding();
 

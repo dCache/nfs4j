@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.READLINK4res;
 import org.dcache.nfs.v4.xdr.READLINK4resok;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
 
         Stat stat = context.getFs().getattr(context.currentInode());
         if (stat.type() != Stat.Type.SYMLINK) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "not a symlink");
+            throw new InvalException("not a symlink");
         }
 
         String link = context.getFs().readlink(context.currentInode());

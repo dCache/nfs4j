@@ -21,8 +21,9 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.util.Arrays;
-import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.AttrNotSuppException;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -51,11 +52,11 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
                 context.currentInode(), context);
 
         if (!Arrays.equals(_args.opnverify.obj_attributes.attrmask.value, currentAttr.attrmask.value)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "check for not supported attribute");
+            throw new AttrNotSuppException("check for not supported attribute");
         }
 
         if (_args.opnverify.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "RDATTR_ERROR can be used with readdir only");
+            throw new InvalException("RDATTR_ERROR can be used with readdir only");
         }
 
         res.status = nfsstat.NFSERR_SAME;

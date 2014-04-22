@@ -26,7 +26,9 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.OPEN_CONFIRM4resok;
 import org.dcache.nfs.v4.xdr.OPEN_CONFIRM4res;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadSeqidException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -50,11 +52,11 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(context.currentInode());
 
         if (stat.type() == Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+            throw new IsDirException();
         }
 
         if (stat.type() == Stat.Type.SYMLINK) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
+            throw new InvalException();
         }
 
         stateid4 stateid = _args.opopen_confirm.open_stateid;
@@ -63,7 +65,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
         if (state.getOpenSeqid().value + 1 != _args.opopen_confirm.seqid.value.value) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_SEQID, "bad seqid.");
+            throw new BadSeqidException();
         }
 
         state.bumpSeqid();

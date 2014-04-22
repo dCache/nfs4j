@@ -31,7 +31,9 @@ import org.dcache.nfs.v4.xdr.WRITE4resok;
 import org.dcache.nfs.v4.xdr.WRITE4res;
 import org.dcache.nfs.ChimeraNFSException;
 
-import org.dcache.chimera.IOHimeraFsException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
@@ -51,17 +53,17 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         final WRITE4res res = result.opwrite;
 
         if (_args.opwrite.offset.value + _args.opwrite.data.remaining() > 0x3ffffffe) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Arbitrary value");
+            throw new InvalException("Arbitrary value");
         }
 
         Stat stat = context.getFs().getattr(context.currentInode());
 
         if (stat.type() == Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+            throw new IsDirException();
         }
 
         if (stat.type() == Stat.Type.SYMLINK) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "path is a symlink");
+            throw new InvalException("path is a symlink");
         }
 
         if (context.getMinorversion() > 0) {
@@ -79,7 +81,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
                 data, offset, count);
 
         if (bytesWritten < 0) {
-            throw new IOHimeraFsException("IO not allowed");
+            throw new NfsIoException("IO not allowed");
         }
 
         res.status = nfsstat.NFS_OK;

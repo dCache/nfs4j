@@ -25,7 +25,8 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.nfs.v4.xdr.SECINFO4res;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.NfsIoException;
+import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -48,7 +49,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
         Inode dir = context.currentInode();
         Stat stat = context.getFs().getattr(dir);
         if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
+            throw new NotDirException();
         }
 
         context.clearCurrentInode();
@@ -61,7 +62,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
             res.resok4.value = OperationSECINFO_NO_NAME.secinfosOf(inode, context);
             res.status = nfsstat.NFS_OK;
         } catch (GSSException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+            throw new NfsIoException(e.getMessage());
         }
     }
 }

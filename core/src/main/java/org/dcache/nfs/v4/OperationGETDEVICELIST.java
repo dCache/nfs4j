@@ -30,11 +30,12 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.ChimeraNFSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.TooSmallException;
 
 public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
@@ -57,11 +58,11 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
          */
 
         if (_args.opgetdevicelist.gdla_maxdevices.value < 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "negative maxcount");
+            throw new InvalException("negative maxcount");
         }
 
         if (_args.opgetdevicelist.gdla_maxdevices.value < 1) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_TOOSMALL, "device list too small");
+            throw new TooSmallException("device list too small");
         }
 
         res.gdlr_resok4 = new GETDEVICELIST4resok();

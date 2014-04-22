@@ -29,7 +29,10 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4resok;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadIoModeException;
+import org.dcache.nfs.status.BadLayoutException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.LayoutUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +64,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         if (_args.oplayoutget.loga_offset.value != 0) {
             if (_args.oplayoutget.loga_length.value == 0) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "length == 0");
+                throw new InvalException("length == 0");
             }
 
             /*
@@ -74,13 +77,13 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         if (!(_args.oplayoutget.loga_iomode == layoutiomode4.LAYOUTIOMODE4_RW
                 || _args.oplayoutget.loga_iomode == layoutiomode4.LAYOUTIOMODE4_READ)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADIOMODE, "invalid loga_iomode");
+            throw new BadIoModeException("invalid loga_iomode");
         }
 
         if (_args.oplayoutget.loga_layout_type > 3) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADLAYOUT, "layouts supported but no matching found (" + _args.oplayoutget.loga_layout_type + ")");
+            throw new BadLayoutException("layouts supported but no matching found (" + _args.oplayoutget.loga_layout_type + ")");
         } else if (_args.oplayoutget.loga_layout_type != layouttype4.LAYOUT4_NFSV4_1_FILES) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_LAYOUTUNAVAILABLE, "layout not supported");
+            throw new LayoutUnavailableException("layout not supported");
         }
 
         /*

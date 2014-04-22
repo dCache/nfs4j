@@ -23,8 +23,7 @@ import com.google.common.base.Optional;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_acl;
@@ -155,7 +154,7 @@ public class AttributeMap {
 		attr = new fattr4_lease_time();
 		break;
 	    default:
-		throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid attribute: " + OperationGETATTR.attrMask2String(fattr));
+		throw new InvalException("invalid attribute: " + OperationGETATTR.attrMask2String(fattr));
 	}
 	attr.xdrDecode(xdr);
 	attrs.put(fattr, attr);

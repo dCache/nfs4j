@@ -28,6 +28,8 @@ import java.util.List;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.nfs.v4.xdr.SECINFO_NO_NAME4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -80,11 +82,10 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
                     res.resok4.value = secinfosOf(inode, context);
                     break;
                 default:
-                    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "bad type: "
-                            + _args.opsecinfo_no_name.value);
+                    throw new BadXdrException("bad type: " + _args.opsecinfo_no_name.value);
             }
         } catch (GSSException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_IO, e.getMessage());
+            throw new NfsIoException(e.getMessage());
         }
 	context.clearCurrentInode();
     }

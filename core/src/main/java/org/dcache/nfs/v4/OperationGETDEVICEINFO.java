@@ -30,7 +30,7 @@ import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.device_addr4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.InvalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId);
 
         if (deviceInfo == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid deviceInfo id");
+            throw new InvalException("invalid deviceInfo id");
         }
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;

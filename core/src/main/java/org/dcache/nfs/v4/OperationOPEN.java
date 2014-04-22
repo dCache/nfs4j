@@ -39,6 +39,17 @@ import org.dcache.nfs.v4.xdr.OPEN4res;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.chimera.FileExistsChimeraFsException;
 import org.dcache.chimera.FileNotFoundHimeraFsException;
+import org.dcache.nfs.status.AccessException;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.status.ExistException;
+import org.dcache.nfs.status.GraceException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NotDirException;
+import org.dcache.nfs.status.NoGraceException;
+import org.dcache.nfs.status.StaleClientidException;
+import org.dcache.nfs.status.SymlinkException;
+import org.dcache.nfs.status.WrongTypeException;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -70,7 +81,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 client = context.getStateHandler().getClientByID(clientid);
 
                 if (client == null || !client.isConfirmed()) {
-                    throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "bad client id.");
+                    throw new StaleClientidException("bad client id.");
                 }
 
                 client.updateLeaseTime();
@@ -91,12 +102,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 case open_claim_type4.CLAIM_NULL:
 
 		    if (client.needReclaim() && !context.getStateHandler().hasGracePeriodExpired()) {
-			throw new ChimeraNFSException(nfsstat.NFSERR_GRACE, "Server in grace period");
+			throw new GraceException();
 		    }
 
                     Stat stat = context.getFs().getattr(context.currentInode());
                     if (stat.type() != Stat.Type.DIRECTORY) {
-                        throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
+                        throw new NotDirException();
                     }
                     res.resok4.cinfo.before = new changeid4(stat.getCTime());
                     String name = NameFilter.convert(_args.opopen.claim.file.value);
@@ -134,7 +145,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 				    attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
 				    break;
 				default:
-				    throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "bad value: " + _args.opopen.openhow.how.mode);
+				    throw new BadXdrException("bad value: " + _args.opopen.openhow.how.mode);
 			    }
 
 			    Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
@@ -157,7 +168,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         } catch (FileExistsChimeraFsException e) {
 
                             if (exclusive) {
-                                throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "file already exist");
+                                throw new ExistException();
                             }
                             // no changes from us, old stat info is still good enough
                             res.resok4.cinfo.after = new changeid4(stat.getCTime());
@@ -173,7 +184,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             }
 
                             if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
-                                throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                                throw new AccessException();
                             }
 
                             OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
@@ -188,27 +199,28 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_READ) != 0
                                 && (context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0)) {
-                            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                            throw new AccessException();
                         }
 
                         if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0
                                 && (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0)) {
-                            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                            throw new AccessException();
                         }
 
                         if (stat.type() == Stat.Type.DIRECTORY) {
-                            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+                            throw new IsDirException();
                         }
 
                         if (stat.type() == Stat.Type.SYMLINK) {
-                            throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "path is a symlink");
+                            throw new SymlinkException();
                         }
 
                         if (stat.type() != Stat.Type.REGULAR) {
-                            int err = context.getMinorversion() == 0 ?
-                                    nfsstat.NFSERR_SYMLINK : nfsstat.NFSERR_WRONG_TYPE;
-
-                            throw new ChimeraNFSException(err, "wrong type");
+                            if (context.getMinorversion() == 0) {
+                                throw new SymlinkException();
+                            } else {
+                                throw new WrongTypeException();
+                            }
                         }
                     }
 
@@ -229,10 +241,10 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 		     * fall -through to CLAIM_FH.
 		     */
 		    if (context.getStateHandler().hasGracePeriodExpired()) {
-			throw new ChimeraNFSException(nfsstat.NFSERR_NO_GRACE, "Server not in grace period");
+			throw new NoGraceException("Server not in grace period");
 		    }
 		    if (!client.needReclaim()) {
-			throw new ChimeraNFSException(nfsstat.NFSERR_NO_GRACE, "CLAIM open after 'reclaim complete'");
+			throw new NoGraceException("CLAIM open after 'reclaim complete'");
 		    }
                 case open_claim_type4.CLAIM_FH:
 
@@ -252,21 +264,21 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                     if ((_args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_READ)
                             && (context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0)) {
-                        throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                        throw new AccessException();
                     }
 
                     if ((_args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_BOTH
                             || _args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_WRITE)
                             && (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0)) {
-                        throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "Permission denied.");
+                        throw new AccessException();
                     }
 
                     if (stat.type() == Stat.Type.DIRECTORY) {
-                        throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+                        throw new IsDirException();
                     }
 
                     if (stat.type() == Stat.Type.SYMLINK) {
-                        throw new ChimeraNFSException(nfsstat.NFSERR_SYMLINK, "path is a symlink");
+                        throw new SymlinkException();
                     }
                     break;
                 case open_claim_type4.CLAIM_DELEGATE_CUR:
@@ -274,10 +286,10 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 case open_claim_type4.CLAIM_DELEG_CUR_FH:
                 case open_claim_type4.CLAIM_DELEG_PREV_FH:
                     _log.warn("Unimplemented open claim: {}", _args.opopen.claim.claim);
-                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Unimplemented open claim: {}" + _args.opopen.claim.claim);
+                    throw new InvalException("Unimplemented open claim: {}" + _args.opopen.claim.claim);
                 default:
                     _log.warn("BAD open claim: {}", _args.opopen.claim.claim);
-                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "BAD open claim: {}" + _args.opopen.claim.claim);
+                    throw new InvalException("BAD open claim: {}" + _args.opopen.claim.claim);
 
             }
 

@@ -24,7 +24,7 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.BadSlotException;
 import org.dcache.utils.Bytes;
 
 public class NFSv41Session {
@@ -109,7 +109,7 @@ public class NFSv41Session {
     private SessionSlot getSlot(int slot) throws ChimeraNFSException {
 
         if (slot < 0 || slot > getHighestSlot()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADSLOT, "slot id overflow");
+            throw new BadSlotException("slot id overflow");
         }
 
         if (_slots[slot] == null) {

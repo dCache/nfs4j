@@ -35,7 +35,6 @@ import org.dcache.nfs.v4.xdr.EXCHANGE_ID4resok;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.EXCHANGE_ID4res;
-import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.ChimeraNFSException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +46,13 @@ import java.security.ProtectionDomain;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import org.dcache.nfs.status.AccessException;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.status.ClidInUseException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.NoEntException;
+import org.dcache.nfs.status.NotSameException;
+import org.dcache.nfs.status.PermException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,19 +135,19 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
         if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV) {
             _log.debug("EXCHANGE_ID4: state protection : {}", _args.opexchange_id.eia_state_protect.spa_how);
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid state protection");
+            throw new InvalException("invalid state protection");
         }
 
 
         if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value | EXCHGID4_FLAG_MASK) != EXCHGID4_FLAG_MASK) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid flag");
+            throw new InvalException("invalid flag");
         }
 
         /*
          * spec. requires <1>
          */
         if (_args.opexchange_id.eia_client_impl_id.length > 1) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "invalid array size of client implementaion");
+            throw new BadXdrException("invalid array size of client implementaion");
         }
 
         /*
@@ -149,14 +155,14 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
          * always off in eia_flags.
          */
         if (_args.opexchange_id.eia_flags.value != 0 && ((_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R) == nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R)) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Client used server-only flag");
+            throw new InvalException("Client used server-only flag");
         }
 
 
         //Check if there is another ssv use -> TODO: Implement SSV
         if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE) {
             _log.debug("Tried the wrong security Option! {}:", _args.opexchange_id.eia_state_protect.spa_how);
-            throw new ChimeraNFSException(nfsstat.NFSERR_ACCESS, "SSV other than SP4NONE to use");
+            throw new AccessException("SSV other than SP4NONE to use");
         }
 
         NFS4Client client = context.getStateHandler().clientByOwner(clientOwner);
@@ -172,17 +178,17 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         if (update) {
             if (client == null || !client.isConfirmed()) {
                 _log.debug("Update of no existing/confirmed Record (case 7)");
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "no such client");
+                throw new NoEntException("no such client");
             }
 
             if (!client.verifierEquals(verifier)) {
                 _log.debug("case 8: Update but Wrong Verifier");
-                throw new ChimeraNFSException(nfsstat.NFSERR_NOT_SAME, "Update but Wrong Verifier");
+                throw new NotSameException("Update but Wrong Verifier");
             }
 
             if (!principal.equals(client.principal())) {
                 _log.debug("case 9: Update but Wrong Principal");
-                throw new ChimeraNFSException(nfsstat.NFSERR_PERM, "Principal Mismatch");
+                throw new PermException("Principal Mismatch");
             }
 
             _log.debug("Case 6: Update");
@@ -215,7 +221,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                                     remoteSocketAddress, localSocketAddress,
                                     clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
                         } else {
-                            throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Principal Missmatch");
+                            throw new ClidInUseException("Principal Missmatch");
                         }
                     }
                 } else {

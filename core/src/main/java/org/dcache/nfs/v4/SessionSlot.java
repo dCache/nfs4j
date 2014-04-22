@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,8 @@ package org.dcache.nfs.v4;
 import java.util.List;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.RetryUncacheRepException;
+import org.dcache.nfs.status.SeqMisorderedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,15 +62,13 @@ public class SessionSlot {
             }
 
             if(checkCache)
-                throw new ChimeraNFSException(nfsstat.NFSERR_RETRY_UNCACHED_REP,
-                        "Uncached reply retry");
+                throw new RetryUncacheRepException();
             return null;
         }
 
         int validValue = _sequence + 1;
         if (sequence != validValue) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_SEQ_MISORDERED,
-                    "disordered : v/n : " + Integer.toHexString(validValue) +
+            throw new SeqMisorderedException("disordered : v/n : " + Integer.toHexString(validValue) +
                     "/" + Integer.toHexString(sequence));
         }
 

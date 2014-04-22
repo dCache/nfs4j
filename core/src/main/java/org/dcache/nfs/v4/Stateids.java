@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,8 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.OldStateidException;
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class Stateids {
@@ -64,11 +65,11 @@ public class Stateids {
 
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
         if (expected.seqid.value > stateid.seqid.value) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_OLD_STATEID, "old stateid");
+            throw new OldStateidException();
         }
 
         if (expected.seqid.value < stateid.seqid.value) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "bad stateid");
+            throw new BadStateidException();
         }
     }
 }

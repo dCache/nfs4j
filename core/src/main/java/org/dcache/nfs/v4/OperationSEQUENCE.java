@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SEQUENCE4res;
 import org.dcache.nfs.v4.xdr.SEQUENCE4resok;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,14 +50,14 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
         if (session == null) {
             _log.debug("no session for id [{}]", _args.opsequence.sa_sessionid);
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "session not found");
+            throw new BadSessionException("session not found");
         }
 
         NFS4Client client = session.getClient();
 
         if (!client.hasSessions()) {
             _log.debug("no client for session for id [{}]", _args.opsequence.sa_sessionid);
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "client not found");
+            throw new BadSessionException("client not found");
         }
 
         int opCount = context.getTotalOperationCount();

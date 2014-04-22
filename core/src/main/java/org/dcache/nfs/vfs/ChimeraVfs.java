@@ -44,8 +44,7 @@ import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.NotDirChimeraException;
 import org.dcache.chimera.StorageGenericLocation;
 import org.dcache.chimera.UnixPermission;
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.aceflag4;
@@ -84,7 +83,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
             FsInode fsInode = parentFsInode.inodeOf(path);
             return toInode(fsInode);
         }catch (FileNotFoundHimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
+            throw new NoEntException("Path Do not exist.");
         }
     }
 
@@ -110,9 +109,9 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
             FsInode fsInode = _fs.createHLink(parentFsInode, linkInode, path);
             return toInode(fsInode);
         }catch (NotDirChimeraException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "parent not a directory");
+            throw new NotDirException("parent not a directory");
         } catch (FileExistsChimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "path already exists");
+            throw new ExistException("path already exists");
         }
     }
 
@@ -136,11 +135,11 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
 	try {
 	    return _fs.move(from, oldName, to, newName);
 	} catch (NotDirChimeraException e) {
-	    throw new ChimeraNFSException(nfsstat.NFSERR_NOTDIR, "not a directory");
+	    throw new NotDirException("not a directory");
 	} catch (FileExistsChimeraFsException e) {
-	    throw new ChimeraNFSException(nfsstat.NFSERR_EXIST, "destination exists");
+	    throw new ExistException("destination exists");
 	} catch (DirNotEmptyHimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory exist and not empty");
+            throw new NotEmptyException("directory exist and not empty");
         }
     }
 
@@ -162,9 +161,9 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         try {
             _fs.remove(parentFsInode, path);
         } catch (FileNotFoundHimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "path not found");
+            throw new NoEntException("path not found");
         } catch (DirNotEmptyHimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOTEMPTY, "directory not empty");
+            throw new NotEmptyException("directory not empty");
         }
     }
 
@@ -185,7 +184,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     public Inode parentOf(Inode inode) throws IOException {
 	FsInode parent = toFsInode(inode).getParent();
 	if (parent == null) {
-	    throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "no parent");
+	    throw new NoEntException("no parent");
 	}
         return toInode(parent);
     }
@@ -217,7 +216,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         try {
             return  fromChimeraStat(fsInode.stat(), fsInode.id());
         } catch (FileNotFoundHimeraFsException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NOENT, "Path Do not exist.");
+            throw new NoEntException("Path Do not exist.");
         }
     }
 

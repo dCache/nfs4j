@@ -34,6 +34,8 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.v4.xdr.verifier4;
@@ -64,11 +66,11 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(inode);
 
         if (stat.type() == Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Can't WRITE into a directory inode");
+            throw new IsDirException("Can't WRITE into a directory inode");
         }
 
         if (stat.type() != Stat.Type.REGULAR) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid object type");
+            throw new InvalException("Invalid object type");
         }
 
         if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opwrite.stateid) && !Stateids.OneStateId().equalsWithSeq(_args.opwrite.stateid)) {

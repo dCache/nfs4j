@@ -36,6 +36,10 @@ import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETATTR4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.AttrNotSuppException;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.acl.Acls;
 
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -90,15 +94,15 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                     processedAttributes.set(i);
                 } else {
                     _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
-                    throw new ChimeraNFSException(nfsstat.NFSERR_ATTRNOTSUPP, "attribute " + OperationGETATTR.attrMask2String(i) + " not supported");
+                    throw new AttrNotSuppException("attribute " + OperationGETATTR.attrMask2String(i) + " not supported");
                 }
             }
         }catch (BadXdrOncRpcException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, e.getMessage());
+            throw new BadXdrException(e.getMessage());
         }
 
         if (xdr.hasMoreData()) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADXDR, "garbage in attr bitmap");
+            throw new BadXdrException("garbage in attr bitmap");
         }
         xdr.endDecoding();
 
@@ -117,11 +121,11 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SIZE :
 
                 if( stat.type() == Stat.Type.DIRECTORY ) {
-                    throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "path is a directory");
+                    throw new IsDirException();
                 }
 
                 if( stat.type() != Stat.Type.REGULAR ) {
-                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "can't set size on non file object");
+                    throw new InvalException("can't set size on non file object");
                 }
 
                 uint64_t size = new uint64_t();
@@ -210,7 +214,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "setattr of read-only attributes");
+                throw new InvalException("setattr of read-only attributes");
         }
 
         if(!isApplied ) {

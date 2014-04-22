@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,11 @@
  */
 package org.dcache.nfs;
 
-public class ChimeraNFSException extends java.io.IOException {
+/**
+ * A base class for all NFS exceptions. We do not allow direct instances to
+ * enforce correct exceptions.
+ */
+public abstract class ChimeraNFSException extends java.io.IOException {
 
     /**
      *
@@ -27,8 +31,13 @@ public class ChimeraNFSException extends java.io.IOException {
     private static final long serialVersionUID = 4319461664218810541L;
     private final int nfsStatus;
 
-    public ChimeraNFSException(int status ,String msg) {
+    protected ChimeraNFSException(int status ,String msg) {
         super(nfsstat.toString(status) +  " : " + msg);
+        nfsStatus = status;
+    }
+
+    protected ChimeraNFSException(int status) {
+        super(nfsstat.toString(status));
         nfsStatus = status;
     }
 

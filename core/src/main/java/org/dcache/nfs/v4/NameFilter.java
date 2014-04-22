@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.nfsstat;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -27,6 +26,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadNameException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.NameTooLongException;
 
 class NameFilter {
 
@@ -45,11 +47,11 @@ class NameFilter {
     public static String convert(byte[] bytes) throws ChimeraNFSException {
 
         if (bytes.length == 0) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "zero-length name");
+            throw new InvalException("zero-length name");
         }
 
         if (bytes.length > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "file name too long");
+            throw new NameTooLongException("file name too long");
         }
 
         try {
@@ -68,31 +70,31 @@ class NameFilter {
              */
             for (char c : charBuf.array()) {
                 if (Character.isSurrogate(c)) {
-                    throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid utf8 name");
+                    throw new InvalException("invalid utf8 name");
                 }
             }
 
             String name = new String(charBuf.array(), 0, charBuf.length());
 
             if (name.length() == 0) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "bad path name");
+                throw new InvalException("bad path name");
             }
 
             if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_NAMETOOLONG, "name too long");
+                throw new NameTooLongException("name too long");
             }
 
             if (name.equals(".") || name.equals("..")) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "bad name '.' or '..'");
+                throw new BadNameException("bad name '.' or '..'");
             }
 
             if (name.indexOf('/') != -1) {
-                throw new ChimeraNFSException(nfsstat.NFSERR_BADNAME, "name with slash '/'");
+                throw new BadNameException("name with slash '/'");
             }
 
             return name;
         } catch (CharacterCodingException e) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "invalid utf8 name");
+            throw new InvalException("invalid utf8 name");
         }
     }
 }

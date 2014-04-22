@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
 
 public class nfstime4 implements XdrAble {
     /**
@@ -65,7 +66,7 @@ public class nfstime4 implements XdrAble {
 
     public long toMillis() throws ChimeraNFSException {
         if (nseconds < 0 || nseconds > MAX_VALID_NSECONDS ) {
-            throw  new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid value for nseconds");
+            throw  new InvalException("Invalid value for nseconds");
         }
 
         return TimeUnit.MILLISECONDS.convert(seconds, TimeUnit.SECONDS)

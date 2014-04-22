@@ -32,6 +32,8 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
@@ -57,11 +59,11 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(inode);
 
         if (stat.type() == Stat.Type.DIRECTORY) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_ISDIR, "Can't READ a directory inode");
+            throw new IsDirException("Can't READ a directory inode");
         }
 
         if (stat.type() != Stat.Type.REGULAR) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "Invalid object type");
+            throw new InvalException("Invalid object type");
         }
 
         if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opread.stateid) && !Stateids.OneStateId().equalsWithSeq(_args.opread.stateid)) {

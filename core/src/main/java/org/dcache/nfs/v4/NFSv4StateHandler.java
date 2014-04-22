@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
-import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.ChimeraNFSException;
 import java.util.ArrayList;
@@ -29,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.dcache.nfs.status.BadSessionException;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Cache;
@@ -97,7 +99,7 @@ public class NFSv4StateHandler {
     public synchronized NFS4Client getClientByID( Long id) throws ChimeraNFSException {
         NFS4Client client = _clientsByServerId.get(id);
         if(client == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_STALE_CLIENTID, "bad client id.");
+            throw new StaleClientidException("bad client id.");
         }
         return client;
     }
@@ -105,7 +107,7 @@ public class NFSv4StateHandler {
     public synchronized NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
         NFS4Client client = _clientsByServerId.get(Bytes.getLong(stateId.other, 0));
         if (client == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BAD_STATEID, "no client for stateid.");
+            throw new BadStateidException("no client for stateid.");
         }
         return client;
     }
@@ -122,7 +124,7 @@ public class NFSv4StateHandler {
     public synchronized NFSv41Session removeSessionById(sessionid4 id) throws ChimeraNFSException {
         NFSv41Session session = _sessionById.remove(id);
         if (session == null) {
-            throw new ChimeraNFSException(nfsstat.NFSERR_BADSESSION, "session not found");
+            throw new BadSessionException("session not found");
         }
 
         detachSession(session);
@@ -143,7 +145,7 @@ public class NFSv4StateHandler {
         NFS4State state = client.state(stateid);
 
         if( !state.isConfimed() ) {
-            throw new ChimeraNFSException( nfsstat.NFSERR_BAD_STATEID, "State is not confirmed"  );
+            throw new BadStateidException("State is not confirmed"  );
         }
 
         Stateids.checkStateId(state.stateid(), stateid);

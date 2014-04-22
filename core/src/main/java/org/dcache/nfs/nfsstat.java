@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,6 +18,8 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs;
+
+import org.dcache.nfs.status.*;
 
 /**
  * NFS errors defined for v2, v3 and v4
@@ -354,7 +356,230 @@ public final class nfsstat {
             default:
                 return "NFSERR_UNKNON(" + errorCode + ")";
         }
+    }
 
+    public static void throwIfNeeded(int errorCode) throws ChimeraNFSException {
+
+        switch (errorCode) {
+            case nfsstat.NFS_OK:
+                return;
+            case nfsstat.NFSERR_PERM:
+                throw new PermException();
+            case nfsstat.NFSERR_NOENT:
+                throw new NoEntException();
+            case nfsstat.NFSERR_IO:
+                throw new NfsIoException();
+            case nfsstat.NFSERR_NXIO:
+                throw new NXioException();
+            case nfsstat.NFSERR_ACCESS:
+                throw new AccessException();
+            case nfsstat.NFSERR_EXIST:
+                throw new ExistException();
+            case nfsstat.NFSERR_XDEV:
+                throw new XDevException();
+            case nfsstat.NFSERR_NODEV:
+                throw new NoDevException();
+            case nfsstat.NFSERR_NOTDIR:
+                throw new NotDirException();
+            case nfsstat.NFSERR_ISDIR:
+                throw new IsDirException();
+            case nfsstat.NFSERR_INVAL:
+                throw new InvalException();
+            case nfsstat.NFSERR_FBIG:
+                throw new FBigException();
+            case nfsstat.NFSERR_NOSPC:
+                throw new NoSpcException();
+            case nfsstat.NFSERR_ROFS:
+                throw new RoFs();
+            case nfsstat.NFSERR_MLINK:
+                throw new MLinkException();
+            case nfsstat.NFSERR_NAMETOOLONG:
+                throw new NameTooLongException();
+            case nfsstat.NFSERR_NOTEMPTY:
+                throw new NotEmptyException();
+            case nfsstat.NFSERR_DQUOT:
+                throw new DQuotException();
+            case nfsstat.NFSERR_STALE:
+                throw new StaleException();
+            case nfsstat.NFSERR_REMOTE:
+                throw new RemoteException();
+            case nfsstat.NFSERR_WFLUSH:
+                throw new WFlushException();
+            case nfsstat.NFSERR_BADHANDLE:
+                throw new BadHandleException();
+            case nfsstat.NFSERR_NOT_SYNC:
+                throw new NotSyncException();
+            case nfsstat.NFSERR_BAD_COOKIE:
+                throw new BadCookieException();
+            case nfsstat.NFSERR_NOTSUPP:
+                throw new NotSuppException();
+            case nfsstat.NFSERR_TOOSMALL:
+                throw new TooSmallException();
+            case nfsstat.NFSERR_SERVERFAULT:
+                throw new ServerFaultException();
+            case nfsstat.NFSERR_BADTYPE:
+                throw new BadTypeException();
+            case nfsstat.NFSERR_DELAY:
+                throw new DelayException();
+            case nfsstat.NFSERR_SAME:
+                throw new SameException();
+            case nfsstat.NFSERR_DENIED:
+                throw new DeniedException();
+            case nfsstat.NFSERR_EXPIRED:
+                throw new ExpiredException();
+            case nfsstat.NFSERR_LOCKED:
+                throw new LockedException();
+            case nfsstat.NFSERR_GRACE:
+                throw new GraceException();
+            case nfsstat.NFSERR_FHEXPIRED:
+                throw new FhExpiredException();
+            case nfsstat.NFSERR_SHARE_DENIED:
+                throw new ShareDeniedException();
+            case nfsstat.NFSERR_WRONGSEC:
+                throw new WrongSecException();
+            case nfsstat.NFSERR_CLID_INUSE:
+                throw new ClidInUseException();
+            case nfsstat.NFSERR_RESOURCE:
+                throw new ResourceException();
+            case nfsstat.NFSERR_MOVED:
+                throw new MovedException();
+            case nfsstat.NFSERR_NOFILEHANDLE:
+                throw new NoFileHandleException();
+            case nfsstat.NFSERR_MINOR_VERS_MISMATCH:
+                throw new MinorVersMismatchException();
+            case nfsstat.NFSERR_STALE_CLIENTID:
+                throw new StaleClientidException();
+            case nfsstat.NFSERR_STALE_STATEID:
+                throw new StaleStateidException();
+            case nfsstat.NFSERR_OLD_STATEID:
+                throw new OldStateidException();
+            case nfsstat.NFSERR_BAD_STATEID:
+                throw new BadStateidException();
+            case nfsstat.NFSERR_BAD_SEQID:
+                throw new BadSeqidException();
+            case nfsstat.NFSERR_NOT_SAME:
+                throw new NotSameException();
+            case nfsstat.NFSERR_LOCK_RANGE:
+                throw new LockRangeException();
+            case nfsstat.NFSERR_SYMLINK:
+                throw new SymlinkException();
+            case nfsstat.NFSERR_RESTOREFH:
+                throw new RestoreFhException();
+            case nfsstat.NFSERR_LEASE_MOVED:
+                throw new LeaseMovedException();
+            case nfsstat.NFSERR_ATTRNOTSUPP:
+                throw new AttrNotSuppException();
+            case nfsstat.NFSERR_NO_GRACE:
+                throw new NoGraceException();
+            case nfsstat.NFSERR_RECLAIM_BAD:
+                throw new ReclaimBadException();
+            case nfsstat.NFSERR_RECLAIM_CONFLICT:
+                throw new ReclaimConflictException();
+            case nfsstat.NFSERR_BADXDR:
+                throw new BadXdrException();
+            case nfsstat.NFSERR_LOCKS_HELD:
+                throw new LocksHeldException();
+            case nfsstat.NFSERR_OPENMODE:
+                throw new OpenModeException();
+            case nfsstat.NFSERR_BADOWNER:
+                throw new BadOwnerException();
+            case nfsstat.NFSERR_BADCHAR:
+                throw new BadCharException();
+            case nfsstat.NFSERR_BADNAME:
+                throw new BadNameException();
+            case nfsstat.NFSERR_BAD_RANGE:
+                throw new BadRangeException();
+            case nfsstat.NFSERR_LOCK_NOTSUPP:
+                throw new LockNotSuppException();
+            case nfsstat.NFSERR_OP_ILLEGAL:
+                throw new OpIllegalException();
+            case nfsstat.NFSERR_DEADLOCK:
+                throw new DeadLockedException();
+            case nfsstat.NFSERR_FILE_OPEN:
+                throw new FileOpenException();
+            case nfsstat.NFSERR_ADMIN_REVOKED:
+                throw new AdminRevokedException();
+            case nfsstat.NFSERR_CB_PATH_DOWN:
+                throw new CbPathDownException();
+            case nfsstat.NFSERR_BADIOMODE:
+                throw new BadIoModeException();
+            case nfsstat.NFSERR_BADLAYOUT:
+                throw new BadLayoutException();
+            case nfsstat.NFSERR_BAD_SESSION_DIGEST:
+                throw new BadSessionDigestException();
+            case nfsstat.NFSERR_BADSESSION:
+                throw new BadSessionException();
+            case nfsstat.NFSERR_BADSLOT:
+                throw new BadSlotException();
+            case nfsstat.NFSERR_COMPLETE_ALREADY:
+                throw new CompleteAlreadyException();
+            case nfsstat.NFSERR_CONN_NOT_BOUND_TO_SESSION:
+                throw new ConnNotBoundToSessionException();
+            case nfsstat.NFSERR_DELEG_ALREADY_WANTED:
+                throw new DelegAlreadyWantedException();
+            case nfsstat.NFSERR_BACK_CHAN_BUSY:
+                throw new BackChanBusyException();
+            case nfsstat.NFSERR_LAYOUTTRYLATER:
+                throw new LayoutTryLaterException();
+            case nfsstat.NFSERR_LAYOUTUNAVAILABLE:
+                throw new LayoutUnavailableException();
+            case nfsstat.NFSERR_NOMATCHING_LAYOUT:
+                throw new NoMatchingLayoutException();
+            case nfsstat.NFSERR_RECALLCONFLICT:
+                throw new RecallConflictException();
+            case nfsstat.NFSERR_UNKNOWN_LAYOUTTYPE:
+                throw new UnknownLayoutTypeException();
+            case nfsstat.NFSERR_SEQ_MISORDERED:
+                throw new SeqMisorderedException();
+            case nfsstat.NFSERR_SEQUENCE_POS:
+                throw new SequencePosException();
+            case nfsstat.NFSERR_REQ_TOO_BIG:
+                throw new ReqTooBigException();
+            case nfsstat.NFSERR_REP_TOO_BIG:
+                throw new RepTooBigException();
+            case nfsstat.NFSERR_REP_TOO_BIG_TO_CACHE:
+                throw new RepTooBigToCacheException();
+            case nfsstat.NFSERR_RETRY_UNCACHED_REP:
+                throw new RetryUncacheRepException();
+            case nfsstat.NFSERR_UNSAFE_COMPOUND:
+                throw new UnsafeCompoundException();
+            case nfsstat.NFSERR_TOO_MANY_OPS:
+                throw new TooManyOpsException();
+            case nfsstat.NFSERR_OP_NOT_IN_SESSION:
+                throw new OpNotInSessionException();
+            case nfsstat.NFSERR_HASH_ALG_UNSUPP:
+                throw new HashAlgUnsuppException();
+            case nfsstat.NFSERR_CONN_BINDING_NOT_ENFORCED:
+                throw new ConnBindingNotEnforcedException();
+            case nfsstat.NFSERR_CLIENTID_BUSY:
+                throw new ClientidBusyException();
+            case nfsstat.NFSERR_PNFS_IO_HOLE:
+                throw new PnfsIoHoleException();
+            case nfsstat.NFSERR_SEQ_FALSE_RETRY:
+                throw new SeqFalseRetryException();
+            case nfsstat.NFSERR_BAD_HIGH_SLOT:
+                throw new BadHighSlotException();
+            case nfsstat.NFSERR_DEADSESSION:
+                throw new DeadSessionException();
+            case nfsstat.NFSERR_ENCR_ALG_UNSUPP:
+                throw new EncrAlgUnsuppException();
+            case nfsstat.NFSERR_PNFS_NO_LAYOUT:
+                throw new PnfsNoLayoutException();
+            case nfsstat.NFSERR_NOT_ONLY_OP:
+                throw new NotOnlyOpException();
+            case nfsstat.NFSERR_WRONG_CRED:
+                throw new WrongCredException();
+            case nfsstat.NFSERR_WRONG_TYPE:
+                throw new WrongTypeException();
+            case nfsstat.NFSERR_DIRDELEG_UNAVAIL:
+                throw new DirDelegUnavailException();
+            case nfsstat.NFSERR_REJECT_DELEG:
+                throw new RejectDelegException();
+            case nfsstat.NFSERR_RETURNCONFLICT:
+                throw new ReturnConflictException();
+            default:
+                throw new BadXdrException();
+        }
     }
 }
 // End of nfsstat4.java

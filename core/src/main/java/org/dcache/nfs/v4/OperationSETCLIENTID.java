@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETCLIENTID4resok;
 import org.dcache.nfs.v4.xdr.SETCLIENTID4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.ClidInUseException;
 import org.dcache.nfs.v4.xdr.clientaddr4;
 import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -56,7 +57,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                 netaddr4 addr = new netaddr4(client.getRemoteAddress());
                 res.status = nfsstat.NFSERR_CLID_INUSE;
                 res.client_using = new clientaddr4(addr);
-                throw new ChimeraNFSException(nfsstat.NFSERR_CLID_INUSE, "Client Id In use");
+                throw new ClidInUseException();
             }
             client.refreshLeaseTime();
 
