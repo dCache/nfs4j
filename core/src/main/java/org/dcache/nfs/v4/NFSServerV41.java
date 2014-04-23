@@ -41,11 +41,13 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.commons.stats.RequestExecutionTimeGauges;
+import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.MinorVersMismatchException;
 import org.dcache.nfs.status.NotOnlyOpException;
 import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SequencePosException;
+import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.status.TooManyOpsException;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
@@ -148,6 +150,15 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     _operationFactory.getOperation(op).process(context, opResult);
                     GAUGES.update(nfs_opnum4.toString(op.argop), System.nanoTime() - t0);
 
+                } catch (ResourceException e) {
+                    _log.error("NFS server run out of resources: {}", e.getMessage());
+                    opResult.setStatus(e.getStatus());
+                } catch (ServerFaultException e) {
+                    _log.error("NFS server fault: {}", e.getMessage());
+                    opResult.setStatus(e.getStatus());
+                } catch (BadXdrException e) {
+                    _log.warn("Faulty NFS client: {}", e.getMessage());
+                    opResult.setStatus(e.getStatus());
                 } catch (ChimeraNFSException e) {
                     opResult.setStatus(e.getStatus());
                 } catch (OncRpcException e) {
