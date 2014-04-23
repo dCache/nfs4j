@@ -36,6 +36,11 @@ public class nfstime4Test {
         time.toMillis();
     }
 
+    /**
+     * openjdk-1.8 + maven fail to compile. Suppress warning until
+     * a working alternative is found.
+     */
+    @SuppressWarnings("deprecation")
     @Test
     public void testValidTime() throws Exception {
         nfstime4 time = new nfstime4();
