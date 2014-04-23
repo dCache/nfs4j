@@ -21,6 +21,9 @@ package org.dcache.nfs.v4;
 
 import com.google.common.base.Charsets;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadNameException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.NameTooLongException;
 import org.junit.Test;
 
 public class NameFilterTest {
@@ -62,37 +65,37 @@ public class NameFilterTest {
         NameFilter.convert(GOOD_UTF8_HBR);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = InvalException.class)
     public void testBadUtf8() throws ChimeraNFSException {
         NameFilter.convert(BAD_UTF8);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = NameTooLongException.class)
     public void testNameTooLong() throws ChimeraNFSException {
         NameFilter.convert(NAME_TOO_LONG);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = InvalException.class)
     public void testEmptyName() throws ChimeraNFSException {
         NameFilter.convert(EMPTY_NAME);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = BadNameException.class)
     public void testDot() throws ChimeraNFSException {
         NameFilter.convert(DOT);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = BadNameException.class)
     public void testDotDot() throws ChimeraNFSException {
         NameFilter.convert(DOT_DOT);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = BadNameException.class)
     public void testNameWithSlash() throws ChimeraNFSException {
         NameFilter.convert(WITH_SLASH);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = InvalException.class)
     public void testUtf8WithSurrogat() throws ChimeraNFSException {
         NameFilter.convert(UTF8_WITH_SURROGAT);
     }

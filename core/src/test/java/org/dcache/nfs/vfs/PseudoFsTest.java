@@ -23,9 +23,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import org.dcache.auth.Subjects;
-import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
+import org.dcache.nfs.status.AccessException;
+import org.dcache.nfs.status.PermException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcCall;
@@ -77,7 +78,7 @@ public class PseudoFsTest {
         given(mockedFs.getattr(inode)).willReturn(stat, stat);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = AccessException.class)
     public void testRootSquash() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
@@ -124,7 +125,7 @@ public class PseudoFsTest {
         pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = AccessException.class)
     public void testAllSquash() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
@@ -148,7 +149,7 @@ public class PseudoFsTest {
         pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
     }
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = PermException.class)
     public void testAuthFlavorTooWeak() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);

@@ -21,14 +21,14 @@ package org.dcache.nfs.v4.xdr;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.InvalException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 
 public class nfstime4Test {
 
-    @Test(expected = ChimeraNFSException.class)
+    @Test(expected = InvalException.class)
     public void testInvalidNseconds() throws Exception {
         nfstime4 time = new nfstime4();
         time.seconds = 1;

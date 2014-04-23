@@ -27,7 +27,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.net.UnknownHostException;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.StaleClientidException;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 
@@ -59,7 +60,7 @@ public class NFSv4StateHandlerTest {
         assertNull("get not existing", _stateHandler.getClientByVerifier( new verifier4()));
     }
 
-    @Test(expected=ChimeraNFSException.class)
+    @Test(expected=StaleClientidException.class)
     public void testGetClientNotExists() throws Exception {
         _stateHandler.getClientByID(1L);
     }
@@ -78,7 +79,7 @@ public class NFSv4StateHandlerTest {
         _stateHandler.updateClientLeaseTime(stateid);
     }
 
-    @Test(expected=ChimeraNFSException.class)
+    @Test(expected=BadStateidException.class)
     public void testUpdateLeaseTimeNotConfirmed() throws Exception {
         NFS4State state = _client.createState(new uint32_t(0));
         stateid4 stateid = state.stateid();
@@ -86,7 +87,7 @@ public class NFSv4StateHandlerTest {
         _stateHandler.updateClientLeaseTime(stateid);
     }
 
-    @Test(expected=ChimeraNFSException.class)
+    @Test(expected=BadStateidException.class)
     public void testUpdateLeaseTimeNotExists() throws Exception {
         stateid4 state = _client.createState(new uint32_t(0)).stateid();
         _stateHandler.updateClientLeaseTime(state);

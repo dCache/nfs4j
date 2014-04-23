@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadSlotException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class NFSv41SessionTest {
         assertEquals("invalid highest slot id on empty session", slotToUse, _session.getHighestUsedSlot());
     }
 
-    @Test(expected=ChimeraNFSException.class)
+    @Test(expected=BadSlotException.class)
     public void testInvalidSlotAccess() throws ChimeraNFSException {
 
         int slotToUse = _session.getHighestSlot() + 1;
