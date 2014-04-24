@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -66,7 +66,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, VirtualFileSystem fs,
             NfsIdMapping idMapping,
-            ExportFile exportFile) throws OncRpcException, IOException {
+            ExportFile exportFile) throws OncRpcException {
 
         _deviceManager = deviceManager;
         _fs = fs;
@@ -92,6 +92,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
              * here we have to checkfor utf8, but it's too much overhead to keep
              * spec happy.
              */
+            res.tag = arg1.tag;
             String tag = arg1.tag.toString();
             MDC.put(NfsMdc.TAG, tag);
             MDC.put(NfsMdc.CLIENT, call$.getTransport().getRemoteSocketAddress().toString());
@@ -111,15 +112,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 		*/
 		throw new ResourceException(String.format("Too many ops [%d]", arg1.argarray.length));
 	    }
+            res.resarray = new ArrayList<>(arg1.argarray.length);
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
                 fs, _statHandler, _deviceManager, call$, _idMapping,
                     _exportFile, arg1.argarray.length);
-
-            res.status = nfsstat.NFS_OK;
-            res.resarray = new ArrayList<>(arg1.argarray.length);
-            res.tag = arg1.tag;
 
             boolean retransmit = false;
             for (nfs_argop4 op : arg1.argarray) {
@@ -167,10 +165,8 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 } catch (IOException e) {
                     opResult.setStatus(nfsstat.NFSERR_IO);
                     _log.warn("IO error: {}", e.getMessage());
-                } catch (Throwable e) {
-                    opResult.setStatus(nfsstat.NFSERR_SERVERFAULT);
-                    _log.error("General error: ", e);
                 }
+
                 res.resarray.add(opResult);
                 res.status = opResult.getStatus();
                 if (res.status != nfsstat.NFS_OK) {
@@ -186,14 +182,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
         } catch (ChimeraNFSException e) {
             _log.info("NFS operation failed: {}", e.getMessage());
-            res.resarray = Collections.EMPTY_LIST;
+            res.resarray = Collections.emptyList();
             res.status = e.getStatus();
-            res.tag = arg1.tag;
         } catch (Exception e) {
             _log.error("Unhandled exception:", e);
-            res.resarray = Collections.EMPTY_LIST;
+            res.resarray = Collections.emptyList();
             res.status = nfsstat.NFSERR_SERVERFAULT;
-            res.tag = arg1.tag;
         }finally{
             MDC.remove(NfsMdc.TAG);
             MDC.remove(NfsMdc.CLIENT);
@@ -230,8 +224,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         /*
          * special case of illegal operations.
          */
-        if(opCode > nfs_opnum4.OP_RECLAIM_COMPLETE || opCode < nfs_opnum4.OP_ACCESS)
+        if (opCode > nfs_opnum4.OP_RECLAIM_COMPLETE || opCode < nfs_opnum4.OP_ACCESS) {
             return;
+        }
 
         if(position == 0 ) {
             switch(opCode) {
