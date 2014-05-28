@@ -89,16 +89,24 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
 
     @Override
     public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
-        FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode | typeToChimera(type), typeToChimera(type));
-        return toInode(fsInode);
+        try {
+            FsInode parentFsInode = toFsInode(parent);
+            FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode | typeToChimera(type), typeToChimera(type));
+            return toInode(fsInode);
+        } catch (FileExistsChimeraFsException e) {
+            throw new ExistException("path already exists");
+        }
     }
 
     @Override
     public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
-        FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = parentFsInode.mkdir(path, uid, gid, mode);
-        return toInode(fsInode);
+        try {
+            FsInode parentFsInode = toFsInode(parent);
+            FsInode fsInode = parentFsInode.mkdir(path, uid, gid, mode);
+            return toInode(fsInode);
+        } catch (FileExistsChimeraFsException e) {
+            throw new ExistException("path already exists");
+        }
     }
 
     @Override
@@ -117,9 +125,13 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
 
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
-        FsInode parentFsInode = toFsInode(parent);
-        FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes(Charsets.UTF_8));
-        return toInode(fsInode);
+        try {
+            FsInode parentFsInode = toFsInode(parent);
+            FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes(Charsets.UTF_8));
+            return toInode(fsInode);
+        } catch (FileExistsChimeraFsException e) {
+            throw new ExistException("path already exists");
+        }
     }
 
     @Override
@@ -140,6 +152,8 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
 	    throw new ExistException("destination exists");
 	} catch (DirNotEmptyHimeraFsException e) {
             throw new NotEmptyException("directory exist and not empty");
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new NoEntException("file not found");
         }
     }
 
@@ -150,7 +164,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         byte[] data = new byte[count];
         int n = _fs.read(fsInode, 0, data, 0, count);
         if (n < 0) {
-            throw new IOException("Can't read symlink");
+            throw new NfsIoException("Can't read symlink");
         }
         return new String(data, 0, n, Charsets.UTF_8);
     }
