@@ -39,7 +39,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.READDIR4resok;
 import org.dcache.nfs.v4.xdr.READDIR4res;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.chimera.ChimeraFsException;
 
 import org.dcache.nfs.InodeCacheEntry;
 import org.dcache.nfs.status.BadCookieException;

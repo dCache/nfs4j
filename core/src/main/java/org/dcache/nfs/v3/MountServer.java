@@ -41,7 +41,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import org.dcache.chimera.ChimeraFsException;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
@@ -260,17 +259,14 @@ public class MountServer extends mount_protServerStub {
 
     private static Inode path2Inode(VirtualFileSystem fs, String path)
             throws ChimeraNFSException, IOException {
-        try {
-            Splitter splitter = Splitter.on('/').omitEmptyStrings();
-            Inode inode = fs.getRootInode();
 
-            for (String pathElement : splitter.split(path)) {
-                inode = fs.lookup(inode, pathElement);
-            }
-            return inode;
-        } catch (ChimeraFsException e) {
-            throw new NoEntException(e.getMessage());
+        Splitter splitter = Splitter.on('/').omitEmptyStrings();
+        Inode inode = fs.getRootInode();
+
+        for (String pathElement : splitter.split(path)) {
+            inode = fs.lookup(inode, pathElement);
         }
+        return inode;
     }
 
     private Multimap<String, String> groupBy(Iterable<FsExport> exports) {

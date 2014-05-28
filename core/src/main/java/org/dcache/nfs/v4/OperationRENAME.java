@@ -28,7 +28,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.RENAME4res;
 import org.dcache.nfs.v4.xdr.RENAME4resok;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
@@ -48,54 +47,47 @@ public class OperationRENAME extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final RENAME4res res = result.oprename;
 
-        try {
+        Inode sourceDir = context.savedInode();
+        Inode destDir = context.currentInode();
 
-            Inode sourceDir = context.savedInode();
-            Inode destDir = context.currentInode();
+        Stat sourceStat = context.getFs().getattr(sourceDir);
+        Stat destStat = context.getFs().getattr(destDir);
 
-            Stat sourceStat = context.getFs().getattr(sourceDir);
-            Stat destStat = context.getFs().getattr(destDir);
-
-            if (sourceStat.type() != Stat.Type.DIRECTORY) {
-                throw new NotDirException("source path not a directory");
-            }
-
-            if (destStat.type() != Stat.Type.DIRECTORY) {
-                throw new NotDirException("destination path  not a directory");
-            }
-
-            String oldName = NameFilter.convert(_args.oprename.oldname.value);
-            String newName = NameFilter.convert(_args.oprename.newname.value);
-
-	    _log.debug("Rename: src={} name={} dest={} name={}",
-		    sourceDir,
-		    oldName,
-		    destDir,
-		    newName);
-
-	    boolean isChanged = context.getFs().move(sourceDir, oldName, destDir, newName);
-	    long now = 0;
-	    if (isChanged) {
-		now = System.currentTimeMillis();
-	    }
-
-            res.resok4 = new RENAME4resok();
-
-            res.resok4.source_cinfo = new change_info4();
-            res.resok4.source_cinfo.atomic = true;
-            res.resok4.source_cinfo.before = new changeid4(sourceStat.getCTime());
-            res.resok4.source_cinfo.after = new changeid4(isChanged ? now : sourceStat.getCTime());
-
-            res.resok4.target_cinfo = new change_info4();
-            res.resok4.target_cinfo.atomic = true;
-            res.resok4.target_cinfo.before = new changeid4(destStat.getCTime());
-            res.resok4.target_cinfo.after = new changeid4(isChanged ? now : destStat.getCTime());
-
-            res.status = nfsstat.NFS_OK;
-
-        } catch (FileNotFoundHimeraFsException fnf) {
-            res.status = nfsstat.NFSERR_NOENT;
+        if (sourceStat.type() != Stat.Type.DIRECTORY) {
+            throw new NotDirException("source path not a directory");
         }
-    }
 
+        if (destStat.type() != Stat.Type.DIRECTORY) {
+            throw new NotDirException("destination path  not a directory");
+        }
+
+        String oldName = NameFilter.convert(_args.oprename.oldname.value);
+        String newName = NameFilter.convert(_args.oprename.newname.value);
+
+        _log.debug("Rename: src={} name={} dest={} name={}",
+                sourceDir,
+                oldName,
+                destDir,
+                newName);
+
+        boolean isChanged = context.getFs().move(sourceDir, oldName, destDir, newName);
+        long now = 0;
+        if (isChanged) {
+            now = System.currentTimeMillis();
+        }
+
+        res.resok4 = new RENAME4resok();
+
+        res.resok4.source_cinfo = new change_info4();
+        res.resok4.source_cinfo.atomic = true;
+        res.resok4.source_cinfo.before = new changeid4(sourceStat.getCTime());
+        res.resok4.source_cinfo.after = new changeid4(isChanged ? now : sourceStat.getCTime());
+
+        res.resok4.target_cinfo = new change_info4();
+        res.resok4.target_cinfo.atomic = true;
+        res.resok4.target_cinfo.before = new changeid4(destStat.getCTime());
+        res.resok4.target_cinfo.after = new changeid4(isChanged ? now : destStat.getCTime());
+
+        res.status = nfsstat.NFS_OK;
+    }
 }

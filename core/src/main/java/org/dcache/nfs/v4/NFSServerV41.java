@@ -162,9 +162,6 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 } catch (OncRpcException e) {
                     opResult.setStatus(nfsstat.NFSERR_BADXDR);
                     _log.warn("Bad xdr: {}: ", e.getMessage());
-                } catch (IOException e) {
-                    opResult.setStatus(nfsstat.NFSERR_IO);
-                    _log.warn("IO error: {}", e.getMessage());
                 }
 
                 res.resarray.add(opResult);

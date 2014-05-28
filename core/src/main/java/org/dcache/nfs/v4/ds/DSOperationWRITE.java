@@ -22,7 +22,6 @@ package org.dcache.nfs.v4.ds;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
-import org.dcache.chimera.IOHimeraFsException;
 import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.CompoundContext;
 import org.dcache.nfs.v4.xdr.WRITE4res;
@@ -32,10 +31,10 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.v4.xdr.verifier4;
@@ -89,7 +88,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         int bytesWritten = out.write(_args.opwrite.data, offset);
 
         if (bytesWritten < 0) {
-            throw new IOHimeraFsException("IO not allowd");
+            throw new NfsIoException("IO not allowd");
         }
 
         res.status = nfsstat.NFS_OK;
