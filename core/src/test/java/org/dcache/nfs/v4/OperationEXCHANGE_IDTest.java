@@ -181,7 +181,7 @@ public class OperationEXCHANGE_IDTest {
          TimeUnit.SECONDS.sleep(3);
 
          nfs_argop4 sequence_args = SequenceStub.generateRequest(false,
-                 result.opcreate_session.csr_resok4.csr_sessionid.value, 0, 0, 0);
+                 result.opcreate_session.csr_resok4.csr_sessionid, 0, 0, 0);
 
          OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
          result = nfs_resop4.resopFor(nfs_opnum4.OP_SEQUENCE);

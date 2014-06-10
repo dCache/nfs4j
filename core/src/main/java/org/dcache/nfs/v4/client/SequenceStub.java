@@ -28,13 +28,14 @@ import org.dcache.nfs.v4.xdr.slotid4;
 
 public class SequenceStub {
 
-    public static nfs_argop4 generateRequest(boolean CacheThis, byte[] SessId,
+    public static nfs_argop4 generateRequest(boolean CacheThis, sessionid4 sessionid ,
             int SeqId, int HighestSlot, int SlotId) {
 
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_SEQUENCE;
         op.opsequence = new SEQUENCE4args();
         op.opsequence.sa_cachethis = CacheThis;
+        op.opsequence.sa_sessionid = sessionid;
 
         slotid4 sId = new slotid4(SlotId);
         op.opsequence.sa_slotid = sId;
@@ -42,10 +43,6 @@ public class SequenceStub {
         slotid4 HsId = new slotid4(HighestSlot);
         op.opsequence.sa_highest_slotid = HsId;
         op.opsequence.sa_sequenceid = new sequenceid4(++SeqId);
-
-        sessionid4 sess = new sessionid4();
-        sess.value = SessId;
-        op.opsequence.sa_sessionid = sess;
 
         return op;
     }
