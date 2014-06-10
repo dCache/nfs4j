@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,20 +19,23 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.NfsIdMapping;
-import org.dcache.nfs.v4.NFSv4StateHandler;
-import org.dcache.nfs.v4.CompoundContext;
-import org.dcache.nfs.v4.NFSv41DeviceManager;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Random;
 import javax.security.auth.Subject;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.*;
 
 public class CompoundContextBuilder {
 
-    private final static XdrTransport transport = new XdrTransport() {
+    private final XdrTransport transport = new XdrTransport() {
+
+        private final Random rnd = new Random();
+        private final InetSocketAddress local = new InetSocketAddress(2049);
+        private final InetSocketAddress remote = new InetSocketAddress(rnd.nextInt(65535));
 
         @Override
         public void send(Xdr xdr) throws IOException {
@@ -46,12 +49,12 @@ public class CompoundContextBuilder {
 
         @Override
         public InetSocketAddress getLocalSocketAddress() {
-            return new InetSocketAddress(2049);
+            return local;
         }
 
         @Override
         public InetSocketAddress getRemoteSocketAddress() {
-            return new InetSocketAddress(7777);
+            return remote;
         }
 
         @Override
@@ -146,4 +149,5 @@ public class CompoundContextBuilder {
                 exportFile,
                 opCount);
     }
+
 }
