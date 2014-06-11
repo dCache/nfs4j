@@ -28,11 +28,15 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import java.util.UUID;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.ConnNotBoundToSessionException;
 import org.dcache.nfs.v4.client.CreateSessionStub;
 import org.dcache.nfs.v4.client.DestroySessionStub;
 import org.dcache.nfs.v4.client.ExchangeIDStub;
+import org.dcache.nfs.v4.client.SequenceStub;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.dcache.nfs.v4.NfsTestUtils.*;
 import static org.junit.Assert.*;
 
 public class OperationCREATE_SESSIONTest {
@@ -161,5 +165,41 @@ public class OperationCREATE_SESSIONTest {
 
         AssertNFS.assertNFS(DESTROY_SESSION, context, result, nfsstat.NFS_OK);
         assertNull(stateHandler.sessionById(session));
+    }
+
+    @Test(expected = ConnNotBoundToSessionException.class)
+    public void testDestroySessionNoBind() throws Exception {
+        CompoundContextBuilder contextBdr = new CompoundContextBuilder()
+                .withStateHandler(stateHandler)
+                .withOpCount(1);
+
+        nfs_resop4 result;
+
+        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
+
+        result = execute(contextBdr.build(), EXCHANGE_ID);
+
+        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
+                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        result = execute(contextBdr.build(), CREATE_SESSION);
+        sessionid4 session = result.opcreate_session.csr_resok4.csr_sessionid;
+
+        nfs_argop4 sequence_args = SequenceStub.generateRequest(false, session, 0, 2, 2);
+
+        // sequnce implicitly binds connection to session
+        OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
+        result = execute(contextBdr.build(), SEQUENCE);
+
+        // new context, new client
+        contextBdr = new CompoundContextBuilder()
+                .withStateHandler(stateHandler);
+
+        nfs_argop4 destroysession_args = DestroySessionStub.standard(session);
+        OperationDESTROY_SESSION DESTROY_SESSION = new OperationDESTROY_SESSION(destroysession_args);
+        result = execute(contextBdr.build(), DESTROY_SESSION);
+
     }
 }

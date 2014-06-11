@@ -19,7 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.sessionid4;
@@ -46,6 +48,8 @@ public class NFSv41Session {
     private final int _cbReplyCacheSize;
     private final int _sequence;
 
+    private final Set<SessionConnection> _boundConnections;
+
     public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize, int cbReplyCacheSize, int maxOps, int maxCbOps) {
         _client = client;
         _sequence = sequence;
@@ -58,6 +62,7 @@ public class NFSv41Session {
 	_maxOps = maxOps;
 	_maxCbOps = maxCbOps;
         _cbReplyCacheSize = cbReplyCacheSize;
+        _boundConnections = new HashSet<>();
     }
 
     public sessionid4 id() {
@@ -147,5 +152,33 @@ public class NFSv41Session {
 
     public void updateSlotCache(int slot, List<nfs_resop4> reply) throws ChimeraNFSException {
         getSlot(slot).update(reply);
+    }
+
+    /**
+     * Binds the session to a given {@link SessionConnection} on if session
+     * has no bindings,
+     * @param connection to bind
+     */
+    public synchronized void bindIfNeeded(SessionConnection connection) {
+        if (_boundConnections.isEmpty()) {
+            bindToConnection(connection);
+        }
+    }
+
+    /**
+     * Binds the session to a given {@link SessionConnection}
+     * @param connection to bind
+     */
+    public synchronized void bindToConnection(SessionConnection connection) {
+        _boundConnections.add(connection);
+    }
+
+    /**
+     * Check if session can be destroyed by client on a given connection.
+     * @param connection
+     * @return true, if session has no bindings or is bound to given connection.
+     */
+    public synchronized boolean isReleasableBy(SessionConnection connection) {
+        return _boundConnections.isEmpty() || _boundConnections.contains(connection);
     }
 }

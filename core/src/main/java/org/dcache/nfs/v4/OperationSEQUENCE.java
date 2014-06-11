@@ -64,6 +64,10 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         context.setCache(session.checkCacheSlot(_args.opsequence.sa_slotid.value,
                 _args.opsequence.sa_sequenceid.value, opCount > 1));
 
+        session.bindIfNeeded( new SessionConnection(
+                context.getRpcCall().getTransport().getLocalSocketAddress(),
+                context.getRpcCall().getTransport().getRemoteSocketAddress())
+        );
         context.setCacheThis(_args.opsequence.sa_cachethis);
         client.updateLeaseTime();
 

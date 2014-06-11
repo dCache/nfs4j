@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,15 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
+import junit.framework.Assert;
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Bytes;
 
@@ -42,5 +47,22 @@ class NfsTestUtils {
         RANDOM.nextBytes(owner);
         Bytes.putLong(bootTime, 0, System.currentTimeMillis());
         return stateHandler.createClient(address, address, owner, new verifier4(bootTime), null);
+    }
+
+    public static nfs_resop4 execute(CompoundContext context, AbstractNFSv4Operation op) throws ChimeraNFSException, IOException {
+        nfs_resop4 result = nfs_resop4.resopFor(op._args.argop);
+        op.process(context, result);
+        return result;
+    }
+
+    public void executeWithStatus(CompoundContext context, AbstractNFSv4Operation op, int status) throws ChimeraNFSException, IOException {
+        nfs_resop4 result = nfs_resop4.resopFor(op._args.argop);
+        int currentStatus = nfsstat.NFS_OK;
+        try {
+            op.process(context, result);
+        } catch (ChimeraNFSException e) {
+            currentStatus = e.getStatus();
+        }
+        AssertNFS.assertNFSStatus(status, currentStatus);
     }
 }

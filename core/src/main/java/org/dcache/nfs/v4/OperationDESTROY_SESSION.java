@@ -24,6 +24,8 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.DESTROY_SESSION4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadSessionException;
+import org.dcache.nfs.status.ConnNotBoundToSessionException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,19 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
         final DESTROY_SESSION4res res = result.opdestroy_session;
+
+        NFSv41Session session = context.getStateHandler().sessionById(_args.opdestroy_session.dsa_sessionid);
+        if (session == null) {
+            throw new BadSessionException();
+        }
+
+        SessionConnection sessionConnection = new SessionConnection(
+                context.getRpcCall().getTransport().getLocalSocketAddress(),
+                context.getRpcCall().getTransport().getRemoteSocketAddress());
+
+        if (!session.isReleasableBy(sessionConnection)) {
+            throw new ConnNotBoundToSessionException("Session not " +  session +" not bound to" + sessionConnection.getRemoteConnection());
+        }
 
         context.getStateHandler().removeSessionById(_args.opdestroy_session.dsa_sessionid);
 

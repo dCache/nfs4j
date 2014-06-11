@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import javax.security.auth.Subject;
-import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.*;
 
