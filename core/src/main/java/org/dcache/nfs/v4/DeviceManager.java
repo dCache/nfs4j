@@ -85,6 +85,11 @@ public class DeviceManager implements NFSv41DeviceManager {
         }
     }
 
+    private int nextDeviceID() {
+        /* 0 is reserved  for MDS */
+        return _deviceIdGenerator.nextInt(255) + 1;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -105,8 +110,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             if(_knownDataServers.length == 0) {
                 throw new LayoutUnavailableException("No dataservers available");
             }
-            int id = _deviceIdGenerator.nextInt(256);
-            ++id; /* 0 is reserved */
+            int id = nextDeviceID();
             deviceId = deviceidOf(id);
 
             _log.debug("generating new device: {} ({}) for stateid {}",
