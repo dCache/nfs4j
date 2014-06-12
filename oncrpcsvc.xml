@@ -95,6 +95,11 @@
         </constructor-arg>
     </bean>
 
+    <bean id="export-init" class="org.dcache.nfs.ExportPathCreator" init-method="init">
+        <property name="vfs" ref="vfs-intern"/>
+        <property name="exportFile" ref="export" />
+    </bean>
+
     <!--
         NFSv4.1 Operation factory
     -->
@@ -133,7 +138,7 @@
     <!--
        NFSv4.1 MDS
     -->
-    <bean id="mds" class="org.dcache.nfs.v4.NFSServerV41">
+    <bean id="mds" class="org.dcache.nfs.v4.NFSServerV41" depends-on="export-init">
         <description>NFSv4.1 MDS server</description>
         <constructor-arg ref="mds-factory"/>
         <constructor-arg ref="device-manager" />
