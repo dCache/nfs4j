@@ -303,8 +303,9 @@ public class PseudoFs implements VirtualFileSystem {
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
             if (shouldLog) {
-                _log.warn("Access denied: pseudo Inode {} {} {}",
-                            inode, acemask4.toString(requestedMask),
+                _log.warn("Access denied: pseudo Inode {} {} {} {}",
+                            inode, _inetAddress,
+                            acemask4.toString(requestedMask),
                             new SubjectHolder(effectiveSubject));
             }
             throw new RoFs("attempt to modify pseudofs");
@@ -337,7 +338,7 @@ public class PseudoFs implements VirtualFileSystem {
                 aclMatched = _inner.getAclCheckable().checkAcl(_subject, inode, requestedMask);
                 if (aclMatched == Access.DENY) {
                     if(shouldLog) {
-                        _log.warn("Access deny: {} {}", new SubjectHolder(_subject), acemask4.toString(requestedMask));
+                        _log.warn("Access deny: {} {} {}", _inetAddress, acemask4.toString(requestedMask), new SubjectHolder(_subject));
                     }
                     throw new AccessException();
                 }
@@ -349,7 +350,7 @@ public class PseudoFs implements VirtualFileSystem {
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
-                    _log.warn("Access denied: {} {} {} {}", inode,
+                    _log.warn("Access denied: {} {} {} {} {}", inode, _inetAddress,
                                 acemask4.toString(requestedMask),
                                 acemask4.toString(unixAccessmask), new SubjectHolder(_subject));
                 }
