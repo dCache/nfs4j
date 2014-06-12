@@ -41,8 +41,11 @@ import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.xdr.RpcCall;
+
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
+
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.utils.SubjectHolder;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.gss.RpcAuthGss;
@@ -302,7 +305,7 @@ public class PseudoFs implements VirtualFileSystem {
             if (shouldLog) {
                 _log.warn("Access denied: pseudo Inode {} {} {}",
                             inode, acemask4.toString(requestedMask),
-                            effectiveSubject);
+                            new SubjectHolder(effectiveSubject));
             }
             throw new RoFs("attempt to modify pseudofs");
         }
@@ -334,7 +337,7 @@ public class PseudoFs implements VirtualFileSystem {
                 aclMatched = _inner.getAclCheckable().checkAcl(_subject, inode, requestedMask);
                 if (aclMatched == Access.DENY) {
                     if(shouldLog) {
-                        _log.warn("Access deny: {} {}", _subject, acemask4.toString(requestedMask));
+                        _log.warn("Access deny: {} {}", new SubjectHolder(_subject), acemask4.toString(requestedMask));
                     }
                     throw new AccessException();
                 }
@@ -348,7 +351,7 @@ public class PseudoFs implements VirtualFileSystem {
                 if (shouldLog) {
                     _log.warn("Access denied: {} {} {} {}", inode,
                                 acemask4.toString(requestedMask),
-                                acemask4.toString(unixAccessmask), _subject);
+                                acemask4.toString(unixAccessmask), new SubjectHolder(_subject));
                 }
                 throw new AccessException("permission deny");
             }
