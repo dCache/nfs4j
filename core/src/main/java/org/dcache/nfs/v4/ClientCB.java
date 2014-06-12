@@ -109,7 +109,11 @@ class ClientCB {
         return "tcp:///" + _rpc;
     }
 
-    private XdrAble generateCompound(nfs_cb_argop4 cbOperation, String tag) {
+    public void cbPing() throws OncRpcException, IOException {
+        _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID);
+    }
+
+    private XdrAble generateCompound(String tag, nfs_cb_argop4...cbOperations) {
 
         _sequenceid++;
         CB_SEQUENCE4args cbSequence = new CB_SEQUENCE4args();
@@ -121,13 +125,13 @@ class ClientCB {
         cbSequence.csa_referring_call_lists = new referring_call_list4[0];
 
         CB_COMPOUND4args cbCompound = new CB_COMPOUND4args();
-        cbCompound.argarray = new nfs_cb_argop4[2];
+        cbCompound.argarray = new nfs_cb_argop4[cbOperations.length + 1];
 
         cbCompound.argarray[0] = new nfs_cb_argop4();
         cbCompound.argarray[0].argop = nfs_cb_opnum4.OP_CB_SEQUENCE;
         cbCompound.argarray[0].opcbsequence = cbSequence;
 
-        cbCompound.argarray[1] = cbOperation;
+        System.arraycopy(cbOperations, 0, cbCompound.argarray, 1, cbOperations.length);
 
         cbCompound.minorversion = new uint32_t(1);
         cbCompound.callback_ident = new uint32_t(0);
@@ -152,7 +156,7 @@ class ClientCB {
         opArgs.argop = nfs_cb_opnum4.OP_CB_LAYOUTRECALL;
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
-        XdrAble args = generateCompound(opArgs, "cb_layout_recall");
+        XdrAble args = generateCompound("cb_layout_recall", opArgs);
         _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
     }
 }

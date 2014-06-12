@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -128,7 +129,12 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                     session.id(),
                     _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value,
                     _args.opcreate_session.csa_sec_parms);
-            client.setCB(cb);
+            try {
+                cb.cbPing();;
+                client.setCB(cb);
+            } catch (IOException e) {
+                _log.info("Can't ping client over back channel: {}", e.getMessage() );
+            }
         }
 
         client.refreshLeaseTime();

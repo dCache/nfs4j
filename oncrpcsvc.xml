@@ -210,6 +210,7 @@
         <property name="useTCP" value="true"/>
         <property name="autoPublish" value="true"/>
         <property name="enableJmx" value="true"/>
+        <property name="useWorkerPool" value="true"/>
     </bean>
 
     <bean id="oncrpcsvc" class="org.dcache.xdr.OncRpcSvc" depends-on="rpcbind,oncrpcsvc-ds"
