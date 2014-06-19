@@ -166,4 +166,19 @@ public class FsExportTest {
 	assertFalse("dcap is not disabled", export.isWithDcap());
     }
 
+    @Test
+    public void testExportWithSlash() throws UnknownHostException {
+        FsExport export;
+        export = _exportFile.getExport("/export/with/slash/", InetAddress.getByName("192.169.2.2"));
+        assertNotNull("Failed to get export with slash", export);
+
+        export = _exportFile.getExport("/export/with/slash", InetAddress.getByName("192.169.2.2"));
+        assertNotNull("Failed to get export with slash", export);
+    }
+
+    @Test
+    public void testNotAbsolutePath() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("not/absolute/path", InetAddress.getByName("192.169.2.2"));
+        assertNull("Not absolute path must be ignored", export);
+    }
 }

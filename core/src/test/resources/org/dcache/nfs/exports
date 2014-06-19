@@ -22,3 +22,5 @@
 /anon_access_default *
 /with_dcap *
 /without_dcap *(no_dcap)
+/export/with/slash/
+not/absolute/path

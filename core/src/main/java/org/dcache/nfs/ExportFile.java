@@ -79,6 +79,11 @@ public class ExportFile {
                 if (line.charAt(0) == '#')
                     continue;
 
+                if (line.charAt(0) != '/') {
+                    _log.warn("Ignoring entry with non absolute export path: " + line);
+                    continue;
+                }
+
                 int pathEnd = line.indexOf(' ');
 
                 String path;
@@ -252,8 +257,9 @@ public class ExportFile {
     }
 
     public FsExport getExport(String path, InetAddress client) {
+        String normalizedPath = FsExport.normalize(path);
         for (FsExport export : _exports) {
-            if (export.getPath().equals(path) && export.isAllowed(client)) {
+            if (export.getPath().equals(normalizedPath) && export.isAllowed(client)) {
                 return export;
             }
         }

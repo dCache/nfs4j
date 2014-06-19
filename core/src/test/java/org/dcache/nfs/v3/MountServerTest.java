@@ -60,6 +60,19 @@ public class MountServerTest {
         assertFalse(arrayContains(res.mountinfo.auth_flavors, RpcAuthType.UNIX));
     }
 
+    @Test
+    public void testPathWithSlash() throws IOException {
+        String path = "/some/export/with/slash/";
+        mountres3 res = mountServer()
+                .withPath(path)
+                .exportedTo("192.168.178.33")
+                .withSecurity(FsExport.Sec.SYS).
+                accessedFrom("192.168.178.33").
+                toMount(path);
+
+        assertEquals(mountstat3.MNT3_OK, res.fhs_status);
+    }
+
     private static boolean arrayContains(int[] array, int element) {
         for (int i : array) {
             if (i == element) {
@@ -105,7 +118,7 @@ public class MountServerTest {
 
         MountServertestHelper exportedTo(String client) {
             InetAddress address = InetAddresses.forString("192.168.178.33");
-            given(_exportFile.getExport(path, address)).willReturn(_export);
+            given(_exportFile.getExport(FsExport.normalize(path), address)).willReturn(_export);
             return this;
         }
 
@@ -128,5 +141,4 @@ public class MountServerTest {
             return _mountServer.MOUNTPROC3_MNT_3(call, new dirpath(path));
         }
     }
-
 }

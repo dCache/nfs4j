@@ -20,6 +20,7 @@
 package org.dcache.nfs;
 
 import com.google.common.base.Splitter;
+import com.google.common.io.Files;
 import java.net.InetAddress;
 
 public class FsExport {
@@ -97,7 +98,7 @@ public class FsExport {
      * @param builder
      */
     private FsExport(String path, FsExportBuilder builder) {
-        _path = path;
+        _path = normalize(path);
         _client = builder.getClient();
         _isTrusted = builder.getIsTrusted();
         _rw = builder.getIo();
@@ -202,6 +203,16 @@ public class FsExport {
 
     public boolean isWithDcap() {
 	return _withDcap;
+    }
+
+    /**
+     * Returns the given {@code path} without redundant elements.
+     *
+     * @param path
+     * @return normalized path
+     */
+    public static String normalize(String path) {
+        return Files.simplifyPath(path);
     }
 
     public static class FsExportBuilder {
