@@ -19,12 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
+import com.google.common.base.Charsets;
+import com.google.common.base.Utf8;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadNameException;
 import org.dcache.nfs.status.InvalException;
@@ -32,7 +29,7 @@ import org.dcache.nfs.status.NameTooLongException;
 
 class NameFilter {
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
+    private static final Charset UTF8 = Charsets.UTF_8;
 
     /* utility calls */
     private NameFilter(){}
@@ -46,55 +43,32 @@ class NameFilter {
      */
     public static String convert(byte[] bytes) throws ChimeraNFSException {
 
-        if (bytes.length == 0) {
-            throw new InvalException("zero-length name");
-        }
-
-        if (bytes.length > NFSv4Defaults.NFS4_MAXFILENAME) {
-            throw new NameTooLongException("file name too long");
-        }
-
-        try {
-            CharsetDecoder cd = UTF8.newDecoder();
-            cd.onMalformedInput(CodingErrorAction.REPORT);
-            cd.onUnmappableCharacter(CodingErrorAction.REPORT);
-            ByteBuffer uniBuf = ByteBuffer.wrap(bytes);
-            CharBuffer charBuf = cd.decode(uniBuf);
-
-            /*
-             * Java uses internally UTF-16 and, as a result, encode accepts non valid
-             * surrogate bytes as well. For NFs such sequences are invalid.
-             *
-             * See: http://www.oracle.com/technetwork/articles/javase/supplementary-142654.html#Modified_UTF-8
-             *
-             */
-            for (char c : charBuf.array()) {
-                if (Character.isSurrogate(c)) {
-                    throw new InvalException("invalid utf8 name");
-                }
-            }
-
-            String name = new String(charBuf.array(), 0, charBuf.length());
-
-            if (name.length() == 0) {
-                throw new InvalException("bad path name");
-            }
-
-            if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
-                throw new NameTooLongException("name too long");
-            }
-
-            if (name.equals(".") || name.equals("..")) {
-                throw new BadNameException("bad name '.' or '..'");
-            }
-
-            if (name.indexOf('/') != -1) {
-                throw new BadNameException("name with slash '/'");
-            }
-
-            return name;
-        } catch (CharacterCodingException e) {
+        if (!Utf8.isWellFormed(bytes)) {
             throw new InvalException("invalid utf8 name");
         }
+
+        String name = new String(bytes, UTF8);
+
+        if (name.length() == 0) {
+            throw new InvalException("bad path name");
+        }
+
+        if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
+            throw new NameTooLongException("name too long");
+        }
+
+        if (name.equals(".") || name.equals("..")) {
+            throw new BadNameException("bad name '.' or '..'");
+        }
+
+        if (name.indexOf('/') != -1) {
+            throw new BadNameException("name with slash '/'");
+        }
+
+        if (name.indexOf('\0') != -1) {
+            throw new BadNameException("name with null");
+        }
+
+        return name;
     }
 }

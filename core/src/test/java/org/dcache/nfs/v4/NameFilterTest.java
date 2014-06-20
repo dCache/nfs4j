@@ -49,6 +49,7 @@ public class NameFilterTest {
     private static final byte[] WITH_SLASH = "foo/bar".getBytes(Charsets.UTF_8);
     private static final byte[] GOOD_UTF8_ARM = "Երեվան".getBytes(Charsets.UTF_8);
     private static final byte[] GOOD_UTF8_HBR = "יְרוּשָׁלַיִם".getBytes(Charsets.UTF_8);
+    private static final byte[] WITH_NULL = "foo\0".getBytes(Charsets.UTF_8);
 
     @Test
     public void testGoodUtf8() throws ChimeraNFSException {
@@ -93,6 +94,11 @@ public class NameFilterTest {
     @Test(expected = BadNameException.class)
     public void testNameWithSlash() throws ChimeraNFSException {
         NameFilter.convert(WITH_SLASH);
+    }
+
+    @Test(expected = BadNameException.class)
+    public void testNameWithNull() throws ChimeraNFSException {
+        NameFilter.convert(WITH_NULL);
     }
 
     @Test(expected = InvalException.class)
