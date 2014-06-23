@@ -154,6 +154,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.dcache.nfs.v3.HimeraNfsUtils.defaultPostOpAttr;
 import static org.dcache.nfs.v3.HimeraNfsUtils.defaultWccData;
+import static org.dcache.nfs.v3.NameUtils.checkFilename;
+
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
@@ -249,6 +251,9 @@ public class NfsServerV3 extends nfs3_protServerStub {
         CREATE3res res = new CREATE3res();
         String path = arg1.where.name.value;
         try {
+
+            checkFilename(path);
+
             Inode parent = new Inode(arg1.where.dir.data);
 
             sattr3 newAttr = null;
@@ -466,6 +471,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             Inode parent = new Inode(arg1.link.dir.data);
             String name = arg1.link.name.value;
+            checkFilename(name);
 
             Inode hlink = new Inode(arg1.file.data);
 
@@ -519,6 +525,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode parent = new Inode(arg1.what.dir.data);
             String name = arg1.what.name.value;
 
+            checkFilename(name);
+
             Inode inode = fs.lookup(parent, name);
 
             res.status = nfsstat.NFS_OK;
@@ -567,6 +575,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode parent = new Inode(arg1.where.dir.data);
 
             String name = arg1.where.name.value;
+            checkFilename(name);
+
             sattr3 attr = arg1.attributes;
 
             Stat parentStat = fs.getattr(parent);
@@ -1063,6 +1073,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode parent = new Inode(arg1.object.dir.data);
 
             String name = arg1.object.name.value;
+            checkFilename(name);
 
             Inode inode = fs.lookup(parent, name);
             Stat inodeStat = fs.getattr(inode);
@@ -1118,9 +1129,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
         try {
             Inode from = new Inode(arg1.from.dir.data);
             String file1 = arg1.from.name.value;
+            checkFilename(file1);
 
             Inode to = new Inode(arg1.to.dir.data);
             String file2 = arg1.to.name.value;
+            checkFilename(file2);
 
             fs.move(from, file1, to, file2);
 
@@ -1174,6 +1187,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         try {
             Inode parent = new Inode(arg1.object.dir.data);
             String file = arg1.object.name.value;
+            checkFilename(file);
 
             Inode inode = fs.lookup(parent, file);
             Stat parentStat = fs.getattr(parent);
@@ -1266,6 +1280,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             Inode parent = new Inode(arg1.where.dir.data);
             String file = arg1.where.name.value;
+            checkFilename(file);
 
             String link = arg1.symlink.symlink_data.value;
             sattr3 linkAttr = arg1.symlink.symlink_attributes;
