@@ -35,23 +35,17 @@ class NameFilter {
     private NameFilter(){}
 
     /**
-     * Validate name and convert into UTB8 {@link String}.
+     * Validate name and convert into UTB8 {@link String}. Same as {@link NameFilter#convertPath(byte[])},
+     * except, characters '.', '..', and '/' are not will throw BadNameException.
+     * The valid name length must not exceed {@link NFSv4Defaults#NFS4_MAXFILENAME}.
      *
      * @param bytes to convert
      * @return string
      * @throws ChimeraNFSException if provided {@code bytes} are not a UTF8 encoded.
      */
-    public static String convert(byte[] bytes) throws ChimeraNFSException {
+    public static String convertName(byte[] bytes) throws ChimeraNFSException {
 
-        if (!Utf8.isWellFormed(bytes)) {
-            throw new InvalException("invalid utf8 name");
-        }
-
-        String name = new String(bytes, UTF8);
-
-        if (name.length() == 0) {
-            throw new InvalException("bad path name");
-        }
+        String name = convertPath(bytes);
 
         if (name.length() > NFSv4Defaults.NFS4_MAXFILENAME) {
             throw new NameTooLongException("name too long");
@@ -63,6 +57,29 @@ class NameFilter {
 
         if (name.indexOf('/') != -1) {
             throw new BadNameException("name with slash '/'");
+        }
+
+        return name;
+    }
+
+    /**
+     * Validate path and convert into UTB8 {@link String}.
+     *
+     * @param bytes to convert
+     * @return string
+     * @throws ChimeraNFSException if provided {@code bytes} are not a UTF8
+     * encoded.
+     */
+    public static String convertPath(byte[] bytes) throws ChimeraNFSException {
+
+        if (!Utf8.isWellFormed(bytes)) {
+            throw new InvalException("invalid utf8 name");
+        }
+
+        String name = new String(bytes, UTF8);
+
+        if (name.length() == 0) {
+            throw new InvalException("bad path name");
         }
 
         if (name.indexOf('\0') != -1) {

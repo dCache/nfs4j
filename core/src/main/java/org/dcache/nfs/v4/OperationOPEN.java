@@ -106,7 +106,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     throw new NotDirException();
                 }
                 res.resok4.cinfo.before = new changeid4(stat.getCTime());
-                String name = NameFilter.convert(_args.opopen.claim.file.value);
+                String name = NameFilter.convertName(_args.opopen.claim.file.value);
                 _log.debug("regular open for : {}", name);
 
                 Inode inode;

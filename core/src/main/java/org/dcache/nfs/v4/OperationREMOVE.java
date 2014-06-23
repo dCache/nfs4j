@@ -55,7 +55,7 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
             throw new NotDirException();
         }
 
-        String name = NameFilter.convert(_args.opremove.target.value);
+        String name = NameFilter.convertName(_args.opremove.target.value);
 
         _log.debug("REMOVE: {} : {}", parentInode, name);
 

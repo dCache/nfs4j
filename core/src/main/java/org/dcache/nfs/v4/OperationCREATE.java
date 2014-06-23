@@ -63,7 +63,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         Inode inode;
 
         Stat stat = context.getFs().getattr(context.currentInode());
-        String name = NameFilter.convert(_args.opcreate.objname.value);
+        String name = NameFilter.convertName(_args.opcreate.objname.value);
 
         if (stat.type() != Stat.Type.DIRECTORY) {
             throw new NotDirException();
@@ -86,7 +86,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                         context.getUser().getUID(), context.getUser().getGID(), mode);
                 break;
             case nfs_ftype4.NF4LNK:
-                String linkDest = new String(_args.opcreate.objtype.linkdata.value.value, Charsets.UTF_8);
+                String linkDest = NameFilter.convertPath(_args.opcreate.objtype.linkdata.value.value);
                 inode = context.getFs().symlink(context.currentInode(), name, linkDest,
                         context.getUser().getUID(), context.getUser().getGID(), mode);
                 break;

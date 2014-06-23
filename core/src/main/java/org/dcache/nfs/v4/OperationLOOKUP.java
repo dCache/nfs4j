@@ -46,7 +46,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final LOOKUP4res res = result.oplookup;
 
-        String name = NameFilter.convert(_args.oplookup.objname.value);
+        String name = NameFilter.convertName(_args.oplookup.objname.value);
 
         Stat stat = context.getFs().getattr(context.currentInode());
         if (stat.type() == Stat.Type.SYMLINK) {

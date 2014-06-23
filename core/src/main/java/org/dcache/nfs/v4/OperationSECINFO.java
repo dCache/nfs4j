@@ -54,7 +54,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
 
         context.clearCurrentInode();
 
-        String name = NameFilter.convert(_args.opsecinfo.name.value);
+        String name = NameFilter.convertName(_args.opsecinfo.name.value);
         Inode inode = context.getFs().lookup(dir, name);
 
         try {

@@ -45,7 +45,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-        String newName = NameFilter.convert(_args.oplink.newname.value);
+        String newName = NameFilter.convertName(_args.oplink.newname.value);
 
         Stat parentDirStat = context.getFs().getattr(context.currentInode());
         Stat inodeStat = context.getFs().getattr(context.savedInode());
