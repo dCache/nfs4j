@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -42,17 +42,22 @@ public class CacheElement<V> {
     /**
      * Element creation time.
      */
-    private final long _creationTime = System.currentTimeMillis();
+    private final long _creationTime;
     /**
      * Elements last access time.
      */
-    private long _lastAccessTime = _creationTime;
+    private long _lastAccessTime;
     /**
      * internal object.
      */
     private final V _inner;
 
-    CacheElement(V inner, long maxLifeTime, long idleTime) {
+    private final TimeSource _timeSource;
+
+    CacheElement(V inner, TimeSource timeSource, long maxLifeTime, long idleTime) {
+        _timeSource = timeSource;
+        _creationTime = _timeSource.read();
+        _lastAccessTime = _creationTime;
         _inner = inner;
         _maxLifeTime = maxLifeTime;
         _idleTime = idleTime;
@@ -65,7 +70,7 @@ public class CacheElement<V> {
      * @return internal object.
      */
     V getObject() {
-        _lastAccessTime = System.currentTimeMillis();
+        _lastAccessTime = _timeSource.read();
         return _inner;
     }
 
@@ -82,7 +87,7 @@ public class CacheElement<V> {
 
     @Override
     public String toString() {
-        long now = System.currentTimeMillis();
+        long now = _timeSource.read();
         return String.format("Element: [%s], created: %s, last access: %s, life time %d, idle: %d, max idle: %d",
             _inner.toString(), new Date( _creationTime), new Date(_lastAccessTime),
             _maxLifeTime, now - _lastAccessTime, _idleTime);

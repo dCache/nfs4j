@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 public class Cache<K, V> implements Runnable {
 
     private static final Logger _log = LoggerFactory.getLogger(Cache.class);
+    private final TimeSource _timeSource;
 
     /**
      * {@link TimerTask} to periodically check and remove expired entries.
@@ -165,12 +166,31 @@ public class Cache<K, V> implements Runnable {
      * @param entryLifeTime maximal time in milliseconds.
      * @param entryIdleTime maximal idle time in milliseconds.
      * @param eventListener {@link CacheEventListener}
-     * @param timeValue how often cleaner thread have to check for invalidated entries.
+     * @param timeValue how often cleaner thread have to check for invalidated
+     * entries.
      * @param timeUnit a {@link TimeUnit} determining how to interpret the
-     * <code>timeValue</code> parameter.
+     * parameter.
      */
     public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
             CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit) {
+        this(name, size, entryLifeTime, entryIdleTime, eventListener, timeValue, timeUnit, TimeSource.systemTimeSource());
+    }
+
+    /**
+     * Create new cache instance.
+     *
+     * @param name Unique id for this cache.
+     * @param size maximal number of elements.
+     * @param entryLifeTime maximal time in milliseconds.
+     * @param entryIdleTime maximal idle time in milliseconds.
+     * @param eventListener {@link CacheEventListener}
+     * @param timeValue how often cleaner thread have to check for invalidated entries.
+     * @param timeUnit a {@link TimeUnit} determining how to interpret the
+     * @param timeSource {@link TimeSource} to use
+     * <code>timeValue</code> parameter.
+     */
+    public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
+            CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit, TimeSource timeSource) {
         _name = name;
         _size = size;
         _defaultEntryMaxLifeTime = entryLifeTime;
@@ -184,6 +204,7 @@ public class Cache<K, V> implements Runnable {
                         .build()
         );
         _cleanerScheduler.scheduleAtFixedRate(this, timeValue, timeValue, timeUnit);
+        _timeSource = timeSource;
     }
 
     /**
@@ -225,7 +246,7 @@ public class Cache<K, V> implements Runnable {
                 _log.warn("Cache limit reached: {}", _size);
                 throw new MissingResourceException("Cache limit reached", Cache.class.getName(), "");
             }
-            _storage.put(k, new CacheElement<>(v, entryMaxLifeTime, entryIdleTime));
+            _storage.put(k, new CacheElement<>(v, _timeSource, entryMaxLifeTime, entryIdleTime));
         } finally {
             _accessLock.unlock();
         }
@@ -253,7 +274,7 @@ public class Cache<K, V> implements Runnable {
                 return null;
             }
 
-            long now = System.currentTimeMillis();
+            long now = _timeSource.read();
             valid = element.validAt(now);
             v = element.getObject();
 
@@ -292,7 +313,7 @@ public class Cache<K, V> implements Runnable {
         try {
             CacheElement<V> element = _storage.remove(k);
             if( element == null ) return null;
-            valid = element.validAt(System.currentTimeMillis());
+            valid = element.validAt(_timeSource.read());
             v = element.getObject();
         } finally {
             _accessLock.unlock();
