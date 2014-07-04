@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@ public class FileIoDevice {
         _ds_list = new InetSocketAddress[addr.nflda_multipath_ds_list.length];
         for (int i = 0; i < _ds_list.length; i++) {
             for(netaddr4 na : addr.nflda_multipath_ds_list[i].value) {
-                if (na.na_r_netid.equals("tcp")) {
+                if (na.na_r_netid.equals("tcp") || na.na_r_netid.equals("tcp6") ) {
                     _ds_list[i] = InetSocketAddresses.forUaddrString(na.na_r_addr);
                     break;
                 }
