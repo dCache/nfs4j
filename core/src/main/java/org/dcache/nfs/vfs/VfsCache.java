@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.utils.Opaque;
 
@@ -36,6 +37,7 @@ public class VfsCache implements VirtualFileSystem {
 
     private final Cache<CacheKey, Inode> _lookupCache;
     private final Cache<Opaque, Stat> _statCache;
+    private final Cache<Inode, Inode> _parentCache;
 
     private final VirtualFileSystem _inner;
 
@@ -52,6 +54,12 @@ public class VfsCache implements VirtualFileSystem {
 		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
 		.softValues()
 		.build();
+
+        _parentCache = CacheBuilder.newBuilder()
+                .maximumSize(cacheConfig.getMaxEntries())
+                .expireAfterWrite(100, TimeUnit.MILLISECONDS)
+                .softValues()
+                .build();
     }
 
     @Override
@@ -87,7 +95,7 @@ public class VfsCache implements VirtualFileSystem {
 
     @Override
     public Inode parentOf(Inode inode) throws IOException {
-        return _inner.parentOf(inode);
+        return parentFromCacheOrLoad(inode);
     }
 
     @Override
@@ -145,6 +153,7 @@ public class VfsCache implements VirtualFileSystem {
         Inode inode = _inner.create(parent, type, path, uid, gid, mode);
         updateLookupCache(parent, path, inode);
 	invalidateStatCache(parent);
+        updateParentCache(inode, parent);
         return inode;
     }
 
@@ -212,6 +221,10 @@ public class VfsCache implements VirtualFileSystem {
 	_statCache.invalidate(new Opaque(inode.getFileId()));
     }
 
+    private void updateParentCache(Inode inode, Inode parent) {
+        _parentCache.put(inode, parent);
+    }
+
     private Inode lookupFromCacheOrLoad(final Inode parent, final String path) throws IOException {
 	try {
 	    return _lookupCache.get(new CacheKey(parent, path), new Callable<Inode>() {
@@ -245,6 +258,21 @@ public class VfsCache implements VirtualFileSystem {
 	}
     }
 
+    private Inode parentFromCacheOrLoad(final Inode inode) throws IOException {
+        try {
+            return _parentCache.get(inode, new Callable<Inode>() {
+
+                @Override
+                public Inode call() throws Exception {
+                    return _inner.parentOf(inode);
+                }
+            });
+        } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            Throwables.propagateIfInstanceOf(t, IOException.class);
+            throw new IOException(e.getMessage(), t);
+        }
+    }
     /**
      * Cache entry key based on parent id and name
      */
