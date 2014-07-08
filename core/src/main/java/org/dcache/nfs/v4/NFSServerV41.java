@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -195,11 +194,11 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     }
 
     /**
-     * Get {@link List} of currently active clients.
-     * @return clients.
+     * Get {@link NFSv4StateHandler} used by this nfs server.
+     * @return state handler.
      */
-    public List<NFS4Client> getClients() {
-        return _statHandler.getClients();
+    public NFSv4StateHandler getStateHandler() {
+        return _statHandler;
     }
 
     /*
