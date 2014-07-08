@@ -92,4 +92,13 @@ public class NFSv4StateHandlerTest {
         stateid4 state = _client.createState(new uint32_t(0)).stateid();
         _stateHandler.updateClientLeaseTime(state);
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void testUseAfterShutdown() throws Exception {
+        NFS4State state = _client.createState(new uint32_t(0));
+        stateid4 stateid = state.stateid();
+        state.confirm();
+        _stateHandler.shutdown();
+        _stateHandler.updateClientLeaseTime(stateid);
+    }
 }

@@ -40,6 +40,8 @@ import org.dcache.utils.Opaque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkState;
+
 public class NFSv4StateHandler {
 
     private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
@@ -69,6 +71,8 @@ public class NFSv4StateHandler {
      */
     private final long _bootTime;
 
+    private boolean _running;
+
     public NFSv4StateHandler() {
         this(NFSv4Defaults.NFS4_LEASE_TIME*1000);
     }
@@ -76,9 +80,12 @@ public class NFSv4StateHandler {
     NFSv4StateHandler(long leaseTime) {
         _leaseTime = leaseTime;
 	_bootTime = System.currentTimeMillis();
+        _running = true;
     }
 
     public synchronized void removeClient(NFS4Client client) {
+
+        checkState(_running, "NFS state handler not running");
 
         for(NFSv41Session session: client.sessions() ) {
             _sessionById.remove( session.id() );
@@ -91,12 +98,18 @@ public class NFSv4StateHandler {
     }
 
     private synchronized void addClient(NFS4Client newClient) {
+
+        checkState(_running, "NFS state handler not running");
+
         _clientsByServerId.put(newClient.getId(), newClient);
         _clientsByVerifier.put(newClient.verifier(), newClient);
         _clientByOwner.put( newClient.getOwner(), newClient);
     }
 
     public synchronized NFS4Client getClientByID( Long id) throws ChimeraNFSException {
+
+        checkState(_running, "NFS state handler not running");
+
         NFS4Client client = _clientsByServerId.get(id);
         if(client == null) {
             throw new StaleClientidException("bad client id.");
@@ -105,6 +118,9 @@ public class NFSv4StateHandler {
     }
 
     public synchronized NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
+
+        checkState(_running, "NFS state handler not running");
+
         NFS4Client client = _clientsByServerId.get(Bytes.getLong(stateId.other, 0));
         if (client == null) {
             throw new BadStateidException("no client for stateid.");
@@ -113,11 +129,13 @@ public class NFSv4StateHandler {
     }
 
     public synchronized NFS4Client getClientByVerifier(verifier4 verifier) {
+        checkState(_running, "NFS state handler not running");
         return _clientsByVerifier.get(verifier);
     }
 
 
     public synchronized NFSv41Session sessionById( sessionid4 id) {
+        checkState(_running, "NFS state handler not running");
        return _sessionById.get(id);
     }
 
@@ -132,6 +150,7 @@ public class NFSv4StateHandler {
     }
 
     public synchronized void sessionById( sessionid4 id, NFSv41Session session) {
+        checkState(_running, "NFS state handler not running");
         _sessionById.put(id, session);
     }
 
@@ -141,6 +160,7 @@ public class NFSv4StateHandler {
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
 
+        checkState(_running, "NFS state handler not running");
         NFS4Client client = getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
 
@@ -153,6 +173,7 @@ public class NFSv4StateHandler {
     }
 
     public synchronized List<NFS4Client> getClients() {
+        checkState(_running, "NFS state handler not running");
         return new ArrayList<>(_clientsByServerId.values());
     }
 
@@ -195,6 +216,16 @@ public class NFSv4StateHandler {
      * @return true, if grace period expired.
      */
     public boolean hasGracePeriodExpired() {
+        checkState(_running, "NFS state handler not running");
 	return _bootTime + TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME) < System.currentTimeMillis();
+    }
+
+    /**
+     * Shutdown session lease time watchdog thread.
+     */
+    public synchronized void shutdown() {
+        checkState(_running, "NFS state handler not running");
+        _running = false;
+        _sessionById.shutdown();
     }
 }
