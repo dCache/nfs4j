@@ -188,7 +188,13 @@ public class VfsCache implements VirtualFileSystem {
        Utility methods for cache manipulation.
      */
 
-    private void invalidateLookupCache(Inode parent, String path) {
+    /**
+     * Discards cached value in lookup cache for given inode and path.
+     *
+     * @param parent inode
+     * @param path to invalidate
+     */
+    public void invalidateLookupCache(Inode parent, String path) {
 	_lookupCache.invalidate(new CacheKey(parent, path));
     }
 
@@ -196,7 +202,13 @@ public class VfsCache implements VirtualFileSystem {
 	_lookupCache.put(new CacheKey(parent, path), inode);
     }
 
-    private void invalidateStatCache(final Inode inode) {
+    /**
+     * Discards cached {@link Stat} value for given {@link Inode}.
+     *
+     * @param parent inode
+     * @param path to invalidate
+     */
+    public void invalidateStatCache(final Inode inode) {
 	_statCache.invalidate(new Opaque(inode.getFileId()));
     }
 
