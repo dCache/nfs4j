@@ -22,6 +22,8 @@ package org.dcache.nfs.vfs;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -35,9 +37,9 @@ import org.dcache.utils.Opaque;
  */
 public class VfsCache implements VirtualFileSystem {
 
-    private final Cache<CacheKey, Inode> _lookupCache;
+    private final LoadingCache<CacheKey, Inode> _lookupCache;
     private final Cache<Opaque, Stat> _statCache;
-    private final Cache<Inode, Inode> _parentCache;
+    private final LoadingCache<Inode, Inode> _parentCache;
 
     private final VirtualFileSystem _inner;
 
@@ -47,7 +49,7 @@ public class VfsCache implements VirtualFileSystem {
 		.maximumSize(cacheConfig.getMaxEntries())
 		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
 		.softValues()
-		.build();
+		.build(new LoockupLoader());
 
 	_statCache = CacheBuilder.newBuilder()
 		.maximumSize(cacheConfig.getMaxEntries())
@@ -59,7 +61,7 @@ public class VfsCache implements VirtualFileSystem {
                 .maximumSize(cacheConfig.getMaxEntries())
                 .expireAfterWrite(100, TimeUnit.MILLISECONDS)
                 .softValues()
-                .build();
+                .build(new ParentLoader());
     }
 
     @Override
@@ -225,16 +227,17 @@ public class VfsCache implements VirtualFileSystem {
         _parentCache.put(inode, parent);
     }
 
+    private class LoockupLoader extends CacheLoader<CacheKey, Inode> {
+
+        @Override
+        public Inode load(CacheKey k) throws Exception {
+            return _inner.lookup(k.getParent(), k.getName());
+        }
+    }
+
     private Inode lookupFromCacheOrLoad(final Inode parent, final String path) throws IOException {
 	try {
-	    return _lookupCache.get(new CacheKey(parent, path), new Callable<Inode>() {
-
-		@Override
-		public Inode call() throws Exception {
-		    return _inner.lookup(parent, path);
-		}
-
-	    });
+	    return _lookupCache.get(new CacheKey(parent, path));
 	} catch (ExecutionException e) {
 	    Throwable t = e.getCause();
 	    Throwables.propagateIfInstanceOf(t, IOException.class);
@@ -258,15 +261,17 @@ public class VfsCache implements VirtualFileSystem {
 	}
     }
 
+    private class ParentLoader extends CacheLoader<Inode, Inode> {
+
+        @Override
+        public Inode load(Inode inode) throws Exception {
+            return _inner.parentOf(inode);
+        }
+    }
+
     private Inode parentFromCacheOrLoad(final Inode inode) throws IOException {
         try {
-            return _parentCache.get(inode, new Callable<Inode>() {
-
-                @Override
-                public Inode call() throws Exception {
-                    return _inner.parentOf(inode);
-                }
-            });
+            return _parentCache.get(inode);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             Throwables.propagateIfInstanceOf(t, IOException.class);
