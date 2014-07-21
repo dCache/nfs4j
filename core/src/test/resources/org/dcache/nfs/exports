@@ -24,3 +24,4 @@
 /without_dcap *(no_dcap)
 /export/with/slash/
 not/absolute/path
+/export_all_root 192.168.1.1(rw,all_root)

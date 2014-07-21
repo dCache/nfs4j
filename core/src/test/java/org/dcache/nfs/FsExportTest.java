@@ -181,4 +181,10 @@ public class FsExportTest {
         FsExport export = _exportFile.getExport("not/absolute/path", InetAddress.getByName("192.169.2.2"));
         assertNull("Not absolute path must be ignored", export);
     }
+
+    @Test
+    public void testAllRoot() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_all_root", InetAddress.getByName("192.168.1.1"));
+        assertTrue(export.isAllRoot());
+    }
 }

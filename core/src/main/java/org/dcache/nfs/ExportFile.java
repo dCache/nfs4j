@@ -181,6 +181,11 @@ public class ExportFile {
 				continue;
 			    }
 
+                            if(option.equals("all_root")) {
+                                exportBuilder.withAllRoot();
+                                continue;
+                            }
+
 			    throw new IllegalArgumentException("Unsupported option: " + option);
                         }
                         FsExport export = exportBuilder.build(path);
