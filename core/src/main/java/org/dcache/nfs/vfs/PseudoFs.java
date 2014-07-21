@@ -132,6 +132,13 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
+
+        if (inheritUidGid(parent)) {
+            Stat s = _inner.getattr(parent);
+            uid = s.getUid();
+            gid = s.getGid();
+        }
+
         return pushExportIndex(parent, _inner.create(parent, type, path, uid, gid, mode));
     }
 
@@ -178,6 +185,11 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
+        if (inheritUidGid(parent)) {
+            Stat s = _inner.getattr(parent);
+            uid = s.getUid();
+            gid = s.getGid();
+        }
         return pushExportIndex(parent, _inner.link(parent, link, path, uid, gid));
 
     }
@@ -194,6 +206,11 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
+        if (inheritUidGid(parent)) {
+            Stat s = _inner.getattr(parent);
+            uid = s.getUid();
+            gid = s.getGid();
+        }
         return pushExportIndex(parent, _inner.mkdir(parent, path, uid, gid, mode));
     }
 
@@ -249,6 +266,11 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         checkAccess(parent, ACE4_ADD_FILE);
+        if (inheritUidGid(parent)) {
+            Stat s = _inner.getattr(parent);
+            uid = s.getUid();
+            gid = s.getGid();
+        }
         return pushExportIndex(parent, _inner.symlink(parent, path, link, uid, gid, mode));
     }
 
@@ -328,6 +350,12 @@ public class PseudoFs implements VirtualFileSystem {
                     _log.warn("Access denied: (RO export) inode {} for client {}", inode, _inetAddress);
                 }
                 throw new AccessException("read-only export");
+            }
+
+            if(export.isAllRoot()) {
+                _log.info("permission check to inode {} skipped due to all_root option for client {}",
+                        inode, _inetAddress);
+                return;
             }
 
             if (export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
@@ -604,5 +632,9 @@ public class PseudoFs implements VirtualFileSystem {
             throw new PermException("Authentication flavor too weak: "
                     + "allowed <" + minFlavor + "> provided <" + usedFlavor + ">");
         }
+    }
+
+    private boolean inheritUidGid(Inode inode) {
+        return _exportFile.getExport(inode.exportIndex(), _inetAddress).isAllRoot();
     }
 }
