@@ -19,6 +19,7 @@ import org.dcache.xdr.XdrTransport;
 import org.junit.Test;
 import org.junit.Before;
 
+import static com.google.common.primitives.Ints.contains;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.BDDMockito.given;
@@ -53,11 +54,11 @@ public class MountServerTest {
 
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
 
-        assertTrue(arrayContains(res.mountinfo.auth_flavors, MountServer.RPC_AUTH_GSS_KRB5I));
-        assertTrue(arrayContains(res.mountinfo.auth_flavors, MountServer.RPC_AUTH_GSS_KRB5P));
-        assertFalse(arrayContains(res.mountinfo.auth_flavors, MountServer.RPC_AUTH_GSS_KRB5));
-        assertFalse(arrayContains(res.mountinfo.auth_flavors, RpcAuthType.NONE));
-        assertFalse(arrayContains(res.mountinfo.auth_flavors, RpcAuthType.UNIX));
+        assertTrue(contains(res.mountinfo.auth_flavors, MountServer.RPC_AUTH_GSS_KRB5I));
+        assertTrue(contains(res.mountinfo.auth_flavors, MountServer.RPC_AUTH_GSS_KRB5P));
+        assertFalse(contains(res.mountinfo.auth_flavors, MountServer.RPC_AUTH_GSS_KRB5));
+        assertFalse(contains(res.mountinfo.auth_flavors, RpcAuthType.NONE));
+        assertFalse(contains(res.mountinfo.auth_flavors, RpcAuthType.UNIX));
     }
 
     @Test
@@ -71,15 +72,6 @@ public class MountServerTest {
                 toMount(path);
 
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
-    }
-
-    private static boolean arrayContains(int[] array, int element) {
-        for (int i : array) {
-            if (i == element) {
-                return true;
-            }
-        }
-        return false;
     }
 
     MountServertestHelper mountServer() throws IOException {
