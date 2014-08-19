@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4.acl;
 
-import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.nfs.v4.xdr.utf8str_mixed;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -160,6 +159,13 @@ public class AclsTest {
             toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
 
         assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testListDirNoReadBit() {
+        int mode = 0711;
+        int aclMode = Acls.toAccessMask(mode, true, false);
+        assertTrue("List allowed without read bit", (aclMode & ACE4_LIST_DIRECTORY) == 0);
     }
 
     private static void assertMode(int expected, int actual) {
