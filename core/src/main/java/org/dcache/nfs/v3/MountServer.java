@@ -102,6 +102,16 @@ public class MountServer extends mount_protServerStub {
 
             Inode rootInode = path2Inode(_vfs, mountPoint);
             Stat stat = _vfs.getattr(rootInode);
+
+            if (stat.type() == Stat.Type.SYMLINK) {
+                /*
+                 * we resolve symlink only once
+                 */
+                String path = _vfs.readlink(rootInode);
+                rootInode = path2Inode(_vfs, path);
+                stat = _vfs.getattr(rootInode);
+            }
+
             if (stat.type() != Stat.Type.DIRECTORY) {
                 throw new NotDirException("Path is not a directory");
             }

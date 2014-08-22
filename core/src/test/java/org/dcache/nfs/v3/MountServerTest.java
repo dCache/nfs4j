@@ -74,6 +74,21 @@ public class MountServerTest {
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
     }
 
+    @Test
+    public void testMountBySymlink() throws IOException {
+        String path = "/some/path";
+        String symlink = "/path/to/symlink";
+        mountres3 res = mountServer()
+                .withPath(path)
+                .withSymlink(symlink)
+                .exportedTo("192.168.178.33")
+                .withSecurity(FsExport.Sec.SYS).
+                accessedFrom("192.168.178.33").
+                toMount(symlink);
+
+        assertEquals(mountstat3.MNT3_OK, res.fhs_status);
+    }
+
     MountServertestHelper mountServer() throws IOException {
         return new MountServertestHelper();
     }
@@ -81,6 +96,7 @@ public class MountServerTest {
     private class MountServertestHelper {
 
         private String path;
+        private String symlink;
         private RpcCall call;
 
         MountServertestHelper withPath(String path) throws IOException {
@@ -108,9 +124,41 @@ public class MountServerTest {
             return this;
         }
 
+        MountServertestHelper withSymlink(String symlink) throws IOException {
+
+            this.symlink = symlink;
+
+            Splitter splitter = Splitter.on('/').omitEmptyStrings();
+            Inode inode = _fs.getRootInode();
+            Stat stat = new Stat();
+            stat.setMode(0755 | Stat.S_IFDIR);
+            stat.setUid(1);
+            stat.setGid(1);
+
+            for (String pathElement : splitter.split(symlink)) {
+                Inode objectInode = mock(Inode.class);
+
+                given(_fs.lookup(inode, pathElement)).willReturn(objectInode);
+                given(_fs.getattr(objectInode)).willReturn(stat);
+                given(objectInode.getFileId()).willReturn(pathElement.getBytes());
+                inode = objectInode;
+            }
+
+            Stat linkStat = new Stat();
+            linkStat.setMode(0755 | Stat.S_IFLNK);
+            linkStat.setUid(1);
+            linkStat.setGid(1);
+            given(_fs.getattr(inode)).willReturn(linkStat);
+            given(_fs.readlink(inode)).willReturn(this.path);
+            return this;
+        }
+
         MountServertestHelper exportedTo(String client) {
             InetAddress address = InetAddresses.forString("192.168.178.33");
             given(_exportFile.getExport(FsExport.normalize(path), address)).willReturn(_export);
+            if (symlink != null) {
+                given(_exportFile.getExport(FsExport.normalize(symlink), address)).willReturn(_export);
+            }
             return this;
         }
 
