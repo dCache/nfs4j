@@ -30,6 +30,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.utils.Opaque;
 
 /**
@@ -49,19 +50,26 @@ public class VfsCache implements VirtualFileSystem {
 		.maximumSize(cacheConfig.getMaxEntries())
 		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
 		.softValues()
+                .recordStats()
 		.build(new LoockupLoader());
 
 	_statCache = CacheBuilder.newBuilder()
 		.maximumSize(cacheConfig.getMaxEntries())
 		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
 		.softValues()
+                .recordStats()
 		.build();
 
         _parentCache = CacheBuilder.newBuilder()
                 .maximumSize(cacheConfig.getMaxEntries())
                 .expireAfterWrite(100, TimeUnit.MILLISECONDS)
                 .softValues()
+                .recordStats()
                 .build(new ParentLoader());
+
+        new GuavaCacheMXBeanImpl("vfs-stat", _statCache);
+        new GuavaCacheMXBeanImpl("vfs-parent", _parentCache);
+        new GuavaCacheMXBeanImpl("vfs-lookup", _lookupCache);
     }
 
     @Override
