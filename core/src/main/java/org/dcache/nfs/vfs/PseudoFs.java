@@ -58,7 +58,7 @@ import static org.dcache.nfs.vfs.AclCheckable.Access;
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
  * on top of an other file system based on export rules.
  *
- * In addition, PsudoFS takes the responsibility of permission and access checking.
+ * In addition, PseudoFS takes the responsibility of permission and access checking.
  */
 public class PseudoFs implements VirtualFileSystem {
 
