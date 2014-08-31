@@ -171,22 +171,22 @@ public class ExportFile {
                                 continue;
                             }
 
-			    if (option.equals("dcap")) {
-				exportBuilder.withDcap();
-				continue;
-			    }
+                            if (option.equals("dcap")) {
+                                exportBuilder.withDcap();
+                                continue;
+                            }
 
-			    if (option.equals("no_dcap")) {
-				exportBuilder.withoutDcap();
-				continue;
-			    }
+                            if (option.equals("no_dcap")) {
+                                exportBuilder.withoutDcap();
+                                continue;
+                            }
 
-                            if(option.equals("all_root")) {
+                            if (option.equals("all_root")) {
                                 exportBuilder.withAllRoot();
                                 continue;
                             }
 
-			    throw new IllegalArgumentException("Unsupported option: " + option);
+                            throw new IllegalArgumentException("Unsupported option: " + option);
                         }
                         FsExport export = exportBuilder.build(path);
                         exports.add(export);
