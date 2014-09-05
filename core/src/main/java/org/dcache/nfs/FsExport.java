@@ -22,6 +22,7 @@ package org.dcache.nfs;
 import com.google.common.base.Splitter;
 import com.google.common.io.Files;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class FsExport {
 
@@ -51,7 +52,7 @@ public class FsExport {
     }
 
     private final String _path;
-    private final String _client;
+    private final InetAddressMatcher _clientMatcher;
     private final Root _isTrusted;
     private final IO _rw;
     private final boolean _withAcl;
@@ -98,9 +99,9 @@ public class FsExport {
      * @param path
      * @param builder
      */
-    private FsExport(String path, FsExportBuilder builder) {
+    private FsExport(String path, FsExportBuilder builder) throws UnknownHostException {
         _path = normalize(path);
-        _client = builder.getClient();
+        _clientMatcher = InetAddressMatcher.forPattern(builder.getClient());
         _isTrusted = builder.getIsTrusted();
         _rw = builder.getIo();
         _withAcl = builder.isWithAcl();
@@ -123,7 +124,7 @@ public class FsExport {
         sb.append(_path)
                 .append(':')
                 .append(' ')
-                .append(_client)
+                .append(_clientMatcher.getPattern())
                 .append('(').append(_rw)
                 .append(',')
                 .append(_isTrusted == Root.TRUSTED ? "no_root_squash" : "root_squash")
@@ -154,7 +155,7 @@ public class FsExport {
     public boolean isAllowed(InetAddress client) {
 
         // localhost always allowed
-        return client.isLoopbackAddress() || IPMatcher.match(_client, client);
+        return client.isLoopbackAddress() || _clientMatcher.match(client);
     }
 
     public boolean isTrusted(InetAddress client) {
@@ -168,7 +169,7 @@ public class FsExport {
     }
 
     public String client() {
-        return _client;
+        return _clientMatcher.getPattern();
     }
 
     public IO ioMode() {
@@ -344,7 +345,7 @@ public class FsExport {
             return _allRoot;
         }
 
-        public FsExport build(String path) {
+        public FsExport build(String path) throws UnknownHostException {
             return new FsExport(path, this);
         }
     }
