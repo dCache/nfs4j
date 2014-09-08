@@ -19,9 +19,14 @@
  */
 package org.dcache.nfs.vfs;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Stat {
 
     public static final int S_TYPE = 0770000; // type mask
+    public static final int S_PERMS = 0777;   // permissions mask
     /**
      * Unix domain socket
      */
@@ -186,7 +191,11 @@ public class Stat {
     }
 
     public Type type() {
-        switch(_mode & S_TYPE) {
+        return extractType(_mode);
+    }
+
+    public static Type extractType(int mode) {
+        switch(mode & S_TYPE) {
             case S_IFBLK:
                 return Type.BLOCK;
             case S_IFCHR:
@@ -204,5 +213,86 @@ public class Stat {
             default:
                 return Type.REGULAR;
         }
+    }
+
+    public static String modeToString(int mode) {
+        StringBuilder result = new StringBuilder(10);
+        switch (extractType(mode)) {
+            case BLOCK:
+                result.append("b");
+                break;
+            case CHAR:
+                result.append("c");
+                break;
+            case DIRECTORY:
+                result.append("d");
+                break;
+            case FIFO:
+                result.append("p");
+                break;
+            case SOCK:
+                result.append("s");
+                break;
+            case SYMLINK:
+                result.append("l");
+                break;
+            default:
+                result.append("-");
+        }
+        //owner, group, other
+        for (int i=0; i<3; i++) {
+            int acl = (mode >> (6 - 3*i)) & 0000007;
+            switch (acl) {
+                case 00:
+                    result.append("---");
+                    break;
+                case 01:
+                    result.append("--x");
+                    break;
+                case 02:
+                    result.append("-w-");
+                    break;
+                case 03:
+                    result.append("-wx");
+                    break;
+                case 04:
+                    result.append("r--");
+                    break;
+                case 05:
+                    result.append("r-x");
+                    break;
+                case 06:
+                    result.append("rw-");
+                    break;
+                case 07:
+                    result.append("rwx");
+                    break;
+            }
+        }
+        return result.toString();
+    }
+
+    //technically _size (java long) will overflow after ~9 zettabytes, so "Y" is unreachable
+    private final static String[] SIZE_UNITS = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
+
+    public static String sizeToString(long bytes) {
+        double significantSize = bytes;
+        int orderOfMagnitude = 0;
+        while (significantSize >= 1024) {
+            orderOfMagnitude++;
+            significantSize = bytes / Math.pow(1024, orderOfMagnitude); //start with _size to minimize loss of precision
+        }
+        DecimalFormat sizeFormat = new DecimalFormat("#.#"); //not thread safe
+        return sizeFormat.format(significantSize)+SIZE_UNITS[orderOfMagnitude];
+    }
+
+    /**
+     * @return the equivalent of "ls -lh" (as close as possible)
+     */
+    @Override
+    public String toString() {
+        String humanReadableSize = sizeToString(_size);
+        String humanReadableMTime = new SimpleDateFormat("MMM dd HH:mm").format(new Date(_mtime)); //not thread safe
+        return modeToString(_mode)+" "+String.format("%4d %4d %4d %4s %s", _nlink, _owner, _group, humanReadableSize, humanReadableMTime);
     }
 }
