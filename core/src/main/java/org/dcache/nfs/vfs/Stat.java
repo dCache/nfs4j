@@ -276,12 +276,8 @@ public class Stat {
     private final static String[] SIZE_UNITS = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
 
     public static String sizeToString(long bytes) {
-        double significantSize = bytes;
-        int orderOfMagnitude = 0;
-        while (significantSize >= 1024) {
-            orderOfMagnitude++;
-            significantSize = bytes / Math.pow(1024, orderOfMagnitude); //start with _size to minimize loss of precision
-        }
+        int orderOfMagnitude = (int)Math.floor(Math.log(bytes) / Math.log(1024));
+        double significantSize = (double)bytes / (1L << orderOfMagnitude*10);
         DecimalFormat sizeFormat = new DecimalFormat("#.#"); //not thread safe
         return sizeFormat.format(significantSize)+SIZE_UNITS[orderOfMagnitude];
     }
