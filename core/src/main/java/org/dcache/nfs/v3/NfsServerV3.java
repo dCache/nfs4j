@@ -880,6 +880,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
                      */
                     throw new BadCookieException("readdir verifier expired");
                 }
+
+                if (startValue >= dirList.size()) {
+                    res.status = nfsstat.NFSERR_BAD_COOKIE;
+                    res.resfail = new READDIR3resfail();
+                    res.resfail.dir_attributes = new post_op_attr();
+                    res.resfail.dir_attributes.attributes_follow = false;
+                    return res;
+                }
             } else {
                 cookieverf = generateDirectoryVerifier(dir, fs);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
@@ -897,14 +905,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 }
             }
 
-            if (startValue > dirList.size()) {
-                res.status = nfsstat.NFSERR_BAD_COOKIE;
-                res.resfail = new READDIR3resfail();
-                res.resfail.dir_attributes = new post_op_attr();
-                res.resfail.dir_attributes.attributes_follow = false;
-                return res;
-            }
-
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIR3resok();
             res.resok.reply = new dirlist3();
@@ -914,6 +914,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
             res.resok.cookieverf = cookieverf;
+
+            if (dirList.isEmpty()) {
+                res.resok.reply.eof = true;
+                return res;
+            }
 
             int currcount = READDIR3RESOK_SIZE;
             res.resok.reply.entries = new entry3();
@@ -933,7 +938,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRY3_SIZE + name.length();
                 if (currcount + newSize > arg1.count.value.value) {
-                    lastEntry.nextentry = null;
+                    if (lastEntry != null) {
+                        lastEntry.nextentry = null;
+                    } else {
+                        //corner case - means we didnt have enough space to
+                        //write even a single entry.
+                        res.status = nfsstat.NFSERR_TOOSMALL;
+                        res.resfail = new READDIR3resfail();
+                        res.resfail.dir_attributes = defaultPostOpAttr();
+                        return res;
+                    }
 
                     res.resok.reply.eof = false;
 
