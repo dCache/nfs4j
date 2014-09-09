@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v3.xdr.READDIR3args;
-import org.dcache.nfs.v3.xdr.READDIR3res;
+import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
+import org.dcache.nfs.v3.xdr.READDIRPLUS3res;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.FileHandle;
 import org.dcache.nfs.vfs.Inode;
@@ -22,8 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class NfsServerV3READDIR_3Test {
-
+public class NfsServerV3READDIRPLUS_3Test {
     private FileHandle dirHandle;
     private Inode dirInode;
     private Stat dirStat;
@@ -51,8 +50,8 @@ public class NfsServerV3READDIR_3Test {
 
         // set up and execute the call
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIR3args args = NfsV3Ops.readDir(dirHandle);
-        READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
+        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle);
+        READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
         Assert.assertEquals(nfsstat.NFS_OK, result.status);
         Assert.assertNull(result.resok.reply.entries); //no entries
@@ -70,8 +69,8 @@ public class NfsServerV3READDIR_3Test {
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIR3args args = NfsV3Ops.readDir(dirHandle, 10); //10 bytes - not enough for anything
-        READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
+        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, 10); //10 bytes - not enough for anything
+        READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
         Assert.assertEquals(nfsstat.NFSERR_TOOSMALL, result.status); //error response
     }
@@ -87,8 +86,8 @@ public class NfsServerV3READDIR_3Test {
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIR3args args = NfsV3Ops.readDir(dirHandle);
-        READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
+        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle);
+        READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
         Assert.assertEquals(nfsstat.NFS_OK, result.status); //response ok
         Assert.assertTrue(result.resok.reply.eof); //eof
@@ -98,8 +97,8 @@ public class NfsServerV3READDIR_3Test {
         // using cookie on last (2nd) entry and returned verifier
         long cookie = result.resok.reply.entries.nextentry.cookie.value.value;
         byte[] cookieVerifier = result.resok.cookieverf.value;
-        args = NfsV3Ops.readDir(dirHandle, cookie, cookieVerifier);
-        result = nfsServer.NFSPROC3_READDIR_3(call, args);
+        args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
+        result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
         Assert.assertEquals(nfsstat.NFSERR_BAD_COOKIE, result.status); //error response
         AssertXdr.assertXdrEncodable(result);

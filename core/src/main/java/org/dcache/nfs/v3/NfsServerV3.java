@@ -699,6 +699,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
         try {
 
             final Inode dir = new Inode(arg1.dir.data);
+
             Stat dirStat = fs.getattr(dir);
 
             if (dirStat.type() != Stat.Type.DIRECTORY) {
@@ -706,9 +707,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             long startValue = arg1.cookie.value.value;
-            cookieverf3 cookieverf;
-
             List<DirectoryEntry> dirList = null;
+            cookieverf3 cookieverf;
 
             /*
              * For fresh readdir requests, cookie == 0, generate a new verifier and check
@@ -730,6 +730,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
                      */
                     throw new BadCookieException("readdir verifier expired");
                 }
+
+                if (startValue >= dirList.size()) {
+                    res.status = nfsstat.NFSERR_BAD_COOKIE;
+                    res.resfail = new READDIRPLUS3resfail();
+                    res.resfail.dir_attributes = defaultPostOpAttr();
+                    return res;
+                }
             } else {
                 cookieverf = generateDirectoryVerifier(dir, fs);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
@@ -747,15 +754,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 }
             }
 
-            if (startValue > dirList.size()) {
-                res.status = nfsstat.NFSERR_BAD_COOKIE;
-                res.resfail = new READDIRPLUS3resfail();
-                res.resfail.dir_attributes = new post_op_attr();
-                res.resfail.dir_attributes.attributes_follow = false;
-                return res;
-            }
-
-
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIRPLUS3resok();
             res.resok.reply = new dirlistplus3();
@@ -765,6 +763,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
             res.resok.cookieverf = cookieverf;
+
+            if (dirList.isEmpty()) {
+                res.resok.reply.eof = true;
+                return res;
+            }
 
             int currcount = READDIRPLUS3RESOK_SIZE;
             int dircount = 0;
@@ -792,14 +795,22 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 HimeraNfsUtils.fill_attributes(le.getStat(), currentEntry.name_attributes.attributes);
                 currentEntry.nextentry = null;
 
-
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRYPLUS3_SIZE + name.length() + currentEntry.name_handle.handle.data.length;
                 int newDirSize = name.length();
                 if ((currcount + newSize > arg1.maxcount.value.value) || (dircount + newDirSize > arg1.dircount.value.value)) {
+                    if (lastEntry != null) {
+                        lastEntry.nextentry = null;
+                    } else {
+                        //corner case - means we didnt have enough space to
+                        //write even a single entry.
+                        res.status = nfsstat.NFSERR_TOOSMALL;
+                        res.resfail = new READDIRPLUS3resfail();
+                        res.resfail.dir_attributes = defaultPostOpAttr();
+                        return res;
+                    }
 
                     res.resok.reply.eof = false;
-                    lastEntry.nextentry = null;
 
                     _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
                             (i - startValue), currcount,
@@ -807,6 +818,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                                 arg1.dircount.value.value,
                                 startValue, dirList.size()
                             );
+
                     return res;
                 }
                 dircount += newDirSize;
@@ -855,7 +867,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 throw new NotDirException("Path is not a directory.");
             }
 
-
             long startValue = arg1.cookie.value.value;
             List<DirectoryEntry> dirList = null;
             cookieverf3 cookieverf;
@@ -884,8 +895,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 if (startValue >= dirList.size()) {
                     res.status = nfsstat.NFSERR_BAD_COOKIE;
                     res.resfail = new READDIR3resfail();
-                    res.resfail.dir_attributes = new post_op_attr();
-                    res.resfail.dir_attributes.attributes_follow = false;
+                    res.resfail.dir_attributes = defaultPostOpAttr();
                     return res;
                 }
             } else {
