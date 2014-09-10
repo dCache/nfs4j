@@ -669,14 +669,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
     /**
      * Generate a {@link cookieverf3} for a directory.
      *
-     * @param dir
-     * @return
+     * @param dirStat stat structure for the target directory
+     * @return a cookie verifier, based on mtime
      * @throws IllegalArgumentException
-     * @throws ChimeraFsException
      */
-    private cookieverf3 generateDirectoryVerifier(Inode dir, VirtualFileSystem fs) throws IllegalArgumentException, IOException {
+    private cookieverf3 generateDirectoryVerifier(Stat dirStat) throws IllegalArgumentException {
         byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
-        Bytes.putLong(verifier, 0, fs.getattr(dir).getMTime());
+        Bytes.putLong(verifier, 0, dirStat.getGeneration());
         return new cookieverf3(verifier);
     }
 
@@ -738,7 +737,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     return res;
                 }
             } else {
-                cookieverf = generateDirectoryVerifier(dir, fs);
+                cookieverf = generateDirectoryVerifier(dirStat);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
                 try {
                     dirList = _dlCacheFull.get(cacheKey,
@@ -899,7 +898,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     return res;
                 }
             } else {
-                cookieverf = generateDirectoryVerifier(dir, fs);
+                cookieverf = generateDirectoryVerifier(dirStat);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
                 try {
                     dirList = _dlCacheFull.get(cacheKey,
