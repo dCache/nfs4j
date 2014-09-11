@@ -36,4 +36,17 @@ public class StatTest {
         stat.setSize(1024*1024*1024*1024L - 1); //one byte short of 1TB
         Assert.assertEquals("l---rwx--- 6666    1    2 1024G Mar 01 01:15", stat.toString());
     }
+
+    @Test
+    public void testSizeToString() {
+        Assert.assertEquals("0",Stat.sizeToString(0));
+        Assert.assertEquals("1023",Stat.sizeToString(1024-1));
+        Assert.assertEquals("1K",Stat.sizeToString(1024));
+        Assert.assertEquals("1K",Stat.sizeToString(1024+1));
+        Assert.assertEquals("1K",Stat.sizeToString(1024+51));
+        Assert.assertEquals("1.1K",Stat.sizeToString(1024+52)); //just after 1.05, round up
+        Assert.assertEquals("1024M",Stat.sizeToString(1024*1024*1024-1));
+        Assert.assertEquals("1G",Stat.sizeToString(1024*1024*1024));
+        Assert.assertEquals("8E",Stat.sizeToString(Long.MAX_VALUE));
+    }
 }
