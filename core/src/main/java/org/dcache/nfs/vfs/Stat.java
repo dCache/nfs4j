@@ -272,10 +272,13 @@ public class Stat {
         return result.toString();
     }
 
-    //technically _size (java long) will overflow after ~9 zettabytes, so "Y" is unreachable
+    //technically _size (java long) will overflow after ~8 exabytes, so "Z"/"Y" is unreachable
     private final static String[] SIZE_UNITS = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
 
     public static String sizeToString(long bytes) {
+        if (bytes==0) {
+            return "0";
+        }
         int orderOfMagnitude = (int)Math.floor(Math.log(bytes) / Math.log(1024));
         double significantSize = (double)bytes / (1L << orderOfMagnitude*10);
         DecimalFormat sizeFormat = new DecimalFormat("#.#"); //not thread safe
