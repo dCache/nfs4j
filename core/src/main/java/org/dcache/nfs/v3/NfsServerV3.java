@@ -174,7 +174,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private final VirtualFileSystem _vfs;
     private final ExportFile _exports;
 
-    private static final Cache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>> _dlCacheFull =
+    private final Cache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>> _dlCacheFull =
             CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .softValues()
@@ -182,7 +182,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             .recordStats()
             .build();
 
-    private static final GuavaCacheMXBean CACHE_MXBEAN
+    private final GuavaCacheMXBean CACHE_MXBEAN
             = new GuavaCacheMXBeanImpl("READDIR3", _dlCacheFull);
 
     public NfsServerV3(ExportFile exports, VirtualFileSystem fs) throws OncRpcException, IOException {
