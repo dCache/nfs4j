@@ -35,7 +35,6 @@ import org.dcache.nfs.v3.xdr.post_op_fh3;
 import org.dcache.nfs.v3.xdr.READLINK3args;
 import org.dcache.nfs.v3.xdr.uint64;
 import org.dcache.nfs.v3.xdr.MKDIR3res;
-import org.dcache.nfs.v3.xdr.stable_how;
 import org.dcache.nfs.v3.xdr.WRITE3args;
 import org.dcache.nfs.v3.xdr.createmode3;
 import org.dcache.nfs.v3.xdr.post_op_attr;
@@ -1370,12 +1369,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new WRITE3resok();
             res.status = nfsstat.NFS_OK;
 
-            int ret = fs.write(inode, arg1.data, offset, count);
-            if (ret < 0) {
+            VirtualFileSystem.StabilityLevel requiredStabilityLevel = VirtualFileSystem.StabilityLevel.fromStableHow(arg1.stable);
+            VirtualFileSystem.WriteResult ret = fs.write(inode, arg1.data, offset, count, requiredStabilityLevel);
+            if (ret.getBytesWritten() < 0) {
                 throw new NfsIoException("IO not allowed");
             }
 
-            res.resok.count = new count3(new uint32(ret));
+            res.resok.count = new count3(new uint32(ret.getBytesWritten()));
             res.resok.file_wcc = new wcc_data();
             res.resok.file_wcc.after = new post_op_attr();
             res.resok.file_wcc.after.attributes_follow = true;
@@ -1384,7 +1384,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
             res.resok.file_wcc.before = new pre_op_attr();
             res.resok.file_wcc.before.attributes_follow = false;
-            res.resok.committed = stable_how.FILE_SYNC;
+            res.resok.committed = ret.getStabilityLevel().toStableHow();
             res.resok.verf = new writeverf3();
             res.resok.verf.value = new byte[nfs3_prot.NFS3_WRITEVERFSIZE];
         } catch (ChimeraNFSException hne) {

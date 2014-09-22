@@ -22,6 +22,7 @@ package org.dcache.nfs.vfs;
 import java.io.IOException;
 import java.util.List;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.v4.xdr.stable_how4;
 
 public interface VirtualFileSystem {
 
@@ -53,7 +54,7 @@ public interface VirtualFileSystem {
 
     Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException;
 
-    int write(Inode inode, byte[] data, long offset, int count) throws IOException;
+    WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException;
 
     Stat getattr(Inode inode) throws IOException;
 
@@ -66,4 +67,44 @@ public interface VirtualFileSystem {
     boolean hasIOLayout(Inode inode) throws IOException;
 
     AclCheckable getAclCheckable();
+
+    public static class WriteResult {
+        private final int bytesWritten;
+        private final StabilityLevel stabilityLevel;
+
+        public WriteResult(StabilityLevel stabilityLevel, int bytesWritten) {
+            this.stabilityLevel = stabilityLevel;
+            this.bytesWritten = bytesWritten;
+        }
+
+        public int getBytesWritten() {
+            return bytesWritten;
+        }
+
+        public StabilityLevel getStabilityLevel() {
+            return stabilityLevel;
+        }
+    }
+
+    //NOTE - stability values and ordinals are the same for nfs 3 and 4
+    public static enum StabilityLevel {
+        UNSTABLE, DATA_SYNC, FILE_SYNC;
+
+        public static StabilityLevel fromStableHow(int stableHowValue) {
+            switch (stableHowValue) {
+                case stable_how4.UNSTABLE4:
+                    return UNSTABLE;
+                case stable_how4.DATA_SYNC4:
+                    return DATA_SYNC;
+                case stable_how4.FILE_SYNC4:
+                    return FILE_SYNC;
+                default:
+                    throw new IllegalArgumentException("unhandled stability value "+stableHowValue);
+            }
+        }
+
+        public int toStableHow() {
+            return ordinal();
+        }
+    }
 }

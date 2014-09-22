@@ -182,9 +182,10 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     }
 
     @Override
-    public int write(Inode inode, byte[] data, long offset, int count) throws IOException {
+    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        return fsInode.write(offset, data, 0, count);
+        int bytesWritten = fsInode.write(offset, data, 0, count);
+        return new WriteResult(StabilityLevel.FILE_SYNC, bytesWritten);
     }
 
     @Override

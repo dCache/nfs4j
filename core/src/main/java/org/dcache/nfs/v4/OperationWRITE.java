@@ -36,6 +36,7 @@ import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,16 +78,16 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         byte[] data = new byte[count];
         _args.opwrite.data.get(data);
 
-        int bytesWritten = context.getFs().write(context.currentInode(),
-                data, offset, count);
+        VirtualFileSystem.WriteResult writeResult = context.getFs().write(context.currentInode(),
+                data, offset, count, VirtualFileSystem.StabilityLevel.fromStableHow(_args.opwrite.stable));
 
-        if (bytesWritten < 0) {
+        if (writeResult.getBytesWritten() < 0) {
             throw new NfsIoException("IO not allowed");
         }
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new WRITE4resok();
-        res.resok4.count = new count4(bytesWritten);
+        res.resok4.count = new count4(writeResult.getStabilityLevel().toStableHow());
         res.resok4.committed = stable_how4.FILE_SYNC4;
         res.resok4.writeverf = new verifier4();
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];

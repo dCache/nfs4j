@@ -73,8 +73,8 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public int write(Inode inode, byte[] data, long offset, int count) throws IOException {
-        return _inner.write(inode, data, offset, count);
+    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
+        return _inner.write(inode, data, offset, count, stabilityLevel);
     }
 
     @Override
