@@ -275,9 +275,9 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public int write(Inode inode, byte[] data, long offset, int count) throws IOException {
+    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
         checkAccess(inode, ACE4_WRITE_DATA);
-        return _inner.write(inode, data, offset, count);
+        return _inner.write(inode, data, offset, count, stabilityLevel);
     }
 
     @Override
