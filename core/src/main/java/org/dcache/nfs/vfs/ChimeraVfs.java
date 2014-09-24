@@ -189,6 +189,11 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     }
 
     @Override
+    public void commit(Inode inode, long offset, int count) throws IOException {
+        //nop (all IO is FILE_SYNC so no commits expected)
+    }
+
+    @Override
     public List<DirectoryEntry> list(Inode inode) throws IOException {
         FsInode parentFsInode = toFsInode(inode);
         List<HimeraDirectoryEntry> list = DirectoryStreamHelper.listOf(parentFsInode);

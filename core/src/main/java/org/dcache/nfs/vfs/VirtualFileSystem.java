@@ -56,6 +56,8 @@ public interface VirtualFileSystem {
 
     WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException;
 
+    void commit(Inode inode, long offset, int count) throws IOException;
+
     Stat getattr(Inode inode) throws IOException;
 
     void setattr(Inode inode, Stat stat) throws IOException;
