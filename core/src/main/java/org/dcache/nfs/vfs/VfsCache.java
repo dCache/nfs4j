@@ -78,6 +78,11 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
+    public void commit(Inode inode, long offset, int count) throws IOException {
+        _inner.commit(inode, offset, count);
+    }
+
+    @Override
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         Inode inode = _inner.symlink(parent, path, link, uid, gid, mode);
 	invalidateStatCache(parent);

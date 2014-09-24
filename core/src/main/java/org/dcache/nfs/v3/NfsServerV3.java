@@ -232,10 +232,39 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     @Override
     public COMMIT3res NFSPROC3_COMMIT_3(RpcCall call$, COMMIT3args arg1) {
+
+        VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exports);
         COMMIT3res res = new COMMIT3res();
-        res.status = nfsstat.NFSERR_NOTSUPP;
-        res.resfail = new COMMIT3resfail();
-        res.resfail.file_wcc = defaultWccData();
+
+        try {
+            Inode inode = new Inode(arg1.file.data);
+            long offset = arg1.offset.value.value;
+            int count = arg1.count.value.value;
+
+            fs.commit(inode, offset, count);
+
+            res.resok.file_wcc = new wcc_data();
+            res.resok.file_wcc.after = new post_op_attr();
+            res.resok.file_wcc.after.attributes_follow = true;
+            res.resok.file_wcc.after.attributes = new fattr3();
+
+            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
+            res.resok.file_wcc.before = new pre_op_attr();
+            res.resok.file_wcc.before.attributes_follow = false;
+            res.resok.verf = new writeverf3();
+            res.resok.verf.value = new byte[nfs3_prot.NFS3_WRITEVERFSIZE];
+
+        } catch (ChimeraNFSException hne) {
+            res.status = hne.getStatus();
+            res.resfail = new COMMIT3resfail();
+            res.resfail.file_wcc = defaultWccData();
+        } catch (Exception e) {
+            _log.error("COMMIT", e);
+            res.status = nfsstat.NFSERR_SERVERFAULT;
+            res.resfail = new COMMIT3resfail();
+            res.resfail.file_wcc = defaultWccData();
+        }
+
         return res;
 
     }

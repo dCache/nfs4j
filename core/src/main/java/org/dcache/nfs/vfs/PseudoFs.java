@@ -281,6 +281,11 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
+    public void commit(Inode inode, long offset, int count) throws IOException {
+        _inner.commit(inode, offset, count);
+    }
+
+    @Override
     public Stat getattr(Inode inode) throws IOException {
         checkAccess(inode, ACE4_READ_ATTRIBUTES);
         return _inner.getattr(inode);
