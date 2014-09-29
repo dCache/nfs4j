@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.vfs;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -41,6 +43,7 @@ public class VfsCache implements VirtualFileSystem {
     private final LoadingCache<CacheKey, Inode> _lookupCache;
     private final Cache<Opaque, Stat> _statCache;
     private final LoadingCache<Inode, Inode> _parentCache;
+    private final Supplier<FsStat> _fsStatSupplier;
 
     private final VirtualFileSystem _inner;
 
@@ -66,6 +69,9 @@ public class VfsCache implements VirtualFileSystem {
                 .softValues()
                 .recordStats()
                 .build(new ParentLoader());
+
+        _fsStatSupplier = Suppliers.memoizeWithExpiration(
+                new FsStatSupplier(), cacheConfig.getFsStatLifeTime(), cacheConfig.getFsSataTimeUnit());
 
         new GuavaCacheMXBeanImpl("vfs-stat", _statCache);
         new GuavaCacheMXBeanImpl("vfs-parent", _parentCache);
@@ -155,7 +161,7 @@ public class VfsCache implements VirtualFileSystem {
 
     @Override
     public FsStat getFsStat() throws IOException {
-        return _inner.getFsStat();
+        return _fsStatSupplier.get();
     }
 
     @Override
@@ -325,6 +331,19 @@ public class VfsCache implements VirtualFileSystem {
 
         public Inode getParent() {
             return _parent;
+        }
+    }
+
+    private class FsStatSupplier implements Supplier<FsStat> {
+
+        @Override
+        public FsStat get() {
+            try {
+                return _inner.getFsStat();
+            }catch (IOException e) {
+                // not true, but good enough.
+                return new FsStat(0, 0, 0, 0);
+            }
         }
     }
 }

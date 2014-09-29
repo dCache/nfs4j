@@ -29,6 +29,8 @@ public class VfsCacheConfig {
     private int maxEntries = 0;
     private long lifeTime = 0;
     private TimeUnit timeUnit = TimeUnit.SECONDS;
+    private long fsStatLifeTime = 0;
+    private TimeUnit fsStatTimeUnit = TimeUnit.HOURS;
 
     /**
      * Get maximal number of entries in the cache.
@@ -55,6 +57,22 @@ public class VfsCacheConfig {
     }
 
     /**
+     * Get FsStat cached value validity time.
+     * @return validity time
+     */
+    public long getFsStatLifeTime() {
+        return fsStatLifeTime;
+    }
+
+    /**
+     * Get unit in which FsStat cached value validity time is expressed.
+     * @return time unit
+     */
+    public TimeUnit getFsSataTimeUnit() {
+        return fsStatTimeUnit;
+    }
+
+    /**
      * Set maximal number of entries in the cache.
      * @param maxEntries
      */
@@ -78,4 +96,19 @@ public class VfsCacheConfig {
 	this.timeUnit = timeUnit;
     }
 
+    /**
+     * Set FsStat cached value validity time.
+     * @param lifeTime
+     */
+    public void setFsStatLifeTime(long lifeTime) {
+        this.fsStatLifeTime = lifeTime;
+    }
+
+    /**
+     * Set unit in which FsStat cached value validity time is expressed.
+     * @param timeUnit
+     */
+    public void setFsStatTimeUnit(TimeUnit timeUnit) {
+        this.fsStatTimeUnit = timeUnit;
+    }
 }
