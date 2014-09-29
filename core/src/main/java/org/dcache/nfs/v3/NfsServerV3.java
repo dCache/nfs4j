@@ -128,6 +128,7 @@ import org.dcache.nfs.v3.xdr.ACCESS3args;
 import org.dcache.nfs.v3.xdr.CREATE3resfail;
 import org.dcache.nfs.v3.xdr.FSINFO3resfail;
 import org.dcache.nfs.v3.xdr.ACCESS3res;
+import org.dcache.nfs.v3.xdr.COMMIT3resok;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -242,6 +243,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
             int count = arg1.count.value.value;
 
             fs.commit(inode, offset, count);
+
+            res.resok = new COMMIT3resok();
 
             res.resok.file_wcc = new wcc_data();
             res.resok.file_wcc.after = new post_op_attr();
