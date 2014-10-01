@@ -65,7 +65,49 @@ public class Stat {
         CHAR,
         BLOCK,
         FIFO,
-        SOCK,
+        SOCK;
+
+        public int toMode() {
+            switch (this) {
+                case REGULAR:
+                    return S_IFREG;
+                case DIRECTORY:
+                    return S_IFDIR;
+                case SYMLINK:
+                    return S_IFLNK;
+                case CHAR:
+                    return S_IFCHR;
+                case BLOCK:
+                    return S_IFBLK;
+                case FIFO:
+                    return S_IFIFO;
+                case SOCK:
+                    return S_IFSOCK;
+                default:
+                    throw new IllegalArgumentException("unhandled: "+this);
+            }
+        }
+
+        public static Type fromMode(int mode) {
+            switch(mode & S_TYPE) {
+                case S_IFREG:
+                    return Type.REGULAR;
+                case S_IFDIR:
+                    return Type.DIRECTORY;
+                case S_IFLNK:
+                    return Type.SYMLINK;
+                case S_IFCHR:
+                    return Type.CHAR;
+                case S_IFBLK:
+                    return Type.BLOCK;
+                case S_IFIFO:
+                    return Type.FIFO;
+                case S_IFSOCK:
+                    return Type.SOCK;
+                default:
+                    return Type.REGULAR;
+            }
+        }
     }
 
     private int _dev = -1; //
@@ -191,33 +233,12 @@ public class Stat {
     }
 
     public Type type() {
-        return extractType(_mode);
-    }
-
-    public static Type extractType(int mode) {
-        switch(mode & S_TYPE) {
-            case S_IFBLK:
-                return Type.BLOCK;
-            case S_IFCHR:
-                return Type.CHAR;
-            case S_IFDIR:
-                return Type.DIRECTORY;
-            case S_IFIFO:
-                return Type.FIFO;
-            case S_IFLNK:
-                return Type.SYMLINK;
-            case S_IFREG:
-                return Type.REGULAR;
-            case S_IFSOCK:
-                return Type.SOCK;
-            default:
-                return Type.REGULAR;
-        }
+        return Type.fromMode(_mode);
     }
 
     public static String modeToString(int mode) {
         StringBuilder result = new StringBuilder(10);
-        switch (extractType(mode)) {
+        switch (Type.fromMode(mode)) {
             case BLOCK:
                 result.append("b");
                 break;
