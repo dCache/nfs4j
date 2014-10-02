@@ -19,12 +19,15 @@
  */
 package org.dcache.nfs.vfs;
 
+import java.io.Serializable;
+
 /**
  * File system stat information.
  */
 
 /* Immutable */
-public class FsStat {
+public class FsStat implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final long _totalSpace;
     private final long _totalFiles;

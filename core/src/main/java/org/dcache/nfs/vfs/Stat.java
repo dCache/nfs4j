@@ -19,11 +19,13 @@
  */
 package org.dcache.nfs.vfs;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Stat {
+public class Stat implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static final int S_TYPE = 0770000; // type mask
     public static final int S_PERMS = 0777;   // permissions mask
