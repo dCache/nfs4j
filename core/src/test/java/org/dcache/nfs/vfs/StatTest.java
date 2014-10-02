@@ -1,5 +1,9 @@
 package org.dcache.nfs.vfs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Calendar;
 
 import org.junit.Assert;
@@ -48,5 +52,34 @@ public class StatTest {
         Assert.assertEquals("1024M",Stat.sizeToString(1024*1024*1024-1));
         Assert.assertEquals("1G",Stat.sizeToString(1024*1024*1024));
         Assert.assertEquals("8E",Stat.sizeToString(Long.MAX_VALUE));
+    }
+
+    @Test
+    public void testSerialization() throws Exception {
+        Stat stat = new Stat();
+        stat.setNlink(7);
+        stat.setUid(1);
+        stat.setGid(2);
+        stat.setSize(3L);
+        stat.setMTime(System.currentTimeMillis());
+        stat.setMode(0755 | Stat.S_IFDIR);
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream);
+        os.writeObject(stat);
+        os.close();
+
+        byte[] serialized = byteArrayOutputStream.toByteArray();
+        ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(serialized));
+
+        Stat deserialized = (Stat) is.readObject();
+
+        Assert.assertNotNull(deserialized);
+        Assert.assertEquals(stat.getNlink(), deserialized.getNlink());
+        Assert.assertEquals(stat.getUid(), deserialized.getUid());
+        Assert.assertEquals(stat.getGid(), deserialized.getGid());
+        Assert.assertEquals(stat.getSize(), deserialized.getSize());
+        Assert.assertEquals(stat.getMTime(), deserialized.getMTime());
+        Assert.assertEquals(stat.getMode(), deserialized.getMode());
     }
 }
