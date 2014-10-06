@@ -1129,8 +1129,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             String name = arg1.object.name.value;
             checkFilename(name);
 
-            Inode inode = fs.lookup(parent, name);
-            Stat inodeStat = fs.getattr(inode);
             Stat parentStat = fs.getattr(parent);
 
             fs.remove(parent, name);
