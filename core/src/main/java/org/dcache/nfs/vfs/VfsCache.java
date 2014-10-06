@@ -70,8 +70,9 @@ public class VfsCache implements VirtualFileSystem {
                 .recordStats()
                 .build(new ParentLoader());
 
-        _fsStatSupplier = Suppliers.memoizeWithExpiration(
-                new FsStatSupplier(), cacheConfig.getFsStatLifeTime(), cacheConfig.getFsSataTimeUnit());
+        _fsStatSupplier = cacheConfig.getFsStatLifeTime() > 0 ?
+                Suppliers.memoizeWithExpiration(new FsStatSupplier(), cacheConfig.getFsStatLifeTime(), cacheConfig.getFsSataTimeUnit()) :
+                new FsStatSupplier();
 
         new GuavaCacheMXBeanImpl("vfs-stat", _statCache);
         new GuavaCacheMXBeanImpl("vfs-parent", _parentCache);
