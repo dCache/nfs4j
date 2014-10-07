@@ -19,10 +19,10 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,7 +127,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
         try {
             FsInode parentFsInode = toFsInode(parent);
-            FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes(Charsets.UTF_8));
+            FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes(StandardCharsets.UTF_8));
             return toInode(fsInode);
         } catch (FileExistsChimeraFsException e) {
             throw new ExistException("path already exists");
@@ -166,7 +166,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         if (n < 0) {
             throw new NfsIoException("Can't read symlink");
         }
-        return new String(data, 0, n, Charsets.UTF_8);
+        return new String(data, 0, n, StandardCharsets.UTF_8);
     }
 
     @Override

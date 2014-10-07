@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Charsets;
+import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.junit.Test;
 
@@ -44,7 +44,7 @@ public class StateidsTest {
 
     @Test
     public void testIsRegularIsStateless() {
-        assertFalse(Stateids.isStateLess( new stateid4("a state".getBytes(Charsets.US_ASCII), 1)));
+        assertFalse(Stateids.isStateLess( new stateid4("a state".getBytes(StandardCharsets.UTF_8), 1)));
     }
 
 }

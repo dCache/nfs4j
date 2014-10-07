@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Charsets;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadNameException;
@@ -42,18 +42,18 @@ public class NameFilterTest {
         (byte) 0xa0,
         (byte) 0x80
     };
-    private static final byte[] GOOD_UTF8 = "a normal string".getBytes(Charsets.UTF_8);
+    private static final byte[] GOOD_UTF8 = "a normal string".getBytes(StandardCharsets.UTF_8);
     private static final byte[] EMPTY_NAME = new byte[0];
 
     private static final byte[] NAME_TOO_LONG = new byte[NFSv4Defaults.NFS4_MAXFILENAME + 1];
     static { Arrays.fill(NAME_TOO_LONG, (byte)'a'); }
 
-    private static final byte[] DOT = ".".getBytes(Charsets.UTF_8);
-    private static final byte[] DOT_DOT = "..".getBytes(Charsets.UTF_8);
-    private static final byte[] WITH_SLASH = "foo/bar".getBytes(Charsets.UTF_8);
-    private static final byte[] GOOD_UTF8_ARM = "Երեվան".getBytes(Charsets.UTF_8);
-    private static final byte[] GOOD_UTF8_HBR = "יְרוּשָׁלַיִם".getBytes(Charsets.UTF_8);
-    private static final byte[] WITH_NULL = "foo\0".getBytes(Charsets.UTF_8);
+    private static final byte[] DOT = ".".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] DOT_DOT = "..".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] WITH_SLASH = "foo/bar".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] GOOD_UTF8_ARM = "Երեվան".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] GOOD_UTF8_HBR = "יְרוּשָׁלַיִם".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] WITH_NULL = "foo\0".getBytes(StandardCharsets.UTF_8);
 
     @Test
     public void testGoodUtf8() throws ChimeraNFSException {

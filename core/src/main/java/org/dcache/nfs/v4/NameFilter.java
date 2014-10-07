@@ -19,9 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Utf8;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadNameException;
 import org.dcache.nfs.status.InvalException;
@@ -29,7 +29,7 @@ import org.dcache.nfs.status.NameTooLongException;
 
 class NameFilter {
 
-    private static final Charset UTF8 = Charsets.UTF_8;
+    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     /* utility calls */
     private NameFilter(){}

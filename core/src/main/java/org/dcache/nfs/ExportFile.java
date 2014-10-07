@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs;
 
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Charsets;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +34,7 @@ import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,7 +69,7 @@ public class ExportFile {
         List<FsExport> exports = new ArrayList<>();
 
         String line;
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream(), Charsets.UTF_8))) {
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream(), StandardCharsets.UTF_8))) {
             while ((line = br.readLine()) != null) {
 
                 line = line.trim();

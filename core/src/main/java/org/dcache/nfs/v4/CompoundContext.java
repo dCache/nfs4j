@@ -19,7 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Charsets;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
@@ -322,7 +322,7 @@ public class CompoundContext {
 
             @Override
             public byte[] getScope() {
-                return "".getBytes(Charsets.UTF_8);
+                return "".getBytes(StandardCharsets.UTF_8);
             }
         };
     }

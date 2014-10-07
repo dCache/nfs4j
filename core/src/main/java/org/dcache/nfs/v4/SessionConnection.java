@@ -1,7 +1,7 @@
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Objects;
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 /**
  * An abstraction to represent NFSv4.1 session connection
@@ -18,7 +18,7 @@ public class SessionConnection {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(_local, _remote);
+        return Objects.hash(_local, _remote);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class SessionConnection {
             return false;
         }
         final SessionConnection other = (SessionConnection) obj;
-        return Objects.equal(_local, other._local) && Objects.equal(_remote, other._remote);
+        return Objects.equals(_local, other._local) && Objects.equals(_remote, other._remote);
     }
 
     public InetSocketAddress getLocalConnection() {
