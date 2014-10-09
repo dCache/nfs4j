@@ -23,9 +23,32 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EnumSet;
 
 public class Stat implements Serializable, Cloneable {
+
+    public enum StatAttribute {
+        DEV,
+        INO,
+        MODE,
+        NLINK,
+        OWNER,
+        GROUP,
+        RDEV,
+        SIZE,
+        FILEID,
+        GENERATION,
+        ATIME,
+        MTIME,
+        CTIME
+    };
+
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Set of attributes defined in this {@code stat} object.
+     */
+    private final EnumSet<StatAttribute> _definedAttrs = EnumSet.noneOf(StatAttribute.class);
 
     public static final int S_TYPE = 0770000; // type mask
     public static final int S_PERMS = 0777;   // permissions mask
@@ -112,129 +135,156 @@ public class Stat implements Serializable, Cloneable {
         }
     }
 
-    private int _dev = -1; //
-    private int _ino = -1; //
-    private int _mode = -1; //
-    private int _nlink = -1; //
-    private int _owner = -1; //
-    private int _group = -1; //
-    private int _rdev = -1; //
-    private long _size = -1; //
-    private long _fileid = -1; //
-    private long _generation = -1; //
+    private int _dev;
+    private int _ino;
+    private int _mode;
+    private int _nlink;
+    private int _owner;
+    private int _group;
+    private int _rdev;
+    private long _size;
+    private long _fileid;
+    private long _generation;
 
     /*
      * Opposite to classic Unix, all times in milliseconds
      */
-    private long _atime = -1; //
-    private long _mtime = -1; //
-    private long _ctime = -1; //
+    private long _atime;
+    private long _mtime;
+    private long _ctime;
 
     public int getDev() {
+        guard(StatAttribute.DEV);
         return _dev;
     }
 
     public void setDev(int dev) {
+        define(StatAttribute.DEV);
         _dev = dev;
     }
 
     public int getIno() {
+        guard(StatAttribute.INO);
         return _ino;
     }
 
     public void setIno(int ino) {
+        define(StatAttribute.INO);
         _ino = ino;
     }
 
     public int getMode() {
+        guard(StatAttribute.MODE);
         return _mode;
     }
 
     public void setMode(int mode) {
+        define(StatAttribute.MODE);
         _mode = mode;
     }
 
     public int getNlink() {
+        guard(StatAttribute.NLINK);
         return _nlink;
     }
 
     public void setNlink(int nlink) {
+        define(StatAttribute.NLINK);
         _nlink = nlink;
     }
 
     public int getUid() {
+        guard(StatAttribute.OWNER);
         return _owner;
     }
 
     public void setUid(int owner) {
+        define(StatAttribute.OWNER);
         _owner = owner;
     }
 
     public int getGid() {
+        guard(StatAttribute.GROUP);
         return _group;
     }
 
     public void setGid(int group) {
+        define(StatAttribute.GROUP);
         _group = group;
     }
 
     public int getRdev() {
+        guard(StatAttribute.RDEV);
         return _rdev;
     }
 
     public void setRdev(int rdev) {
+        define(StatAttribute.RDEV);
         _rdev = rdev;
     }
 
     public long getSize() {
+        guard(StatAttribute.SIZE);
         return _size;
     }
 
     public void setSize(long size) {
+        define(StatAttribute.SIZE);
         _size = size;
     }
 
     public long getATime() {
+        guard(StatAttribute.ATIME);
         return _atime;
     }
 
     public void setATime(long atime) {
+        define(StatAttribute.ATIME);
         _atime = atime;
     }
 
     public long getMTime() {
+        guard(StatAttribute.MTIME);
         return _mtime;
     }
 
     public void setMTime(long mtime) {
+        define(StatAttribute.MTIME);
         _mtime = mtime;
     }
 
     public long getCTime() {
+        guard(StatAttribute.CTIME);
         return _ctime;
     }
 
     public void setCTime(long ctime) {
+        define(StatAttribute.CTIME);
         _ctime = ctime;
     }
 
     public long getFileId() {
+        guard(StatAttribute.FILEID);
         return _fileid;
     }
 
     public void setFileid(long fileid) {
+        define(StatAttribute.FILEID);
         _fileid = fileid;
     }
 
     public long getGeneration() {
+        guard(StatAttribute.GENERATION);
         return _generation;
     }
 
     public void setGeneration(long generation) {
+        define(StatAttribute.GENERATION);
         _generation = generation;
     }
 
     public Type type() {
+        guard(StatAttribute.MODE);
         return Type.fromMode(_mode);
     }
 
@@ -325,5 +375,25 @@ public class Stat implements Serializable, Cloneable {
         String humanReadableSize = sizeToString(_size);
         String humanReadableMTime = new SimpleDateFormat("MMM dd HH:mm").format(new Date(_mtime)); //not thread safe
         return modeToString(_mode)+" "+String.format("%4d %4d %4d %4s %s", _nlink, _owner, _group, humanReadableSize, humanReadableMTime);
+    }
+
+    /**
+     * Check is attribute defined in this {@code stat} object;
+     * @param attr attribute to check
+     * @return true iff specified attribute is defined in this stat object.
+     */
+    public boolean isDefined(StatAttribute attr) {
+        return _definedAttrs.contains(attr);
+    }
+
+    /** Throws IllegalStateException if attribute is not defined. */
+    private void guard(StatAttribute attr) throws IllegalStateException {
+        if ( !isDefined(attr)) {
+            throw new IllegalStateException("Attribute is not defined: " + attr);
+        }
+    }
+
+    private void define(StatAttribute attr)  {
+	_definedAttrs.add(attr);
     }
 }

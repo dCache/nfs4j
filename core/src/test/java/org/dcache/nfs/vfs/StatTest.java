@@ -1,13 +1,15 @@
 package org.dcache.nfs.vfs;
 
 import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Calendar;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class StatTest {
     @Test
@@ -28,30 +30,30 @@ public class StatTest {
         localCal.set(Calendar.MILLISECOND, 0);
         stat.setMTime(localCal.getTimeInMillis());
         stat.setMode(0755 | Stat.S_IFDIR);
-        Assert.assertEquals("drwxr-xr-x    7    1    2    3 Feb 01 14:15", stat.toString());
+        assertEquals("drwxr-xr-x    7    1    2    3 Feb 01 14:15", stat.toString());
         stat.setMode(0401 | Stat.S_IFREG);
         stat.setNlink(6666);
         stat.setSize(1024*16);
         localCal.set(Calendar.DAY_OF_MONTH, 29);
         localCal.set(Calendar.HOUR_OF_DAY, 1);
         stat.setMTime(localCal.getTimeInMillis());
-        Assert.assertEquals("-r-------x 6666    1    2  16K Mar 01 01:15", stat.toString());
+        assertEquals("-r-------x 6666    1    2  16K Mar 01 01:15", stat.toString());
         stat.setMode(0070 | Stat.S_IFLNK);
         stat.setSize(1024*1024*1024*1024L - 1); //one byte short of 1TB
-        Assert.assertEquals("l---rwx--- 6666    1    2 1024G Mar 01 01:15", stat.toString());
+        assertEquals("l---rwx--- 6666    1    2 1024G Mar 01 01:15", stat.toString());
     }
 
     @Test
     public void testSizeToString() {
-        Assert.assertEquals("0",Stat.sizeToString(0));
-        Assert.assertEquals("1023",Stat.sizeToString(1024-1));
-        Assert.assertEquals("1K",Stat.sizeToString(1024));
-        Assert.assertEquals("1K",Stat.sizeToString(1024+1));
-        Assert.assertEquals("1K",Stat.sizeToString(1024+51));
-        Assert.assertEquals("1.1K",Stat.sizeToString(1024+52)); //just after 1.05, round up
-        Assert.assertEquals("1024M",Stat.sizeToString(1024*1024*1024-1));
-        Assert.assertEquals("1G",Stat.sizeToString(1024*1024*1024));
-        Assert.assertEquals("8E",Stat.sizeToString(Long.MAX_VALUE));
+        assertEquals("0",Stat.sizeToString(0));
+        assertEquals("1023",Stat.sizeToString(1024-1));
+        assertEquals("1K",Stat.sizeToString(1024));
+        assertEquals("1K",Stat.sizeToString(1024+1));
+        assertEquals("1K",Stat.sizeToString(1024+51));
+        assertEquals("1.1K",Stat.sizeToString(1024+52)); //just after 1.05, round up
+        assertEquals("1024M",Stat.sizeToString(1024*1024*1024-1));
+        assertEquals("1G",Stat.sizeToString(1024*1024*1024));
+        assertEquals("8E",Stat.sizeToString(Long.MAX_VALUE));
     }
 
     @Test
@@ -74,13 +76,177 @@ public class StatTest {
 
         Stat deserialized = (Stat) is.readObject();
 
-        Assert.assertNotNull(deserialized);
-        Assert.assertEquals(stat.getNlink(), deserialized.getNlink());
-        Assert.assertEquals(stat.getUid(), deserialized.getUid());
-        Assert.assertEquals(stat.getGid(), deserialized.getGid());
-        Assert.assertEquals(stat.getSize(), deserialized.getSize());
-        Assert.assertEquals(stat.getMTime(), deserialized.getMTime());
-        Assert.assertEquals(stat.getMode(), deserialized.getMode());
+        assertNotNull(deserialized);
+        assertEquals(stat.getNlink(), deserialized.getNlink());
+        assertEquals(stat.getUid(), deserialized.getUid());
+        assertEquals(stat.getGid(), deserialized.getGid());
+        assertEquals(stat.getSize(), deserialized.getSize());
+        assertEquals(stat.getMTime(), deserialized.getMTime());
+        assertEquals(stat.getMode(), deserialized.getMode());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedNotDefeinedGetDev() {
+        new Stat().getDev();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetIno() {
+        new Stat().getIno();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetMode() {
+        new Stat().getMode();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetNlink() {
+        new Stat().getNlink();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetUid() {
+        new Stat().getUid();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetGid() {
+        new Stat().getGid();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetRdev() {
+        new Stat().getRdev();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetSize() {
+        new Stat().getSize();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetATime() {
+        new Stat().getATime();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetMTime() {
+        new Stat().getMTime();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetCTime() {
+        new Stat().getCTime();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetFileId() {
+        new Stat().getFileId();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetGeneration() {
+        new Stat().getGeneration();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedType() {
+        new Stat().type();
+    }
+
+    @Test
+    public void testGetDev() {
+        Stat stat = new Stat();
+        stat.setDev(1);
+        assertEquals(1, stat.getDev());
+    }
+
+    @Test
+    public void testGetIno() {
+        Stat stat = new Stat();
+        stat.setIno(1);
+        assertEquals(1, stat.getIno());
+
+    }
+
+    @Test
+    public void testGetMode() {
+        Stat stat = new Stat();
+        stat.setMode(0755 | Stat.S_IFDIR);
+        assertEquals(0755 | Stat.S_IFDIR, stat.getMode());
+        assertEquals(Stat.Type.DIRECTORY, stat.type());
+    }
+
+    @Test
+    public void testGetNlink() {
+        Stat stat = new Stat();
+        stat.setNlink(1);
+        assertEquals(1, stat.getNlink());
+
+    }
+
+    @Test
+    public void testGetUid() {
+        Stat stat = new Stat();
+        stat.setUid(1);
+        assertEquals(1, stat.getUid());
+    }
+
+    @Test
+    public void testGetGid() {
+        Stat stat = new Stat();
+        stat.setGid(1);
+        assertEquals(1, stat.getGid());
+    }
+
+    @Test
+    public void testGetRdev() {
+        Stat stat = new Stat();
+        stat.setRdev(1);
+        assertEquals(1, stat.getRdev());
+    }
+
+    @Test
+    public void testGetSize() {
+        Stat stat = new Stat();
+        stat.setSize(1);
+        assertEquals(1, stat.getSize());
+    }
+
+    @Test
+    public void testGetATime() {
+        Stat stat = new Stat();
+        stat.setATime(1);
+        assertEquals(1, stat.getATime());
+    }
+
+    @Test
+    public void testGetMTime() {
+        Stat stat = new Stat();
+        stat.setMTime(1);
+        assertEquals(1, stat.getMTime());
+    }
+
+    @Test
+    public void testGetCTime() {
+        Stat stat = new Stat();
+        stat.setCTime(1);
+        assertEquals(1, stat.getCTime());
+    }
+
+    @Test
+    public void testGetFileId() {
+        Stat stat = new Stat();
+        stat.setFileid(1);
+        assertEquals(1, stat.getFileId());
+    }
+
+    @Test
+    public void testGetGeneration() {
+        Stat stat = new Stat();
+        stat.setGeneration(1);
+        assertEquals(1, stat.getGeneration());
     }
 
     @Test

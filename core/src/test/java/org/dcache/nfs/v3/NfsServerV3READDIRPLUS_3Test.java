@@ -37,6 +37,15 @@ public class NfsServerV3READDIRPLUS_3Test {
         //noinspection OctalInteger
         dirStat.setMode(Stat.S_IFDIR | 0755);
         dirStat.setMTime(System.currentTimeMillis());
+        dirStat.setATime(System.currentTimeMillis());
+        dirStat.setCTime(System.currentTimeMillis());
+        dirStat.setGeneration(1);
+        dirStat.setNlink(2);
+        dirStat.setUid(1);
+        dirStat.setGid(2);
+        dirStat.setDev(1);
+        dirStat.setFileid(1);
+        dirStat.setSize(512);
         vfs = Mockito.mock(VirtualFileSystem.class); // the vfs serving it
         Mockito.when(vfs.getattr(Mockito.eq(dirInode))).thenReturn(dirStat);
         ExportFile exportFile = new ExportFile(this.getClass().getResource("simpleExports")); // same package as us
