@@ -22,10 +22,11 @@ import java.io.IOException;
 
 import java.net.InetAddress;
 
-import com.sun.security.auth.module.UnixSystem;
+import org.dcache.chimera.posix.UnixUser;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.utils.UnixUtils;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.RpcAuth;
@@ -71,16 +72,43 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
     public nfs4_prot_NFS4_PROGRAM_Client(InetAddress host, int port, int protocol)
            throws OncRpcException, IOException {
 
+        UnixUser currentUser = UnixUtils.getCurrentUser();
+        if (currentUser == null) {
+            throw new IllegalStateException("unable to determine current unix user. please provide uid/gid explicitly");
+        }
+
         rpcClient = new OncRpcClient(host, protocol, port);
         XdrTransport transport;
         transport = rpcClient.connect();
 
-        UnixSystem unix = new UnixSystem();
         RpcAuth credential = new RpcAuthTypeUnix(
-            (int) unix.getUid(), (int) unix.getGid(),
-            new int[]{(int) unix.getGid()},
+            currentUser.getUID(), currentUser.getGID(), currentUser.getGIDS(),
             (int) (System.currentTimeMillis() / 1000),
             InetAddress.getLocalHost().getHostName());
+        client = new RpcCall(100003, 4, credential, transport);
+    }
+
+    /**
+     * Constructs a <code>nfs4_prot_NFS4_PROGRAM_Client</code> client stub proxy object
+     * from which the NFS4_PROGRAM remote program can be accessed.
+     * @param host Internet address of host where to contact the remote program.
+     * @param port Port number at host where the remote program can be reached.
+     * @param protocol {@link org.acplt.oncrpc.OncRpcProtocols Protocol} to be
+     *   used for ONC/RPC calls.
+     * @param gid gid to authenticate as
+     * @param uid uid to authenticate as
+     * @throws OncRpcException if an ONC/RPC error occurs.
+     * @throws IOException if an I/O error occurs.
+     */
+    public nfs4_prot_NFS4_PROGRAM_Client(InetAddress host, int port, int protocol, int uid, int gid)
+            throws OncRpcException, IOException {
+        rpcClient = new OncRpcClient(host, protocol, port);
+        XdrTransport transport;
+        transport = rpcClient.connect();
+        RpcAuth credential = new RpcAuthTypeUnix(
+                uid, gid, new int[]{gid},
+                (int) (System.currentTimeMillis() / 1000),
+                InetAddress.getLocalHost().getHostName());
         client = new RpcCall(100003, 4, credential, transport);
     }
 
