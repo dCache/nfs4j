@@ -117,9 +117,9 @@ public class HimeraNfsUtils {
         return ((long)gmtNanos.seconds.value)*1000 + ((long)gmtNanos.nseconds.value)/1000000;
     }
 
-    public static void set_sattr( Inode inode, VirtualFileSystem fs, sattr3 s) throws IOException {
+    public static void set_sattr(Inode inode, VirtualFileSystem fs, sattr3 s) throws IOException {
 
-        Stat stat = fs.getattr(inode);
+        Stat stat = new Stat();
         long now = System.currentTimeMillis();
 
         if( s.uid.set_it ) {
@@ -131,7 +131,7 @@ public class HimeraNfsUtils {
         }
 
         if( s.mode.set_it  ) {
-            int mode = s.mode.mode.value.value | (stat.getMode() & 0770000);
+            int mode = s.mode.mode.value.value;
             _log.debug("New mode [{}]", Integer.toOctalString(mode));
             stat.setMode(mode);
         }

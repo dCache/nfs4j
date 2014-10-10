@@ -61,8 +61,9 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
             long currentSize = stat.getSize();
             long newSize = _args.oplayoutcommit.loca_last_write_offset.no_offset.value + 1;
             if (newSize > currentSize) {
-                stat.setSize(newSize);
-                context.getFs().setattr(context.currentInode(), stat);
+                Stat newStat = new Stat();
+                newStat.setSize(newSize);
+                context.getFs().setattr(context.currentInode(), newStat);
                 res.locr_resok4.locr_newsize.ns_sizechanged = true;
                 res.locr_resok4.locr_newsize.ns_size = new length4(newSize);
             }

@@ -86,7 +86,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
          * bitmap we send back. can't be uninitialized.
          */
         bitmap4 processedAttributes = new bitmap4(new int[0]);
-        Stat stat = context.getFs().getattr(inode);
+        Stat stat = new Stat();
         try {
             for (int i : attributes.attrmask) {
                 if (xdr2fattr(i, stat, inode, context, xdr)) {
@@ -119,15 +119,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         switch(fattr) {
 
             case nfs4_prot.FATTR4_SIZE :
-
-                if( stat.type() == Stat.Type.DIRECTORY ) {
-                    throw new IsDirException();
-                }
-
-                if( stat.type() != Stat.Type.REGULAR ) {
-                    throw new InvalException("can't set size on non file object");
-                }
-
                 uint64_t size = new uint64_t();
                 size.xdrDecode(xdr);
                 stat.setSize(size.value);
@@ -160,9 +151,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MODE :
                 mode4 mode = new mode4();
                 mode.xdrDecode(xdr);
-                int rwx = mode.value | (stat.getMode() & 0770000);
-                stat.setMode(rwx);
-                context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), rwx));
+                stat.setMode(mode.value);
+                context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), mode.value));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER :

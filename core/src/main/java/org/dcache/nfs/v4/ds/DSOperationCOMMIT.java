@@ -67,8 +67,9 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
 
             FileChannel out = _fsCache.get(inode);
 
-            stat.setSize(out.size());
-            context.getFs().setattr(context.currentInode(), stat);
+            Stat newStat = new Stat();
+            newStat.setSize(out.size());
+            context.getFs().setattr(context.currentInode(), newStat);
         }
 
         res.status = nfsstat.NFS_OK;

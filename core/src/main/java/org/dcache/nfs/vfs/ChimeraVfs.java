@@ -40,6 +40,8 @@ import org.dcache.chimera.FileNotFoundHimeraFsException;
 import org.dcache.chimera.FsInode;
 import org.dcache.chimera.FsInodeType;
 import org.dcache.chimera.HimeraDirectoryEntry;
+import org.dcache.chimera.InvalidArgumentChimeraException;
+import org.dcache.chimera.IsDirChimeraException;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.NotDirChimeraException;
 import org.dcache.chimera.StorageGenericLocation;
@@ -243,7 +245,15 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
 	FsInode fsInode = toFsInode(inode);
-	fsInode.setStat(toChimeraStat(stat));
+        try {
+            fsInode.setStat(toChimeraStat(stat));
+        } catch (InvalidArgumentChimeraException e) {
+            throw new InvalException(e.getMessage());
+        } catch (IsDirChimeraException e) {
+            throw new IsDirException(e.getMessage());
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new StaleException(e.getMessage());
+        }
     }
 
     @Override
@@ -298,19 +308,42 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     private static org.dcache.chimera.posix.Stat toChimeraStat(Stat stat) {
         org.dcache.chimera.posix.Stat pStat = new org.dcache.chimera.posix.Stat();
 
-        pStat.setATime(stat.getATime());
-        pStat.setCTime(stat.getCTime());
-        pStat.setMTime(stat.getMTime());
-
-        pStat.setGid(stat.getGid());
-        pStat.setUid(stat.getUid());
-        pStat.setDev(stat.getDev());
-        pStat.setIno(stat.getIno());
-        pStat.setMode(stat.getMode());
-        pStat.setNlink(stat.getNlink());
-        pStat.setRdev(stat.getRdev());
-        pStat.setSize(stat.getSize());
-        pStat.setGeneration(stat.getGeneration());
+        if (stat.isDefined(Stat.StatAttribute.ATIME)) {
+            pStat.setATime(stat.getATime());
+        }
+        if (stat.isDefined(Stat.StatAttribute.CTIME)) {
+            pStat.setCTime(stat.getCTime());
+        }
+        if (stat.isDefined(Stat.StatAttribute.MTIME)) {
+            pStat.setMTime(stat.getMTime());
+        }
+        if (stat.isDefined(Stat.StatAttribute.GROUP)) {
+            pStat.setGid(stat.getGid());
+        }
+        if (stat.isDefined(Stat.StatAttribute.OWNER)) {
+            pStat.setUid(stat.getUid());
+        }
+        if (stat.isDefined(Stat.StatAttribute.DEV)) {
+            pStat.setDev(stat.getDev());
+        }
+        if (stat.isDefined(Stat.StatAttribute.INO)) {
+            pStat.setIno(stat.getIno());
+        }
+        if (stat.isDefined(Stat.StatAttribute.MODE)) {
+            pStat.setMode(stat.getMode());
+        }
+        if (stat.isDefined(Stat.StatAttribute.NLINK)) {
+            pStat.setNlink(stat.getNlink());
+        }
+        if (stat.isDefined(Stat.StatAttribute.RDEV)) {
+            pStat.setRdev(stat.getRdev());
+        }
+        if (stat.isDefined(Stat.StatAttribute.SIZE)) {
+            pStat.setSize(stat.getSize());
+        }
+        if (stat.isDefined(Stat.StatAttribute.GENERATION)) {
+            pStat.setGeneration(stat.getGeneration());
+        }
         return pStat;
     }
 

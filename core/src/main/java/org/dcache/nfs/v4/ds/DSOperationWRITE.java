@@ -99,8 +99,9 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
         if ((bytesWritten > 0) && (_args.opwrite.stable != stable_how4.UNSTABLE4)) {
-            stat.setSize(out.size());
-            context.getFs().setattr(context.currentInode(), stat);
+            Stat newStat = new Stat();
+            newStat.setSize(out.size());
+            context.getFs().setattr(context.currentInode(), newStat);
         }
         _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
                 bytesWritten, offset, _args.opwrite.data, out.size());
