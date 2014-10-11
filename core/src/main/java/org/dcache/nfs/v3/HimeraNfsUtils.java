@@ -19,32 +19,32 @@
  */
 package org.dcache.nfs.v3;
 
-import java.io.IOException;
-import org.dcache.nfs.v3.xdr.specdata3;
-import org.dcache.nfs.v3.xdr.uint64;
-import org.dcache.nfs.v3.xdr.uid3;
-import org.dcache.nfs.v3.xdr.gid3;
-import org.dcache.nfs.v3.xdr.fattr3;
-import org.dcache.nfs.v3.xdr.nfstime3;
-import org.dcache.nfs.v3.xdr.fileid3;
-import org.dcache.nfs.v3.xdr.uint32;
-import org.dcache.nfs.v3.xdr.mode3;
-import org.dcache.nfs.v3.xdr.sattr3;
-import org.dcache.nfs.v3.xdr.ftype3;
-import org.dcache.nfs.v3.xdr.size3;
-import org.dcache.nfs.v3.xdr.time_how;
-import org.dcache.nfs.v3.xdr.wcc_attr;
-import java.util.concurrent.TimeUnit;
-
 import org.dcache.chimera.UnixPermission;
-import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.v3.xdr.fattr3;
+import org.dcache.nfs.v3.xdr.fileid3;
+import org.dcache.nfs.v3.xdr.ftype3;
+import org.dcache.nfs.v3.xdr.gid3;
+import org.dcache.nfs.v3.xdr.mode3;
+import org.dcache.nfs.v3.xdr.nfstime3;
 import org.dcache.nfs.v3.xdr.post_op_attr;
 import org.dcache.nfs.v3.xdr.pre_op_attr;
+import org.dcache.nfs.v3.xdr.sattr3;
+import org.dcache.nfs.v3.xdr.size3;
+import org.dcache.nfs.v3.xdr.specdata3;
+import org.dcache.nfs.v3.xdr.time_how;
+import org.dcache.nfs.v3.xdr.uid3;
+import org.dcache.nfs.v3.xdr.uint32;
+import org.dcache.nfs.v3.xdr.uint64;
+import org.dcache.nfs.v3.xdr.wcc_attr;
 import org.dcache.nfs.v3.xdr.wcc_data;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 public class HimeraNfsUtils {
@@ -89,17 +89,11 @@ public class HimeraNfsUtils {
         at.used = new size3( new uint64( stat.getSize() ) );
 
         //public nfstime atime;
-        at.atime = new nfstime3();
-        at.atime.seconds = new uint32( (int)TimeUnit.SECONDS.convert(stat.getATime() , TimeUnit.MILLISECONDS) );
-        at.atime.nseconds = new uint32(0);
+        at.atime = convertTimestamp(stat.getATime());
         //public nfstime mtime;
-        at.mtime = new nfstime3();
-        at.mtime.seconds = new uint32( (int)TimeUnit.SECONDS.convert(stat.getMTime() , TimeUnit.MILLISECONDS) );
-        at.mtime.nseconds = new uint32(0);
+        at.mtime = convertTimestamp(stat.getMTime());
         //public nfstime ctime;
-        at.ctime = new nfstime3();
-        at.ctime.seconds = new uint32( (int)TimeUnit.SECONDS.convert(stat.getCTime() , TimeUnit.MILLISECONDS) );
-        at.ctime.nseconds = new uint32(0);
+        at.ctime = convertTimestamp(stat.getCTime());
     }
 
 
@@ -107,14 +101,20 @@ public class HimeraNfsUtils {
 
         at.size = new size3( new uint64( stat.getSize() ) );
         //public nfstime mtime;
-        at.mtime = new nfstime3();
-        at.mtime.seconds = new uint32( (int)TimeUnit.SECONDS.convert(stat.getMTime() , TimeUnit.MILLISECONDS) );
-        at.mtime.nseconds = new uint32(0);
+        at.mtime = convertTimestamp(stat.getMTime());
         //public nfstime ctime;
-        at.ctime = new nfstime3();
-        at.ctime.seconds = new uint32( (int)TimeUnit.SECONDS.convert(stat.getCTime() , TimeUnit.MILLISECONDS) );
-        at.ctime.nseconds = new uint32(0);
+        at.ctime = convertTimestamp(stat.getCTime());
+    }
 
+    public static nfstime3 convertTimestamp(long gmtMillis) {
+        nfstime3 result = new nfstime3();
+        result.seconds = new uint32( (int)TimeUnit.SECONDS.convert(gmtMillis , TimeUnit.MILLISECONDS) ); //== / 1000
+        result.nseconds = new uint32((int)(1000000 * (gmtMillis % 1000))); //take millis rounded off above, multiply by 1 mil for nanos
+        return result;
+    }
+
+    public static long convertTimestamp(nfstime3 gmtNanos) {
+        return ((long)gmtNanos.seconds.value)*1000 + ((long)gmtNanos.nseconds.value)/1000000;
     }
 
     public static void set_sattr( Inode inode, VirtualFileSystem fs, sattr3 s) throws IOException {
