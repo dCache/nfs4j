@@ -1,13 +1,13 @@
 package org.dcache.nfs.vfs;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Calendar;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class StatTest {
     @Test
@@ -81,5 +81,21 @@ public class StatTest {
         Assert.assertEquals(stat.getSize(), deserialized.getSize());
         Assert.assertEquals(stat.getMTime(), deserialized.getMTime());
         Assert.assertEquals(stat.getMode(), deserialized.getMode());
+    }
+
+    @Test
+    public void testClone() {
+        Stat stat = new Stat();
+        stat.setUid(1);
+        stat.setMode(0755 | Stat.S_IFDIR);
+        Stat clone = stat.clone();
+        Assert.assertFalse(stat==clone);
+        Assert.assertEquals(stat.getUid(), clone.getUid());
+        clone.setUid(42);
+        Assert.assertEquals(1, stat.getUid());
+        Assert.assertEquals(Stat.Type.DIRECTORY, clone.type());
+        clone.setMode(0111 | Stat.S_IFREG);
+        Assert.assertEquals(Stat.Type.DIRECTORY, stat.type());
+        Assert.assertEquals(Stat.Type.REGULAR, clone.type());
     }
 }
