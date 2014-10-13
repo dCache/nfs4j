@@ -24,7 +24,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Stat implements Serializable {
+public class Stat implements Serializable, Cloneable {
     private static final long serialVersionUID = 1L;
 
     public static final int S_TYPE = 0770000; // type mask
@@ -306,6 +306,15 @@ public class Stat implements Serializable {
         double significantSize = (double)bytes / (1L << orderOfMagnitude*10);
         DecimalFormat sizeFormat = new DecimalFormat("#.#"); //not thread safe
         return sizeFormat.format(significantSize)+SIZE_UNITS[orderOfMagnitude];
+    }
+
+    @Override
+    public Stat clone() {
+        try {
+            return (Stat) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
