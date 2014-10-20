@@ -46,6 +46,7 @@ public class FsExport {
     private final IO _rw;
     private final boolean _withAcl;
     private final Sec _sec;
+    private final int _index;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -94,6 +95,11 @@ public class FsExport {
         _rw = rw;
         _withAcl = withAcl;
         _sec = sec;
+        int index = 1;
+        for (String s: Splitter.on('/').omitEmptyStrings().split(_path) ) {
+            index = 31 * index + s.hashCode();
+        }
+        _index = index;
     }
 
     public String getPath() {
@@ -149,11 +155,7 @@ public class FsExport {
     }
 
     public int getIndex() {
-        int index = 1;
-        for (String s: Splitter.on('/').omitEmptyStrings().split(_path) ) {
-            index = 31 * index + s.hashCode();
-        }
-        return index;
+        return _index;
     }
 
     public boolean checkAcls() {
