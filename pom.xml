@@ -8,7 +8,7 @@
 
   <groupId>org.dcache</groupId>
   <artifactId>nfs4j</artifactId>
-  <version>0.8.2-SNAPSHOT</version>
+  <version>0.8.2</version>
   <name>Java based NFSv4.1 implementation</name>
   <packaging>pom</packaging>
 
@@ -17,7 +17,7 @@
   <scm>
       <connection>scm:git:https://github.com/dCache/jpnfs.git</connection>
       <developerConnection>scm:git:https://github.com/dCache/jpnfs.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>nfs4j-0.8.2</tag>
   </scm>
 
   <!--
