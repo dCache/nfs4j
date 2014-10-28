@@ -1071,7 +1071,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             long offset = arg1.offset.value.value;
             int count = arg1.count.value.value;
 
-            UnixUser user = NfsUser.remoteUser(call$, _exports);
             Stat inodeStat = fs.getattr(inode);
 
             res.resok = new READ3resok();
@@ -1085,10 +1084,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (res.resok.count.value.value < 0) {
                 throw new IOHimeraFsException("IO not allowed");
             }
-            res.resok.data = new byte[res.resok.count.value.value];
-
-
-            System.arraycopy(b, 0, res.resok.data, 0, res.resok.count.value.value);
+            if (res.resok.count.value.value == count) {
+                res.resok.data = b;
+            } else {
+                res.resok.data = new byte[res.resok.count.value.value];
+                System.arraycopy(b, 0, res.resok.data, 0, res.resok.count.value.value);
+            }
 
             if (res.resok.count.value.value + offset == inodeStat.getSize()) {
                 res.resok.eof = true;
