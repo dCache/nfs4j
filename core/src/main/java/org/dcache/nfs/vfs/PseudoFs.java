@@ -284,7 +284,6 @@ public class PseudoFs implements VirtualFileSystem {
     private void checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
-        Stat stat = _inner.getattr(inode);
         boolean aclMatched = false;
 
         if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
@@ -325,7 +324,13 @@ public class PseudoFs implements VirtualFileSystem {
             }
         }
 
-        if (!aclMatched) {
+        if (!aclMatched  && (requestedMask != ACE4_READ_ATTRIBUTES)) {
+            /*
+             * check for unix permission if ACL did not give us an answer.
+             * Skip the check, if we ask for ACE4_READ_ATTRIBUTES as unix
+             * always allows it.
+             */
+            Stat stat = _inner.getattr(inode);
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
