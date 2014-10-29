@@ -340,7 +340,12 @@ public class PseudoFs implements VirtualFileSystem {
             }
         }
 
-        if (aclMatched == Access.UNDEFINED) {
+        /*
+         * check for unix permission if ACL did not give us an answer.
+         * Skip the check, if we ask for ACE4_READ_ATTRIBUTES as unix
+         * always allows it.
+         */
+        if ((aclMatched == Access.UNDEFINED) && (requestedMask != ACE4_READ_ATTRIBUTES)) {
             Stat stat = _inner.getattr(inode);
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
