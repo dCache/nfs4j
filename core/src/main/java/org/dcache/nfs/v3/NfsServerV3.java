@@ -185,9 +185,18 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private final GuavaCacheMXBean CACHE_MXBEAN
             = new GuavaCacheMXBeanImpl("READDIR3", _dlCacheFull);
 
+    private final writeverf3 writeVerifier = generateInstanceWriteVerifier();
+
     public NfsServerV3(ExportFile exports, VirtualFileSystem fs) throws OncRpcException, IOException {
         _vfs = fs;
         _exports = exports;
+    }
+
+    private static writeverf3 generateInstanceWriteVerifier() {
+        writeverf3 verf = new writeverf3();
+        verf.value = new byte[nfs3_prot.NFS3_WRITEVERFSIZE];
+        Bytes.putLong(verf.value, 0, System.currentTimeMillis()); //so long as we dont restart within the same millisecond
+        return verf;
     }
 
     @Override
@@ -254,8 +263,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
             res.resok.file_wcc.before = new pre_op_attr();
             res.resok.file_wcc.before.attributes_follow = false;
-            res.resok.verf = new writeverf3();
-            res.resok.verf.value = new byte[nfs3_prot.NFS3_WRITEVERFSIZE];
+            res.resok.verf = writeVerifier;
 
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
@@ -1416,8 +1424,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.file_wcc.before = new pre_op_attr();
             res.resok.file_wcc.before.attributes_follow = false;
             res.resok.committed = ret.getStabilityLevel().toStableHow();
-            res.resok.verf = new writeverf3();
-            res.resok.verf.value = new byte[nfs3_prot.NFS3_WRITEVERFSIZE];
+            res.resok.verf = writeVerifier;
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new WRITE3resfail();
