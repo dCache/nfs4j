@@ -86,6 +86,7 @@ public class VfsCache implements VirtualFileSystem {
 
     @Override
     public void commit(Inode inode, long offset, int count) throws IOException {
+        invalidateStatCache(inode);
         _inner.commit(inode, offset, count);
     }
 
