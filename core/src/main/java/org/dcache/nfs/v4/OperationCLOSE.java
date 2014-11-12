@@ -52,14 +52,12 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
             client = context.getStateHandler().getClientIdByStateId(_args.opclose.open_stateid);
         }
 
-        client.releaseState(_args.opclose.open_stateid);
-        client.updateLeaseTime();
-        /*
-         * TODO: some state post-processing should happen, includeing layout release
-         */
         if (context.getMinorversion() > 0) {
             context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
         }
+
+        client.releaseState(_args.opclose.open_stateid);
+        client.updateLeaseTime();
 
         res.open_stateid = Stateids.invalidStateId();
         res.status = nfsstat.NFS_OK;
