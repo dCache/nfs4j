@@ -217,7 +217,12 @@ public class NFSv4StateHandler {
      */
     public boolean hasGracePeriodExpired() {
         checkState(_running, "NFS state handler not running");
-	return _bootTime + TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME) < System.currentTimeMillis();
+	/*
+	 * As we do not have a persistent storage for state information,
+	 * grace period makes no sense as it ends up as a simple delay
+	 * before first IO request can be processed.
+	 */
+	return true;
     }
 
     /**
