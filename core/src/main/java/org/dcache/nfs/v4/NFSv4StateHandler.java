@@ -79,16 +79,19 @@ public class NFSv4StateHandler {
 	_bootTime = System.currentTimeMillis();
     }
 
-    public synchronized void removeClient(NFS4Client client) {
+    public void removeClient(NFS4Client client) {
 
-        for(NFSv41Session session: client.sessions() ) {
-            _sessionById.remove( session.id() );
-        }
+	synchronized (this) {
 
-        _clientsByServerId.remove(client.getId());
-        _clientByOwner.remove(client.getOwner());
-        _clientsByVerifier.remove(client.verifier()) ;
-        _clients.remove(client);
+	    for (NFSv41Session session : client.sessions()) {
+		_sessionById.remove(session.id());
+	    }
+
+            _clientsByServerId.remove(client.getId());
+            _clientByOwner.remove(client.getOwner());
+            _clientsByVerifier.remove(client.verifier()) ;
+            _clients.remove(client);
+	}
         client.tryDispose();
     }
 
