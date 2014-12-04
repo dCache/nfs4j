@@ -83,17 +83,19 @@ public class NFSv4StateHandler {
         _running = true;
     }
 
-    public synchronized void removeClient(NFS4Client client) {
+    public void removeClient(NFS4Client client) {
 
-        checkState(_running, "NFS state handler not running");
+	synchronized (this) {
+	    checkState(_running, "NFS state handler not running");
 
-        for(NFSv41Session session: client.sessions() ) {
-            _sessionById.remove( session.id() );
-        }
+	    for (NFSv41Session session : client.sessions()) {
+		_sessionById.remove(session.id());
+	    }
 
-        _clientsByServerId.remove(client.getId());
-        _clientByOwner.remove(client.getOwner());
-        _clientsByVerifier.remove(client.verifier()) ;
+	    _clientsByServerId.remove(client.getId());
+	    _clientByOwner.remove(client.getOwner());
+	    _clientsByVerifier.remove(client.verifier());
+	}
         client.tryDispose();
     }
 
