@@ -113,12 +113,12 @@ public class NFSv4StateHandler {
         return client;
     }
 
-    public synchronized NFSv41Session sessionById( sessionid4 id) {
+    public synchronized NFSv41Session getSession( sessionid4 id) {
         checkState(_running, "NFS state handler not running");
        return _sessionById.get(id);
     }
 
-    public synchronized NFSv41Session removeSessionById(sessionid4 id) throws ChimeraNFSException {
+    public synchronized NFSv41Session removeSession(sessionid4 id) throws ChimeraNFSException {
         NFSv41Session session = _sessionById.remove(id);
         if (session == null) {
             throw new BadSessionException("session not found");
@@ -128,9 +128,9 @@ public class NFSv4StateHandler {
         return session;
     }
 
-    public synchronized void sessionById( sessionid4 id, NFSv41Session session) {
+    public synchronized void addSession(NFSv41Session session) {
         checkState(_running, "NFS state handler not running");
-        _sessionById.put(id, session);
+        _sessionById.put(session.id(), session);
     }
 
     public synchronized NFS4Client clientByOwner(byte[] ownerid) {

@@ -164,7 +164,7 @@ public class OperationCREATE_SESSIONTest {
                 .build();
 
         AssertNFS.assertNFS(DESTROY_SESSION, context, result, nfsstat.NFS_OK);
-        assertNull(stateHandler.sessionById(session));
+        assertNull(stateHandler.getSession(session));
     }
 
     @Test(expected = ConnNotBoundToSessionException.class)

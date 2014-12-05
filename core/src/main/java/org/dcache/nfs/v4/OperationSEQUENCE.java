@@ -46,7 +46,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
         final SEQUENCE4res res = result.opsequence;
 
-        NFSv41Session session = context.getStateHandler().sessionById(_args.opsequence.sa_sessionid);
+        NFSv41Session session = context.getStateHandler().getSession(_args.opsequence.sa_sessionid);
 
         if (session == null) {
             _log.debug("no session for id [{}]", _args.opsequence.sa_sessionid);
