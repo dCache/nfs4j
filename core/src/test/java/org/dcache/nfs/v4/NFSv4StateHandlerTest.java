@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.verifier4;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -47,17 +46,6 @@ public class NFSv4StateHandlerTest {
     public void testGetByStateId() throws Exception {
         stateid4 state = _client.createState(new uint32_t(0)).stateid();
         _stateHandler.getClientIdByStateId(state);
-    }
-
-    @Test
-    public void testGetByVerifier() throws Exception {
-        stateid4 state = _client.createState(new uint32_t(0)).stateid();
-        assertEquals(_client, _stateHandler.getClientByVerifier(_client.verifier()));
-    }
-
-    @Test
-    public void testGetByVerifierNotExists() throws Exception {
-        assertNull("get not existing", _stateHandler.getClientByVerifier( new verifier4()));
     }
 
     @Test(expected=StaleClientidException.class)

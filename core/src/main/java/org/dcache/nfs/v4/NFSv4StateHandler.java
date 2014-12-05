@@ -46,10 +46,6 @@ public class NFSv4StateHandler {
 
     private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
 
-    // all seen by server
-    private final Map<verifier4, NFS4Client> _clientsByVerifier = new HashMap<>();
-
-
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
     private final Map<Long, NFS4Client> _clientsByServerId = new HashMap<>();
 
@@ -66,11 +62,6 @@ public class NFSv4StateHandler {
      */
     private final long _leaseTime;
 
-    /**
-     * Server start time.
-     */
-    private final long _bootTime;
-
     private boolean _running;
 
     public NFSv4StateHandler() {
@@ -79,7 +70,6 @@ public class NFSv4StateHandler {
 
     NFSv4StateHandler(long leaseTime) {
         _leaseTime = leaseTime;
-	_bootTime = System.currentTimeMillis();
         _running = true;
     }
 
@@ -94,7 +84,6 @@ public class NFSv4StateHandler {
 
 	    _clientsByServerId.remove(client.getId());
 	    _clientByOwner.remove(client.getOwner());
-	    _clientsByVerifier.remove(client.verifier());
 	}
         client.tryDispose();
     }
@@ -104,7 +93,6 @@ public class NFSv4StateHandler {
         checkState(_running, "NFS state handler not running");
 
         _clientsByServerId.put(newClient.getId(), newClient);
-        _clientsByVerifier.put(newClient.verifier(), newClient);
         _clientByOwner.put( newClient.getOwner(), newClient);
     }
 
@@ -129,12 +117,6 @@ public class NFSv4StateHandler {
         }
         return client;
     }
-
-    public synchronized NFS4Client getClientByVerifier(verifier4 verifier) {
-        checkState(_running, "NFS state handler not running");
-        return _clientsByVerifier.get(verifier);
-    }
-
 
     public synchronized NFSv41Session sessionById( sessionid4 id) {
         checkState(_running, "NFS state handler not running");
