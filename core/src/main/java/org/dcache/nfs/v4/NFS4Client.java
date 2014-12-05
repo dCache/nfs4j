@@ -43,12 +43,12 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.utils.Opaque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class NFS4Client {
      * The client identifier string, from the eia_clientowner structure
      * of the EXCHANGE_ID4args structure
      */
-    private final Opaque _ownerId;
+    private final byte[] _ownerId;
 
     /**
      * A client-specific value used to indicate reboots, from
@@ -194,7 +194,7 @@ public class NFS4Client {
     public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
             byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime) {
 
-        _ownerId = new Opaque(ownerID);
+        _ownerId = ownerID;
         _verifier = verifier;
         _principal = principal;
         _clientId = (BOOTID << 32) | CLIENTID.incrementAndGet();
@@ -216,11 +216,12 @@ public class NFS4Client {
     }
 
     /**
-     * Owner ID provided by client.
-     * @return owner id
+     * Check whatever client belongs to the provider owner.
+     * @param other client owner to test.
+     * @return <tt>true</tt> iff client belongs to the provider owner.
      */
-    public Opaque getOwner() {
-        return _ownerId;
+    public boolean isOwner(byte[] other) {
+        return Arrays.equals(_ownerId, other);
     }
 
     /**
@@ -256,9 +257,9 @@ public class NFS4Client {
     }
 
     /**
-     * sets client lease time with current time
-     * @param max_lease_time
-     * @throws ChimeraNFSException if difference between current time and last
+     * Update client's lease time if it not expired.
+     *
+     * @throws ExpiredException if difference between current time and last
      * lease more than max_lease_time
      */
     public void updateLeaseTime() throws ChimeraNFSException {

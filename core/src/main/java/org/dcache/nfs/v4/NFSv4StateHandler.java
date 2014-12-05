@@ -36,7 +36,6 @@ import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Cache;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.NopCacheEventListener;
-import org.dcache.utils.Opaque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +49,6 @@ public class NFSv4StateHandler {
     private final Map<Long, NFS4Client> _clientsByServerId = new HashMap<>();
 
     private final Cache<sessionid4, NFSv41Session> _sessionById;
-
-    private final Map<Opaque, NFS4Client> _clientByOwner = new HashMap<>();
 
     /**
      * Client's lease expiration time in milliseconds.
@@ -84,7 +81,6 @@ public class NFSv4StateHandler {
 	    }
 
 	    _clientsByServerId.remove(client.getId());
-	    _clientByOwner.remove(client.getOwner());
 	}
         client.tryDispose();
     }
@@ -92,9 +88,7 @@ public class NFSv4StateHandler {
     private synchronized void addClient(NFS4Client newClient) {
 
         checkState(_running, "NFS state handler not running");
-
         _clientsByServerId.put(newClient.getId(), newClient);
-        _clientByOwner.put( newClient.getOwner(), newClient);
     }
 
     public synchronized NFS4Client getClientByID( Long id) throws ChimeraNFSException {
@@ -139,8 +133,13 @@ public class NFSv4StateHandler {
         _sessionById.put(id, session);
     }
 
-    public synchronized NFS4Client clientByOwner( byte[] ownerid) {
-        return _clientByOwner.get(new Opaque(ownerid));
+    public synchronized NFS4Client clientByOwner(byte[] ownerid) {
+	for(NFS4Client client: _clientsByServerId.values()) {
+	    if (client.isOwner(ownerid)) {
+		return client;
+	    }
+	}
+        return null;
     }
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
