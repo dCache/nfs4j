@@ -99,7 +99,7 @@ public class Layout {
         return _layoutSegments;
     }
 
-    private static layout_content4 getSegmentContent(deviceid4 deviceid, nfs_fh4 fh) throws ChimeraNFSException {
+    private static layout_content4 getSegmentContent(deviceid4 deviceid, int stripeSize, nfs_fh4 fh) throws ChimeraNFSException {
         nfsv4_1_file_layout4 layout = new nfsv4_1_file_layout4();
 
         layout.nfl_deviceid = deviceid;
@@ -124,8 +124,7 @@ public class Layout {
 
         layout.nfl_first_stripe_index = new uint32_t(0);
 
-        layout.nfl_util = new nfl_util4(new uint32_t(NFSv4Defaults.NFS4_STRIPE_SIZE
-                & nfs4_prot.NFL4_UFLG_STRIPE_UNIT_SIZE_MASK));
+        layout.nfl_util = new nfl_util4(new uint32_t(stripeSize & nfs4_prot.NFL4_UFLG_STRIPE_UNIT_SIZE_MASK));
         layout.nfl_util = new nfl_util4(new uint32_t(layout.nfl_util.value.value));
 
         //where the striping pattern starts
@@ -159,6 +158,7 @@ public class Layout {
      * or LAYOUTIOMODE4_RW.
      *
      * @param deviceid on which segment is available.
+     * @param stripeSize preferred stripe unit size
      * @param fh file handle to be used on data servers.
      * @param iomode io mode for the segment.
      * @param offset where segment starts.
@@ -166,7 +166,7 @@ public class Layout {
      * @return layout segment
      * @throws IOException
      */
-    public static layout4 getLayoutSegment(deviceid4 deviceid, nfs_fh4 fh, int iomode, long offset, long length)
+    public static layout4 getLayoutSegment(deviceid4 deviceid, int stripeSize, nfs_fh4 fh, int iomode, long offset, long length)
             throws IOException {
 
         layout4 segment = new layout4();
@@ -174,7 +174,7 @@ public class Layout {
         segment.lo_length = new length4(length);
         segment.lo_iomode = iomode;
         segment.lo_content = new layout_content4();
-        segment.lo_content = getSegmentContent(deviceid, fh);
+        segment.lo_content = getSegmentContent(deviceid, stripeSize, fh);
 
         return segment;
     }
