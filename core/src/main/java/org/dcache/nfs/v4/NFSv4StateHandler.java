@@ -49,11 +49,7 @@ public class NFSv4StateHandler {
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
     private final Map<Long, NFS4Client> _clientsByServerId = new HashMap<>();
 
-    private final Cache<sessionid4, NFSv41Session> _sessionById =
-            new Cache<>("NFSv41 sessions", 5000, Long.MAX_VALUE,
-            TimeUnit.SECONDS.toMillis(NFSv4Defaults.NFS4_LEASE_TIME*2),
-            new DeadSessionCollector(),
-            NFSv4Defaults.NFS4_LEASE_TIME*4, TimeUnit.SECONDS);
+    private final Cache<sessionid4, NFSv41Session> _sessionById;
 
     private final Map<Opaque, NFS4Client> _clientByOwner = new HashMap<>();
 
@@ -65,11 +61,16 @@ public class NFSv4StateHandler {
     private boolean _running;
 
     public NFSv4StateHandler() {
-        this(NFSv4Defaults.NFS4_LEASE_TIME*1000);
+        this(NFSv4Defaults.NFS4_LEASE_TIME);
     }
 
     NFSv4StateHandler(long leaseTime) {
-        _leaseTime = leaseTime;
+        _leaseTime = TimeUnit.SECONDS.toMillis(leaseTime);
+        _sessionById = new Cache<>("NFSv41 sessions", 5000, Long.MAX_VALUE,
+                _leaseTime * 2,
+                new DeadSessionCollector(),
+                _leaseTime * 4, TimeUnit.MILLISECONDS);
+
         _running = true;
     }
 
