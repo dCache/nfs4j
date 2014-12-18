@@ -98,7 +98,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.resok4.writeverf = new verifier4();
         res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        if (_args.opwrite.stable != stable_how4.UNSTABLE4) {
+        if ((bytesWritten > 0) && (_args.opwrite.stable != stable_how4.UNSTABLE4)) {
             stat.setSize(out.size());
             context.getFs().setattr(context.currentInode(), stat);
         }
