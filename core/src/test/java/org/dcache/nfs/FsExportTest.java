@@ -187,4 +187,22 @@ public class FsExportTest {
         FsExport export = _exportFile.getExport("/export_all_root", InetAddress.getByName("192.168.1.1"));
         assertTrue(export.isAllRoot());
     }
+
+    @Test
+    public void testWithPnfs() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_with_pnfs", InetAddress.getByName("192.168.1.1"));
+        assertTrue(export.isWithPnfs());
+    }
+
+    @Test
+    public void testWithoutPnfs() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_without_pnfs", InetAddress.getByName("192.168.1.1"));
+        assertFalse(export.isWithPnfs());
+    }
+
+    @Test
+    public void testPnfsDefault() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_default_pnfs", InetAddress.getByName("192.168.1.1"));
+        assertTrue(export.isWithPnfs());
+    }
 }

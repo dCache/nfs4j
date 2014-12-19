@@ -25,3 +25,6 @@
 /export/with/slash/
 not/absolute/path
 /export_all_root 192.168.1.1(rw,all_root)
+/export_with_pnfs 192.168.1.1(rw,pnfs)
+/export_without_pnfs 192.168.1.1(rw,nopnfs)
+/export_default_pnfs 192.168.1.1(rw)
