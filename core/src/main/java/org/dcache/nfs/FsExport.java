@@ -63,6 +63,7 @@ public class FsExport {
     private final boolean _withDcap;
     private final boolean _allRoot;
     private final int _index;
+    private final boolean _withPnfs;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -112,6 +113,7 @@ public class FsExport {
         _anonGid = builder.getAnonGid();
 	_withDcap = builder.isWithDcap();
         _allRoot = builder.isAllRoot();
+        _withPnfs = builder.isWithPnfs();
         int index = 1;
         for (String s: Splitter.on('/').omitEmptyStrings().split(_path) ) {
             index = 31 * index + s.hashCode();
@@ -214,6 +216,10 @@ public class FsExport {
         return _allRoot;
     }
 
+    public boolean isWithPnfs() {
+        return _withPnfs;
+    }
+
     /**
      * Returns the given {@code path} without redundant elements.
      *
@@ -236,6 +242,7 @@ public class FsExport {
         private int _anonGid = DEFAULT_ANON_GID;
 	private boolean _withDcap = true;
         private boolean _allRoot = false;
+        private boolean _withPnfs = true;
 
         public FsExportBuilder forClient(String client) {
             _client = client;
@@ -307,6 +314,16 @@ public class FsExport {
             return this;
         }
 
+        public FsExportBuilder withPnfs() {
+            _withPnfs = true;
+            return this;
+        }
+
+        public FsExportBuilder withoutPnfs() {
+            _withPnfs = false;
+            return this;
+        }
+
         public String getClient() {
             return _client;
         }
@@ -345,6 +362,10 @@ public class FsExport {
 
         public boolean isAllRoot() {
             return _allRoot;
+        }
+
+        public boolean isWithPnfs() {
+            return _withPnfs;
         }
 
         public FsExport build(String path) throws UnknownHostException {

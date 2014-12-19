@@ -186,6 +186,16 @@ public class ExportFile {
                                 continue;
                             }
 
+                            if (option.equals("pnfs")) {
+                                exportBuilder.withPnfs();
+                                continue;
+                            }
+
+                            if (option.equals("nopnfs")) {
+                                exportBuilder.withoutPnfs();
+                                continue;
+                            }
+
                             throw new IllegalArgumentException("Unsupported option: " + option);
                         }
                         FsExport export = exportBuilder.build(path);
