@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
+import javax.xml.bind.annotation.XmlElement;
 import org.dcache.auth.Subjects;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.ChimeraNFSException;
@@ -69,6 +70,10 @@ public class PseudoFs implements VirtualFileSystem {
     private final ExportFile _exportFile;
     private final RpcAuth _auth;
 
+    private final static int ACCESS4_MASK =
+            ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
+            | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ;
+
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportFile exportFile) {
         _inner = inner;
         _subject = call.getCredential().getSubject();
@@ -89,6 +94,10 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public int access(Inode inode, int mode) throws IOException {
         int accessmask = 0;
+
+        if ((mode & ~ACCESS4_MASK) != 0) {
+            throw new InvalException("invalid access mask");
+        }
 
         if ((mode & ACCESS4_READ) != 0) {
             if (canAccess(inode, ACE4_READ_DATA)) {
