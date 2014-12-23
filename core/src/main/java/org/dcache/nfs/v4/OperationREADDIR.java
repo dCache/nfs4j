@@ -133,12 +133,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         final Inode dir = context.currentInode();
 
-        Stat stat = context.getFs().getattr(dir);
-
-        if (stat.type() != Stat.Type.DIRECTORY) {
-            throw new NotDirException();
-        }
-
         List<DirectoryEntry> dirList;
         verifier4 verifier;
         long startValue = _args.opreaddir.cookie.value;
@@ -183,6 +177,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 throw new BadCookieException("bad cookie : " + startValue + " " + dirList.size());
             }
         } else {
+            Stat stat = context.getFs().getattr(dir);
+
+            if (stat.type() != Stat.Type.DIRECTORY) {
+                throw new NotDirException();
+            }
+
             verifier = generateDirectoryVerifier(stat);
             startValue = COOKIE_OFFSET;
             InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
