@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -43,6 +43,8 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.Principal;
 import java.security.ProtectionDomain;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -78,7 +80,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
     /**
      * compile time
      */
-    private static String COMPILTE_TIME = "<UNKNOWN>";
+    private static long COMPILE_TIME = 0;
 
     static {
         /*
@@ -98,11 +100,13 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 Attributes as = m.getMainAttributes();
                 String buildTime = as.getValue("Build-Time");
                 if( buildTime != null ) {
-                    COMPILTE_TIME = buildTime;
+                    Instant dateTime = Instant.parse(buildTime);
+                    COMPILE_TIME = dateTime.toEpochMilli();
                 }
             }
 
-        }catch(IOException ioe) {
+        }catch(IOException  | DateTimeParseException e) {
+            _log.warn("Failed to get compile time: {}", e.getMessage());
             // bad luck
         }
     }
@@ -250,8 +254,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         res.eir_resok4.eir_server_impl_id = new nfs_impl_id4[1];
         res.eir_resok4.eir_server_impl_id[0] = new nfs_impl_id4();
         res.eir_resok4.eir_server_impl_id[0].nii_domain = new utf8str_cis(NFS4_IMPLEMENTATION_DOMAIN);
-        res.eir_resok4.eir_server_impl_id[0].nii_name = new utf8str_cs(NFS4_IMPLEMENTATION_ID + " build-time " + COMPILTE_TIME);
-        res.eir_resok4.eir_server_impl_id[0].nii_date = new nfstime4(System.currentTimeMillis());
+        res.eir_resok4.eir_server_impl_id[0].nii_name = new utf8str_cs(NFS4_IMPLEMENTATION_ID);
+        res.eir_resok4.eir_server_impl_id[0].nii_date = new nfstime4(COMPILE_TIME);
 
         res.eir_resok4.eir_state_protect = new state_protect4_r();
         res.eir_resok4.eir_state_protect.spr_how = state_protect_how4.SP4_NONE;

@@ -32,6 +32,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.dcache.nfs.v4.AttributeMap;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
+import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.sequenceid4;
@@ -512,7 +514,9 @@ public class Main {
 
         if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
             String serverId = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.toString();
-            System.out.println("Connected to: " + serverId);
+            nfstime4 buildTime = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_date;
+            System.out.println("Connected to: " + serverId + ", built at: "
+                    + (buildTime.seconds > 0 ? new Date(buildTime.seconds*1000): "<Unknon>"));
         } else {
             System.out.println("Connected to: Mr. X");
         }
