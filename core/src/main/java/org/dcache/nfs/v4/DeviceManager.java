@@ -97,11 +97,15 @@ public class DeviceManager implements NFSv41DeviceManager {
      *      int, java.net.InetAddress)
      */
     @Override
-	public Layout layoutGet(CompoundContext context, Inode inode, int ioMode, stateid4 stateid)
+    public Layout layoutGet(CompoundContext context, Inode inode, int layoutType, int ioMode, stateid4 stateid)
             throws IOException {
 
         device_addr4 deviceAddr;
         deviceid4 deviceId;
+
+        if (layoutType != layouttype4.LAYOUT4_NFSV4_1_FILES) {
+                    throw new LayoutUnavailableException("layout not supported");
+        }
 
         if (!context.getFs().hasIOLayout(inode)) {
             deviceId = MDS_ID;

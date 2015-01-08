@@ -36,6 +36,7 @@ public interface NFSv41DeviceManager {
      *
      * @param context of the nfs request
      * @param inode
+     * @param layoutType type of layout client wants to use
      * @param ioMode the value of the returned layout iomode. A ioMode of either
      *      LAYOUTIOMODE4_READ or LAYOUTIOMODE4_RW MUST be returned.
      * @param stateid reflecting the corresponding valid open, byte-range lock,
@@ -43,7 +44,7 @@ public interface NFSv41DeviceManager {
      * @return
      * @throws IOException
      */
-    public Layout layoutGet(CompoundContext context, Inode inode, int ioMode, stateid4 stateid)
+    public Layout layoutGet(CompoundContext context, Inode inode, int layoutType, int ioMode, stateid4 stateid)
             throws IOException;
 
     /**

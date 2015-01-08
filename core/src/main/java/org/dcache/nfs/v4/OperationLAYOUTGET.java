@@ -82,8 +82,6 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         if (_args.oplayoutget.loga_layout_type > 3) {
             throw new BadLayoutException("layouts supported but no matching found (" + _args.oplayoutget.loga_layout_type + ")");
-        } else if (_args.oplayoutget.loga_layout_type != layouttype4.LAYOUT4_NFSV4_1_FILES) {
-            throw new LayoutUnavailableException("layout not supported");
         }
 
         /*
@@ -93,12 +91,12 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 //               throw new ChimeraNFSException(nfsstat.NFSERR_BADLAYOUT, "loga_minlength field should be at least one.");
 //        }
 
-        res.logr_resok4 = new LAYOUTGET4resok();
-
         Layout ioLayout = context.getDeviceManager().layoutGet(context, context.currentInode(),
+                _args.oplayoutget.loga_layout_type,
                 _args.oplayoutget.loga_iomode,
                 _args.oplayoutget.loga_stateid);
 
+        res.logr_resok4 = new LAYOUTGET4resok();
         res.logr_resok4.logr_layout = ioLayout.getLayoutSegments();
         res.logr_resok4.logr_stateid = ioLayout.getStateid();
         res.logr_resok4.logr_return_on_close = ioLayout.returnOnClose();
