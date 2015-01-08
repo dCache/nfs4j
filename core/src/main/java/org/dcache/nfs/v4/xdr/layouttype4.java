@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@ public interface layouttype4 {
     public static final int LAYOUT4_NFSV4_1_FILES = 0x1;
     public static final int LAYOUT4_OSD2_OBJECTS = 0x2;
     public static final int LAYOUT4_BLOCK_VOLUME = 0x3;
+    public static final int LAYOUT4_FLEX_FILES = 0x4;
 
 }
 // End of layouttype4.java
