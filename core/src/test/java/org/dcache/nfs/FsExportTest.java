@@ -205,4 +205,10 @@ public class FsExportTest {
         FsExport export = _exportFile.getExport("/export_default_pnfs", InetAddress.getByName("192.168.1.1"));
         assertTrue(export.isWithPnfs());
     }
+
+    @Test
+    public void testExplicitExportForLocalhost() throws Exception {
+        FsExport export = _exportFile.getExport("/", InetAddress.getByName("127.0.0.1"));
+        assertNull("localhost must not be able to access without explicit intry", export);
+    }
 }
