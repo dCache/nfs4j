@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -113,11 +113,15 @@ public class FsExport {
 	_withDcap = builder.isWithDcap();
         _allRoot = builder.isAllRoot();
         _withPnfs = builder.isWithPnfs();
+        _index = getExportIndex(_path);
+    }
+
+    public static int getExportIndex(String path) {
         int index = 1;
-        for (String s: Splitter.on('/').omitEmptyStrings().split(_path) ) {
+        for (String s: Splitter.on('/').omitEmptyStrings().split(path) ) {
             index = 31 * index + s.hashCode();
         }
-        _index = index;
+        return index;
     }
 
     public String getPath() {
@@ -160,9 +164,7 @@ public class FsExport {
     }
 
     public boolean isAllowed(InetAddress client) {
-
-        // localhost always allowed
-        return client.isLoopbackAddress() || IPMatcher.match(_client, client);
+        return IPMatcher.match(_client, client);
     }
 
     public boolean isTrusted(InetAddress client) {
