@@ -166,4 +166,9 @@ public class FsExportTest {
 	assertFalse("dcap is not disabled", export.isWithDcap());
     }
 
+    @Test
+    public void testExplicitExportForLocalhost() throws Exception {
+        FsExport export = _exportFile.getExport("/", InetAddress.getByName("127.0.0.1"));
+        assertNull("localhost must not be able to access without explicit intry", export);
+    }
 }
