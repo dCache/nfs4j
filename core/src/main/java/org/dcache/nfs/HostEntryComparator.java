@@ -51,7 +51,7 @@ public class HostEntryComparator {
     }
 
     private static int netmaskCmp(String s1, String s2) {
-        return compare(netmaskOf(s1), netmaskOf(s2));
+        return Integer.compare(netmaskOf(s1), netmaskOf(s2));
     }
 
     private static int netmaskOf(String s) {
@@ -70,10 +70,6 @@ public class HostEntryComparator {
         /*
          * as smaller index should be considered first, compare in reverse order.
          */
-        return compare(maskIndex2, maskIndex1);
-    }
-
-    private static int compare(int x, int y) {
-        return (x < y) ? -1 : ((x == y) ? 0 : 1);
+        return Integer.compare(maskIndex2, maskIndex1);
     }
 }
