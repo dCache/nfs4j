@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,16 +31,61 @@ public abstract class ChimeraNFSException extends java.io.IOException {
     private static final long serialVersionUID = 4319461664218810541L;
     private final int nfsStatus;
 
-    protected ChimeraNFSException(int status ,String msg) {
+    /**
+     * Constructs an {@code ChimeraNFSException} with the specified nfs
+     * status code, detail message and cause.
+     *
+     * @param status nfsstat code
+     * @param msg detailed error message
+     * @param cause the cause of this exception
+     * @since 0.10
+     */
+    protected ChimeraNFSException(int status, String msg, Throwable cause) {
+        super(nfsstat.toString(status) + " : " + msg, cause);
+        nfsStatus = status;
+    }
+
+    /**
+     * Constructs an {@code ChimeraNFSException} with the specified nfs
+     * status code and detail message.
+     *
+     * @param status nfsstat code
+     * @param msg detailed error message
+     */
+    protected ChimeraNFSException(int status, String msg) {
         super(nfsstat.toString(status) +  " : " + msg);
         nfsStatus = status;
     }
 
+    /**
+     * Constructs an {@code ChimeraNFSException} with the specified nfs
+     * status code and cause.
+     *
+     * @param status nfsstat code
+     * @param cause the cause of this exception
+     * @since 0.10
+     */
+    protected ChimeraNFSException(int status, Throwable cause) {
+        super(nfsstat.toString(status), cause);
+        nfsStatus = status;
+    }
+
+    /**
+     * Constructs an {@code ChimeraNFSException} with the specified nfs
+     * status code.
+     *
+     * @param status nfsstat code
+     */
     protected ChimeraNFSException(int status) {
         super(nfsstat.toString(status));
         nfsStatus = status;
     }
 
+    /**
+     * Returns the nfs status code associated with the exception.
+     *
+     * @return nfs status code.
+     */
     public int getStatus() {
         return nfsStatus;
     }
