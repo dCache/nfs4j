@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -191,7 +191,10 @@ public class ExportFile {
         Collections.sort(exports, new Comparator<FsExport>() {
             @Override
             public int compare(FsExport e1, FsExport e2) {
-                return HostEntryComparator.compare(e1.client(), e2.client());
+                /*
+                 * compare in reverse order to get smallest network first
+                 */
+                return HostEntryComparator.compare(e2.client(), e1.client());
             }
         });
         return exports;
