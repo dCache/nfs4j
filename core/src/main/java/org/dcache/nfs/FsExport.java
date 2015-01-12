@@ -145,7 +145,9 @@ public class FsExport {
                 .append(',')
                 .append("sec=").append(_sec)
 		.append(',')
-		.append(_withDcap ? "dcap" : "no_dcap");
+		.append(_withDcap ? "dcap" : "no_dcap")
+                .append(',')
+                .append(_withPnfs ? "pnfs" : "nopnfs");
         if (_allSquash) {
             sb.append(",all_squash");
         }
