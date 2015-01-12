@@ -36,8 +36,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
@@ -208,15 +206,10 @@ public class ExportFile {
             }
         }
 
-        Collections.sort(exports, new Comparator<FsExport>() {
-            @Override
-            public int compare(FsExport e1, FsExport e2) {
-                /*
-                 * compare in reverse order to get smallest network first
-                 */
-                return HostEntryComparator.compare(e2.client(), e1.client());
-            }
-        });
+        /*
+         * compare in reverse order to get smallest network first
+         */
+        exports.sort((FsExport e1, FsExport e2) -> HostEntryComparator.compare(e2.client(), e1.client()));
         return exports;
     }
 
