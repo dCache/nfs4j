@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@ import java.util.Comparator;
  */
 public class HostEntryComparator {
 
+    private final static int MAX_NET_MASK = 128;
 
     public static int compare(String s1, String s2) {
 
@@ -55,7 +56,7 @@ public class HostEntryComparator {
 
     private static int netmaskOf(String s) {
         int i = s.indexOf('/');
-        return i > 0 ? Integer.parseInt(s.substring(i + 1)) : 32;
+        return i > 0 ? Integer.parseInt(s.substring(i + 1)) : MAX_NET_MASK;
     }
 
     private static boolean isFullName(String s) {
