@@ -175,8 +175,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
         final boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
 
-        final InetSocketAddress remoteSocketAddress = context.getRpcCall().getTransport().getRemoteSocketAddress();
-        final InetSocketAddress localSocketAddress = context.getRpcCall().getTransport().getLocalSocketAddress();
+        final InetSocketAddress remoteSocketAddress = context.getRemoteSocketAddress();
+        final InetSocketAddress localSocketAddress = context.getLocalSocketAddress();
         final NFSv4StateHandler stateHandler = context.getStateHandler();
 
         if (update) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -63,8 +63,8 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
         } else {
             client = context.getStateHandler().createClient(
-                    context.getRpcCall().getTransport().getRemoteSocketAddress(),
-                    context.getRpcCall().getTransport().getLocalSocketAddress(),
+                    context.getRemoteSocketAddress(),
+                    context.getLocalSocketAddress(),
                     _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, context.getPrincipal());
         }
 

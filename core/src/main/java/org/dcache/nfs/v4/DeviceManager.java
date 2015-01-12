@@ -145,7 +145,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         _log.debug("lookup for device: {}", deviceId );
         /* in case of MDS access we return the same interface which client already connected to */
         if(deviceId.equals(MDS_ID)) {
-            return deviceAddrOf(_stripingPattern, context.getRpcCall().getTransport().getLocalSocketAddress());
+            return deviceAddrOf(_stripingPattern, context.getLocalSocketAddress());
         }
 
         return  _deviceMap.get(deviceId);

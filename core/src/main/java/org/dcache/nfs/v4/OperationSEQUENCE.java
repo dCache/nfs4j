@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -65,8 +65,8 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
                 _args.opsequence.sa_sequenceid.value, opCount > 1));
 
         session.bindIfNeeded( new SessionConnection(
-                context.getRpcCall().getTransport().getLocalSocketAddress(),
-                context.getRpcCall().getTransport().getRemoteSocketAddress())
+                context.getLocalSocketAddress(),
+                context.getRemoteSocketAddress())
         );
         context.setCacheThis(_args.opsequence.sa_cachethis);
         client.updateLeaseTime();

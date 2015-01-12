@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -49,8 +49,8 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
         }
 
         SessionConnection sessionConnection = new SessionConnection(
-                context.getRpcCall().getTransport().getLocalSocketAddress(),
-                context.getRpcCall().getTransport().getRemoteSocketAddress());
+                context.getLocalSocketAddress(),
+                context.getRemoteSocketAddress());
 
         if (!session.isReleasableBy(sessionConnection)) {
             throw new ConnNotBoundToSessionException("Session not " +  session +" not bound to" + sessionConnection.getRemoteConnection());

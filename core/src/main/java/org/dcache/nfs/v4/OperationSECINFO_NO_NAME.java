@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -93,7 +93,7 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
     static secinfo4[] secinfosOf(Inode inode, CompoundContext context) throws GSSException {
         //final sec_oid4 k5Oid = new sec_oid4
 
-        final InetAddress remote = context.getRpcCall().getTransport().getRemoteSocketAddress().getAddress();
+        final InetAddress remote = context.getRemoteSocketAddress().getAddress();
         final List<FsExport.Sec> exports =
                 Ordering.natural()
                 .reverse()

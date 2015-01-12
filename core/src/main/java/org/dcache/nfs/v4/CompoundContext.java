@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
@@ -343,5 +344,22 @@ public class CompoundContext {
         Set<? extends Principal> principals =
                 call.getCredential().getSubject().getPrincipals(type);
         return principals.isEmpty() ? NO_PRINCIPAL : principals.iterator().next();
+    }
+
+    /**
+     * Returns the address of local endpoint which have received the requests.
+     * @return a socketAddress representing the local endpoint.
+     */
+    public InetSocketAddress getRemoteSocketAddress() {
+        return getRpcCall().getTransport().getRemoteSocketAddress();
+    }
+
+    /**
+     * Returns the address of remote endpoint which has sent the requests.
+     *
+     * @return a socketAddress representing the remote endpoint.
+     */
+    public InetSocketAddress getLocalSocketAddress() {
+        return getRpcCall().getTransport().getLocalSocketAddress();
     }
 }
