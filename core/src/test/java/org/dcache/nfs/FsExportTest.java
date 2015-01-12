@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -170,5 +171,27 @@ public class FsExportTest {
     public void testExplicitExportForLocalhost() throws Exception {
         FsExport export = _exportFile.getExport("/", InetAddress.getByName("127.0.0.1"));
         assertNull("localhost must not be able to access without explicit intry", export);
+    }
+
+    @Test
+    public void testEntrySorting() throws Exception {
+
+        ExportFile exportFile  = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.unsorted"));
+        String[] sortedEntries = new String[] {
+            "10.0.0.1", "10.0.0.0/24", "10.0.0.0/16", "10.0.0.0/8"
+        };
+
+        String[] unsortedEntries = Iterables.toArray(
+                        Iterables.transform(exportFile.exportsFor(InetAddress.getByName("10.0.0.1")),
+                                        new Function<FsExport, String>() {
+
+                                            @Override
+                                            public String apply(FsExport f) {
+                                                return f.client();
+                                            }
+                                        }
+                        ), String.class);
+
+        assertArrayEquals("the export entries are not sorted as expected", sortedEntries, unsortedEntries);
     }
 }
