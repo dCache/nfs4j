@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -157,8 +157,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         _log.debug("Creating a new file: {}", name);
                         inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,
-                                name, context.getUser().getUID(),
-                                context.getUser().getGID(), mode);
+                                name, context.getSubject(), mode);
 
                         res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
                     } catch (ExistException e) {

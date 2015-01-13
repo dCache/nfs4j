@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -95,11 +95,11 @@ public class PseudoFsTest {
         given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
 
 
-        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644))
+        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn( mock(Inode.class));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
+        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644);
     }
 
     @Test
@@ -118,11 +118,11 @@ public class PseudoFsTest {
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
         given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
 
-        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644))
+        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn(mock(Inode.class));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
+        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644);
     }
 
     @Test(expected = AccessException.class)
@@ -142,11 +142,11 @@ public class PseudoFsTest {
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
         given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
 
-        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644))
+        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn(mock(Inode.class));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", 0, 0, 644);
+        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644);
     }
 
     @Test(expected = PermException.class)

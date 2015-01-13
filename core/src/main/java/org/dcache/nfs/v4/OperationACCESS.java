@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
         int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
 
         _log.debug("NFS Request ACCESS uid: {} {} {}",
-                    context.getUser(), requestedAccess, realAccess );
+                    context.getSubject(), requestedAccess, realAccess );
 
         res.resok4 = new ACCESS4resok();
         res.resok4.access = new uint32_t(realAccess);

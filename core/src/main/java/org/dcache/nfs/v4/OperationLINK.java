@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -59,7 +59,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
         }
 
         context.getFs().link(context.currentInode(), context.savedInode(), newName,
-                context.getUser().getUID(), context.getUser().getGID());
+                context.getSubject());
 
         result.oplink.resok4 = new LINK4resok();
         result.oplink.resok4.cinfo = new change_info4();

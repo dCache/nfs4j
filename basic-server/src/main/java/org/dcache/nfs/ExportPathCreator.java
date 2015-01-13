@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@ package org.dcache.nfs;
 
 import com.google.common.base.Splitter;
 import java.io.IOException;
+import org.dcache.auth.Subjects;
+import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
@@ -31,7 +33,7 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 public class ExportPathCreator {
 
     private ExportFile exportFile;
-    public VirtualFileSystem vfs;
+    private VirtualFileSystem vfs;
 
     public void setVfs(VirtualFileSystem vfs) {
         this.vfs = vfs;
@@ -52,9 +54,8 @@ public class ExportPathCreator {
                 Inode child;
                 try {
                     child = vfs.lookup(inode, s);
-                } catch(ChimeraNFSException e) {
-                    if (e.getStatus() == nfsstat.NFSERR_NOENT)
-                        child = vfs.create(inode, Stat.Type.DIRECTORY, s, 0, 0, 0777);
+                } catch(NoEntException e) {
+                    child = vfs.create(inode, Stat.Type.DIRECTORY, s, Subjects.ROOT, 0777);
                 }
             }
         }

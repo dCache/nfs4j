@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -90,7 +90,9 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     }
 
     @Override
-    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
+    public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
+        int uid = (int)Subjects.getUid(subject);
+        int gid = (int)Subjects.getPrimaryGid(subject);
         try {
             FsInode parentFsInode = toFsInode(parent);
             FsInode fsInode = _fs.createFile(parentFsInode, path, uid, gid, mode | typeToChimera(type), typeToChimera(type));
@@ -101,7 +103,9 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     }
 
     @Override
-    public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
+    public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
+        int uid = (int) Subjects.getUid(subject);
+        int gid = (int) Subjects.getPrimaryGid(subject);
         try {
             FsInode parentFsInode = toFsInode(parent);
             FsInode fsInode = parentFsInode.mkdir(path, uid, gid, mode);
@@ -112,7 +116,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     }
 
     @Override
-    public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
+    public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
         FsInode parentFsInode = toFsInode(parent);
         FsInode linkInode = toFsInode(link);
         try {
@@ -126,7 +130,9 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     }
 
     @Override
-    public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
+    public Inode symlink(Inode parent, String path, String link, Subject subject, int mode) throws IOException {
+        int uid = (int) Subjects.getUid(subject);
+        int gid = (int) Subjects.getPrimaryGid(subject);
         try {
             FsInode parentFsInode = toFsInode(parent);
             FsInode fsInode = _fs.createLink(parentFsInode, path, uid, gid, mode, link.getBytes(StandardCharsets.UTF_8));

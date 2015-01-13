@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
-import javax.xml.bind.annotation.XmlElement;
 import org.dcache.auth.Subjects;
 import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.ChimeraNFSException;
@@ -139,16 +138,15 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
-        checkAccess(parent, ACE4_ADD_FILE);
+    public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
+        Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
 
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            uid = s.getUid();
-            gid = s.getGid();
+            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
         }
 
-        return pushExportIndex(parent, _inner.create(parent, type, path, uid, gid, mode));
+        return pushExportIndex(parent, _inner.create(parent, type, path, effectiveSubject, mode));
     }
 
     @Override
@@ -192,20 +190,18 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
-        checkAccess(parent, ACE4_ADD_FILE);
+    public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
+        Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            uid = s.getUid();
-            gid = s.getGid();
+            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
         }
-        return pushExportIndex(parent, _inner.link(parent, link, path, uid, gid));
-
+        return pushExportIndex(parent, _inner.link(parent, link, path, effectiveSubject));
     }
 
     @Override
     public List<DirectoryEntry> list(Inode inode) throws IOException {
-        checkAccess(inode, ACE4_LIST_DIRECTORY);
+        Subject effectiveSubject = checkAccess(inode, ACE4_LIST_DIRECTORY);
         if (inode.isPesudoInode()) {
             return listPseudoDirectory(inode);
         }
@@ -213,14 +209,13 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
-        checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
+    public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
+        Subject effectiveSubject = checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            uid = s.getUid();
-            gid = s.getGid();
+            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
         }
-        return pushExportIndex(parent, _inner.mkdir(parent, path, uid, gid, mode));
+        return pushExportIndex(parent, _inner.mkdir(parent, path, effectiveSubject, mode));
     }
 
     @Override
@@ -273,14 +268,13 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
-        checkAccess(parent, ACE4_ADD_FILE);
+    public Inode symlink(Inode parent, String path, String link, Subject subject, int mode) throws IOException {
+        Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            uid = s.getUid();
-            gid = s.getGid();
+            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
         }
-        return pushExportIndex(parent, _inner.symlink(parent, path, link, uid, gid, mode));
+        return pushExportIndex(parent, _inner.symlink(parent, path, link, effectiveSubject, mode));
     }
 
     @Override
@@ -328,11 +322,11 @@ public class PseudoFs implements VirtualFileSystem {
         return _inner.getAclCheckable();
     }
 
-    private void checkAccess(Inode inode, int requestedMask) throws IOException {
-        checkAccess(inode, requestedMask, true);
+    private Subject checkAccess(Inode inode, int requestedMask) throws IOException {
+        return checkAccess(inode, requestedMask, true);
     }
 
-    private void checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
+    private Subject checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
         Access aclMatched = Access.UNDEFINED;
@@ -369,7 +363,7 @@ public class PseudoFs implements VirtualFileSystem {
             if(export.isAllRoot()) {
                 _log.info("permission check to inode {} skipped due to all_root option for client {}",
                         inode, _inetAddress);
-                return;
+                return effectiveSubject;
             }
 
             if (export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
@@ -404,6 +398,7 @@ public class PseudoFs implements VirtualFileSystem {
                 throw new AccessException("permission deny");
             }
         }
+        return effectiveSubject;
     }
 
     /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
@@ -83,28 +82,28 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
             case nfs_ftype4.NF4DIR:
                 inode = context.getFs().mkdir(context.currentInode(), name,
-                        context.getUser().getUID(), context.getUser().getGID(), mode);
+                        context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4LNK:
                 String linkDest = NameFilter.convertPath(_args.opcreate.objtype.linkdata.value.value);
                 inode = context.getFs().symlink(context.currentInode(), name, linkDest,
-                        context.getUser().getUID(), context.getUser().getGID(), mode);
+                        context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4BLK:
                 inode = context.getFs().create(context.currentInode(), Stat.Type.BLOCK, name,
-                        context.getUser().getUID(), context.getUser().getGID(), mode);
+                        context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4CHR:
                 inode = context.getFs().create(context.currentInode(), Stat.Type.CHAR, name,
-                        context.getUser().getUID(), context.getUser().getGID(), mode);
+                        context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4FIFO:
                 inode = context.getFs().create(context.currentInode(), Stat.Type.FIFO, name,
-                        context.getUser().getUID(), context.getUser().getGID(), mode);
+                        context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4SOCK:
                 inode = context.getFs().create(context.currentInode(), Stat.Type.SOCK, name,
-                        context.getUser().getUID(), context.getUser().getGID(), mode);
+                        context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4ATTRDIR:
             case nfs_ftype4.NF4NAMEDATTR:

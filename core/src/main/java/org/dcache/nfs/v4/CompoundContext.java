@@ -25,17 +25,16 @@ import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.chimera.posix.UnixUser;
 import org.dcache.xdr.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
+import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import org.dcache.auth.UidPrincipal;
 import org.dcache.nfs.vfs.Inode;
-import org.dcache.nfs.NfsUser;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.NoFileHandleException;
 import org.dcache.nfs.status.RestoreFhException;
@@ -81,7 +80,7 @@ public class CompoundContext {
 
     private final VirtualFileSystem _fs;
     private final RpcCall _callInfo;
-    private final UnixUser _user;
+    private final Subject _subject;
     private final ExportFile _exportFile;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _stateHandler;
@@ -113,7 +112,7 @@ public class CompoundContext {
         _deviceManager = deviceManager;
         _callInfo = call;
         _exportFile = exportFile;
-        _user = NfsUser.remoteUser(_callInfo, _exportFile);
+        _subject = call.getCredential().getSubject();
         _stateHandler = stateHandler;
         _idMapping = idMapping;
         _totalOperationsCount = opCount;
@@ -123,8 +122,9 @@ public class CompoundContext {
     public RpcCall getRpcCall() {
         return _callInfo;
     }
-    public UnixUser getUser() {
-        return _user;
+
+    public Subject getSubject() {
+        return _subject;
     }
 
     public VirtualFileSystem getFs() {

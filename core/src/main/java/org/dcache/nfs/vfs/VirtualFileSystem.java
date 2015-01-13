@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.util.List;
+import javax.security.auth.Subject;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 
@@ -28,7 +29,7 @@ public interface VirtualFileSystem {
 
     int access(Inode inode, int mode) throws IOException;
 
-    Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException;
+    Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException;
 
     FsStat getFsStat() throws IOException;
 
@@ -36,11 +37,11 @@ public interface VirtualFileSystem {
 
     Inode lookup(Inode parent, String path) throws IOException;
 
-    Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException;
+    Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException;
 
     List<DirectoryEntry> list(Inode inode) throws IOException;
 
-    Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException;
+    Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException;
 
     boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException;
 
@@ -52,7 +53,7 @@ public interface VirtualFileSystem {
 
     void remove(Inode parent, String path) throws IOException;
 
-    Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException;
+    Inode symlink(Inode parent, String path, String link, Subject subject, int mode) throws IOException;
 
     WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException;
 

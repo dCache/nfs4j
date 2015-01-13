@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import javax.security.auth.Subject;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.utils.Opaque;
@@ -91,8 +92,8 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode symlink(Inode parent, String path, String link, int uid, int gid, int mode) throws IOException {
-        Inode inode = _inner.symlink(parent, path, link, uid, gid, mode);
+    public Inode symlink(Inode parent, String path, String link, Subject subject, int mode) throws IOException {
+        Inode inode = _inner.symlink(parent, path, link, subject, mode);
 	invalidateStatCache(parent);
 	return inode;
     }
@@ -135,8 +136,8 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode mkdir(Inode parent, String path, int uid, int gid, int mode) throws IOException {
-        Inode inode = _inner.mkdir(parent, path, uid, gid, mode);
+    public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
+        Inode inode = _inner.mkdir(parent, path, subject, mode);
         updateLookupCache(parent, path, inode);
 	invalidateStatCache(parent);
         return inode;
@@ -148,8 +149,8 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode link(Inode parent, Inode link, String path, int uid, int gid) throws IOException {
-        Inode inode = _inner.link(parent, link, path, uid, gid);
+    public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
+        Inode inode = _inner.link(parent, link, path, subject);
         updateLookupCache(parent, path, inode);
 	invalidateStatCache(parent);
 	invalidateStatCache(inode);
@@ -172,8 +173,8 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public Inode create(Inode parent, Stat.Type type, String path, int uid, int gid, int mode) throws IOException {
-        Inode inode = _inner.create(parent, type, path, uid, gid, mode);
+    public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
+        Inode inode = _inner.create(parent, type, path, subject, mode);
         updateLookupCache(parent, path, inode);
 	invalidateStatCache(parent);
         updateParentCache(inode, parent);
