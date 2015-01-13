@@ -30,8 +30,6 @@ import java.util.List;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.net.InetAddresses;
-import com.google.common.net.InternetDomainName;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -107,10 +105,6 @@ public class ExportFile {
                                 .split(hostAndOptions).iterator();
 
                         String host = s.next();
-                        if (!isValidHostSpecifier(host)) {
-                            _log.error("Invalid host specifier: " + host);
-                            continue;
-                        }
 
                         exportBuilder.forClient(host);
                         while (s.hasNext()) {
@@ -211,60 +205,6 @@ public class ExportFile {
          */
         exports.sort((FsExport e1, FsExport e2) -> HostEntryComparator.compare(e2.client(), e1.client()));
         return exports;
-    }
-
-    /**
-     * Check for valid host name. The allowed format is:
-     * <pre>
-     *   IPv4[/n]
-     *   IPv6[/N]
-     *   host.domain[/N]
-     * </pre>
-     *
-     * @param s
-     * @return
-     */
-    private static boolean isValidHostSpecifier(String s) {
-        int maskIdx = s.indexOf('/');
-
-        String host;
-        String mask;
-        if (maskIdx < 0) {
-            host = s;
-            mask = "128";
-        } else {
-            host = s.substring(0, maskIdx);
-            mask = s.substring(maskIdx + 1);
-        }
-
-        return (isValidIpAddress(host) && isValidNetmask(mask))
-                || (isValidHostName(host) || isValidWildcard(host));
-    }
-
-    private static boolean isValidIpAddress(String s) {
-        try {
-            InetAddresses.forString(s);
-            return true;
-        } catch (IllegalArgumentException e) {
-        }
-        return false;
-    }
-
-    private static boolean isValidHostName(String s) {
-        return InternetDomainName.isValid(s);
-    }
-
-    private static boolean isValidWildcard(String s) {
-        return isValidHostName(s.replace('?', 'a').replace('*', 'a'));
-    }
-
-    private static boolean isValidNetmask(String s) {
-        try {
-            int mask = Integer.parseInt(s);
-            return mask >= 0 && mask <= 128;
-        } catch (NumberFormatException e) {
-        }
-        return false;
     }
 
     public FsExport getExport(String path, InetAddress client) {
