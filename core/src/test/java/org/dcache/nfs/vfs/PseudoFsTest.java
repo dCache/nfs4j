@@ -63,6 +63,8 @@ public class PseudoFsTest {
         mockedRpc = mock(RpcCall.class);
         mockedAuth = mock(RpcAuth.class);
         mockedExport = mock(FsExport.class);
+        given(mockedExport.getAnonUid()).willReturn(FsExport.DEFAULT_ANON_UID);
+        given(mockedExport.getAnonGid()).willReturn(FsExport.DEFAULT_ANON_GID);
 
         // prepare file system
         inode = mock(Inode.class);

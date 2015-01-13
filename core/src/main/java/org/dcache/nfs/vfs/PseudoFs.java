@@ -35,7 +35,6 @@ import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
-import org.dcache.nfs.NfsUser;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.acl.Acls;
@@ -367,7 +366,7 @@ public class PseudoFs implements VirtualFileSystem {
             }
 
             if (export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
-                effectiveSubject = NfsUser.NFS_NOBODY;
+                effectiveSubject = Subjects.of(export.getAnonUid(), export.getAnonGid());
             }
 
             if (export.checkAcls()) {

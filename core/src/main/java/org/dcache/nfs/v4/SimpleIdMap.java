@@ -22,7 +22,6 @@ package org.dcache.nfs.v4;
 import java.security.Principal;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
-import org.dcache.nfs.NfsUser;
 
 /**
  * Simple implementation of {@link NfsIdMapping} which converts number into
@@ -32,8 +31,8 @@ import org.dcache.nfs.NfsUser;
  */
 public class SimpleIdMap implements NfsIdMapping, NfsLoginService {
 
-    private static final int NOBODY_UID = NfsUser.NOBODY;
-    private static final int NOBODY_GID = NfsUser.NOBODY;
+    private static final int NOBODY_UID = 65534;
+    private static final int NOBODY_GID = 65534;
 
     private static final int DEFAULT_UID = 1001;
     private static final int DEFAULT_GID = 1001;
