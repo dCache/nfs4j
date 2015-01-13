@@ -54,8 +54,8 @@ public class FsExportTest {
         FsExport export1 = _exportFile.getExport("/trusted", trusted);
         FsExport export2 = _exportFile.getExport("/trusted", nontrusted);
 
-        assertTrue("trusted host not respected", export1.isTrusted(trusted) );
-        assertFalse("nontrusted host respected", export2.isTrusted(nontrusted) );
+        assertTrue("trusted host not respected", export1.isTrusted() );
+        assertFalse("nontrusted host respected", export2.isTrusted() );
     }
 
     @Test

@@ -170,12 +170,6 @@ public class FsExport {
         return _clientMatcher.match(client);
     }
 
-    public boolean isTrusted(InetAddress client) {
-
-        // localhost always allowed
-        return isAllowed(client) && _isTrusted == Root.TRUSTED;
-    }
-
     public boolean isTrusted() {
         return _isTrusted == Root.TRUSTED;
     }

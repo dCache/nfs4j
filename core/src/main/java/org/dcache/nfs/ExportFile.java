@@ -286,18 +286,6 @@ public class ExportFile {
         return null;
     }
 
-    // FIXME: one trusted client has an access to all tree
-    public boolean isTrusted(java.net.InetAddress client) {
-
-        for (FsExport export : getExports()) {
-            if (export.isTrusted(client)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     public Iterable<FsExport> exportsFor(InetAddress client) {
         return Iterables.filter(_exports, new AllowedExports(client));
     }
