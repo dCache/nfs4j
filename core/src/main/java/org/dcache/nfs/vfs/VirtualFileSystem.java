@@ -22,6 +22,7 @@ package org.dcache.nfs.vfs;
 import java.io.IOException;
 import java.util.List;
 import javax.security.auth.Subject;
+import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 
@@ -70,6 +71,8 @@ public interface VirtualFileSystem {
     boolean hasIOLayout(Inode inode) throws IOException;
 
     AclCheckable getAclCheckable();
+
+    NfsIdMapping getIdMapper();
 
     public static class WriteResult {
         private final int bytesWritten;

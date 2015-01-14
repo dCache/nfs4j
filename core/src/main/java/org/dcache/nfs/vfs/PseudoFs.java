@@ -37,6 +37,7 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
+import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.xdr.RpcCall;
@@ -319,6 +320,11 @@ public class PseudoFs implements VirtualFileSystem {
     @Override
     public AclCheckable getAclCheckable() {
         return _inner.getAclCheckable();
+    }
+
+    @Override
+    public NfsIdMapping getIdMapper() {
+        return _inner.getIdMapper();
     }
 
     private Subject checkAccess(Inode inode, int requestedMask) throws IOException {

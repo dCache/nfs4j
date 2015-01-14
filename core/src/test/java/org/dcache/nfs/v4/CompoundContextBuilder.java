@@ -92,7 +92,6 @@ public class CompoundContextBuilder {
     private VirtualFileSystem fs = null;
     private NFSv4StateHandler stateHandler = null;
     private NFSv41DeviceManager deviceManager = null;
-    private NfsIdMapping idMapping = null;
     private ExportFile exportFile = null;
     private int opCount = 0;
 
@@ -113,11 +112,6 @@ public class CompoundContextBuilder {
 
     public CompoundContextBuilder withFs(VirtualFileSystem fs) {
         this.fs = fs;
-        return this;
-    }
-
-    public CompoundContextBuilder withIdMapping(NfsIdMapping idMapping) {
-        this.idMapping = idMapping;
         return this;
     }
 
@@ -143,7 +137,6 @@ public class CompoundContextBuilder {
                 stateHandler,
                 deviceManager,
                 call,
-                idMapping,
                 exportFile,
                 opCount);
     }

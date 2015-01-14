@@ -284,11 +284,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_NUMLINKS:
                 return Optional.of(new fattr4_numlinks(stat.getNlink()));
             case nfs4_prot.FATTR4_OWNER:
-                String owner_s = context.getIdMapping().uidToPrincipal(stat.getUid());
+                String owner_s = context.getFs().getIdMapper().uidToPrincipal(stat.getUid());
                 utf8str_mixed user = new utf8str_mixed(owner_s);
                 return Optional.of(new fattr4_owner(user));
             case nfs4_prot.FATTR4_OWNER_GROUP:
-                String group_s = context.getIdMapping().gidToPrincipal(stat.getGid());
+                String group_s = context.getFs().getIdMapper().gidToPrincipal(stat.getGid());
                 utf8str_mixed group = new utf8str_mixed(group_s);
                 return Optional.of(new fattr4_owner(group));
             case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD:

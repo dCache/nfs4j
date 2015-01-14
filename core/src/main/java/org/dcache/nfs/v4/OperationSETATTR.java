@@ -160,7 +160,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 utf8str_cs owner = new utf8str_cs ();
                 owner.xdrDecode(xdr);
                 String new_owner = owner.toString();
-                stat.setUid(context.getIdMapping().principalToUid(new_owner));
+                stat.setUid(context.getFs().getIdMapper().principalToUid(new_owner));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
@@ -168,7 +168,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 utf8str_cs owner_group = new utf8str_cs ();
                 owner_group.xdrDecode(xdr);
                 String new_group = owner_group.toString();
-                stat.setGid(context.getIdMapping().principalToGid(new_group));
+                stat.setGid(context.getFs().getIdMapper().principalToGid(new_group));
                 isApplied = true;
                 break;
             case nfs4_prot.FATTR4_SYSTEM :

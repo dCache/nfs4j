@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
+import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.utils.Opaque;
@@ -215,6 +216,11 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public AclCheckable getAclCheckable() {
         return _inner.getAclCheckable();
+    }
+
+    @Override
+    public NfsIdMapping getIdMapper() {
+        return _inner.getIdMapper();
     }
 
     /*

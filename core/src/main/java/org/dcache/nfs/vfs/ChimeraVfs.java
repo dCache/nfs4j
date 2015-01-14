@@ -387,6 +387,11 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         return this;
     }
 
+    @Override
+    public NfsIdMapping getIdMapper() {
+        return _idMapping;
+    }
+
     private class ChimeraDirectoryEntryToVfs implements Function<HimeraDirectoryEntry, DirectoryEntry> {
 
         @Override

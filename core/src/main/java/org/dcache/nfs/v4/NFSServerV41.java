@@ -57,21 +57,18 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final NFSv4OperationFactory _operationFactory;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _statHandler = new NFSv4StateHandler();
-    private final NfsIdMapping _idMapping;
 
     private static final RequestExecutionTimeGauges<String> GAUGES =
             new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
 
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, VirtualFileSystem fs,
-            NfsIdMapping idMapping,
             ExportFile exportFile) throws OncRpcException {
 
         _deviceManager = deviceManager;
         _fs = fs;
         _exportFile = exportFile;
         _operationFactory = operationFactory;
-        _idMapping = idMapping;
     }
 
     @Override
@@ -115,7 +112,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
-                fs, _statHandler, _deviceManager, call$, _idMapping,
+                fs, _statHandler, _deviceManager, call$,
                     _exportFile, arg1.argarray.length);
 
             boolean retransmit = false;

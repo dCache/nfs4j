@@ -138,7 +138,6 @@
         <constructor-arg ref="mds-factory"/>
         <constructor-arg ref="device-manager" />
         <constructor-arg ref="vfs" />
-        <constructor-arg ref="idmapd" />
         <constructor-arg ref="export" />
     </bean>
 
@@ -147,11 +146,10 @@
     -->
     <bean id="ds" class="org.dcache.nfs.v4.NFSServerV41">
         <description>NFSv4.1 DS server</description>
-        <constructor-arg index="0" ref="ds-factory"/>
-        <constructor-arg index="1" ref="device-manager" />
-        <constructor-arg index="2" ref="vfs" />
-        <constructor-arg index="3"><null/></constructor-arg>
-        <constructor-arg index="4" ref="export" />
+        <constructor-arg ref="ds-factory"/>
+        <constructor-arg ref="device-manager" />
+        <constructor-arg ref="vfs" />
+        <constructor-arg ref="export" />
     </bean>
     <!--
         MOUNTD server

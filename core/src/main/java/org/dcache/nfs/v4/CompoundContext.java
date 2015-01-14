@@ -84,7 +84,6 @@ public class CompoundContext {
     private final ExportFile _exportFile;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _stateHandler;
-    private final NfsIdMapping _idMapping;
     private int _slotId;
     private boolean _cacheThis;
     private final int _totalOperationsCount;
@@ -105,7 +104,6 @@ public class CompoundContext {
     public CompoundContext(int minorversion, VirtualFileSystem fs,
             NFSv4StateHandler stateHandler,
             NFSv41DeviceManager deviceManager, RpcCall call,
-            NfsIdMapping idMapping,
             ExportFile exportFile, int opCount) {
         _minorversion = minorversion;
         _fs = fs;
@@ -114,7 +112,6 @@ public class CompoundContext {
         _exportFile = exportFile;
         _subject = call.getCredential().getSubject();
         _stateHandler = stateHandler;
-        _idMapping = idMapping;
         _totalOperationsCount = opCount;
         _principal = principalOf(call);
     }
@@ -242,10 +239,6 @@ public class CompoundContext {
 
     public NFSv4StateHandler getStateHandler() {
         return _stateHandler;
-    }
-
-    public NfsIdMapping getIdMapping() {
-        return _idMapping;
     }
 
     public int getSlotId() {
