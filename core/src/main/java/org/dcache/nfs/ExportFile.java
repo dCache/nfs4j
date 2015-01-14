@@ -25,15 +25,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.List;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class ExportFile {
 
     private static final Logger _log = LoggerFactory.getLogger(ExportFile.class);
 
-    private volatile List<FsExport> _exports ;
+    private volatile Multimap<Integer,FsExport> _exports;
     private final URL _exportFile;
 
     public ExportFile(File file) throws IOException {
@@ -57,12 +58,12 @@ public class ExportFile {
     }
 
     public Iterable<FsExport> getExports() {
-        return _exports;
+        return _exports.values();
     }
 
-    private static List<FsExport> parse(URL exportFile) throws IOException {
+    private static Multimap<Integer,FsExport> parse(URL exportFile) throws IOException {
 
-        List<FsExport> exports = new ArrayList<>();
+        ImmutableListMultimap.Builder<Integer,FsExport> exportsBuilder = ImmutableListMultimap.builder();
 
         String line;
         try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream(), StandardCharsets.UTF_8))) {
@@ -85,7 +86,7 @@ public class ExportFile {
                 String path;
                 if (pathEnd < 0) {
                     FsExport export = new FsExport.FsExportBuilder().build(line);
-                    exports.add(export);
+                    exportsBuilder.put(export.getIndex(), export);
                     continue;
                 } else {
                     path = line.substring(0, pathEnd);
@@ -191,7 +192,7 @@ public class ExportFile {
                             throw new IllegalArgumentException("Unsupported option: " + option);
                         }
                         FsExport export = exportBuilder.build(path);
-                        exports.add(export);
+                        exportsBuilder.put(export.getIndex(), export);
                     } catch (IllegalArgumentException e) {
                         _log.error("Invalid export entry [" + hostAndOptions + "] : " + e.getMessage());
                     }
@@ -201,25 +202,21 @@ public class ExportFile {
         }
 
         /*
-         * compare in reverse order to get smallest network first
+         * sort in reverse order to get smallest network first
          */
-        exports.sort((FsExport e1, FsExport e2) -> HostEntryComparator.compare(e2.client(), e1.client()));
-        return exports;
+        return exportsBuilder
+                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client).reverse())
+                .build();
     }
 
     public FsExport getExport(String path, InetAddress client) {
         String normalizedPath = FsExport.normalize(path);
-        for (FsExport export : _exports) {
-            if (export.getPath().equals(normalizedPath) && export.isAllowed(client)) {
-                return export;
-            }
-        }
-        return null;
+        return getExport(FsExport.getExportIndex(normalizedPath), client);
     }
 
     public FsExport getExport(int index, InetAddress client) {
-        for (FsExport export : _exports) {
-            if (export.getIndex() == index && export.isAllowed(client)) {
+        for (FsExport export : _exports.get(index)) {
+            if (export.isAllowed(client)) {
                 return export;
             }
         }
@@ -227,7 +224,7 @@ public class ExportFile {
     }
 
     public Iterable<FsExport> exportsFor(InetAddress client) {
-        return Iterables.filter(_exports, new AllowedExports(client));
+        return Iterables.filter(_exports.values(), new AllowedExports(client));
     }
 
     private static class AllowedExports implements Predicate<FsExport> {
