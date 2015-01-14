@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@ public class Inode {
     FileHandle fh;
 
     public Inode(byte[] bytes) {
-        fh = new FileHandle(bytes);
+        this(new FileHandle(bytes));
     }
 
     public Inode(FileHandle h) {
