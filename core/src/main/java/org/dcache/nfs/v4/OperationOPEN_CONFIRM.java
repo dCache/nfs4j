@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.OPEN_CONFIRM4resok;
 import org.dcache.nfs.v4.xdr.OPEN_CONFIRM4res;
-import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -63,10 +62,8 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
         _log.debug("confirmed stateID: {}", stateid);
 
         NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
+        client.validateSequence(_args.opopen_confirm.seqid);
         NFS4State state = client.state(stateid);
-        if (state.getOpenSeqid().value + 1 != _args.opopen_confirm.seqid.value.value) {
-            throw new BadSeqidException();
-        }
 
         state.bumpSeqid();
         state.confirm();

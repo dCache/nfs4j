@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import java.net.UnknownHostException;
@@ -44,7 +44,7 @@ public class NFSv4StateHandlerTest {
 
     @Test
     public void testGetByStateId() throws Exception {
-        stateid4 state = _client.createState(new uint32_t(0)).stateid();
+        stateid4 state = _client.createState().stateid();
         _stateHandler.getClientIdByStateId(state);
     }
 
@@ -61,7 +61,7 @@ public class NFSv4StateHandlerTest {
 
     @Test
     public void testUpdateLeaseTime() throws Exception {
-        NFS4State state = _client.createState(new uint32_t(0));
+        NFS4State state = _client.createState();
         stateid4 stateid = state.stateid();
         state.confirm();
         _stateHandler.updateClientLeaseTime(stateid);
@@ -69,7 +69,7 @@ public class NFSv4StateHandlerTest {
 
     @Test(expected=BadStateidException.class)
     public void testUpdateLeaseTimeNotConfirmed() throws Exception {
-        NFS4State state = _client.createState(new uint32_t(0));
+        NFS4State state = _client.createState();
         stateid4 stateid = state.stateid();
 
         _stateHandler.updateClientLeaseTime(stateid);
@@ -77,13 +77,13 @@ public class NFSv4StateHandlerTest {
 
     @Test(expected=BadStateidException.class)
     public void testUpdateLeaseTimeNotExists() throws Exception {
-        stateid4 state = _client.createState(new uint32_t(0)).stateid();
+        stateid4 state = _client.createState().stateid();
         _stateHandler.updateClientLeaseTime(state);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testUseAfterShutdown() throws Exception {
-        NFS4State state = _client.createState(new uint32_t(0));
+        NFS4State state = _client.createState();
         stateid4 stateid = state.stateid();
         state.confirm();
         _stateHandler.shutdown();

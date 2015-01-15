@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,11 +23,10 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.utils.Bytes;
 
 public class NFS4State {
-        
+
     /*
         struct stateid4 {
             uint32_t        seqid;
@@ -43,11 +42,10 @@ public class NFS4State {
         OPEN processing done by the server.
 
      */
-		        	
+
     private final stateid4 _stateid;
     private boolean _isConfimed = false;
     private boolean _disposed = false;
-    private final uint32_t _openSeqid;
 
     private final List<StateDisposeListener> _disposeListeners;
 
@@ -56,14 +54,13 @@ public class NFS4State {
      */
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public NFS4State(stateid4 stateid, uint32_t openSeqid) {
+    public NFS4State(stateid4 stateid) {
         _stateid = stateid;
         _disposeListeners = new ArrayList<>();
-        _openSeqid = openSeqid;
     }
 
-    public NFS4State(long clientid, int seqid, uint32_t openSeqid) {
-        this( new stateid4(generateState(clientid), seqid), openSeqid);
+    public NFS4State(long clientid, int seqid) {
+        this(new stateid4(generateState(clientid), seqid));
     }
 
     private static byte[] generateState(long clientid) {
@@ -74,24 +71,17 @@ public class NFS4State {
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
-    
+
     public stateid4 stateid() {
         return _stateid;
     }
-    
+
     public void confirm() {
     	_isConfimed = true;
     }
-    
+
     public boolean isConfimed() {
     	return _isConfimed;
-    }
-
-    /**
-     * Returns the seqid value the client sent us in their OPEN call.
-     */
-    public uint32_t getOpenSeqid() {
-        return _openSeqid;
     }
 
     /**

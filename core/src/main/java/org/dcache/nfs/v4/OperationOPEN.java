@@ -80,6 +80,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 throw new StaleClientidException("bad client id.");
             }
 
+            client.validateSequence(_args.opopen.seqid);
             client.updateLeaseTime();
             _log.debug("open request form clientid: {}, owner: {}",
                     client, new String(_args.opopen.owner.value.owner));
@@ -298,7 +299,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     | nfs4_prot.OPEN4_RESULT_CONFIRM);
         }
 
-        NFS4State nfs4state = client.createState(_args.opopen.seqid.value);
+        NFS4State nfs4state = client.createState();
         res.resok4.stateid = nfs4state.stateid();
 
         _log.debug("New stateID: {}", nfs4state.stateid());

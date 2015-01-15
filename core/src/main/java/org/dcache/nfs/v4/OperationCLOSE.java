@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -50,6 +50,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
             client = context.getSession().getClient();
         } else {
             client = context.getStateHandler().getClientIdByStateId(_args.opclose.open_stateid);
+            client.validateSequence(_args.opclose.seqid);
         }
 
         if (context.getMinorversion() > 0) {

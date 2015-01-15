@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.v4.client.CloseStub;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,7 +54,7 @@ public class NFS4ClientTest {
         nfs_resop4 result;
 
         NFSv41Session session = nfsClient.createSession(1, 2, 1, 8, 8);
-        NFS4State state = nfsClient.createState(new uint32_t(0));
+        NFS4State state = nfsClient.createState();
 
         nfs_argop4 close_args = CloseStub.generateRequest(state.stateid());
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
@@ -79,7 +78,7 @@ public class NFS4ClientTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        NFS4State state = nfsClient.createState(new uint32_t(0));
+        NFS4State state = nfsClient.createState();
 
         nfs_argop4 close_args = CloseStub.generateRequest(state.stateid());
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
@@ -103,7 +102,7 @@ public class NFS4ClientTest {
 
     @Test
     public void testAttacheDetachState() throws ChimeraNFSException {
-        NFS4State state = new NFS4State(0, 0, new uint32_t(0));
+        NFS4State state = new NFS4State(0, 0);
 
         nfsClient.attachState(state);
         assertTrue(nfsClient.hasState());
@@ -114,7 +113,7 @@ public class NFS4ClientTest {
 
     @Test
     public void testCreateState() throws ChimeraNFSException {
-        NFS4State state = nfsClient.createState(new uint32_t(0));
+        NFS4State state = nfsClient.createState();
         assertTrue(nfsClient.hasState());
     }
 

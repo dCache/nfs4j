@@ -59,7 +59,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                 res.client_using = new clientaddr4(addr);
                 throw new ClidInUseException();
             }
-            client.refreshLeaseTime();
+            client.reset();
 
         } else {
             client = context.getStateHandler().createClient(
