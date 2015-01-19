@@ -439,9 +439,9 @@ public class NFS4Client {
      * Release resources used by this client.
      */
     protected void dispose() {
-        for (NFS4State state : _clientStates.values()) {
+        _clientStates.values().forEach((state) -> {
             state.tryDispose();
-        }
+        });
     }
 
     public synchronized void reclaimComplete() throws ChimeraNFSException {

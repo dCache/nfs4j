@@ -426,14 +426,8 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private boolean isPseudoDirectory(Inode dir) throws IOException {
-	Set<PseudoFsNode> nodes = prepareExportTree();
-
-	for (PseudoFsNode node : nodes) {
-	    if (node.id().equals(dir)) {
-		return true;
-	    }
-	}
-	return false;
+        return prepareExportTree().stream()
+                .anyMatch(n -> n.id().equals(dir));
     }
 
     public static Inode pseudoIdToReal(Inode inode, int index) {

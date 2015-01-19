@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -76,10 +76,7 @@ public class NFSv4StateHandler {
 	synchronized (this) {
 	    checkState(_running, "NFS state handler not running");
 
-	    for (NFSv41Session session : client.sessions()) {
-		_sessionById.remove(session.id());
-	    }
-
+            client.sessions().forEach(s -> _sessionById.remove(s.id()));
 	    _clientsByServerId.remove(client.getId());
 	}
         client.tryDispose();

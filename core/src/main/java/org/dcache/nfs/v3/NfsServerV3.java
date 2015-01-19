@@ -130,7 +130,6 @@ import org.dcache.nfs.v3.xdr.ACCESS3res;
 import org.dcache.nfs.v3.xdr.COMMIT3resok;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -143,7 +142,6 @@ import org.dcache.nfs.v3.xdr.RENAME3resfail;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.chimera.posix.UnixUser;
 import org.dcache.nfs.status.*;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.OncRpcException;
@@ -769,13 +767,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 cookieverf = generateDirectoryVerifier(dirStat);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
                 try {
-                    dirList = _dlCacheFull.get(cacheKey,
-                            new Callable<List<DirectoryEntry>>() {
-                                @Override
-                                public List<DirectoryEntry> call() throws Exception {
-                                    return fs.list(dir);
-                                }
-                            });
+                    dirList = _dlCacheFull.get(cacheKey, () -> fs.list(dir));
                 } catch (ExecutionException e) {
                     Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
                     throw new NfsIoException(e.getMessage());
@@ -929,13 +921,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 cookieverf = generateDirectoryVerifier(dirStat);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
                 try {
-                    dirList = _dlCacheFull.get(cacheKey,
-                            new Callable<List<DirectoryEntry>>() {
-                                @Override
-                                public List<DirectoryEntry> call() throws Exception {
-                                    return fs.list(dir);
-                                }
-                            });
+                    dirList = _dlCacheFull.get(cacheKey, () -> fs.list(dir));
                 } catch (ExecutionException e) {
                     Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
                     throw new NfsIoException(e.getMessage());

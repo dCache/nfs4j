@@ -24,9 +24,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import org.dcache.chimera.ChimeraFsException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.entry4;
 import org.dcache.nfs.v4.xdr.dirlist4;
@@ -187,13 +187,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             startValue = COOKIE_OFFSET;
             InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
             try {
-                dirList = _dlCache.get(cacheKey,
-                        new Callable<List<DirectoryEntry>>() {
-                            @Override
-                            public List<DirectoryEntry> call() throws Exception {
-                                return context.getFs().list(dir);
-                            }
-                        });
+                dirList = _dlCache.get(cacheKey, () -> context.getFs().list(dir));
             } catch (ExecutionException e) {
                 Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
                 throw new NfsIoException(e.getMessage());

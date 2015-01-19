@@ -91,9 +91,7 @@ public class NFS4State {
     synchronized public final void tryDispose() {
         if (!_disposed) {
             dispose();
-            for (StateDisposeListener disposeListener : _disposeListeners) {
-                disposeListener.notifyDisposed(this);
-            }
+            _disposeListeners.forEach(l -> l.notifyDisposed(this));
             _disposed = true;
         }
     }
