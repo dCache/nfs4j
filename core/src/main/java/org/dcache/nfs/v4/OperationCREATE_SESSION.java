@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,11 +39,11 @@ import org.slf4j.LoggerFactory;
 
 public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
-    /*
-     * no nfs4_prot.CREATE_SESSION4_FLAG_PERSIST;
-     * no nfs4_prot.CREATE_SESSION4_FLAG_CONN_RDMA;
-     */
-    private final static int SUPPORTED_SESSION_FLAGS = nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
+    private final static int SESSION_FLAGS_MASK =
+            nfs4_prot.CREATE_SESSION4_FLAG_PERSIST
+            | nfs4_prot.CREATE_SESSION4_FLAG_CONN_RDMA
+            | nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
+
     private static final Logger _log = LoggerFactory.getLogger(OperationCREATE_SESSION.class);
 
     public OperationCREATE_SESSION(nfs_argop4 args) {
@@ -55,6 +55,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         final CREATE_SESSION4res res = result.opcreate_session;
 
         Long clientId = _args.opcreate_session.csa_clientid.value;
+        int sessionFlags = 0;
 
         /*
          * check for correct arguments
@@ -66,10 +67,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         /*
          * check for correct flags
          */
-        if ((_args.opcreate_session.csa_flags.value
-                & ~(nfs4_prot.CREATE_SESSION4_FLAG_PERSIST | nfs4_prot.CREATE_SESSION4_FLAG_CONN_RDMA
-                | nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN)) != 0) {
-
+        if ((_args.opcreate_session.csa_flags.value  & ~(SESSION_FLAGS_MASK)) != 0) {
             throw new InvalException("bad ceate_session flag");
         }
 
@@ -130,8 +128,9 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                     _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value,
                     _args.opcreate_session.csa_sec_parms);
             try {
-                cb.cbPing();;
+                cb.cbPing();
                 client.setCB(cb);
+                sessionFlags |= nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
             } catch (IOException e) {
                 _log.info("Can't ping client over back channel: {}", e.getMessage() );
             }
@@ -145,12 +144,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         res.csr_resok4.csr_sessionid = session.id();
         res.csr_resok4.csr_sequence = _args.opcreate_session.csa_sequence;
 
-        /*
-         * no callback connections on the same line, no persistent sessions no
-         * RDMA
-         */
-        res.csr_resok4.csr_flags = new uint32_t(
-                _args.opcreate_session.csa_flags.value & SUPPORTED_SESSION_FLAGS);
+        res.csr_resok4.csr_flags = new uint32_t(sessionFlags);
 
         /*
          * res.csr_resok4.csr_headerpadsize =
