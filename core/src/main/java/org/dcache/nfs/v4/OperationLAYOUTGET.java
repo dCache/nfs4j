@@ -24,15 +24,18 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4res;
 import org.dcache.nfs.v4.xdr.length4;
-import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4resok;
 import java.io.IOException;
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.BadIoModeException;
 import org.dcache.nfs.status.BadLayoutException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
+import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +94,13 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 //               throw new ChimeraNFSException(nfsstat.NFSERR_BADLAYOUT, "loga_minlength field should be at least one.");
 //        }
 
-        Layout ioLayout = context.getDeviceManager().layoutGet(context, context.currentInode(),
+        Inode inode = context.currentInode();
+
+        if (!isPnfsAllowed(context, inode)) {
+            throw new LayoutUnavailableException("pNFS is not allowed");
+        }
+
+        Layout ioLayout = context.getDeviceManager().layoutGet(context, inode,
                 _args.oplayoutget.loga_layout_type,
                 _args.oplayoutget.loga_iomode,
                 _args.oplayoutget.loga_stateid);
@@ -102,5 +111,16 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         res.logr_resok4.logr_return_on_close = ioLayout.returnOnClose();
 
         res.logr_status = nfsstat.NFS_OK;
+    }
+
+    private boolean isPnfsAllowed(CompoundContext context, Inode inode) throws ChimeraNFSException {
+        FsExport export = context
+                .getExportFile()
+                .getExport(inode.exportIndex(), context.getRemoteSocketAddress().getAddress());
+        if (export == null) {
+            throw new AccessException("no export");
+        }
+
+        return export.isWithPnfs();
     }
 }
