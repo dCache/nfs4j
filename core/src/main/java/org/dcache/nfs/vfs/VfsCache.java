@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,20 +27,17 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
-import org.dcache.nfs.v4.NfsIdMapping;
-import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.utils.Opaque;
 
 /**
  * Caching decorator.
  */
-public class VfsCache implements VirtualFileSystem {
+public class VfsCache extends ForwardingFileSystem {
 
     private final LoadingCache<CacheKey, Inode> _lookupCache;
     private final Cache<Opaque, Stat> _statCache;
@@ -82,8 +79,8 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
-        return _inner.write(inode, data, offset, count, stabilityLevel);
+    protected VirtualFileSystem delegate() {
+        return _inner;
     }
 
     @Override
@@ -106,16 +103,6 @@ public class VfsCache implements VirtualFileSystem {
         invalidateLookupCache(parent, path);
 	invalidateStatCache(parent);
 	invalidateStatCache(inode);
-    }
-
-    @Override
-    public String readlink(Inode inode) throws IOException {
-        return _inner.readlink(inode);
-    }
-
-    @Override
-    public int read(Inode inode, byte[] data, long offset, int count) throws IOException {
-        return _inner.read(inode, data, offset, count);
     }
 
     @Override
@@ -145,11 +132,6 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public List<DirectoryEntry> list(Inode inode) throws IOException {
-        return _inner.list(inode);
-    }
-
-    @Override
     public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
         Inode inode = _inner.link(parent, link, path, subject);
         updateLookupCache(parent, path, inode);
@@ -161,11 +143,6 @@ public class VfsCache implements VirtualFileSystem {
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
         return lookupFromCacheOrLoad(parent, path);
-    }
-
-    @Override
-    public Inode getRootInode() throws IOException {
-        return _inner.getRootInode();
     }
 
     @Override
@@ -183,11 +160,6 @@ public class VfsCache implements VirtualFileSystem {
     }
 
     @Override
-    public int access(Inode inode, int mode) throws IOException {
-        return _inner.access(inode, mode);
-    }
-
-    @Override
     public Stat getattr(Inode inode) throws IOException {
         return statFromCacheOrLoad(inode);
     }
@@ -196,31 +168,6 @@ public class VfsCache implements VirtualFileSystem {
     public void setattr(Inode inode, Stat stat) throws IOException {
         _inner.setattr(inode, stat);
 	invalidateStatCache(inode);
-    }
-
-    @Override
-    public nfsace4[] getAcl(Inode inode) throws IOException {
-        return _inner.getAcl(inode);
-    }
-
-    @Override
-    public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
-        _inner.setAcl(inode, acl);
-    }
-
-    @Override
-    public boolean hasIOLayout(Inode inode) throws IOException {
-        return _inner.hasIOLayout(inode);
-    }
-
-    @Override
-    public AclCheckable getAclCheckable() {
-        return _inner.getAclCheckable();
-    }
-
-    @Override
-    public NfsIdMapping getIdMapper() {
-        return _inner.getIdMapper();
     }
 
     /*

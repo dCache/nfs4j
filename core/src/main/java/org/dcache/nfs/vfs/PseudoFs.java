@@ -37,7 +37,6 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
-import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.xdr.RpcCall;
@@ -60,7 +59,7 @@ import static org.dcache.nfs.vfs.AclCheckable.Access;
  *
  * In addition, PseudoFS takes the responsibility of permission and access checking.
  */
-public class PseudoFs implements VirtualFileSystem {
+public class PseudoFs extends ForwardingFileSystem {
 
     private final static Logger _log = LoggerFactory.getLogger(PseudoFs.class);
     private final Subject _subject;
@@ -79,6 +78,11 @@ public class PseudoFs implements VirtualFileSystem {
         _auth = call.getCredential();
         _inetAddress = call.getTransport().getRemoteSocketAddress().getAddress();
         _exportFile = exportFile;
+    }
+
+    @Override
+    protected VirtualFileSystem delegate() {
+        return _inner;
     }
 
     private boolean canAccess(Inode inode, int mode) {
@@ -147,11 +151,6 @@ public class PseudoFs implements VirtualFileSystem {
         }
 
         return pushExportIndex(parent, _inner.create(parent, type, path, effectiveSubject, mode));
-    }
-
-    @Override
-    public FsStat getFsStat() throws IOException {
-        return _inner.getFsStat();
     }
 
     @Override
@@ -284,11 +283,6 @@ public class PseudoFs implements VirtualFileSystem {
     }
 
     @Override
-    public void commit(Inode inode, long offset, int count) throws IOException {
-        _inner.commit(inode, offset, count);
-    }
-
-    @Override
     public Stat getattr(Inode inode) throws IOException {
         checkAccess(inode, ACE4_READ_ATTRIBUTES);
         return _inner.getattr(inode);
@@ -310,21 +304,6 @@ public class PseudoFs implements VirtualFileSystem {
     public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
         checkAccess(inode, ACE4_WRITE_ACL);
         _inner.setAcl(inode, acl);
-    }
-
-    @Override
-    public boolean hasIOLayout(Inode inode) throws IOException {
-        return _inner.hasIOLayout(inode);
-    }
-
-    @Override
-    public AclCheckable getAclCheckable() {
-        return _inner.getAclCheckable();
-    }
-
-    @Override
-    public NfsIdMapping getIdMapper() {
-        return _inner.getIdMapper();
     }
 
     private Subject checkAccess(Inode inode, int requestedMask) throws IOException {
