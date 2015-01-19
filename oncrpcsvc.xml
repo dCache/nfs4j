@@ -230,6 +230,7 @@
         <property name="port" value="${ds.port}"/>
         <property name="useTCP" value="true"/>
         <property name="enableJmx" value="true"/>
+        <property name="useWorkerPool" value="true"/>
     </bean>
 
     <bean id="oncrpcsvc-ds" class="org.dcache.xdr.OncRpcSvc"
