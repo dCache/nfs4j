@@ -441,7 +441,7 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         return nfsace;
     }
 
-    private static ACE valueOf(nfsace4 ace, NfsIdMapping idMapping) {
+    private static ACE valueOf(nfsace4 ace, NfsIdMapping idMapping) throws BadOwnerException {
         String principal = ace.who.toString();
         int type = ace.type.value.value;
         int flags = ace.flag.value.value;

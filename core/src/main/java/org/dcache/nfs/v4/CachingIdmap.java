@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.util.concurrent.TimeUnit;
+import org.dcache.nfs.status.BadOwnerException;
 
 /**
  * {@link NfsIdMapping} implementation which caches results from defined source.
@@ -108,7 +109,7 @@ public class CachingIdmap implements NfsIdMapping {
     private class ForwardGidMapping extends CacheLoader<String, Integer> {
 
         @Override
-        public Integer load(String s) {
+        public Integer load(String s) throws BadOwnerException {
             return _inner.principalToGid(s);
         }
     }
@@ -116,7 +117,7 @@ public class CachingIdmap implements NfsIdMapping {
     private class ForwardUidMapping extends CacheLoader<String, Integer> {
 
         @Override
-        public Integer load(String s) {
+        public Integer load(String s) throws BadOwnerException {
             return _inner.principalToUid(s);
         }
     }

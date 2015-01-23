@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.status.BadOwnerException;
 /**
  * libnfsidmap like interface for {@link String} to uid/gid mapping.
  *
@@ -33,16 +34,18 @@ public interface NfsIdMapping {
      *
      * @param principal to map
      * @return numeric id;
+     * @throws BadOwnerException if principal cannot be translated into local numeric id.
      */
-    int principalToUid(String principal);
+    int principalToUid(String principal) throws BadOwnerException;
 
     /**
      * Get numeric gid for principal. If no valid mapping found, gid of NOBODY is returned.
      *
      * @param principal to map
      * @return numeric id
+     * @throws BadOwnerException if principal cannot be translated into local numeric id.
      */
-    int principalToGid(String principal);
+    int principalToGid(String principal) throws BadOwnerException;
 
     /**
      * Get {@link String} corresponding to provided numeric uid. If there is no valid
