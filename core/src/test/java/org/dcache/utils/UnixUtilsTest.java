@@ -19,18 +19,18 @@
  */
 package org.dcache.utils;
 
-import org.dcache.chimera.posix.UnixUser;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Locale;
+import javax.security.auth.Subject;
 
 public class UnixUtilsTest {
     @Test
     public void testGetCurrentUser() {
         String osName = System.getProperty("os.name");
         boolean isWindows = osName.toLowerCase(Locale.ROOT).contains("windows");
-        UnixUser currentUser = UnixUtils.getCurrentUser();
+        Subject currentUser = UnixUtils.getCurrentUser();
         if (isWindows) {
             Assert.assertNull(currentUser);
         } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,11 +19,13 @@
  */
 package org.dcache.utils;
 
-import org.dcache.chimera.posix.UnixUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import javax.security.auth.Subject;
+import org.dcache.auth.GidPrincipal;
+import org.dcache.auth.UidPrincipal;
 
 public class UnixUtils {
     private static final Logger _log = LoggerFactory.getLogger(UnixUtils.class);
@@ -32,24 +34,36 @@ public class UnixUtils {
      * attempts to get the current user, if running on a compatible OS/jre
      * @return the current UnixUser, or null
      */
-    public static UnixUser getCurrentUser() {
+    public static Subject getCurrentUser() {
         try {
-            Class unixSystemClass = Class.forName("com.sun.security.auth.module.UnixSystem");
+            Class<?> unixSystemClass = Class.forName("com.sun.security.auth.module.UnixSystem");
             Object unixSystemInstance = unixSystemClass.newInstance();
             Method getUidMethod = unixSystemClass.getDeclaredMethod("getUid");
             Method getGidMethod = unixSystemClass.getDeclaredMethod("getGid");
             Method getGroupsMethod = unixSystemClass.getDeclaredMethod("getGroups");
-            Long uid = (Long) getUidMethod.invoke(unixSystemInstance);
-            Long gid = (Long) getGidMethod.invoke(unixSystemInstance);
+
+            Subject subject = new Subject();
+
+            subject.getPrincipals().add(new UidPrincipal((Long) getUidMethod.invoke(unixSystemInstance)) );
+            subject.getPrincipals().add(new GidPrincipal((Long) getGidMethod.invoke(unixSystemInstance), true));
             long[] groups = (long[]) getGroupsMethod.invoke(unixSystemInstance);
-            int[] groupInts = new int[groups.length];
-            for (int i=0; i<groups.length; i++) {
-                groupInts[i] = (int) groups[i];
+
+            for (long gid: groups) {
+                subject.getPrincipals().add(new GidPrincipal(gid, false));
             }
-            return new UnixUser(uid.intValue(), gid.intValue(), groupInts);
+            return subject;
+
         } catch (Exception e) {
             _log.debug("couldn't get current unix user",e);
             return null;
         }
+    }
+
+    public static int[] toIntArray(long[] longArray) {
+        int[] intArray = new int[longArray.length];
+        for (int i = 0; i < longArray.length; i++) {
+            intArray[i] = (int) longArray[i];
+        }
+        return intArray;
     }
 }

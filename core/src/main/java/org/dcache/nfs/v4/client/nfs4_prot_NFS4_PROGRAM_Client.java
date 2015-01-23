@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,8 +21,9 @@ package org.dcache.nfs.v4.client;
 import java.io.IOException;
 
 import java.net.InetAddress;
+import javax.security.auth.Subject;
+import org.dcache.auth.Subjects;
 
-import org.dcache.chimera.posix.UnixUser;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -72,17 +73,20 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
     public nfs4_prot_NFS4_PROGRAM_Client(InetAddress host, int port, int protocol)
            throws OncRpcException, IOException {
 
-        UnixUser currentUser = UnixUtils.getCurrentUser();
+        Subject currentUser = UnixUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("unable to determine current unix user. please provide uid/gid explicitly");
         }
+
+        int uid = (int)Subjects.getUid(currentUser);
+        int gid = (int)Subjects.getPrimaryGid(currentUser);
+        int[] gids = UnixUtils.toIntArray(Subjects.getGids(currentUser));
 
         rpcClient = new OncRpcClient(host, protocol, port);
         XdrTransport transport;
         transport = rpcClient.connect();
 
-        RpcAuth credential = new RpcAuthTypeUnix(
-            currentUser.getUID(), currentUser.getGID(), currentUser.getGIDS(),
+        RpcAuth credential = new RpcAuthTypeUnix(uid, gid, gids,
             (int) (System.currentTimeMillis() / 1000),
             InetAddress.getLocalHost().getHostName());
         client = new RpcCall(100003, 4, credential, transport);
