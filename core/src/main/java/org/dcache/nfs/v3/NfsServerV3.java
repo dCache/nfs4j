@@ -133,7 +133,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.v3.xdr.COMMIT3resfail;
 import org.dcache.nfs.v3.xdr.FSSTAT3resfail;
 import org.dcache.nfs.v3.xdr.MKNOD3resfail;
@@ -313,9 +312,9 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             parentStat = fs.getattr(parent);
 
-            int fmode = 0644 | UnixPermission.S_IFREG;
+            int fmode = 0644 | Stat.S_IFREG;
             if (newAttr != null) {
-                fmode = newAttr.mode.mode.value.value | UnixPermission.S_IFREG;
+                fmode = newAttr.mode.mode.value.value | Stat.S_IFREG;
             }
             inode = fs.create(parent, Stat.Type.REGULAR, path, call$.getCredential().getSubject(), fmode);
             Stat inodeStat = fs.getattr(inode);
@@ -611,7 +610,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             int mode = 0777;
             if (attr != null) {
-                mode = attr.mode.mode.value.value | UnixPermission.S_IFDIR;
+                mode = attr.mode.mode.value.value | Stat.S_IFDIR;
             }
 
             Inode inode = fs.mkdir(parent, name, call$.getCredential().getSubject(), mode);

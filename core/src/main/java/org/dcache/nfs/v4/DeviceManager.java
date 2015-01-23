@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -93,8 +93,8 @@ public class DeviceManager implements NFSv41DeviceManager {
     /*
      * (non-Javadoc)
      *
-     * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#getIoDeviceId(org.dcache.chimera.FsInode,
-     *      int, java.net.InetAddress)
+     * @see org.dcache.nfsv4.NFSv41DeviceManager#layoutGet(CompoundContext context,
+     *              Inode inode, int layoutType, int ioMode, stateid4 stateid)
      */
     @Override
     public Layout layoutGet(CompoundContext context, Inode inode, int layoutType, int ioMode, stateid4 stateid)
@@ -137,7 +137,7 @@ public class DeviceManager implements NFSv41DeviceManager {
     /*
      * (non-Javadoc)
      *
-     * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#layoutGet(int)
+     * @see org.dcache.nfsv4.NFSv41DeviceManager#getDeviceInfo(CompoundContext context, deviceid4 deviceId)
      */
     @Override
     public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) {
@@ -154,7 +154,7 @@ public class DeviceManager implements NFSv41DeviceManager {
     /*
      * (non-Javadoc)
      *
-     * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#getDeviceList()
+     * @see org.dcache.nfsv4.NFSv41DeviceManager#getDeviceList()
      */
     @Override
     public List<deviceid4> getDeviceList(CompoundContext context) {
@@ -164,7 +164,7 @@ public class DeviceManager implements NFSv41DeviceManager {
     /*
      * (non-Javadoc)
      *
-     * @see org.dcache.chimera.nfsv4.NFSv41DeviceManager#layoutReturn()
+     * @see org.dcache.nfsv4.NFSv41DeviceManager#layoutReturn()
      */
     @Override
     public void layoutReturn(CompoundContext context, stateid4 stateid) {

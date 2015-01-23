@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -80,11 +80,9 @@ import org.dcache.nfs.v4.xdr.fattr4_type;
 import org.dcache.nfs.v4.xdr.fsid4;
 import org.dcache.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.nfs.v4.xdr.GETATTR4res;
-import org.dcache.nfs.ChimeraNFSException;
 
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
-import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.fattr4_space_avail;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -600,25 +598,25 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
         switch ( type & mask  ) {
 
-            case UnixPermission.S_IFREG:
+            case Stat.S_IFREG:
                 ret = nfs_ftype4.NF4REG;
                 break;
-            case UnixPermission.S_IFDIR:
+            case Stat.S_IFDIR:
                 ret = nfs_ftype4.NF4DIR;
                 break;
-            case UnixPermission.S_IFLNK:
+            case Stat.S_IFLNK:
                 ret = nfs_ftype4.NF4LNK;
                 break;
-            case UnixPermission.S_IFSOCK:
+            case Stat.S_IFSOCK:
                 ret = nfs_ftype4.NF4SOCK;
                 break;
-            case UnixPermission.S_IFBLK:
+            case Stat.S_IFBLK:
                 ret = nfs_ftype4.NF4BLK;
                 break;
-            case UnixPermission.S_IFCHR:
+            case Stat.S_IFCHR:
                 ret = nfs_ftype4.NF4CHR;
                 break;
-            case UnixPermission.S_IFIFO:
+            case Stat.S_IFIFO:
                 ret = nfs_ftype4.NF4FIFO;
                 break;
             default:

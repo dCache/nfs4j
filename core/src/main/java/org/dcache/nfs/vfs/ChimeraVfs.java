@@ -45,7 +45,6 @@ import org.dcache.chimera.IsDirChimeraException;
 import org.dcache.chimera.JdbcFs;
 import org.dcache.chimera.NotDirChimeraException;
 import org.dcache.chimera.StorageGenericLocation;
-import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.acl.Acls;
@@ -403,20 +402,20 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     private int typeToChimera(Stat.Type type) {
         switch (type) {
             case SYMLINK:
-                return UnixPermission.S_IFLNK;
+                return Stat.S_IFLNK;
             case DIRECTORY:
-                return UnixPermission.S_IFDIR;
+                return Stat.S_IFDIR;
             case SOCK:
-                return UnixPermission.S_IFSOCK;
+                return Stat.S_IFSOCK;
             case FIFO:
-                return UnixPermission.S_IFIFO;
+                return Stat.S_IFIFO;
             case BLOCK:
-                return UnixPermission.S_IFBLK;
+                return Stat.S_IFBLK;
             case CHAR:
-                return UnixPermission.S_IFCHR;
+                return Stat.S_IFCHR;
             case REGULAR:
             default:
-                return UnixPermission.S_IFREG;
+                return Stat.S_IFREG;
         }
     }
 

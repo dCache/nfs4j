@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v3;
 
-import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.v3.xdr.fattr3;
 import org.dcache.nfs.v3.xdr.fileid3;
 import org.dcache.nfs.v3.xdr.ftype3;
@@ -171,29 +170,29 @@ public class HimeraNfsUtils {
 
     static int unixType2NFS( int type ) {
 
-        int ret = 0;
+        int ret;
 
         switch ( type & MODE_MASK  ) {
 
-            case UnixPermission.S_IFREG:
+            case Stat.S_IFREG:
                 ret = ftype3.NF3REG;
                 break;
-            case UnixPermission.S_IFDIR:
+            case Stat.S_IFDIR:
                 ret = ftype3.NF3DIR;
                 break;
-            case UnixPermission.S_IFLNK:
+            case Stat.S_IFLNK:
                 ret = ftype3.NF3LNK;
                 break;
-            case UnixPermission.S_IFSOCK:
+            case Stat.S_IFSOCK:
                 ret = ftype3.NF3SOCK;
                 break;
-            case UnixPermission.S_IFBLK:
+            case Stat.S_IFBLK:
                 ret = ftype3.NF3BLK;
                 break;
-            case UnixPermission.S_IFCHR:
+            case Stat.S_IFCHR:
                 ret = ftype3.NF3CHR;
                 break;
-            case UnixPermission.S_IFIFO:
+            case Stat.S_IFIFO:
                 ret = ftype3.NF3FIFO;
                 break;
             default:

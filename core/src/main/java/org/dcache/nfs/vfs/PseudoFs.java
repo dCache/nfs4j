@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
-import org.dcache.chimera.UnixPermission;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
@@ -396,7 +395,7 @@ public class PseudoFs extends ForwardingFileSystem {
     @SuppressWarnings("PointlessBitwiseExpression")
     private int unixToAccessmask(Subject subject, Stat stat) {
         int mode = stat.getMode();
-        boolean isDir = (mode & UnixPermission.S_IFDIR) == UnixPermission.S_IFDIR;
+        boolean isDir = (mode & Stat.S_IFDIR) == Stat.S_IFDIR;
         int fromUnixMask;
 
         if (Subjects.isRoot(subject)) {
