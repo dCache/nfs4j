@@ -29,8 +29,8 @@ import java.net.InetAddress;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -45,7 +45,7 @@ public class ExportFile {
 
     private static final Logger _log = LoggerFactory.getLogger(ExportFile.class);
 
-    private volatile Multimap<Integer,FsExport> _exports;
+    private volatile ImmutableMultimap<Integer,FsExport> _exports;
     private final URL _exportFile;
 
     public ExportFile(File file) throws IOException {
@@ -61,7 +61,7 @@ public class ExportFile {
         return _exports.values();
     }
 
-    private static Multimap<Integer,FsExport> parse(URL exportFile) throws IOException {
+    private static ImmutableMultimap<Integer,FsExport> parse(URL exportFile) throws IOException {
 
         ImmutableListMultimap.Builder<Integer,FsExport> exportsBuilder = ImmutableListMultimap.builder();
 

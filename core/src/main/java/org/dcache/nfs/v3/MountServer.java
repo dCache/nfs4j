@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -38,7 +38,6 @@ import org.dcache.nfs.v3.xdr.groupnode;
 import org.dcache.nfs.v3.xdr.mountres3_ok;
 import org.dcache.nfs.v3.xdr.mountstat3;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 
 import org.dcache.nfs.ChimeraNFSException;
@@ -57,7 +56,7 @@ public class MountServer extends mount_protServerStub {
 
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
     private final ExportFile _exportFile;
-    private final Map<String, Set<String>> _mounts = new HashMap<>();
+    private final Multimap<String, InetAddress> _mounts = HashMultimap.create();
     private final VirtualFileSystem _vfs;
 
     /*
@@ -85,14 +84,13 @@ public class MountServer extends mount_protServerStub {
 
         java.io.File f = new java.io.File(arg1.value);
         String mountPoint = f.getAbsolutePath();
-
+        InetAddress remoteAddress = call$.getTransport().getRemoteSocketAddress().getAddress();
         _log.debug("Mount request for: {}", mountPoint);
 
-        FsExport export = _exportFile.getExport(mountPoint,
-                call$.getTransport().getRemoteSocketAddress().getAddress());
+        FsExport export = _exportFile.getExport(mountPoint, remoteAddress);
         if (export == null) {
             m.fhs_status = mountstat3.MNT3ERR_ACCES;
-            _log.info("Mount deny for: {}:{}", call$.getTransport().getRemoteSocketAddress().getHostName(), mountPoint);
+            _log.info("Mount deny for: {}:{}", remoteAddress, mountPoint);
             return m;
         }
 
@@ -122,16 +120,7 @@ public class MountServer extends mount_protServerStub {
             m.mountinfo.fhandle = new fhandle3(b);
             m.mountinfo.auth_flavors = exportSecFlavors(export);
 
-            if (_mounts.containsKey(mountPoint)) {
-
-                Set<String> s = _mounts.get(mountPoint);
-                s.add(call$.getTransport().getRemoteSocketAddress().getHostName());
-            } else {
-                Set<String> s = new HashSet<>();
-                s.add(call$.getTransport().getRemoteSocketAddress().getHostName());
-                _mounts.put(mountPoint, s);
-            }
-
+            _mounts.put(mountPoint, remoteAddress);
 
         } catch (ChimeraNFSException e) {
             _log.warn("mount request failed: ", e.getMessage());
@@ -151,25 +140,16 @@ public class MountServer extends mount_protServerStub {
         mountlist mList = mFullList;
         mList.value = null;
 
-        for (Map.Entry<String, Set<String>> mountEntry : _mounts.entrySet()) {
+        for (Map.Entry<String, InetAddress> mountEntry : _mounts.entries()) {
             String path = mountEntry.getKey();
+            InetAddress remoteAddress = mountEntry.getValue();
 
-            Set<String> s = mountEntry.getValue();
-
-            for (String host : s) {
-
-                mList.value = new mountbody();
-
-                mList.value.ml_directory = new dirpath(path);
-                try {
-                    mList.value.ml_hostname = new name(InetAddress.getByName(host).getHostName());
-                } catch (UnknownHostException e) {
-                    mList.value.ml_hostname = new name(host);
-                }
-                mList.value.ml_next = new mountlist();
-                mList.value.ml_next.value = null;
-                mList = mList.value.ml_next;
-            }
+            mList.value = new mountbody();
+            mList.value.ml_directory = new dirpath(path);
+            mList.value.ml_hostname = new name(remoteAddress.getHostName());
+            mList.value.ml_next = new mountlist();
+            mList.value.ml_next.value = null;
+            mList = mList.value.ml_next;
         }
 
         return mFullList;
@@ -177,11 +157,7 @@ public class MountServer extends mount_protServerStub {
 
     @Override
     public void MOUNTPROC3_UMNT_3(RpcCall call$, dirpath arg1) {
-
-        Set<String> s = _mounts.get(arg1.value);
-        if (s != null) {
-            s.remove(call$.getTransport().getRemoteSocketAddress().getHostName());
-        }
+        _mounts.remove(arg1.value, call$.getTransport().getRemoteSocketAddress().getHostName());
     }
 
     @Override
