@@ -19,8 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Optional;
 import java.io.IOException;
+import java.util.Optional;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
 import org.dcache.nfs.v4.xdr.fattr4;

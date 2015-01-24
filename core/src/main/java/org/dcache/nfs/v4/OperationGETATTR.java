@@ -19,8 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Optional;
 import java.io.IOException;
+import java.util.Optional;
+
 import org.dcache.nfs.v4.xdr.fattr4_numlinks;
 import org.dcache.nfs.v4.xdr.fattr4_aclsupport;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
@@ -234,7 +235,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 			nfs4_prot.ACL4_SUPPORT_ALLOW_ACL| nfs4_prot.ACL4_SUPPORT_DENY_ACL);
                 return Optional.of(aclSupport);
             case nfs4_prot.FATTR4_ARCHIVE:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_CANSETTIME:
                 return Optional.of(new fattr4_cansettime(true));
             case nfs4_prot.FATTR4_CASE_INSENSITIVE:
@@ -242,7 +243,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_CASE_PRESERVING:
                 return Optional.of(new fattr4_case_preserving(true));
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_FILEID:
                 return Optional.of(new fattr4_fileid(stat.getFileId()));
             case nfs4_prot.FATTR4_FILES_AVAIL:
@@ -257,9 +258,9 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fsStat = getFsStat(fsStat, fs);
                 return Optional.of(new fattr4_files_total(fsStat.getTotalFiles()));
             case nfs4_prot.FATTR4_FS_LOCATIONS:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_HIDDEN:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_HOMOGENEOUS:
                 return Optional.of(new fattr4_homogeneous(true));
             case nfs4_prot.FATTR4_MAXFILESIZE:
@@ -274,7 +275,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fattr4_maxwrite maxwrite = new fattr4_maxwrite(NFSv4Defaults.NFS4_MAXIOBUFFERSIZE);
                 return Optional.of(maxwrite);
             case nfs4_prot.FATTR4_MIMETYPE:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_MODE:
                 return Optional.of(new fattr4_mode(stat.getMode() & 07777));
             case nfs4_prot.FATTR4_NO_TRUNC:
@@ -290,11 +291,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 utf8str_mixed group = new utf8str_mixed(group_s);
                 return Optional.of(new fattr4_owner(group));
             case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_QUOTA_AVAIL_SOFT:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_QUOTA_USED:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_RAWDEV:
                 specdata4 dev = new specdata4();
                 dev.specdata1 = 0;
@@ -314,17 +315,17 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SPACE_USED:
                 return Optional.of(new fattr4_space_used(stat.getSize()));
             case nfs4_prot.FATTR4_SYSTEM:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_TIME_ACCESS:
                 fattr4_time_access atime = new fattr4_time_access(stat.getATime());
                 return Optional.of(atime);
             case nfs4_prot.FATTR4_TIME_BACKUP:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_TIME_CREATE:
                 fattr4_time_create ctime = new fattr4_time_create(stat.getCTime());
                 return Optional.of(ctime);
             case nfs4_prot.FATTR4_TIME_DELTA:
-                return Optional.absent();
+                return Optional.empty();
             case nfs4_prot.FATTR4_TIME_METADATA:
                 fattr4_time_metadata mdtime = new fattr4_time_metadata(stat.getCTime());
                 return Optional.of(mdtime);
@@ -360,7 +361,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 throw new InvalException("getattr of write-only attributes");
             default:
                 _log.debug("GETATTR for #{}", fattr);
-                return Optional.absent();
+                return Optional.empty();
         }
     }
 

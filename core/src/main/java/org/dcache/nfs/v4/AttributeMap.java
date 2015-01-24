@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,10 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Optional;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.fattr4;
@@ -76,7 +76,7 @@ public class AttributeMap {
      * @return present Optional if value is defined or absent if not.
      */
     public <T extends XdrAble> Optional<T> get(Integer attr) {
-	return (Optional<T>) Optional.fromNullable(_attrs.get(attr));
+	return (Optional<T>) Optional.ofNullable(_attrs.get(attr));
     }
 
     private static Map<Integer, XdrAble> asMap(fattr4 attributes) throws OncRpcException, IOException {

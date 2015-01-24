@@ -19,8 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Optional;
 import java.io.IOException;
+import java.util.Optional;
+
 import org.dcache.nfs.v4.xdr.open_delegation_type4;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.bitmap4;
