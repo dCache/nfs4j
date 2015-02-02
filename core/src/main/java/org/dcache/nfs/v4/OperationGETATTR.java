@@ -184,10 +184,10 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         switch (fattr) {
 
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
-                bitmap4 bitmap = new bitmap4();
-                bitmap.value = new int[] {
-		    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
-		    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1
+                int[] bitmap = new int[] {
+                    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+                    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1,
+                    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
 		};
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
@@ -356,6 +356,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fs_layout_type.value = new int[1];
                 fs_layout_type.value[0] = layouttype4.LAYOUT4_NFSV4_1_FILES;
                 return Optional.of(fs_layout_type);
+            case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
+                return Optional.of(new fattr4_supported_attrs(NFSv4FileAttributes.EXCLCREAT_ATTR));
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
                 throw new InvalException("getattr of write-only attributes");
