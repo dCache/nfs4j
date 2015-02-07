@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,12 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.status.InvalException;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 
@@ -47,8 +49,7 @@ public class nfstime4Test {
         time.seconds = 1;
         time.nseconds = (int)TimeUnit.MILLISECONDS.toNanos(5);
 
-
-        long date = Date.UTC(70, 0, 1, 0, 0, 1);
+        long date = LocalDateTime.of(1970, 1, 1, 0, 0, 1, 0).toInstant(ZoneOffset.UTC).toEpochMilli();
 
         assertEquals("invalid date", date + 5, time.toMillis());
     }
