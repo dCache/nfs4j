@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -320,16 +320,18 @@ public class CompoundBuilder {
     }
 
     public CompoundBuilder withWrite(long offset, byte[] data, stateid4 stateid) {
+        ByteBuffer buf = ByteBuffer.wrap(data);
+        buf.position(data.length);
+        return withWrite(offset, buf, stateid);
+    }
+
+    public CompoundBuilder withWrite(long offset, ByteBuffer data, stateid4 stateid) {
         WRITE4args args = new WRITE4args();
 
         args.stable = stable_how4.FILE_SYNC4;
-
         args.offset = new offset4(offset);
-
         args.stateid = stateid;
-
-        args.data = ByteBuffer.wrap(data);
-        args.data.position(data.length);
+        args.data = data;
 
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_WRITE;
