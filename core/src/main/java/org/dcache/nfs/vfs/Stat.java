@@ -21,8 +21,10 @@ package org.dcache.nfs.vfs;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 
 public class Stat implements Serializable, Cloneable {
@@ -44,6 +46,7 @@ public class Stat implements Serializable, Cloneable {
     };
 
     private static final long serialVersionUID = 1L;
+    private static final DateTimeFormatter LS_TIME_FORMAT = DateTimeFormatter.ofPattern("MMM dd HH:mm");
 
     /**
      * Set of attributes defined in this {@code stat} object.
@@ -373,7 +376,9 @@ public class Stat implements Serializable, Cloneable {
     @Override
     public String toString() {
         String humanReadableSize = sizeToString(_size);
-        String humanReadableMTime = new SimpleDateFormat("MMM dd HH:mm").format(new Date(_mtime)); //not thread safe
+        String humanReadableMTime = LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(_mtime), ZoneId.systemDefault())
+                .format(LS_TIME_FORMAT);
         return modeToString(_mode)+" "+String.format("%4d %4d %4d %4s %s", _nlink, _owner, _group, humanReadableSize, humanReadableMTime);
     }
 
