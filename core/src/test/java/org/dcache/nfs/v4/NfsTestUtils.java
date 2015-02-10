@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ class NfsTestUtils {
         byte[] bootTime = new byte[8];
         RANDOM.nextBytes(owner);
         Bytes.putLong(bootTime, 0, System.currentTimeMillis());
-        return stateHandler.createClient(address, address, owner, new verifier4(bootTime), null);
+        return stateHandler.createClient(address, address, owner, new verifier4(bootTime), null, false);
     }
 
     public static nfs_resop4 execute(CompoundContext context, AbstractNFSv4Operation op) throws ChimeraNFSException, IOException {

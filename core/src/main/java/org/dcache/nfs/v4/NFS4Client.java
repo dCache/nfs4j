@@ -177,8 +177,13 @@ public class NFS4Client {
      */
     private boolean _reclaim_completed;
 
+    /**
+     * Indicates that server needs a callback channel with this client.
+     */
+    private final boolean _callbackNeeded;
+
     public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
-            byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime) {
+            byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime, boolean calbackNeeded) {
 
         _ownerId = ownerID;
         _verifier = verifier;
@@ -189,6 +194,7 @@ public class NFS4Client {
         _localAddress = localAddress;
         _leaseTime = leaseTime;
 	_reclaim_completed = false;
+        _callbackNeeded = calbackNeeded;
         _log.debug("New client id: {}", Long.toHexString(_clientId));
 
     }
@@ -453,5 +459,9 @@ public class NFS4Client {
 
     public synchronized boolean needReclaim() {
 	return !_reclaim_completed;
+    }
+
+    public boolean isCallbackNeede() {
+        return _callbackNeeded;
     }
 }

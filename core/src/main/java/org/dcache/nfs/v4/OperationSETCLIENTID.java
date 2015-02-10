@@ -65,7 +65,8 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
             client = context.getStateHandler().createClient(
                     context.getRemoteSocketAddress(),
                     context.getLocalSocketAddress(),
-                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier, context.getPrincipal());
+                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
+                    context.getPrincipal(), false);
         }
 
         res.resok4 = new SETCLIENTID4resok();

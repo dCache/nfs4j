@@ -117,9 +117,9 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         context.getStateHandler().addSession(session);
 
         /*
-         * if client supports call backs on the same channel make use of it.
+         * if client supports call backs on the same channel make use of it
          */
-        if ((_args.opcreate_session.csa_flags.value & nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN) != 0) {
+        if (client.isCallbackNeede() && (_args.opcreate_session.csa_flags.value & nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN) != 0) {
 
             ClientCB cb = new ClientCB(
                     context.getRpcCall().getTransport().getPeerTransport(),

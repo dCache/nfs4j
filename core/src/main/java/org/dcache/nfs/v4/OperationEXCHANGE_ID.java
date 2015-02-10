@@ -65,6 +65,10 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationEXCHANGE_ID.class);
     private final int _flag;
+
+    /**
+     * Mask of valid flags.
+     */
     private static final int EXCHGID4_FLAG_MASK = (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS
             | nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS
             | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS
@@ -76,6 +80,13 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             | nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID
             | nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A
             | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
+
+    /**
+     * Mask of supported server roles in the pNFS community.
+     */
+    private static final int EXCHGID4_FLAG_MASK_PNFS = (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS
+            | nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS
+            | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS);
 
     /**
      * compile time
@@ -111,9 +122,16 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
     }
 
+    /**
+     * Indicates server role in pNFS community. <tt>true</tt> if run as
+     * a data server only.
+     */
+    private final boolean _isDsOnly;
+
     public OperationEXCHANGE_ID(nfs_argop4 args, int flag) {
         super(args, nfs_opnum4.OP_EXCHANGE_ID);
         _flag = flag;
+        _isDsOnly = (_flag & EXCHGID4_FLAG_MASK_PNFS) == nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS;
     }
 
     @Override
@@ -203,7 +221,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 _log.debug("Case 1: New Owner ID");
                 client = stateHandler.createClient(
                         remoteSocketAddress, localSocketAddress,
-                        clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
+                        clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
+                        principal, !_isDsOnly);
 
             } else {
 
@@ -216,14 +235,16 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                         stateHandler.removeClient(client);
                         client = stateHandler.createClient(
                                 remoteSocketAddress, localSocketAddress,
-                                clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
+                                clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
+                                principal, !_isDsOnly);
                     } else {
                         _log.debug("Case 3b: Client Collision");
                         if ((!client.hasState()) || !client.isLeaseValid()) {
                             stateHandler.removeClient(client);
                             client = stateHandler.createClient(
                                     remoteSocketAddress, localSocketAddress,
-                                    clientOwner, _args.opexchange_id.eia_clientowner.co_verifier, principal);
+                                    clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
+                                    principal, !_isDsOnly);
                         } else {
                             throw new ClidInUseException("Principal Missmatch");
                         }
@@ -235,7 +256,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                             remoteSocketAddress, localSocketAddress,
                             _args.opexchange_id.eia_clientowner.co_ownerid,
                             _args.opexchange_id.eia_clientowner.co_verifier,
-                            principal);
+                            principal, !_isDsOnly);
                 }
             }
         }
