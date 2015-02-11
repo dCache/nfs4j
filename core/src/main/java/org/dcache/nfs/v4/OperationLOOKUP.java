@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -60,6 +60,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
         Inode newInode = context.getFs().lookup(context.currentInode(), name);
 
         context.currentInode(newInode);
+        context.currentStateid(Stateids.ZeroStateId());
         res.status = nfsstat.NFS_OK;
     }
 }

@@ -60,6 +60,7 @@ public class OperationLOOKUPP extends AbstractNFSv4Operation {
             res.status = nfsstat.NFSERR_NOENT;
         } else {
             context.currentInode(parent);
+            context.currentStateid(Stateids.ZeroStateId());
             res.status = nfsstat.NFS_OK;
         }
 

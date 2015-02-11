@@ -42,7 +42,7 @@ public class OperationPUTPUBFH extends AbstractNFSv4Operation {
         final PUTPUBFH4res res = result.opputpubfh;
 
         context.currentInode(context.getFs().getRootInode());
-        context.clearCurrentStateid();
+        context.currentStateid(Stateids.ZeroStateId());
         res.status = nfsstat.NFS_OK;
     }
 }

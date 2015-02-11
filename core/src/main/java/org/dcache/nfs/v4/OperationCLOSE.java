@@ -26,6 +26,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.CLOSE4res;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,19 +46,21 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         Inode inode = context.currentInode();
 
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opclose.open_stateid);
         NFS4Client client;
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-            client = context.getStateHandler().getClientIdByStateId(_args.opclose.open_stateid);
+
+            client = context.getStateHandler().getClientIdByStateId(stateid);
             client.validateSequence(_args.opclose.seqid);
         }
 
         if (context.getMinorversion() > 0) {
-            context.getDeviceManager().layoutReturn(context, _args.opclose.open_stateid);
+            context.getDeviceManager().layoutReturn(context, stateid);
         }
 
-        client.releaseState(_args.opclose.open_stateid);
+        client.releaseState(stateid);
         client.updateLeaseTime();
 
         res.open_stateid = Stateids.invalidStateId();

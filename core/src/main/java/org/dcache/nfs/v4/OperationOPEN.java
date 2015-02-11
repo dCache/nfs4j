@@ -301,6 +301,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         }
 
         NFS4State nfs4state = client.createState();
+        context.currentStateid(nfs4state.stateid());
         res.resok4.stateid = nfs4state.stateid();
 
         _log.debug("New stateID: {}", nfs4state.stateid());

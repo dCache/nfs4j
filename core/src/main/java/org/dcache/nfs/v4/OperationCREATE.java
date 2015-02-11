@@ -125,5 +125,6 @@ public class OperationCREATE extends AbstractNFSv4Operation {
         res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
 
         context.currentInode(inode);
+        context.currentStateid(Stateids.ZeroStateId());
     }
 }

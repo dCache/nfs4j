@@ -72,4 +72,11 @@ public class Stateids {
             throw new BadStateidException();
         }
     }
+
+    public static stateid4 getCurrentStateidIfNeeded(CompoundContext context, stateid4 stateid) throws ChimeraNFSException {
+        if (stateid.equalsWithSeq(CURRENT_STATEID)) {
+            return context.currentStateid();
+        }
+        return stateid;
+    }
 }
