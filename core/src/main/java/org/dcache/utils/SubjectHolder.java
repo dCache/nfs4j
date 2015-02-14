@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,9 +19,9 @@
  */
 package org.dcache.utils;
 
-import com.google.common.base.Joiner;
 import java.security.Principal;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 
 /**
@@ -37,14 +37,11 @@ public class SubjectHolder {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Subject: < ");
         Set<Principal> principals = _subject.getPrincipals();
-        Joiner joiner = Joiner.on(',');
-        synchronized(principals) {
-            joiner.appendTo(sb, principals);
+        synchronized (principals) {
+            return principals.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(",", "Subject: < ", ">"));
         }
-        sb.append(" >");
-        return sb.toString();
     }
 }
