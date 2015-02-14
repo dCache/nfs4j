@@ -21,7 +21,6 @@ package org.dcache.nfs.vfs;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -157,7 +156,7 @@ public class PseudoFs extends ForwardingFileSystem {
         /*
          * reject if there are no exports for this client at all
          */
-        if (Iterables.isEmpty(_exportFile.exportsFor(_inetAddress))) {
+        if (!_exportFile.exportsFor(_inetAddress).findAny().isPresent()) {
             _log.warn("Access denied: (no export) fs root for client {}", _inetAddress);
             throw new AccessException("no exports");
         }
@@ -517,7 +516,9 @@ public class PseudoFs extends ForwardingFileSystem {
          * This can be wrong, e.g. RO vs. RW.
          */
         if (inode.handleVersion() == 0) {
-            FsExport export = Iterables.getFirst(_exportFile.exportsFor(_inetAddress), null);
+            FsExport export = _exportFile.exportsFor(_inetAddress)
+                    .findFirst()
+                    .orElse(null);
             return export == null? -1 : export.getIndex();
         }
         return inode.exportIndex();
@@ -536,7 +537,7 @@ public class PseudoFs extends ForwardingFileSystem {
         return new Inode(fh);
     }
 
-    private void pathToPseudoFs(final PseudoFsNode root, Set<PseudoFsNode> all, FsExport e) throws IOException {
+    private void pathToPseudoFs(final PseudoFsNode root, Set<PseudoFsNode> all, FsExport e) {
 
         PseudoFsNode parent = root;
         String path = e.getPath();
@@ -570,15 +571,11 @@ public class PseudoFs extends ForwardingFileSystem {
 
     private Set<PseudoFsNode> prepareExportTree() throws ChimeraNFSException, IOException {
 
-        Iterable<FsExport> exports = _exportFile.exportsFor(_inetAddress);
-
         Set<PseudoFsNode> nodes = new HashSet<>();
         Inode rootInode = realToPseudo(_inner.getRootInode());
         PseudoFsNode root = new PseudoFsNode(rootInode);
 
-        for (FsExport export : exports) {
-            pathToPseudoFs(root, nodes, export);
-        }
+        _exportFile.exportsFor(_inetAddress).forEach(e -> pathToPseudoFs(root, nodes, e));
 
         if (nodes.isEmpty()) {
             _log.warn("No exports found for: {}", _inetAddress);

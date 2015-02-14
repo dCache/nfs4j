@@ -21,7 +21,7 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
+import java.util.stream.Stream;
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
@@ -34,8 +34,10 @@ import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.gss.RpcAuthGss;
 import org.dcache.xdr.gss.RpcGssService;
 import org.junit.Test;
+
 import static org.mockito.Mockito.*;
 import static org.mockito.BDDMockito.given;
+
 import org.junit.Before;
 
 /**
@@ -94,7 +96,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
 
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
@@ -118,7 +120,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn(mock(Inode.class));
@@ -142,7 +144,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn(mock(Inode.class));
@@ -165,7 +167,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(inode);
@@ -190,7 +192,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(inode);
@@ -215,7 +217,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Arrays.asList(mockedExport));
+        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(inode);

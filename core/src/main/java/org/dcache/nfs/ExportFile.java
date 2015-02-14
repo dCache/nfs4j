@@ -20,22 +20,21 @@
 package org.dcache.nfs;
 
 
-import com.google.common.base.CharMatcher;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -223,22 +222,8 @@ public class ExportFile {
         return null;
     }
 
-    public Iterable<FsExport> exportsFor(InetAddress client) {
-        return Iterables.filter(_exports.values(), new AllowedExports(client));
-    }
-
-    private static class AllowedExports implements Predicate<FsExport> {
-
-        private final InetAddress _client;
-
-        public AllowedExports(InetAddress client) {
-            _client = client;
-        }
-
-        @Override
-        public boolean apply(FsExport export) {
-            return export.isAllowed(_client);
-        }
+    public Stream<FsExport> exportsFor(InetAddress client) {
+        return _exports.values().stream().filter(e -> e.isAllowed(client));
     }
 
     public void rescan() throws IOException {

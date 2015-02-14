@@ -19,12 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.List;
+import java.util.Comparator;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
@@ -52,15 +49,6 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
 
     private final static uint32_t DEFAULT_QOP = new uint32_t(0);
     private final static String K5OID = "1.2.840.113554.1.2.2";
-    private final static Function<FsExport, FsExport.Sec> EXTRACT_SEC = new ExtractSec();
-
-    private static class ExtractSec implements Function<FsExport, FsExport.Sec> {
-
-        @Override
-        public FsExport.Sec apply(FsExport input) {
-            return input.getSec();
-        }
-    }
 
     public OperationSECINFO_NO_NAME(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_SECINFO_NO_NAME);
@@ -94,13 +82,14 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
         //final sec_oid4 k5Oid = new sec_oid4
 
         final InetAddress remote = context.getRemoteSocketAddress().getAddress();
-        final List<FsExport.Sec> exports =
-                Ordering.natural()
-                .reverse()
-                .immutableSortedCopy(Iterables.transform(context.getExportFile().exportsFor(remote), EXTRACT_SEC));
-        final secinfo4[] secinfos = new secinfo4[exports.size()];
+        final FsExport.Sec[] exports = context.getExportFile().exportsFor(remote)
+                .map(FsExport::getSec)
+                .sorted(Comparator.reverseOrder())
+                .toArray(FsExport.Sec[]::new);
+
+        final secinfo4[] secinfos = new secinfo4[exports.length];
         for (int i = 0; i < secinfos.length; i++) {
-            secinfos[i] = toSecinfo(exports.get(i));
+            secinfos[i] = toSecinfo(exports[i]);
         }
         return secinfos;
     }

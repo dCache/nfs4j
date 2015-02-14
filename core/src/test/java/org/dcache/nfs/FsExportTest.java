@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2013 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -221,16 +220,9 @@ public class FsExportTest {
             "10.0.0.1", "10.0.0.0/24", "10.0.0.0/16", "10.0.0.0/8"
         };
 
-        String[] unsortedEntries = Iterables.toArray(
-                        Iterables.transform(exportFile.exportsFor(InetAddress.getByName("10.0.0.1")),
-                                        new Function<FsExport, String>() {
-
-                                            @Override
-                                            public String apply(FsExport f) {
-                                                return f.client();
-                                            }
-                                        }
-                        ), String.class);
+        String[] unsortedEntries = exportFile.exportsFor(InetAddress.getByName("10.0.0.1"))
+                .map(FsExport::client)
+                .toArray(String[]::new);
 
         assertArrayEquals("the export entries are not sorted as expected", sortedEntries, unsortedEntries);
     }
