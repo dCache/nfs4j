@@ -22,10 +22,12 @@ package org.dcache.nfs;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class FsExportTest {
@@ -33,8 +35,8 @@ public class FsExportTest {
     private ExportFile _exportFile;
 
     @Before
-    public void setUp() throws IOException {
-        _exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports"));
+    public void setUp() throws IOException, URISyntaxException {
+        _exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports").toURI());
     }
 
     @Test
@@ -215,7 +217,7 @@ public class FsExportTest {
     @Test
     public void testEntrySorting() throws Exception {
 
-        ExportFile exportFile  = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.unsorted"));
+        ExportFile exportFile  = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.unsorted").toURI());
         String[] sortedEntries = new String[] {
             "10.0.0.1", "10.0.0.0/24", "10.0.0.0/16", "10.0.0.0/8"
         };

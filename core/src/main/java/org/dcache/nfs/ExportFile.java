@@ -19,16 +19,14 @@
  */
 package org.dcache.nfs;
 
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.net.URL;
-import java.util.Iterator;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
+import java.util.Iterator;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
@@ -45,14 +43,14 @@ public class ExportFile {
     private static final Logger _log = LoggerFactory.getLogger(ExportFile.class);
 
     private volatile ImmutableMultimap<Integer,FsExport> _exports;
-    private final URL _exportFile;
+    private final URI _exportFile;
 
     public ExportFile(File file) throws IOException {
-        this(file.toURI().toURL());
+        this(file.toURI());
     }
 
-    public ExportFile(URL url) throws IOException  {
-        _exportFile = url;
+    public ExportFile(URI uri) throws IOException  {
+        _exportFile = uri;
         _exports = parse(_exportFile);
     }
 
@@ -60,143 +58,141 @@ public class ExportFile {
         return _exports.values();
     }
 
-    private static ImmutableMultimap<Integer,FsExport> parse(URL exportFile) throws IOException {
+    private static ImmutableMultimap<Integer,FsExport> parse(URI exportFile) throws IOException {
 
         ImmutableListMultimap.Builder<Integer,FsExport> exportsBuilder = ImmutableListMultimap.builder();
 
-        String line;
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(exportFile.openStream(), StandardCharsets.UTF_8))) {
-            while ((line = br.readLine()) != null) {
+        for (String line: Files.readAllLines(Paths.get(exportFile))) {
 
-                line = line.trim();
-                if (line.length() == 0)
-                    continue;
+            line = line.trim();
+            if (line.length() == 0) {
+                continue;
+            }
 
-                if (line.charAt(0) == '#')
-                    continue;
+            if (line.charAt(0) == '#') {
+                continue;
+            }
 
-                if (line.charAt(0) != '/') {
-                    _log.warn("Ignoring entry with non absolute export path: " + line);
-                    continue;
-                }
+            if (line.charAt(0) != '/') {
+                _log.warn("Ignoring entry with non absolute export path: " + line);
+                continue;
+            }
 
-                int pathEnd = line.indexOf(' ');
+            int pathEnd = line.indexOf(' ');
 
-                String path;
-                if (pathEnd < 0) {
-                    FsExport export = new FsExport.FsExportBuilder().build(line);
-                    exportsBuilder.put(export.getIndex(), export);
-                    continue;
-                } else {
-                    path = line.substring(0, pathEnd);
-                }
+            String path;
+            if (pathEnd < 0) {
+                FsExport export = new FsExport.FsExportBuilder().build(line);
+                exportsBuilder.put(export.getIndex(), export);
+                continue;
+            } else {
+                path = line.substring(0, pathEnd);
+            }
 
-                Splitter splitter = Splitter.on(' ').omitEmptyStrings().trimResults();
+            Splitter splitter = Splitter.on(' ').omitEmptyStrings().trimResults();
 
-                for (String hostAndOptions: splitter.split(line.substring(pathEnd +1))) {
+            for (String hostAndOptions : splitter.split(line.substring(pathEnd + 1))) {
 
-                    try {
-                        FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
+                try {
+                    FsExport.FsExportBuilder exportBuilder = new FsExport.FsExportBuilder();
 
-                        Iterator<String> s = Splitter
-                                .on(CharMatcher.anyOf("(,)"))
-                                .omitEmptyStrings()
-                                .trimResults()
-                                .split(hostAndOptions).iterator();
+                    Iterator<String> s = Splitter
+                            .on(CharMatcher.anyOf("(,)"))
+                            .omitEmptyStrings()
+                            .trimResults()
+                            .split(hostAndOptions).iterator();
 
-                        String host = s.next();
+                    String host = s.next();
 
-                        exportBuilder.forClient(host);
-                        while (s.hasNext()) {
-                            String option = s.next();
+                    exportBuilder.forClient(host);
+                    while (s.hasNext()) {
+                        String option = s.next();
 
-                            if (option.equals("rw")) {
-                                exportBuilder.rw();
-                                continue;
-                            }
-
-                            if (option.equals("ro")) {
-                                exportBuilder.ro();
-                                continue;
-                            }
-
-                            if (option.equals("root_squash")) {
-                                exportBuilder.notTrusted();
-                                continue;
-                            }
-
-                            if (option.equals("no_root_squash")) {
-                                exportBuilder.trusted();
-                                continue;
-                            }
-
-                            if (option.equals("acl")) {
-                                exportBuilder.withAcl();
-                                continue;
-                            }
-
-                            if (option.equals("noacl")) {
-                                exportBuilder.withoutAcl();
-                                continue;
-                            }
-
-                            if (option.equals("all_squash")) {
-                                exportBuilder.allSquash();
-                                continue;
-                            }
-
-                            if (option.startsWith("sec=")) {
-                                String secFlavor = option.substring(4);
-                                exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
-                                continue;
-                            }
-
-                            if (option.startsWith("anonuid=")) {
-                                int anonuid = Integer.parseInt(option.substring(8));
-                                exportBuilder.withAnonUid(anonuid);
-                                continue;
-                            }
-
-                            if (option.startsWith("anongid=")) {
-                                int anongid = Integer.parseInt(option.substring(8));
-                                exportBuilder.withAnonGid(anongid);
-                                continue;
-                            }
-
-                            if (option.equals("dcap")) {
-                                exportBuilder.withDcap();
-                                continue;
-                            }
-
-                            if (option.equals("no_dcap")) {
-                                exportBuilder.withoutDcap();
-                                continue;
-                            }
-
-                            if (option.equals("all_root")) {
-                                exportBuilder.withAllRoot();
-                                continue;
-                            }
-
-                            if (option.equals("pnfs")) {
-                                exportBuilder.withPnfs();
-                                continue;
-                            }
-
-                            if (option.equals("nopnfs")) {
-                                exportBuilder.withoutPnfs();
-                                continue;
-                            }
-
-                            throw new IllegalArgumentException("Unsupported option: " + option);
+                        if (option.equals("rw")) {
+                            exportBuilder.rw();
+                            continue;
                         }
-                        FsExport export = exportBuilder.build(path);
-                        exportsBuilder.put(export.getIndex(), export);
-                    } catch (IllegalArgumentException e) {
-                        _log.error("Invalid export entry [" + hostAndOptions + "] : " + e.getMessage());
-                    }
-                }
 
+                        if (option.equals("ro")) {
+                            exportBuilder.ro();
+                            continue;
+                        }
+
+                        if (option.equals("root_squash")) {
+                            exportBuilder.notTrusted();
+                            continue;
+                        }
+
+                        if (option.equals("no_root_squash")) {
+                            exportBuilder.trusted();
+                            continue;
+                        }
+
+                        if (option.equals("acl")) {
+                            exportBuilder.withAcl();
+                            continue;
+                        }
+
+                        if (option.equals("noacl")) {
+                            exportBuilder.withoutAcl();
+                            continue;
+                        }
+
+                        if (option.equals("all_squash")) {
+                            exportBuilder.allSquash();
+                            continue;
+                        }
+
+                        if (option.startsWith("sec=")) {
+                            String secFlavor = option.substring(4);
+                            exportBuilder.withSec(FsExport.Sec.valueOf(secFlavor.toUpperCase()));
+                            continue;
+                        }
+
+                        if (option.startsWith("anonuid=")) {
+                            int anonuid = Integer.parseInt(option.substring(8));
+                            exportBuilder.withAnonUid(anonuid);
+                            continue;
+                        }
+
+                        if (option.startsWith("anongid=")) {
+                            int anongid = Integer.parseInt(option.substring(8));
+                            exportBuilder.withAnonGid(anongid);
+                            continue;
+                        }
+
+                        if (option.equals("dcap")) {
+                            exportBuilder.withDcap();
+                            continue;
+                        }
+
+                        if (option.equals("no_dcap")) {
+                            exportBuilder.withoutDcap();
+                            continue;
+                        }
+
+                        if (option.equals("all_root")) {
+                            exportBuilder.withAllRoot();
+                            continue;
+                        }
+
+                        if (option.equals("pnfs")) {
+                            exportBuilder.withPnfs();
+                            continue;
+                        }
+
+                        if (option.equals("nopnfs")) {
+                            exportBuilder.withoutPnfs();
+                            continue;
+                        }
+
+                        throw new IllegalArgumentException("Unsupported option: " + option);
+                    }
+                    FsExport export = exportBuilder.build(path);
+                    exportsBuilder.put(export.getIndex(), export);
+                } catch (IllegalArgumentException e) {
+                    _log.error("Invalid export entry [" + hostAndOptions + "] : " + e.getMessage());
+                }
             }
         }
 

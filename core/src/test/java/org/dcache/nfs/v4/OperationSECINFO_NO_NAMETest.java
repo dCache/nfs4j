@@ -52,7 +52,7 @@ public class OperationSECINFO_NO_NAMETest {
     @Test
     public void testSecUnix() throws Exception {
 
-        ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.sys"));
+        ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.sys").toURI());
         CompoundContext context = new CompoundContextBuilder()
                 .withExportFile(exportFile)
                 .build();
@@ -66,7 +66,7 @@ public class OperationSECINFO_NO_NAMETest {
     @Test
     public void testSecKrb() throws Exception {
 
-        ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.krb"));
+        ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.krb").toURI());
         CompoundContext context = new CompoundContextBuilder()
                 .withExportFile(exportFile)
                 .build();
@@ -80,7 +80,7 @@ public class OperationSECINFO_NO_NAMETest {
     @Test
     public void testSecMix() throws Exception {
 
-        ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.mix"));
+        ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.mix").toURI());
         CompoundContext context = new CompoundContextBuilder()
                 .withExportFile(exportFile)
                 .build();

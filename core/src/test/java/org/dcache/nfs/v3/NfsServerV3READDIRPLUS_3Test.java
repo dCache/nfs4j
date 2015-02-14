@@ -48,7 +48,7 @@ public class NfsServerV3READDIRPLUS_3Test {
         dirStat.setSize(512);
         vfs = Mockito.mock(VirtualFileSystem.class); // the vfs serving it
         Mockito.when(vfs.getattr(Mockito.eq(dirInode))).thenReturn(dirStat);
-        ExportFile exportFile = new ExportFile(this.getClass().getResource("simpleExports")); // same package as us
+        ExportFile exportFile = new ExportFile(this.getClass().getResource("simpleExports").toURI()); // same package as us
         nfsServer = new NfsServerV3(exportFile, vfs);
     }
 
