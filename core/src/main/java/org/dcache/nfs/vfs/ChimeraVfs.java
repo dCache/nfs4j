@@ -243,19 +243,23 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
     @Override
     public nfsace4[] getAcl(Inode inode) throws IOException {
         FsInode fsInode = toFsInode(inode);
-        nfsace4[] aces;
-        List<ACE> dacl = _fs.getACL(fsInode);
-        org.dcache.chimera.posix.Stat stat = fsInode.statCache();
+        try {
+            nfsace4[] aces;
+            List<ACE> dacl = _fs.getACL(fsInode);
+            org.dcache.chimera.posix.Stat stat = fsInode.statCache();
 
-        nfsace4[] unixAcl = Acls.of(stat.getMode(), fsInode.isDirectory());
-        aces = new nfsace4[dacl.size() + unixAcl.length];
-        int i = 0;
-        for (ACE ace : dacl) {
-            aces[i] = valueOf(ace, _idMapping);
-            i++;
+            nfsace4[] unixAcl = Acls.of(stat.getMode(), fsInode.isDirectory());
+            aces = new nfsace4[dacl.size() + unixAcl.length];
+            int i = 0;
+            for (ACE ace : dacl) {
+                aces[i] = valueOf(ace, _idMapping);
+                i++;
+            }
+            System.arraycopy(unixAcl, 0, aces, i, unixAcl.length);
+            return Acls.compact(aces);
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new StaleException(e.getMessage());
         }
-        System.arraycopy(unixAcl, 0, aces, i, unixAcl.length);
-        return Acls.compact(aces);
     }
 
     @Override
@@ -265,7 +269,11 @@ public class ChimeraVfs implements VirtualFileSystem, AclCheckable {
         for (nfsace4 ace : acl) {
             dacl.add(valueOf(ace, _idMapping));
         }
-        _fs.setACL(fsInode, dacl);
+        try {
+            _fs.setACL(fsInode, dacl);
+        } catch (FileNotFoundHimeraFsException e) {
+            throw new StaleException(e.getMessage());
+        }
     }
 
     private static Stat fromChimeraStat(org.dcache.chimera.posix.Stat pStat, long fileid) {
