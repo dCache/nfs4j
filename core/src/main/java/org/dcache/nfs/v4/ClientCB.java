@@ -110,7 +110,7 @@ class ClientCB {
     }
 
     public void cbPing() throws OncRpcException, IOException {
-        _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID);
+        _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 1000);
     }
 
     private XdrAble generateCompound(String tag, nfs_cb_argop4...cbOperations) {
