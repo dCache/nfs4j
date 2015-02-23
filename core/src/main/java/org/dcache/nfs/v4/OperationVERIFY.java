@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -62,7 +62,7 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
                     context.getFs(),
                     context.currentInode(), context);
 
-            if (!Arrays.equals(_args.opverify.obj_attributes.attrmask.value, currentAttr.attrmask.value)) {
+            if (!_args.opverify.obj_attributes.attrmask.equals(currentAttr.attrmask)) {
                 throw new AttrNotSuppException("check for not supported attribute");
             }
 

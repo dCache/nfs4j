@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -95,4 +95,21 @@ public class bitmap4Test {
         assertTrue(bitmap.isSet(129));
         assertFalse(bitmap.isSet(6));
     }
+
+    @Test
+    public void testSameBitsDifferentSize() {
+        bitmap4 b1 = new bitmap4 ( new int[] {8, 0, 5, 0, 0});
+        bitmap4 b2 = new bitmap4 ( new int[] {8, 0, 5});
+        assertEquals("arrays size must be ignored", b1, b2);
+        assertEquals("arrays size must be ignored", b1.hashCode(), b2.hashCode());
+    }
+
+    @Test
+    public void testSameSizeDifferentBits() {
+        bitmap4 b1 = new bitmap4(new int[]{0, 1});
+        bitmap4 b2 = new bitmap4(new int[]{1});
+        assertNotEquals("different bits not respected", b1, b2);
+        assertNotEquals("different bits not respected", b1.hashCode(), b2.hashCode());
+    }
+
 }

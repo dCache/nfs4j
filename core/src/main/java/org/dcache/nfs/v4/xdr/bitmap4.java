@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -186,5 +186,82 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
             }
         };
     }
+
+    @Override
+    public int hashCode() {
+        /*
+         * adopted version of Arrays#hashCode: all trailing zero elements must be ignored
+         */
+
+        int hash = 1;
+
+        if (value != null) {
+            int n;
+            // point n to last non zero element
+            for(n = value.length; n > 0 && value[n-1] == 0; n--)
+                ;
+
+            for (int i = 0; i < n; i++) {
+                hash = 31 * hash + value[i];
+            }
+        }
+
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        /**
+         * empty bitmaps are equal independent from number of elements in the array
+         */
+        final bitmap4 other = (bitmap4) obj;
+        int len = 0;
+        int olen = 0;
+
+        if (value != null) {
+            len = value.length;
+        }
+
+        if(other.value != null) {
+            olen = other.value.length;
+        }
+
+        int i;
+        int match = Math.min(len, olen);
+        for(i = 0; i < match; i++) {
+            if ( value[i] != other.value[i] ) {
+                return false;
+            }
+        }
+
+        // now only all zero bits allowed. I point to last common element
+        for (int k = i; k < len; k++) {
+            if (value[k] != 0) {
+                return false;
+            }
+        }
+
+        for (int k = i; k < olen; k++) {
+            if (other.value[k] != 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }
 // End of bitmap4.java

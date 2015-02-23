@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
-import java.util.Arrays;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.AttrNotSuppException;
 import org.dcache.nfs.status.InvalException;
@@ -51,7 +50,7 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
                 context.getFs(),
                 context.currentInode(), context);
 
-        if (!Arrays.equals(_args.opnverify.obj_attributes.attrmask.value, currentAttr.attrmask.value)) {
+        if (!_args.opnverify.obj_attributes.attrmask.equals(currentAttr.attrmask)) {
             throw new AttrNotSuppException("check for not supported attribute");
         }
 
