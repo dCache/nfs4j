@@ -60,6 +60,7 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.AttributeMap;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.nfs.v4.xdr.fattr4_size;
@@ -89,6 +90,7 @@ public class Main {
     private sequenceid4 _sequenceID = null;
     private sessionid4 _sessionid = null;
     private long _lastUpdate = -1;
+    private int _slotId = -1;
     private boolean _isMDS = false;
     private boolean _isDS = false;
     private static final String PROMPT = "NFSv41: ";
@@ -481,7 +483,7 @@ public class Main {
         if (_isMDS) {
             get_devicelist();
         }
-
+        reclaimComplete();
         _lastUpdate = System.currentTimeMillis();
 
     }
@@ -546,10 +548,11 @@ public class Main {
 
         _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
         _sequenceID.value = 0;
-
+        _slotId = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_fore_chan_attrs.ca_maxrequests.value -1;
+        System.out.println("Using slots: " + _slotId);
         if (_isMDS) {
             args = new CompoundBuilder()
-                    .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                    .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutrootfh()
                     .withGetattr(nfs4_prot.FATTR4_LEASE_TIME)
                     .withTag("get_lease_time")
@@ -596,7 +599,7 @@ public class Main {
     private void getRootFh(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutrootfh()
                 .withLookup(path)
                 .withGetfh()
@@ -632,7 +635,7 @@ public class Main {
         do {
 
             COMPOUND4args args = new CompoundBuilder()
-                    .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                    .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(fh)
                     .withReaddir(cookie, verifier)
                     .withTag("readdir")
@@ -665,7 +668,7 @@ public class Main {
         do {
 
             COMPOUND4args args = new CompoundBuilder()
-                    .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                    .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(path.charAt(0) == '/' ? _rootFh : fh)
                     .withLookup(path)
                     .withReaddir(cookie, verifier)
@@ -692,7 +695,7 @@ public class Main {
     private void mkdir(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withSavefh()
                 .withGetattr(nfs4_prot.FATTR4_CHANGE)
@@ -707,7 +710,7 @@ public class Main {
     private void get_fs_locations(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withLookup(path)
                 .withGetattr(nfs4_prot.FATTR4_FS_LOCATIONS)
@@ -731,7 +734,7 @@ public class Main {
     nfs_fh4 cwd(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(path)
                 .withGetfh()
@@ -749,7 +752,7 @@ public class Main {
         Stat stat = new Stat();
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withGetattr(nfs4_prot.FATTR4_SIZE,nfs4_prot.FATTR4_TYPE)
                 .withTag("getattr (stat)")
@@ -805,7 +808,7 @@ public class Main {
     private void readatonce(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
@@ -879,7 +882,7 @@ public class Main {
     private OpenReply open(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
@@ -900,7 +903,7 @@ public class Main {
     private OpenReply create(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpenCreate(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_BOTH)
@@ -920,7 +923,7 @@ public class Main {
     private void close(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withClose(stateid)
                 .withTag("close")
@@ -932,7 +935,7 @@ public class Main {
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withLayoutget(false,
                 layouttype4.LAYOUT4_NFSV4_1_FILES,
@@ -993,7 +996,7 @@ public class Main {
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withLayoutreturn(offset, len, body, stateid)
                 .withTag("layoutreturn")
@@ -1027,7 +1030,7 @@ public class Main {
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withGetdeviceinfo(deviceId)
                 .withTag("get_deviceinfo")
                 .build();
@@ -1042,19 +1045,23 @@ public class Main {
     private void get_devicelist() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_rootFh)
                 .withGetdevicelist()
                 .withTag("get_devicelist")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        try {
+            COMPOUND4res compound4res = sendCompound(args);
 
-        deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
+            deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
 
-        System.out.println("Know devices: ");
-        for (deviceid4 device : deviceList) {
-            System.out.println("      Device: # " + Arrays.toString(device.value));
+            System.out.println("Know devices: ");
+            for (deviceid4 device : deviceList) {
+                System.out.println("      Device: # " + Arrays.toString(device.value));
+            }
+        } catch (NotSuppException e) {
+            // server does not supports deveice list
         }
     }
 
@@ -1062,7 +1069,7 @@ public class Main {
             throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withRead(4096, 0, stateid)
                 .withTag("pNFS read")
@@ -1079,7 +1086,7 @@ public class Main {
             throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withWrite(offset, data, stateid)
                 .withTag("pNFS write")
@@ -1091,7 +1098,7 @@ public class Main {
     private void sequence() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withTag("sequence")
                 .build();
         COMPOUND4res compound4res = sendCompound(args);
@@ -1100,7 +1107,7 @@ public class Main {
     private void get_supported_attributes() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_rootFh)
                 .withGetattr(nfs4_prot.FATTR4_CHANGE)
                 .withTag("get_supported_attributes")
@@ -1110,10 +1117,22 @@ public class Main {
         // TODO:
     }
 
+    private void reclaimComplete() throws OncRpcException, IOException {
+
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
+                .withPutfh(_rootFh)
+                .withReclaimComplete()
+                .withTag("reclaim_complete")
+                .build();
+
+        COMPOUND4res compound4res = sendCompound(args);
+    }
+
     public void remove(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withRemove(path)
                 .withTag("remove")
@@ -1124,7 +1143,7 @@ public class Main {
     private void lookup(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withSavefh()
                 .withLookup(path)
@@ -1143,7 +1162,7 @@ public class Main {
     private void lookup(String fh, String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( new nfs_fh4(fh.getBytes()))
                 .withLookup(path)
                 .withGetfh()
@@ -1157,7 +1176,7 @@ public class Main {
     private void getattr(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, 12, 0)
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withLookup(path)
                 .withGetattr(nfs4_prot.FATTR4_CHANGE,

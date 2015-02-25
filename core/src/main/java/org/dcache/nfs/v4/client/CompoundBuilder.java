@@ -92,6 +92,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.XdrBuffer;
 import org.glassfish.grizzly.Buffer;
@@ -553,6 +554,26 @@ public class CompoundBuilder {
         op.oplayoutget.loga_maxcount = new count4(maxcount);
 
         op.oplayoutget.loga_stateid = stateid;
+        ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withReclaimComplete() {
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_RECLAIM_COMPLETE;
+        op.opreclaim_complete = new RECLAIM_COMPLETE4args();
+
+        op.opreclaim_complete.rca_one_fs = false;
+        ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withReclaimCompleteOneFs() {
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_RECLAIM_COMPLETE;
+        op.opreclaim_complete = new RECLAIM_COMPLETE4args();
+
+        op.opreclaim_complete.rca_one_fs = true;
         ops.add(op);
         return this;
     }
