@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import org.dcache.nfs.status.InvalException;
 
 public class offset4 extends uint64_t {
 
@@ -35,5 +36,23 @@ public class offset4 extends uint64_t {
         super(xdr);
     }
 
+    /**
+     * Checks whatever extending a file from this offset with to a given
+     * length will overflow NFS4_UINT64_MAX.
+     *
+     * <p>
+     * NOTICE: as Java does not supports unsigned longs, check is performed for
+     * {@link Long.MAX_VALUE}.
+     * </p>
+     *
+     * @param length to verify
+     * @param msg included into exception
+     * @throws InvalException if offset + length will overflow {@link Long.MAX_VALUE}
+     */
+    public void checkOverflow(length4 length, String msg) throws InvalException {
+        if (Long.MAX_VALUE - value < length.value) {
+            throw new InvalException(msg);
+        }
+    }
 }
 // End of offset4.java

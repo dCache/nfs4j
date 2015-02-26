@@ -23,7 +23,6 @@ import org.dcache.nfs.v4.xdr.layoutiomode4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4res;
-import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4resok;
 import java.io.IOException;
@@ -38,6 +37,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.layout4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,30 +55,17 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         final LAYOUTGET4res res = result.oplayoutget;
 
-        /*
-         * dCache supports FILE layout
-         *
-         * LAYOUTGET is used by a client to get a layout for a file
-         */
+        if ((_args.oplayoutget.loga_length.value != nfs4_prot.NFS4_UINT64_MAX) &&
+                (_args.oplayoutget.loga_length.value < _args.oplayoutget.loga_minlength.value)) {
+            throw new InvalException("requested layout length is smaller than minlen");
+        }
 
-        /*
-         * DRAFT-17: To get a layout from a specific offset through the
-         * end-of-file, regardless of the file's length, a loga_length field
-         * with all bits set to 1 (one) should be used
-         */
-        length4 lengthRange = new length4(0xffffffff);
+        if (_args.oplayoutget.loga_length.value != nfs4_prot.NFS4_UINT64_MAX) {
+            _args.oplayoutget.loga_offset.checkOverflow(_args.oplayoutget.loga_length, "offset + length overflow");
+        }
 
-        if (_args.oplayoutget.loga_offset.value != 0) {
-            if (_args.oplayoutget.loga_length.value == 0) {
-                throw new InvalException("length == 0");
-            }
-
-            /*
-             * FIXME: sing/unsign issue here
-             */
-//            if ((_args.oplayoutget.loga_length.value.value + _args.oplayoutget.loga_offset.value.value) > lengthRange.value.value) {
-//                throw new ChimeraNFSException(nfsstat.NFSERR_INVAL, "offset+length too big");
-//            }
+        if (_args.oplayoutget.loga_minlength.value != nfs4_prot.NFS4_UINT64_MAX) {
+            _args.oplayoutget.loga_offset.checkOverflow(_args.oplayoutget.loga_minlength, "offset + minlength overflow");
         }
 
         if (!(_args.oplayoutget.loga_iomode == layoutiomode4.LAYOUTIOMODE4_RW
@@ -89,13 +76,6 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         if (_args.oplayoutget.loga_layout_type > 3) {
             throw new BadLayoutException("layouts supported but no matching found (" + _args.oplayoutget.loga_layout_type + ")");
         }
-
-        /*
-         * FIXME: sing/unsign issue here
-         */
-//        if (_args.oplayoutget.loga_minlength.value.value < 1) {
-//               throw new ChimeraNFSException(nfsstat.NFSERR_BADLAYOUT, "loga_minlength field should be at least one.");
-//        }
 
         Inode inode = context.currentInode();
 
