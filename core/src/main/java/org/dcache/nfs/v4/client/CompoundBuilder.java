@@ -538,7 +538,7 @@ public class CompoundBuilder {
     }
 
     public CompoundBuilder withLayoutget(boolean signal_layout_avail,
-            int layout_type, int iomode, int offset, int length, int minlength,
+            int layout_type, int iomode, long offset, long length, long minlength,
             int maxcount, stateid4 stateid) {
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_LAYOUTGET;
