@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4resok;
 import java.io.IOException;
+import java.util.Arrays;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
@@ -35,6 +36,8 @@ import org.dcache.nfs.status.BadIoModeException;
 import org.dcache.nfs.status.BadLayoutException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
+import org.dcache.nfs.status.TooSmallException;
+import org.dcache.nfs.v4.xdr.layout4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,8 +108,35 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
                 _args.oplayoutget.loga_iomode,
                 _args.oplayoutget.loga_stateid);
 
+        layout4[] layoutSegments = ioLayout.getLayoutSegments();
+
+        int n = 0;
+        /*
+         count how many segments client can accept
+        */
+        int layoutBodySize = 0;
+        for(layout4 layout: layoutSegments) {
+            layoutBodySize += layout.lo_content.loc_body.length;
+            if ( layoutBodySize > _args.oplayoutget.loga_maxcount.value) {
+                break;
+            }
+            n++;
+        }
+
+        if (n == 0) {
+            /*
+              there is no room even for one segment
+            */
+            throw new TooSmallException("layout body size is bigger than client can accept");
+        }
+
+        /*
+          truncate number of segments if needed;
+        */
+        layoutSegments = n == layoutSegments.length ? layoutSegments : Arrays.copyOf(layoutSegments, n);
+
         res.logr_resok4 = new LAYOUTGET4resok();
-        res.logr_resok4.logr_layout = ioLayout.getLayoutSegments();
+        res.logr_resok4.logr_layout = layoutSegments;
         res.logr_resok4.logr_stateid = ioLayout.getStateid();
         res.logr_resok4.logr_return_on_close = ioLayout.returnOnClose();
 
