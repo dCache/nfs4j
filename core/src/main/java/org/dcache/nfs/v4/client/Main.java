@@ -959,15 +959,15 @@ public class Main {
             System.out.println("    length: " + l.lo_length.value);
             System.out.println("    offset: " + l.lo_offset.value);
             System.out.println("    type  : " + l.lo_content.loc_type);
-            System.out.println("    unit  : " + fileDevice.nfl_util.value.value);
+            System.out.println("    unit  : " + fileDevice.nfl_util.value);
             System.out.println("    commit: "
-                    + ((fileDevice.nfl_util.value.value & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) == 0 ? "ds" : "mds"));
+                    + ((fileDevice.nfl_util.value & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) == 0 ? "ds" : "mds"));
 
             deviceid4 deviceID = fileDevice.nfl_deviceid;
             Stripe stripe = new Stripe(deviceID, fileDevice.nfl_fh_list[0],
                     l.lo_length.value, l.lo_offset.value,
                     fileDevice.nfl_pattern_offset.value,
-                    fileDevice.nfl_util.value.value,
+                    fileDevice.nfl_util.value,
                     fileDevice.nfl_first_stripe_index.value);
             stripeMap.addStripe(stripe);
 
