@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,9 +41,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import jline.ArgumentCompletor;
-import jline.ConsoleReader;
-import jline.SimpleCompletor;
+import jline.console.ConsoleReader;
+import jline.console.completer.StringsCompleter;
 
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
@@ -122,13 +120,10 @@ public class Main {
             "read-nostate"
         };
 
-        PrintWriter out = new PrintWriter(System.out);
-        ConsoleReader reader = new ConsoleReader(System.in, out);
-        reader.setUseHistory(true);
-        List<SimpleCompletor> completors = new LinkedList<>();
-        completors.add(new SimpleCompletor(commands));
-        reader.addCompletor(new ArgumentCompletor(completors));
-
+        ConsoleReader reader = new ConsoleReader();
+        reader.setPrompt(PROMPT);
+        reader.setHistoryEnabled(true);
+        reader.addCompleter(new StringsCompleter(commands));
 
         if (args.length > 0) {
             HostAndPort hp = HostAndPort.fromString(args[0])
@@ -140,7 +135,9 @@ public class Main {
             nfsClient.mount("/");
         }
 
-        while ((line = reader.readLine(PROMPT)) != null) {
+        PrintWriter out = new PrintWriter(reader.getOutput());
+
+        while ((line = reader.readLine()) != null) {
             line = line.trim();
             if (line.length() == 0) {
                 continue;
