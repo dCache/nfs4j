@@ -40,6 +40,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.commons.stats.RequestExecutionTimeGauges;
+import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.MinorVersMismatchException;
@@ -48,6 +49,7 @@ import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SequencePosException;
 import org.dcache.nfs.status.ServerFaultException;
+import org.dcache.nfs.status.StaleStateidException;
 import org.dcache.nfs.status.TooManyOpsException;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
@@ -150,6 +152,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     opResult.setStatus(e.getStatus());
                 } catch (BadXdrException | InvalException e) {
                     _log.warn("Faulty NFS client: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
+                    opResult.setStatus(e.getStatus());
+                } catch (BadStateidException | StaleStateidException e) {
+                    _log.warn("Bad Stateid: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
                 } catch (ChimeraNFSException e) {
                     opResult.setStatus(e.getStatus());
