@@ -60,6 +60,7 @@ import org.dcache.nfs.status.ExpiredException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SeqMisorderedException;
 import org.dcache.nfs.v4.xdr.verifier4;
+import org.dcache.utils.Bytes;
 
 public class NFS4Client {
 
@@ -243,15 +244,15 @@ public class NFS4Client {
         return _verifier.equals(verifier);
     }
 
-    public boolean isConfirmed() {
+    public synchronized boolean isConfirmed() {
         return _isConfirmed;
     }
 
-    public void setConfirmed() {
+    public synchronized void setConfirmed() {
         _isConfirmed = true;
     }
 
-    public boolean isLeaseValid() {
+    public synchronized boolean isLeaseValid() {
         return (System.currentTimeMillis() - _cl_time) < _leaseTime;
     }
 
@@ -261,12 +262,14 @@ public class NFS4Client {
      * @throws ChimeraNFSException if difference between current time and last
      * lease more than max_lease_time
      */
-    public void updateLeaseTime() throws ChimeraNFSException {
+    public synchronized void updateLeaseTime() throws ChimeraNFSException {
 
         long curentTime = System.currentTimeMillis();
-        if ((curentTime - _cl_time) > _leaseTime) {
+        long delta = curentTime - _cl_time;
+        if (delta > _leaseTime) {
             _clientStates.clear();
-            throw new ExpiredException("lease time expired");
+            throw new ExpiredException("lease time expired: (" + delta +"): " + _ownerId +
+                    " (" + _clientId + ").");
         }
         _cl_time = curentTime;
     }
@@ -274,7 +277,7 @@ public class NFS4Client {
     /**
      * sets client lease time with current time
      */
-    public void refreshLeaseTime() {
+    public synchronized void refreshLeaseTime() {
         _cl_time = System.currentTimeMillis();
     }
 
@@ -341,7 +344,7 @@ public class NFS4Client {
         return _sessions.values();
     }
 
-    public NFSv41Session createSession(int sequence, int cacheSize, int cbCacheSize, int maxOps, int maxCbOps) throws ChimeraNFSException {
+    public synchronized NFSv41Session createSession(int sequence, int cacheSize, int cbCacheSize, int maxOps, int maxCbOps) throws ChimeraNFSException {
 
         /*
          * For unconfirmed cleints server expects sequence number to be equal to
