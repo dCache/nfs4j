@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import java.util.UUID;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.ConnNotBoundToSessionException;
 import org.dcache.nfs.v4.client.CreateSessionStub;
 import org.dcache.nfs.v4.client.DestroySessionStub;
@@ -126,7 +127,7 @@ public class OperationCREATE_SESSIONTest {
         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFSERR_SEQ_MISORDERED);
     }
 
-    @Test
+    @Test(expected = BadSessionException.class)
     public void testDestroySession() throws Exception {
         CompoundContext context;
         nfs_resop4 result;
@@ -164,7 +165,7 @@ public class OperationCREATE_SESSIONTest {
                 .build();
 
         AssertNFS.assertNFS(DESTROY_SESSION, context, result, nfsstat.NFS_OK);
-        assertNull(stateHandler.getSession(session));
+        stateHandler.getSession(session);
     }
 
     @Test(expected = ConnNotBoundToSessionException.class)

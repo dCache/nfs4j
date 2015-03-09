@@ -47,12 +47,6 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         final SEQUENCE4res res = result.opsequence;
 
         NFSv41Session session = context.getStateHandler().getSession(_args.opsequence.sa_sessionid);
-
-        if (session == null) {
-            _log.debug("no session for id [{}]", _args.opsequence.sa_sessionid);
-            throw new BadSessionException("session not found");
-        }
-
         NFS4Client client = session.getClient();
 
         if (!client.hasSessions()) {
