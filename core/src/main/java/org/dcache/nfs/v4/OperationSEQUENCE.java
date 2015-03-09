@@ -68,10 +68,11 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
                 context.getRpcCall().getTransport().getLocalSocketAddress(),
                 context.getRpcCall().getTransport().getRemoteSocketAddress())
         );
-        context.setCacheThis(_args.opsequence.sa_cachethis);
+
         client.updateLeaseTime();
 
         context.setSession(session);
+        context.setCacheThis(_args.opsequence.sa_cachethis);
         context.setSlotId(_args.opsequence.sa_slotid.value);
 
         res.sr_resok4 = new SEQUENCE4resok();
