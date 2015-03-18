@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,6 +32,10 @@ public class FhExpiredException extends ChimeraNFSException {
 
     public FhExpiredException(String msg) {
         super(NFSERR_FHEXPIRED, msg);
+    }
+
+    public FhExpiredException(String msg, Throwable cause) {
+        super(NFSERR_FHEXPIRED, msg, cause);
     }
 }
 

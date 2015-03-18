@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,6 +32,10 @@ public class OpNotInSessionException extends ChimeraNFSException {
 
     public OpNotInSessionException(String msg) {
         super(NFSERR_OP_NOT_IN_SESSION, msg);
+    }
+
+    public OpNotInSessionException(String msg, Throwable cause) {
+        super(NFSERR_OP_NOT_IN_SESSION, msg, cause);
     }
 }
 
