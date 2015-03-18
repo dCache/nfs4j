@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,7 +24,8 @@ import static org.dcache.nfs.nfsstat.*;
 
 public class NotSameException extends ChimeraNFSException {
 
-    private static final long serialVersionUID = -4414189030556080288L;
+
+    private static final long serialVersionUID = 1L;
 
     public NotSameException() {
         super(NFSERR_NOT_SAME);
@@ -32,6 +33,10 @@ public class NotSameException extends ChimeraNFSException {
 
     public NotSameException(String msg) {
         super(NFSERR_NOT_SAME, msg);
+    }
+
+    public NotSameException(String msg, Throwable cause) {
+        super(NFSERR_NOT_SAME, msg, cause);
     }
 }
 
