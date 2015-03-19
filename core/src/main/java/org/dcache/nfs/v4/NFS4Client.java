@@ -346,7 +346,9 @@ public class NFS4Client {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(_clientAddress).append(":").
-                append(_ownerId).append("@").append(_clientId);
+                append(Bytes.toHexString(_ownerId))
+                .append("@")
+                .append(_clientId);
         return sb.toString();
     }
 
