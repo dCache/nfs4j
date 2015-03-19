@@ -390,7 +390,7 @@ public final class nfsstat {
             case nfsstat.NFSERR_NOSPC:
                 throw new NoSpcException();
             case nfsstat.NFSERR_ROFS:
-                throw new RoFs();
+                throw new RoFsException();
             case nfsstat.NFSERR_MLINK:
                 throw new MLinkException();
             case nfsstat.NFSERR_NAMETOOLONG:

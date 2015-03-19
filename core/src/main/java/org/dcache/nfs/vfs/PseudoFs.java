@@ -320,7 +320,7 @@ public class PseudoFs extends ForwardingFileSystem {
                             acemask4.toString(requestedMask),
                             new SubjectHolder(effectiveSubject));
             }
-            throw new RoFs("attempt to modify pseudofs");
+            throw new RoFsException("attempt to modify pseudofs");
         }
 
         if (!inode.isPesudoInode()) {

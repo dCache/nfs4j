@@ -22,15 +22,15 @@ package org.dcache.nfs.status;
 import org.dcache.nfs.ChimeraNFSException;
 import static org.dcache.nfs.nfsstat.*;
 
-public class RoFs extends ChimeraNFSException {
+public class RoFsException extends ChimeraNFSException {
 
     private static final long serialVersionUID = -8038522399187465504L;
 
-    public RoFs() {
+    public RoFsException() {
         super(NFSERR_ROFS);
     }
 
-    public RoFs(String msg) {
+    public RoFsException(String msg) {
         super(NFSERR_ROFS, msg);
     }
 
