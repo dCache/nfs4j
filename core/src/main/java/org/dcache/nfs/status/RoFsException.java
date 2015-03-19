@@ -34,7 +34,7 @@ public class RoFsException extends ChimeraNFSException {
         super(NFSERR_ROFS, msg);
     }
 
-    public RoFs(String msg, Throwable cause) {
+    public RoFsException(String msg, Throwable cause) {
         super(NFSERR_ROFS, msg, cause);
     }
 }
