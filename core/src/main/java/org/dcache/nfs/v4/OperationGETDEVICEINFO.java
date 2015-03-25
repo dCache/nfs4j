@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,8 +31,11 @@ import org.dcache.nfs.v4.xdr.device_addr4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.dcache.nfs.v4.xdr.notify_deviceid_type4.*;
 
 public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
@@ -67,8 +70,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;
         res.gdir_resok4.gdir_device_addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
-        res.gdir_resok4.gdir_notification = new bitmap4();
-        res.gdir_resok4.gdir_notification.value = new int[] {0};
+        res.gdir_resok4.gdir_notification = bitmap4.of(NOTIFY_DEVICEID4_CHANGE, NOTIFY_DEVICEID4_DELETE);
 
         res.gdir_status = nfsstat.NFS_OK;
     }
