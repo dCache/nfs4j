@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
@@ -47,6 +48,8 @@ import org.dcache.utils.Bytes;
 public class NFS4Client {
 
     private static final Logger _log = LoggerFactory.getLogger(NFS4Client.class);
+
+    private final AtomicInteger _stateIdCounter = new AtomicInteger(0);
 
     /*
      * from NFSv4.1 spec:
@@ -297,7 +300,7 @@ public class NFS4Client {
             throw new ResourceException("Too many states.");
         }
 
-        NFS4State state = new NFS4State(_clientId, _openStateId);
+        NFS4State state = new NFS4State(generateNewState(), _openStateId);
         _openStateId++;
         _clientStates.put(state.stateid(), state);
         return state;
@@ -457,5 +460,17 @@ public class NFS4Client {
 
     public boolean isCallbackNeede() {
         return _callbackNeeded;
+    }
+
+    /*
+     * we construct 'other' fileld of state IDs as following:
+     * |0 -  7| : client id
+     * |8 - 11| : clients state counter
+     */
+    private byte[] generateNewState() {
+        byte[] other = new byte[12];
+        Bytes.putLong(other, 0, _clientId);
+        Bytes.putInt(other, 8, _stateIdCounter.incrementAndGet());
+        return other;
     }
 }

@@ -102,7 +102,7 @@ public class NFS4ClientTest {
 
     @Test
     public void testAttacheDetachState() throws ChimeraNFSException {
-        NFS4State state = new NFS4State(0, 0);
+        NFS4State state = new NFS4State(new byte[] {}, 0);
 
         nfsClient.attachState(state);
         assertTrue(nfsClient.hasState());

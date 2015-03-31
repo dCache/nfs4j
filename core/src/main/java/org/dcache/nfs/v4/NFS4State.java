@@ -19,11 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.utils.Bytes;
 
 public class NFS4State {
 
@@ -49,25 +47,13 @@ public class NFS4State {
 
     private final List<StateDisposeListener> _disposeListeners;
 
-    /**
-     * Random generator to generate stateids.
-     */
-    private static final SecureRandom RANDOM = new SecureRandom();
-
     public NFS4State(stateid4 stateid) {
         _stateid = stateid;
         _disposeListeners = new ArrayList<>();
     }
 
-    public NFS4State(long clientid, int seqid) {
-        this(new stateid4(generateState(clientid), seqid));
-    }
-
-    private static byte[] generateState(long clientid) {
-        byte[] other = new byte[12];
-        Bytes.putLong(other, 0, clientid);
-        Bytes.putInt(other, 8, RANDOM.nextInt());
-        return other;
+    public NFS4State(byte[] other, int seqid) {
+        this(new stateid4(other, seqid));
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
