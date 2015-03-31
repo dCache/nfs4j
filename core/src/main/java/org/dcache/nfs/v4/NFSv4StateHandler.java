@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
@@ -44,6 +45,16 @@ import static com.google.common.base.Preconditions.checkState;
 public class NFSv4StateHandler {
 
     private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
+
+    /**
+     * Server boot id.
+     */
+    private final long BOOTID = (System.currentTimeMillis() / 1000);
+
+    /**
+     * client id generator.
+     */
+    private final AtomicInteger _clientId = new AtomicInteger(0);
 
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
     private final Map<Long, NFS4Client> _clientsByServerId = new HashMap<>();
@@ -164,7 +175,7 @@ public class NFSv4StateHandler {
 
     public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress,
             byte[] ownerID, verifier4 verifier, Principal principal, boolean callbackNeeded) {
-        NFS4Client client = new NFS4Client(clientAddress, localAddress, ownerID, verifier, principal, _leaseTime, callbackNeeded);
+        NFS4Client client = new NFS4Client(nextClientId(), clientAddress, localAddress, ownerID, verifier, principal, _leaseTime, callbackNeeded);
         addClient(client);
         return client;
     }
@@ -217,5 +228,9 @@ public class NFSv4StateHandler {
         checkState(_running, "NFS state handler not running");
         _running = false;
         _sessionById.shutdown();
+    }
+
+    private long  nextClientId() {
+        return (BOOTID << 32) | _clientId.incrementAndGet();
     }
 }

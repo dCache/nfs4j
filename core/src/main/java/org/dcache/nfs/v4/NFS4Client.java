@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
@@ -48,16 +47,6 @@ import org.dcache.utils.Bytes;
 public class NFS4Client {
 
     private static final Logger _log = LoggerFactory.getLogger(NFS4Client.class);
-
-    /**
-     * Server boot id.
-     */
-    private final static long BOOTID = (System.currentTimeMillis() / 1000);
-
-    /**
-     * client id generator.
-     */
-    private final static AtomicInteger CLIENTID = new AtomicInteger(0);
 
     /*
      * from NFSv4.1 spec:
@@ -183,13 +172,13 @@ public class NFS4Client {
      */
     private final boolean _callbackNeeded;
 
-    public NFS4Client(InetSocketAddress clientAddress, InetSocketAddress localAddress,
+    public NFS4Client(long clientId, InetSocketAddress clientAddress, InetSocketAddress localAddress,
             byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime, boolean calbackNeeded) {
 
         _ownerId = ownerID;
         _verifier = verifier;
         _principal = principal;
-        _clientId = (BOOTID << 32) | CLIENTID.incrementAndGet();
+        _clientId = clientId;
 
         _clientAddress = clientAddress;
         _localAddress = localAddress;
