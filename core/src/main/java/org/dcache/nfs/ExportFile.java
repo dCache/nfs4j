@@ -133,7 +133,7 @@ public class ExportFile {
                             continue;
                         }
 
-                        if (option.equals("noacl")) {
+                        if (option.equals("noacl") || option.equals("no_acl")) {
                             exportBuilder.withoutAcl();
                             continue;
                         }
@@ -181,7 +181,7 @@ public class ExportFile {
                             continue;
                         }
 
-                        if (option.equals("nopnfs")) {
+                        if (option.equals("nopnfs") || option.equals("no_pnfs")) {
                             exportBuilder.withoutPnfs();
                             continue;
                         }
