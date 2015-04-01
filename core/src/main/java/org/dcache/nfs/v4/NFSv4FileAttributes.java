@@ -164,4 +164,16 @@ public interface NFSv4FileAttributes {
         FATTR4_MODE | FATTR4_OWNER | FATTR4_OWNER_GROUP |
             FATTR4_TIME_ACCESS_SET | FATTR4_TIME_MODIFY_SET
     };
+
+    public final static int[] SUPPORTED_ATTRS_V4_0 = new int[]{
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1 ^ FATTR4_FS_LAYOUT_TYPE
+    };
+
+    public final static int[] SUPPORTED_ATTRS_V4_1 = new int[]{
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1,
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
+    };
+
 }

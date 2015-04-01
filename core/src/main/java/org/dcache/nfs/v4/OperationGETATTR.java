@@ -96,6 +96,9 @@ import org.glassfish.grizzly.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_0;
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1;
+
 public class OperationGETATTR extends AbstractNFSv4Operation {
 
         private static final Logger _log = LoggerFactory.getLogger(OperationGETATTR.class);
@@ -184,11 +187,12 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         switch (fattr) {
 
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
-                int[] bitmap = new int[] {
-                    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
-                    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1,
-                    NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
-		};
+                int[] bitmap;
+                if (context.getMinorversion() == 0) {
+                    bitmap = SUPPORTED_ATTRS_V4_0;
+                } else {
+                    bitmap = SUPPORTED_ATTRS_V4_1;
+                }
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
                 fattr4_type type = new fattr4_type(unixType2NFS(stat.getMode()));
