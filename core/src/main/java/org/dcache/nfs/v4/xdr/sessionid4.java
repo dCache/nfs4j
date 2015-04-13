@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,9 +18,12 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import java.util.Arrays;
-import org.dcache.xdr.*;
+
 import java.io.IOException;
+import java.util.Arrays;
+
+import org.dcache.xdr.*;
+import org.dcache.utils.Bytes;
 
 public class sessionid4 implements XdrAble {
 
@@ -67,7 +70,7 @@ public class sessionid4 implements XdrAble {
 
     @Override
     public String toString() {
-        return new String(value);
+        return Bytes.toHexString(value);
     }
 }
 // End of sessionid4.java
