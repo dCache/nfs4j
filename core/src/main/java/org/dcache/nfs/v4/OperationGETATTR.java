@@ -355,7 +355,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
              * this is NFSv4.1 (pNFS) specific code, which is still in the
              * development ( as protocol )
              */
-            case nfs4_prot.FATTR4_FS_LAYOUT_TYPE:
+            case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
                 fs_layout_type.value = new int[1];
                 fs_layout_type.value[0] = layouttype4.LAYOUT4_NFSV4_1_FILES;
@@ -546,7 +546,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_MOUNTED_ON_FILEID :
                 maskName=" FATTR4_MOUNTED_ON_FILEID ";
                 break;
-            case nfs4_prot.FATTR4_FS_LAYOUT_TYPE :
+            case nfs4_prot.FATTR4_FS_LAYOUT_TYPES :
                 maskName=" FATTR4_FS_LAYOUT_TYPE ";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_HINT:

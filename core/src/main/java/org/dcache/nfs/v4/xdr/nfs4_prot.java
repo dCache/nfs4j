@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -78,7 +78,7 @@ public interface nfs4_prot {
     public static final int FATTR4_RETENTEVT_SET = 72;
     public static final int FSLI4BX_WRITEORDER = 11;
     public static final int FSLI4GF_WRITABLE = 0x01;
-    public static final int FATTR4_FS_LAYOUT_TYPE = 62;
+    public static final int FATTR4_FS_LAYOUT_TYPES = 62;
     public static final int MODE4_SVTX = 0x200;
     public static final int EXCHGID4_FLAG_CONFIRMED_R = 0x80000000;
     public static final int FSLI4BX_CLREADDIR = 7;
