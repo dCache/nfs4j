@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -71,4 +71,10 @@ public interface NFSv41DeviceManager {
      * @param stateid
      */
     public void layoutReturn(CompoundContext context, stateid4 stateid) throws IOException;
+
+    /**
+     * Returns the array of layout types supported by this device manager.
+     * @return supported layout types.
+     */
+    public int[] getLayoutTypes();
 }

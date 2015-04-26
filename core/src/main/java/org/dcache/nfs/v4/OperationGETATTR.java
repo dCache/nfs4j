@@ -44,7 +44,6 @@ import org.dcache.nfs.v4.xdr.specdata4;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.fattr4_homogeneous;
-import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.fattr4_maxread;
 import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
 import org.dcache.nfs.v4.xdr.fattr4_maxwrite;
@@ -357,8 +356,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
              */
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
-                fs_layout_type.value = new int[1];
-                fs_layout_type.value[0] = layouttype4.LAYOUT4_NFSV4_1_FILES;
+                fs_layout_type.value = context.getDeviceManager().getLayoutTypes();
                 return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
                 return Optional.of(new fattr4_supported_attrs(NFSv4FileAttributes.EXCLCREAT_ATTR));

@@ -172,6 +172,16 @@ public class DeviceManager implements NFSv41DeviceManager {
         _log.debug( "release device for stateid {}", stateid );
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.dcache.nfsv4.NFSv41DeviceManager#getLayoutTypes()
+     */
+    @Override
+    public int[] getLayoutTypes() {
+        return new int[]{layouttype4.LAYOUT4_NFSV4_1_FILES};
+    }
+
     /**
      * Create a multipath based NFSv4.1 file layout address.
      *
