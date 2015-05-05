@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -131,7 +132,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 cb.cbPing();
                 client.setCB(cb);
                 sessionFlags |= nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
-            } catch (IOException e) {
+            } catch (TimeoutException | IOException e) {
                 _log.info("Can't ping client over back channel: {}", e.getMessage() );
             }
         }

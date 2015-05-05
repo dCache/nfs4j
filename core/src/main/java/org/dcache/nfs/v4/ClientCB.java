@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ import org.dcache.nfs.v4.xdr.layoutrecall4;
 import org.dcache.nfs.v4.xdr.referring_call_list4;
 import org.dcache.nfs.v4.xdr.nfs_cb_argop4;
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 import org.dcache.xdr.*;
 
 /**
@@ -109,7 +110,7 @@ class ClientCB {
         return "tcp:///" + _rpc;
     }
 
-    public void cbPing() throws OncRpcException, IOException {
+    public void cbPing() throws OncRpcException, IOException, TimeoutException {
         _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 1000);
     }
 

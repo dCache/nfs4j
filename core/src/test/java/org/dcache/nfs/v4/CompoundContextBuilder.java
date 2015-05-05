@@ -41,7 +41,7 @@ public class CompoundContextBuilder {
         }
 
         @Override
-        public ReplyQueue<Integer, RpcReply> getReplyQueue() {
+        public ReplyQueue getReplyQueue() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
