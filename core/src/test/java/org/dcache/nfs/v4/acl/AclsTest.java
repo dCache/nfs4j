@@ -84,14 +84,18 @@ public class AclsTest {
         assertEquals(rwx, toMode(acl));
     }
 
-    private nfsace4 toACE(utf8str_mixed principal, int type, int mask) {
+    private nfsace4 toACE(utf8str_mixed principal, int type, int mask, int flag) {
         nfsace4 ace = new nfsace4();
         ace.who = principal;
         ace.access_mask = new acemask4(new uint32_t(mask));
         ace.type = new acetype4(new uint32_t(type));
-        int flags = principal == Acls.GROUP ? ACE4_IDENTIFIER_GROUP : 0;
+        int flags = flag | (principal == Acls.GROUP ? ACE4_IDENTIFIER_GROUP : 0);
         ace.flag = new aceflag4(new uint32_t(flags));
         return ace;
+    }
+
+    private nfsace4 toACE(utf8str_mixed principal, int type, int mask) {
+        return toACE(principal, type, mask, 0);
     }
 
     @Ignore
@@ -157,6 +161,24 @@ public class AclsTest {
         nfsace4[] acl = new nfsace4[]{
             toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
             toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testCompactByPrincipal6() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(new utf8str_mixed("user1"), ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_IDENTIFIER_GROUP),
+            toACE(new utf8str_mixed("user1"), ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),};
+
+        assertEquals(2, Acls.compact(acl).length);
+    }
+
+    @Test
+    public void testCompactByFlags() {
+        nfsace4[] acl = new nfsace4[]{
+            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_FILE_INHERIT_ACE),
+            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_DIRECTORY_INHERIT_ACE),};
 
         assertEquals(2, Acls.compact(acl).length);
     }
