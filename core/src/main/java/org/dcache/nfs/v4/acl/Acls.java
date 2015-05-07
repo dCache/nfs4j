@@ -296,7 +296,7 @@ public class Acls {
             int processedMask = a.access_mask.value.value;
             for(int j = i+1; j < size; j++) {
                 nfsace4 b = acl[j];
-                if (!pricipal.equals(b.who)) {
+                if (a.flag.value.value != b.flag.value.value || !pricipal.equals(b.who)) {
                     continue;
                 }
 
