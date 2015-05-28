@@ -51,6 +51,7 @@ import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SequencePosException;
 import org.dcache.nfs.status.ServerFaultException;
+import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.status.StaleStateidException;
 import org.dcache.nfs.status.TooManyOpsException;
 
@@ -158,7 +159,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 } catch (BadStateidException | StaleStateidException e) {
                     _log.warn("Bad Stateid: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
-                } catch (ExpiredException | BadSessionException e) {
+                } catch (ExpiredException | BadSessionException | StaleClientidException  e) {
                     _log.warn("Bad client: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
                 } catch (ChimeraNFSException e) {
