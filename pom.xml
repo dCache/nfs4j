@@ -37,6 +37,7 @@
   <modules>
       <module>core</module>
       <module>basic-server</module>
+      <module>basic-client</module>
   </modules>
 
   <build>

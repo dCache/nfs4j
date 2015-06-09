@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+      <groupId>org.dcache</groupId>
+      <artifactId>nfs4j</artifactId>
+      <version>0.11.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.dcache</groupId>
+    <artifactId>nfs4j-basic-client</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <archive>
+                                <manifest>
+                                    <mainClass>org.dcache.nfs.v4.client.Main</mainClass>
+                                    <packageName>org.dcache.nfs</packageName>
+                                    <addExtensions />
+                                </manifest>
+                                <manifestEntries>
+                                    <mode>development</mode>
+                                    <Implementation-Build>${buildNumber}</Implementation-Build>
+                                    <url>${project.url}</url>
+                                    <Build-Time>${maven.build.timestamp}</Build-Time>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--
+        EXTERNAL DEPENDENCIES
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>org.dcache</groupId>
+            <artifactId>nfs4j-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
