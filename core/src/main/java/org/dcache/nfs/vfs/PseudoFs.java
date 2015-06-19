@@ -288,7 +288,11 @@ public class PseudoFs extends ForwardingFileSystem {
 
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
-        checkAccess(inode, ACE4_WRITE_ATTRIBUTES);
+        int mask = ACE4_WRITE_ATTRIBUTES;
+        if (stat.isDefined(Stat.StatAttribute.OWNER)) {
+            mask |= ACE4_WRITE_OWNER;
+        }
+        checkAccess(inode, mask);
         _inner.setattr(inode, stat);
     }
 
@@ -399,6 +403,7 @@ public class PseudoFs extends ForwardingFileSystem {
 
         if (Subjects.isRoot(subject)) {
             fromUnixMask = Acls.toAccessMask(Acls.RBIT | Acls.WBIT | Acls.XBIT, isDir, true);
+            fromUnixMask |= ACE4_WRITE_OWNER;
         } else if (Subjects.hasUid(subject, stat.getUid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OWNER_OFFSET, isDir, true);
         } else if (Subjects.hasGid(subject, stat.getGid())) {
