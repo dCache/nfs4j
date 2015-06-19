@@ -15,8 +15,8 @@
   <url>http://www.dCache.ORG</url>
 
   <scm>
-      <connection>scm:git:https://github.com/dCache/jpnfs.git</connection>
-      <developerConnection>scm:git:https://github.com/dCache/jpnfs.git</developerConnection>
+      <connection>scm:git:https://github.com/dCache/nfs4j.git</connection>
+      <developerConnection>scm:git:https://github.com/dCache/nfs4j.git</developerConnection>
   </scm>
 
   <!--
