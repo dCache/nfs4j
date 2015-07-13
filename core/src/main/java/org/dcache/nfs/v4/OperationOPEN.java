@@ -192,33 +192,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     res.resok4.cinfo.after = new changeid4(stat.getCTime());
 
                     inode = context.getFs().lookup(context.currentInode(), name);
-                    stat = context.getFs().getattr(inode);
-
-                    if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_READ) != 0
-                            && (context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0)) {
-                        throw new AccessException();
-                    }
-
-                    if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0
-                            && (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0)) {
-                        throw new AccessException();
-                    }
-
-                    if (stat.type() == Stat.Type.DIRECTORY) {
-                        throw new IsDirException();
-                    }
-
-                    if (stat.type() == Stat.Type.SYMLINK) {
-                        throw new SymlinkException();
-                    }
-
-                    if (stat.type() != Stat.Type.REGULAR) {
-                        if (context.getMinorversion() == 0) {
-                            throw new SymlinkException();
-                        } else {
-                            throw new WrongTypeException();
-                        }
-                    }
+                    checkCanAccess(context, inode, _args.opopen.share_access);
                 }
 
                 context.currentInode(inode);
@@ -257,26 +231,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 res.resok4.cinfo.after = new changeid4(0);
 
                 inode = context.currentInode();
-                stat = context.getFs().getattr(inode);
-
-                if ((_args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_READ)
-                        && (context.getFs().access(inode, nfs4_prot.ACCESS4_READ) == 0)) {
-                    throw new AccessException();
-                }
-
-                if ((_args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_BOTH
-                        || _args.opopen.share_access.value == nfs4_prot.OPEN4_SHARE_ACCESS_WRITE)
-                        && (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0)) {
-                    throw new AccessException();
-                }
-
-                if (stat.type() == Stat.Type.DIRECTORY) {
-                    throw new IsDirException();
-                }
-
-                if (stat.type() == Stat.Type.SYMLINK) {
-                    throw new SymlinkException();
-                }
+                checkCanAccess(context, inode, _args.opopen.share_access);
                 break;
             case open_claim_type4.CLAIM_DELEGATE_CUR:
             case open_claim_type4.CLAIM_DELEGATE_PREV:
@@ -308,5 +263,42 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
 
+    }
+
+
+    private void checkCanAccess(CompoundContext context, Inode inode, uint32_t share_access) throws IOException {
+
+        int accessMode;
+
+        switch (share_access.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) {
+            case nfs4_prot.OPEN4_SHARE_ACCESS_READ:
+                accessMode = nfs4_prot.ACCESS4_READ;
+                break;
+            case nfs4_prot.OPEN4_SHARE_ACCESS_WRITE:
+                accessMode = nfs4_prot.ACCESS4_MODIFY;
+                break;
+            case nfs4_prot.OPEN4_SHARE_ACCESS_BOTH:
+                accessMode = nfs4_prot.ACCESS4_READ | nfs4_prot.ACCESS4_MODIFY;
+                break;
+            default:
+                throw new InvalException("Invalid share_access mode: " + share_access.value);
+        }
+
+        if (context.getFs().access(inode, accessMode) != accessMode) {
+            throw new AccessException();
+        }
+
+        Stat stat = context.getFs().getattr(inode);
+        switch(stat.type()) {
+            case REGULAR:
+                // OK
+                break;
+            case DIRECTORY:
+                throw new IsDirException();
+            case SYMLINK:
+                throw new SymlinkException();
+            default:
+                throw context.getMinorversion() == 0 ? new SymlinkException() : new WrongTypeException();
+        }
     }
 }
