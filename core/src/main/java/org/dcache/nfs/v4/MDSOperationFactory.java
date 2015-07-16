@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -128,7 +128,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
                  *
                  * indicate that we are a MDS and DS at the same time.
                  */
-                return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS|
+            return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS|
                         nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS);
             case nfs_opnum4.OP_CREATE_SESSION:
                 return new OperationCREATE_SESSION(op);
@@ -144,6 +144,10 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
                 return new OperationBIND_CONN_TO_SESSION(op);
             case nfs_opnum4.OP_SECINFO_NO_NAME:
                 return new OperationSECINFO_NO_NAME(op);
+            case nfs_opnum4.OP_FREE_STATEID:
+                return new OperationFREE_STATEID(op);
+            case nfs_opnum4.OP_TEST_STATEID:
+                return new OperationTEST_STATEID(op);
             case nfs_opnum4.OP_ILLEGAL:
 
         }

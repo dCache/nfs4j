@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -182,6 +182,10 @@ public final class nfs_opnum4 {
                 return "SEQUENCE";
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 return "RECLAIM_COMPLETE";
+            case nfs_opnum4.OP_FREE_STATEID:
+                return "FREE_STATEID";
+            case nfs_opnum4.OP_TEST_STATEID:
+                return "TEST_STATEID";
             case nfs_opnum4.OP_ILLEGAL:
                 return "ILLEGAL";
             default:
