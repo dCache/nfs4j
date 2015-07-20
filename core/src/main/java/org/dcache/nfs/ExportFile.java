@@ -62,8 +62,8 @@ public class ExportFile {
         _exports = parse(reader);
     }
 
-    public Iterable<FsExport> getExports() {
-        return _exports.values();
+    public Stream<FsExport> getExports() {
+        return _exports.values().stream();
     }
 
     private static ImmutableMultimap<Integer,FsExport> parse(Reader reader) throws IOException {

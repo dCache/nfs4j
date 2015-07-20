@@ -43,21 +43,28 @@ public class ExportPathCreator {
         this.exportFile = exportFile;
     }
 
-    public void init()  throws IOException {
-        Inode root = vfs.getRootInode();
-        for (FsExport export : exportFile.getExports()) {
-            String path = export.getPath();
-            Splitter splitter = Splitter.on('/').omitEmptyStrings();
-            Inode inode = root;
-            for (String s : splitter.split(path)) {
-
-                Inode child;
-                try {
-                    child = vfs.lookup(inode, s);
-                } catch(NoEntException e) {
-                    child = vfs.create(inode, Stat.Type.DIRECTORY, s, Subjects.ROOT, 0777);
-                }
-            }
+    private static Inode tryToCreateIfMissing(VirtualFileSystem vfs, Inode inode, String name) throws IOException {
+        try {
+            return vfs.lookup(inode, name);
+        } catch (NoEntException e) {
+            return vfs.create(inode, Stat.Type.DIRECTORY, name, Subjects.ROOT, 0777);
         }
+    }
+
+    public void init() throws IOException {
+        Inode root = vfs.getRootInode();
+        exportFile.getExports()
+                .map(FsExport::getPath)
+                .forEach(path -> {
+                    Splitter splitter = Splitter.on('/').omitEmptyStrings();
+                    Inode inode = root;
+                    for (String s : splitter.split(path)) {
+                        try {
+                            inode = tryToCreateIfMissing(vfs, inode, s);
+                        }catch(IOException e) {
+                            return;
+                        }
+                    }
+                });
     }
 }

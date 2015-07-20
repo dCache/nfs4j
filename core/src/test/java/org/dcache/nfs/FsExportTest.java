@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs;
 
-import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -41,9 +40,7 @@ public class FsExportTest {
 
     @Test
     public void testIsEmpty() {
-
-        Iterable<FsExport> exports = _exportFile.getExports();
-        assertFalse("Export file should not produce empty export list", Iterables.isEmpty(exports));
+        assertTrue("Export file should not produce empty export list", _exportFile.getExports().count() > 0);
     }
 
     @Test

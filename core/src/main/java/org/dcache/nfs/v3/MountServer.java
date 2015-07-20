@@ -39,6 +39,7 @@ import org.dcache.nfs.v3.xdr.mountres3_ok;
 import org.dcache.nfs.v3.xdr.mountstat3;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
@@ -172,7 +173,10 @@ public class MountServer extends mount_protServerStub {
 
         eList.value = null;
 
-        Multimap<String, String> exports = groupBy(_exportFile.getExports());
+        Map<String, List<FsExport>> exports = _exportFile
+                .getExports()
+                .collect(Collectors.groupingBy(FsExport::getPath));
+
         for (String path : exports.keySet()) {
 
             eList.value = new exportnode();
@@ -181,10 +185,10 @@ public class MountServer extends mount_protServerStub {
             eList.value.ex_groups.value = null;
             groups g = eList.value.ex_groups;
 
-            for (String client : exports.get(path)) {
+            for (FsExport export : exports.get(path)) {
 
                 g.value = new groupnode();
-                g.value.gr_name = new name(client);
+                g.value.gr_name = new name(export.client());
                 g.value.gr_next = new groups();
                 g.value.gr_next.value = null;
 
@@ -253,15 +257,6 @@ public class MountServer extends mount_protServerStub {
             inode = fs.lookup(inode, pathElement);
         }
         return inode;
-    }
-
-    private Multimap<String, String> groupBy(Iterable<FsExport> exports) {
-        Multimap<String, String> asMultiMap = HashMultimap.create();
-        for ( FsExport export: exports) {
-            asMultiMap.put(export.getPath(), export.client());
-        }
-
-        return asMultiMap;
     }
 
     private int[] exportSecFlavors(FsExport export) throws ChimeraNFSException {
