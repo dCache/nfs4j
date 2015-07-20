@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@ public class OperationEXCHANGE_IDTest {
 
     @Before
     public void setUp() {
-        stateHandler = new NFSv4StateHandler(2);
+        stateHandler = new NFSv4StateHandler(2, 0);
         clientId = UUID.randomUUID().toString();
     }
 

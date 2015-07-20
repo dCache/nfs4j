@@ -26,6 +26,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.net.UnknownHostException;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
 
@@ -89,4 +90,20 @@ public class NFSv4StateHandlerTest {
         _stateHandler.shutdown();
         _stateHandler.updateClientLeaseTime(stateid);
     }
+
+    @Test
+    public void testInstanceId() {
+        int instanceId = 18;
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId);
+        assertEquals("Invalid instance id returned", instanceId, stateHandler.getInstanceId());
+    }
+
+    @Test
+    public void testInstanceIdByStateid() throws UnknownHostException, ChimeraNFSException {
+        int instanceId = 117;
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId);
+        NFS4State state = createClient(stateHandler).createState();
+        assertEquals("Invalid instance id returned", instanceId, NFSv4StateHandler.getInstanceId(state.stateid()));
+    }
+
 }

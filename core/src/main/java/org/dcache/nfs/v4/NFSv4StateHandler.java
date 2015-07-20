@@ -47,11 +47,6 @@ public class NFSv4StateHandler {
     private static final Logger _log = LoggerFactory.getLogger(NFSv4StateHandler.class);
 
     /**
-     * Server boot id.
-     */
-    private final long BOOTID = (System.currentTimeMillis() / 1000);
-
-    /**
      * client id generator.
      */
     private final AtomicInteger _clientId = new AtomicInteger(0);
@@ -68,11 +63,16 @@ public class NFSv4StateHandler {
 
     private boolean _running;
 
+    /**
+     * a system wide unique id of this state handler.
+     */
+    private final int _instanceId;
+
     public NFSv4StateHandler() {
-        this(NFSv4Defaults.NFS4_LEASE_TIME);
+        this(NFSv4Defaults.NFS4_LEASE_TIME, 0);
     }
 
-    NFSv4StateHandler(long leaseTime) {
+    NFSv4StateHandler(long leaseTime, int instanceId) {
         _leaseTime = TimeUnit.SECONDS.toMillis(leaseTime);
         _sessionById = new Cache<>("NFSv41 sessions", 5000, Long.MAX_VALUE,
                 _leaseTime * 2,
@@ -80,6 +80,7 @@ public class NFSv4StateHandler {
                 _leaseTime * 4, TimeUnit.MILLISECONDS);
 
         _running = true;
+        _instanceId = instanceId;
     }
 
     public void removeClient(NFS4Client client) {
@@ -230,7 +231,35 @@ public class NFSv4StateHandler {
         _sessionById.shutdown();
     }
 
-    private long  nextClientId() {
-        return (BOOTID << 32) | _clientId.incrementAndGet();
+    /**
+     * Get system wide unique id to identify this state handler.
+     * @return system wide unique id
+     */
+    public int getInstanceId() {
+        return _instanceId;
+    }
+
+    /**
+     * Get system wide unique state handler id which have issued provided stateid.
+     * @param stateid issuer of which have to be discovered
+     * @return state hander id.
+     */
+    public static int getInstanceId(stateid4 stateid) {
+        long clientid = Bytes.getLong(stateid.other, 0);
+        return (int)(clientid >> 16) & 0xFFFF;
+    }
+    /*
+     * Generate next client id. A composite number consist of timestamp, counter,
+     * instance id:
+     *
+     * 0..........................31|32.......... 47|48.......63|
+     * |-     timestamp            -| - instance id -|-  counter -|
+     *
+     * This schema allows us to have 2^16 unique client per second and
+     * 2^16 instances of state handler.
+     */
+    private long nextClientId() {
+        long now = (System.currentTimeMillis() / 1000);
+        return (now << 32) | (_instanceId << 16) | (_clientId.incrementAndGet() & 0x0000FFFF);
     }
 }
