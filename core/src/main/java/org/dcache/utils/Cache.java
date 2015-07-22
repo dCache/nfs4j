@@ -201,6 +201,7 @@ public class Cache<K, V> implements Runnable {
         _cleanerScheduler = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setNameFormat(name + " periodic cleanup")
+                        .setDaemon(true)
                         .build()
         );
         _cleanerScheduler.scheduleAtFixedRate(this, timeValue, timeValue, timeUnit);
