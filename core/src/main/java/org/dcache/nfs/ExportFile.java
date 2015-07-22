@@ -19,23 +19,26 @@
  */
 package org.dcache.nfs;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
-import java.util.Iterator;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Ordering;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.InetAddress;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class ExportFile {
@@ -49,20 +52,38 @@ public class ExportFile {
         this(file.toURI());
     }
 
-    public ExportFile(URI uri) throws IOException  {
+    public ExportFile(URI uri) throws IOException {
         _exportFile = uri;
-        _exports = parse(_exportFile);
+        _exports = parse(uri);
+    }
+
+    public ExportFile(Reader reader) throws IOException  {
+        _exportFile = null;
+        _exports = parse(reader);
     }
 
     public Iterable<FsExport> getExports() {
         return _exports.values();
     }
 
+    private static ImmutableMultimap<Integer,FsExport> parse(Reader reader) throws IOException {
+        List<String> lines;
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            lines = bufferedReader.lines().collect(Collectors.toList());
+        }
+        return parse(lines);
+    }
+
     private static ImmutableMultimap<Integer,FsExport> parse(URI exportFile) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(exportFile));
+        return parse(lines);
+    }
+
+    private static ImmutableMultimap<Integer,FsExport> parse(Iterable<String> lines) throws IOException {
 
         ImmutableListMultimap.Builder<Integer,FsExport> exportsBuilder = ImmutableListMultimap.builder();
 
-        for (String line: Files.readAllLines(Paths.get(exportFile))) {
+        for (String line: lines) {
 
             line = line.trim();
             if (line.length() == 0) {
@@ -223,6 +244,9 @@ public class ExportFile {
     }
 
     public void rescan() throws IOException {
+        if (_exportFile == null) {
+            throw new IllegalStateException("exports uri not set, rescan impossible");
+        }
         _exports = parse(_exportFile);
     }
 }
