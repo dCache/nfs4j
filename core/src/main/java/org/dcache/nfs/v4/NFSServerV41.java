@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -46,6 +46,7 @@ import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ExpiredException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.MinorVersMismatchException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotOnlyOpException;
 import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
@@ -150,7 +151,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     _operationFactory.getOperation(op).process(context, opResult);
                     GAUGES.update(nfs_opnum4.toString(op.argop), System.nanoTime() - t0);
 
-                } catch (ResourceException | ServerFaultException e) {
+                } catch (NfsIoException | ResourceException | ServerFaultException e) {
                     _log.error("NFS server fault: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
                 } catch (BadXdrException | InvalException e) {
