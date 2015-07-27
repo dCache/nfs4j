@@ -73,7 +73,7 @@ Use NFS4J in your project
 <dependency>
     <groupId>org.dcache</groupId>
     <artifactId>nfs4j-core</artifactId>
-    <version>0.10.2</version>
+    <version>0.10.6</version>
 </dependency>
 
 <repositories>
