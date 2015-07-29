@@ -186,6 +186,8 @@ public final class nfs_opnum4 {
                 return "FREE_STATEID";
             case nfs_opnum4.OP_TEST_STATEID:
                 return "TEST_STATEID";
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                return "SECINFO_NO_NAME";
             case nfs_opnum4.OP_ILLEGAL:
                 return "ILLEGAL";
             default:

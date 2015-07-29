@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,6 +37,6 @@ public class OperationILLEGAL extends AbstractNFSv4Operation {
 
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
-	throw new OpIllegalException("illegal operation");
+	throw new OpIllegalException("Illegal/Unsupported  operation ("  + _args.argop + ")");
     }
 }

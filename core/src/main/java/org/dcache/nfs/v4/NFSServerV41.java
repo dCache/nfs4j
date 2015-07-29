@@ -48,6 +48,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.MinorVersMismatchException;
 import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotOnlyOpException;
+import org.dcache.nfs.status.OpIllegalException;
 import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SequencePosException;
@@ -154,7 +155,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 } catch (NfsIoException | ResourceException | ServerFaultException e) {
                     _log.error("NFS server fault: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
-                } catch (BadXdrException | InvalException e) {
+                } catch (BadXdrException | OpIllegalException | InvalException e) {
                     _log.warn("Faulty NFS client: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
                 } catch (BadStateidException | StaleStateidException e) {
