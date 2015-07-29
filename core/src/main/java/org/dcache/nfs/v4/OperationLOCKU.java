@@ -30,7 +30,7 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLOCKU.class);
 
-    OperationLOCKU(nfs_argop4 args) {
+    public OperationLOCKU(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_LOCKU);
     }
 

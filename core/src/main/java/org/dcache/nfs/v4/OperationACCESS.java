@@ -35,7 +35,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationACCESS.class);
 
-    OperationACCESS(nfs_argop4 args) {
+    public OperationACCESS(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_ACCESS);
     }
 

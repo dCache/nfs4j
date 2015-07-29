@@ -49,7 +49,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationCREATE.class);
 
-    OperationCREATE(nfs_argop4 args) {
+    public OperationCREATE(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_CREATE);
     }
 

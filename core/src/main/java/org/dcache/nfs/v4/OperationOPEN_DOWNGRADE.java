@@ -30,7 +30,7 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_DOWNGRADE.class);
 
-    OperationOPEN_DOWNGRADE(nfs_argop4 args) {
+    public OperationOPEN_DOWNGRADE(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_OPEN_DOWNGRADE);
     }
 

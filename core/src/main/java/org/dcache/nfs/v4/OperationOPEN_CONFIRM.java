@@ -38,7 +38,7 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_CONFIRM.class);
 
-    OperationOPEN_CONFIRM(nfs_argop4 args) {
+    public OperationOPEN_CONFIRM(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_OPEN_CONFIRM);
     }
 

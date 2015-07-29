@@ -62,7 +62,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationOPEN.class);
 
-    OperationOPEN(nfs_argop4 args) {
+    public OperationOPEN(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_OPEN);
     }
 

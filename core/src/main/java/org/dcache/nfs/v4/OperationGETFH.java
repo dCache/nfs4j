@@ -35,7 +35,7 @@ public class OperationGETFH extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETFH.class);
 
-    OperationGETFH(nfs_argop4 args) {
+    public OperationGETFH(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_GETFH);
     }
 

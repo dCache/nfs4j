@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSECINFO.class);
 
-    OperationSECINFO(nfs_argop4 args) {
+    public OperationSECINFO(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_SECINFO);
     }
 

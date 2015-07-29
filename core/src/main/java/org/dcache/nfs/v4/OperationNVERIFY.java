@@ -37,7 +37,7 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationNVERIFY.class);
 
-    OperationNVERIFY(nfs_argop4 args) {
+    public OperationNVERIFY(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_NVERIFY);
     }
 

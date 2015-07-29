@@ -46,7 +46,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTGET.class);
 
-    OperationLAYOUTGET(nfs_argop4 args) {
+    public OperationLAYOUTGET(nfs_argop4 args) {
     super(args, nfs_opnum4.OP_LAYOUTGET);
     }
 

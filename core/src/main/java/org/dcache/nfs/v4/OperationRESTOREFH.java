@@ -32,7 +32,7 @@ public class OperationRESTOREFH extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationRESTOREFH.class);
 
-    OperationRESTOREFH(nfs_argop4 args) {
+    public OperationRESTOREFH(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_RESTOREFH);
     }
 
