@@ -38,7 +38,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUP.class);
 
-    OperationLOOKUP(nfs_argop4 args) {
+    public OperationLOOKUP(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_LOOKUP);
     }
 

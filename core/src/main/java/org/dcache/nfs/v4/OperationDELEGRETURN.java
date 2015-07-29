@@ -30,7 +30,7 @@ public class OperationDELEGRETURN extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationDELEGRETURN.class);
 
-    OperationDELEGRETURN(nfs_argop4 args) {
+    public OperationDELEGRETURN(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_DELEGRETURN);
     }
 

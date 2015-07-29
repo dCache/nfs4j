@@ -30,7 +30,7 @@ public class OperationDELEGPURGE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationDELEGPURGE.class);
 
-    OperationDELEGPURGE(nfs_argop4 args) {
+    public OperationDELEGPURGE(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_DELEGPURGE);
     }
 

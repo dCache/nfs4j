@@ -38,7 +38,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICEINFO.class);
 
-    OperationGETDEVICEINFO(nfs_argop4 args) {
+    public OperationGETDEVICEINFO(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_GETDEVICEINFO);
     }
 

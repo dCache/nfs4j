@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICELIST.class);
 
-    OperationGETDEVICELIST(nfs_argop4 args) {
+    public OperationGETDEVICELIST(nfs_argop4 args) {
     super(args, nfs_opnum4.OP_GETDEVICELIST);
     }
 

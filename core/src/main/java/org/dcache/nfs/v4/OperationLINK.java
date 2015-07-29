@@ -38,7 +38,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLINK.class);
 
-    OperationLINK(nfs_argop4 args) {
+    public OperationLINK(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_LINK);
     }
 

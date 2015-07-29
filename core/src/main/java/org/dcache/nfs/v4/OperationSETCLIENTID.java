@@ -38,7 +38,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSETCLIENTID.class);
 
-    OperationSETCLIENTID(nfs_argop4 args) {
+    public OperationSETCLIENTID(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_SETCLIENTID);
     }
 
