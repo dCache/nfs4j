@@ -174,9 +174,9 @@ public class NFSv4StateHandler {
         return new ArrayList<>(_clientsByServerId.values());
     }
 
-    public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress,
+    public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress, int minorVersion,
             byte[] ownerID, verifier4 verifier, Principal principal, boolean callbackNeeded) {
-        NFS4Client client = new NFS4Client(nextClientId(), clientAddress, localAddress, ownerID, verifier, principal, _leaseTime, callbackNeeded);
+        NFS4Client client = new NFS4Client(nextClientId(), minorVersion, clientAddress, localAddress, ownerID, verifier, principal, _leaseTime, callbackNeeded);
         addClient(client);
         return client;
     }

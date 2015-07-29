@@ -175,7 +175,12 @@ public class NFS4Client {
      */
     private final boolean _callbackNeeded;
 
-    public NFS4Client(long clientId, InetSocketAddress clientAddress, InetSocketAddress localAddress,
+    /**
+     * Highest NFSv4 minor version supported by the client.
+     */
+    private final int _minorVersion;
+
+    public NFS4Client(long clientId, int minorVersion, InetSocketAddress clientAddress, InetSocketAddress localAddress,
             byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime, boolean calbackNeeded) {
 
         _ownerId = ownerID;
@@ -188,8 +193,8 @@ public class NFS4Client {
         _leaseTime = leaseTime;
 	_reclaim_completed = false;
         _callbackNeeded = calbackNeeded;
-        _log.debug("New client id: {}", Long.toHexString(_clientId));
-
+        _minorVersion = minorVersion;
+        _log.debug("New client: {}", this);
     }
 
     public void setCB(ClientCB cb) {
@@ -198,6 +203,13 @@ public class NFS4Client {
 
     public ClientCB getCB() {
         return _cl_cb;
+    }
+
+    /**
+     * Returns the highest NFSv4 minor version number supported by the client.
+     */
+    public int getMinorVersion() {
+        return _minorVersion;
     }
 
     /**
@@ -337,10 +349,11 @@ public class NFS4Client {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(_clientAddress).append(":").
-                append(Bytes.toHexString(_ownerId))
+        sb.append(_clientAddress).append(":")
+                .append(Bytes.toHexString(_ownerId))
                 .append("@")
-                .append(_clientId);
+                .append(_clientId)
+                .append(":v4.").append(getMinorVersion());
         return sb.toString();
     }
 

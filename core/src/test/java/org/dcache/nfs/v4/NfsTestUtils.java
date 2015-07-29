@@ -45,7 +45,7 @@ class NfsTestUtils {
         byte[] bootTime = new byte[8];
         RANDOM.nextBytes(owner);
         Bytes.putLong(bootTime, 0, System.currentTimeMillis());
-        return stateHandler.createClient(address, address, owner, new verifier4(bootTime), null, false);
+        return stateHandler.createClient(address, address, 1, owner, new verifier4(bootTime), null, false);
     }
 
     public static nfs_resop4 execute(CompoundContext context, AbstractNFSv4Operation op) throws ChimeraNFSException, IOException {

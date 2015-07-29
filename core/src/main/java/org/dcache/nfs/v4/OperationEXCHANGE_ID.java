@@ -221,6 +221,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 _log.debug("Case 1: New Owner ID");
                 client = stateHandler.createClient(
                         remoteSocketAddress, localSocketAddress,
+                        context.getMinorversion(),
                         clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
                         principal, !_isDsOnly);
 
@@ -235,6 +236,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                         stateHandler.removeClient(client);
                         client = stateHandler.createClient(
                                 remoteSocketAddress, localSocketAddress,
+                                context.getMinorversion(),
                                 clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
                                 principal, !_isDsOnly);
                     } else {
@@ -243,6 +245,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                             stateHandler.removeClient(client);
                             client = stateHandler.createClient(
                                     remoteSocketAddress, localSocketAddress,
+                                    context.getMinorversion(),
                                     clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
                                     principal, !_isDsOnly);
                         } else {
@@ -254,6 +257,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                     stateHandler.removeClient(client);
                     client = stateHandler.createClient(
                             remoteSocketAddress, localSocketAddress,
+                            context.getMinorversion(),
                             _args.opexchange_id.eia_clientowner.co_ownerid,
                             _args.opexchange_id.eia_clientowner.co_verifier,
                             principal, !_isDsOnly);
