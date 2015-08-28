@@ -43,6 +43,7 @@ import org.dcache.nfs.InodeCacheEntry;
 import org.dcache.nfs.status.BadCookieException;
 import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotDirException;
+import org.dcache.nfs.status.NotSameException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.DirectoryEntry;
@@ -161,11 +162,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 /*
                  * We do not have cached snapshot for this verifier - tell
                  * the client to start over.
-                 *
-                 * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
-                 * the only one which we can use to force client to re-try.
                  */
-                throw new BadCookieException("readdir verifier expired");
+                throw new NotSameException("readdir verifier expired");
             }
 
             // while client sends to us last cookie, we have to continue from the next one
