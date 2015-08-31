@@ -1,2 +1,0 @@
-/exports *(rw)
-#/ localhost(rw,no_root_squash,acl)

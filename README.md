@@ -4,21 +4,10 @@ NFS4J
 The pure java implementation of NFS server version 3, 4.0 and 4.1 including pNFS extension.
 
 
-
 Building from sources
 ---------------------
 
 To build nfs4j from source code Java8 and Maven3 are required.
-
-
-Starting a basic server
--------
-
-The nfs4j comes with a basic stand-alone NFS server which is uses Spring-XML configuration file.
-
-```$ java -jar basic-server/target/nfs4j-basic-server-<version>-jar-with-dependencies.jar oncrpcsvc.xml```
-
-You can customize the configuration file to your needs. The **oncrpcsvc** bean is the one which will be started.
 
 Implementing own NFS server
 ---------------------------
