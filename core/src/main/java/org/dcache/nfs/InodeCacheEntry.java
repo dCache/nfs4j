@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs;
 
+import java.util.Objects;
 import org.dcache.nfs.vfs.Inode;
 
 /**
@@ -49,6 +50,6 @@ public class InodeCacheEntry<T> {
 
     @Override
     public int hashCode() {
-        return _inode.hashCode() ^ _verifier.hashCode();
+        return Objects.hash(_inode, _verifier);
     }
 }

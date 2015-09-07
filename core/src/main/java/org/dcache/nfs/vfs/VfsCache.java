@@ -27,6 +27,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -283,7 +284,7 @@ public class VfsCache extends ForwardingFileSystem {
 
         @Override
         public int hashCode() {
-            return _name.hashCode() ^ _parent.hashCode();
+            return Objects.hash(_name, _parent);
         }
 
         public String getName() {
