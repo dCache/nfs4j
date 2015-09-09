@@ -49,6 +49,7 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.GuavaCacheMXBean;
 import org.dcache.utils.GuavaCacheMXBeanImpl;
@@ -117,7 +118,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 		super(args, nfs_opnum4.OP_READDIR);
 	}
 
-
     /*
      * to simulate snapshot-like list following trick is used:
      *
@@ -133,9 +133,10 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         final Inode dir = context.currentInode();
 
-        List<DirectoryEntry> dirList;
+        List<DirectoryEntry> dirList = null;
         verifier4 verifier;
         long startValue = _args.opreaddir.cookie.value;
+        boolean validateVerifier = false;
 
 
         /*
@@ -154,26 +155,25 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             throw new BadCookieException("bad cookie : " + startValue);
         }
 
+        // we will update verifier when new listing is generated
+        verifier = _args.opreaddir.cookieverf;
         if (startValue != 0) {
+            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
 
-            verifier = _args.opreaddir.cookieverf;
-            dirList = _dlCache.getIfPresent(new InodeCacheEntry<>(dir, verifier));
+            dirList = _dlCache.getIfPresent(cacheKey);
             if (dirList == null) {
-                /*
-                 * We do not have cached snapshot for this verifier - tell
-                 * the client to start over.
-                 */
-                throw new NotSameException("readdir verifier expired");
+                // we accept new listing only if verifier will match
+                _log.info("Directory listing for expired cookie verifier");
+                validateVerifier = true;
             }
 
             // while client sends to us last cookie, we have to continue from the next one
             ++startValue;
-
-            // the cookie==1,2 is reserved
-            if ((startValue > dirList.size() + COOKIE_OFFSET) || (startValue < COOKIE_OFFSET)) {
-                throw new BadCookieException("bad cookie : " + startValue + " " + dirList.size());
-            }
         } else {
+            startValue = COOKIE_OFFSET;
+        }
+
+        if (dirList == null) {
             Stat stat = context.getFs().getattr(dir);
 
             if (stat.type() != Stat.Type.DIRECTORY) {
@@ -181,14 +181,17 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             }
 
             verifier = generateDirectoryVerifier(stat);
-            startValue = COOKIE_OFFSET;
-            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
-            try {
-                dirList = _dlCache.get(cacheKey, () -> context.getFs().list(dir));
-            } catch (ExecutionException e) {
-                Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                throw new NfsIoException(e.getMessage());
+            if (validateVerifier && !verifier.equals(_args.opreaddir.cookieverf)) {
+                throw new NotSameException("Cookie expired. Directory content is changed.");
             }
+
+            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
+            dirList = fetchDirectoryListing(cacheKey, context.getFs(), dir);
+        }
+
+        // the cookie==1,2 is reserved
+        if (startValue > dirList.size() + COOKIE_OFFSET) {
+            throw new BadCookieException("bad cookie : " + startValue + " " + dirList.size());
         }
 
         if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
@@ -277,6 +280,16 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                     startValue,
                     _args.opreaddir.dircount.value,
                     dirList.size(), res.resok4.reply.eof);
+    }
+
+    private List<DirectoryEntry> fetchDirectoryListing(InodeCacheEntry<verifier4> cacheKey, VirtualFileSystem fs, Inode dir)
+            throws ChimeraNFSException {
+        try {
+            return _dlCache.get(cacheKey, () -> fs.list(dir));
+        } catch (ExecutionException e) {
+            Throwables.propagateIfPossible(e.getCause(), ChimeraNFSException.class);
+            throw new NfsIoException(e.getMessage());
+        }
     }
 
     /**

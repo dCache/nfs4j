@@ -8,6 +8,7 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v3.xdr.READDIR3args;
 import org.dcache.nfs.v3.xdr.READDIR3res;
+import org.dcache.nfs.v3.xdr.nfs3_prot;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.FileHandle;
 import org.dcache.nfs.vfs.Inode;
@@ -16,6 +17,7 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.testutils.AssertXdr;
 import org.dcache.testutils.NfsV3Ops;
 import org.dcache.testutils.RpcCallBuilder;
+import org.dcache.utils.Bytes;
 import org.dcache.xdr.RpcCall;
 import org.junit.Assert;
 import org.junit.Before;
@@ -112,5 +114,53 @@ public class NfsServerV3READDIR_3Test {
 
         Assert.assertEquals(nfsstat.NFSERR_BAD_COOKIE, result.status); //error response
         AssertXdr.assertXdrEncodable(result);
+    }
+
+    @Test
+    public void testSemiValidVerifier() throws Exception {
+
+        // vfs will return only "." and ".." as contents, both leading to itself
+        List<DirectoryEntry> dirContents = new ArrayList<>();
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
+
+        long cookie = 1;
+        byte[] cookieVerifier = generateDirectoryVerifier(dirStat.getGeneration());
+
+        RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
+        READDIR3args args = NfsV3Ops.readDir(dirHandle, cookie, cookieVerifier);
+        READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
+
+        Assert.assertEquals(nfsstat.NFS_OK, result.status); //error response
+        AssertXdr.assertXdrEncodable(result);
+    }
+
+    @Test
+    public void testInValidVerifier() throws Exception {
+
+        // vfs will return only "." and ".." as contents, both leading to itself
+        List<DirectoryEntry> dirContents = new ArrayList<>();
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
+
+        long cookie = 1;
+        byte[] cookieVerifier = generateDirectoryVerifier(dirStat.getGeneration() - 1);
+
+        RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
+        READDIR3args args = NfsV3Ops.readDir(dirHandle, cookie, cookieVerifier);
+        READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
+
+        Assert.assertEquals(nfsstat.NFSERR_BAD_COOKIE, result.status); //error response
+        AssertXdr.assertXdrEncodable(result);
+    }
+
+    private byte[] generateDirectoryVerifier(long generation) throws IllegalArgumentException {
+        byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
+        Bytes.putLong(verifier, 0, generation);
+        return verifier;
     }
 }
