@@ -30,14 +30,14 @@ import org.dcache.nfs.v4.xdr.verifier4;
 public class ReaddirStub {
 
 
-    public static nfs_argop4 generateRequest( long cookie, verifier4 verifier) {
+    public static nfs_argop4 generateRequest( long cookie, verifier4 verifier, int dircount, int maxcount) {
 
 
         nfs_argop4 op = new nfs_argop4();
         op.opreaddir = new READDIR4args();
         op.opreaddir.cookie = new nfs_cookie4(cookie) ;
-        op.opreaddir.dircount = new count4(1024);
-        op.opreaddir.maxcount = new count4(256);
+        op.opreaddir.dircount = new count4(dircount);
+        op.opreaddir.maxcount = new count4(maxcount);
         op.opreaddir.attr_request = new bitmap4( new int[] {0, 0});
         op.opreaddir.cookieverf =  verifier;
 
