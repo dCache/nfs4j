@@ -734,6 +734,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             long startValue = arg1.cookie.value.value;
             List<DirectoryEntry> dirList = null;
             cookieverf3 cookieverf;
+            boolean validateVerifier = false;
 
             /*
              * For fresh readdir requests, cookie == 0, generate a new verifier and check
@@ -741,36 +742,31 @@ public class NfsServerV3 extends nfs3_protServerStub {
              *
              * For requests with cookie != 0 provided verifier used for cache lookup.
              */
+            // we will update verifier when new listing is generated
+            cookieverf = arg1.cookieverf;
             if (startValue != 0) {
                 ++startValue;
-                cookieverf = arg1.cookieverf;
-                dirList = _dlCacheFull.getIfPresent(new InodeCacheEntry<>(dir, cookieverf));
+                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
+                dirList = _dlCacheFull.getIfPresent(cacheKey);
                 if (dirList == null) {
-                    /*
-                     * We do not have cached snapshot for this verifier - tell
-                     * the client to start over.
-                     *
-                     * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
-                     * the only one which we can use to force client to re-try.
-                     */
+                    validateVerifier = true;
+                    _log.debug("Directory listing for expired cookie verifier");
+                }
+            }
+
+            if (dirList == null) {
+                cookieverf = generateDirectoryVerifier(dirStat);
+
+                if (validateVerifier && !cookieverf.equals(arg1.cookieverf)) {
                     throw new BadCookieException("readdir verifier expired");
                 }
 
-                if (startValue >= dirList.size()) {
-                    res.status = nfsstat.NFSERR_BAD_COOKIE;
-                    res.resfail = new READDIRPLUS3resfail();
-                    res.resfail.dir_attributes = defaultPostOpAttr();
-                    return res;
-                }
-            } else {
-                cookieverf = generateDirectoryVerifier(dirStat);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-                try {
-                    dirList = _dlCacheFull.get(cacheKey, () -> fs.list(dir));
-                } catch (ExecutionException e) {
-                    Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                    throw new NfsIoException(e.getMessage());
-                }
+                dirList = fetchDirectoryListing(cacheKey, fs, dir);
+            }
+
+            if (startValue != 0 && startValue >= dirList.size()) {
+                throw new BadCookieException("invalid start value");
             }
 
             res.status = nfsstat.NFS_OK;
@@ -823,10 +819,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     } else {
                         //corner case - means we didnt have enough space to
                         //write even a single entry.
-                        res.status = nfsstat.NFSERR_TOOSMALL;
-                        res.resfail = new READDIRPLUS3resfail();
-                        res.resfail.dir_attributes = defaultPostOpAttr();
-                        return res;
+                        throw new TooSmallException("can't send even a single entry");
                     }
 
                     res.resok.reply.eof = false;
@@ -888,6 +881,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             long startValue = arg1.cookie.value.value;
             List<DirectoryEntry> dirList = null;
             cookieverf3 cookieverf;
+            boolean validateVerifier = false;
 
             /*
              * For fresh readdir requests, cookie == 0, generate a new verifier and check
@@ -895,36 +889,31 @@ public class NfsServerV3 extends nfs3_protServerStub {
              *
              * For requests with cookie != 0 provided verifier used for cache lookup.
              */
+            // we will update verifier when new listing is generated
+            cookieverf = arg1.cookieverf;
             if (startValue != 0) {
                 ++startValue;
-                cookieverf = arg1.cookieverf;
-                dirList = _dlCacheFull.getIfPresent(new InodeCacheEntry<>(dir, cookieverf));
+                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
+                dirList = _dlCacheFull.getIfPresent(cacheKey);
                 if (dirList == null) {
-                    /*
-                     * We do not have cached snapshot for this verifier - tell
-                     * the client to start over.
-                     *
-                     * As there is no BAD_VERIFIER error, the NFS4ERR_BAD_COOKIE is
-                     * the only one which we can use to force client to re-try.
-                     */
+                    validateVerifier = true;
+                    _log.debug("Directory listing for expired cookie verifier");
+                }
+            }
+
+            if (dirList == null) {
+                cookieverf = generateDirectoryVerifier(dirStat);
+
+                if (validateVerifier && !cookieverf.equals(arg1.cookieverf)) {
                     throw new BadCookieException("readdir verifier expired");
                 }
 
-                if (startValue >= dirList.size()) {
-                    res.status = nfsstat.NFSERR_BAD_COOKIE;
-                    res.resfail = new READDIR3resfail();
-                    res.resfail.dir_attributes = defaultPostOpAttr();
-                    return res;
-                }
-            } else {
-                cookieverf = generateDirectoryVerifier(dirStat);
                 InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-                try {
-                    dirList = _dlCacheFull.get(cacheKey, () -> fs.list(dir));
-                } catch (ExecutionException e) {
-                    Throwables.propagateIfInstanceOf(e.getCause(), ChimeraNFSException.class);
-                    throw new NfsIoException(e.getMessage());
-                }
+                dirList = fetchDirectoryListing(cacheKey, fs, dir);
+            }
+
+            if (startValue != 0 && startValue >= dirList.size()) {
+                throw new BadCookieException("invalid start value");
             }
 
             res.status = nfsstat.NFS_OK;
@@ -965,10 +954,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     } else {
                         //corner case - means we didnt have enough space to
                         //write even a single entry.
-                        res.status = nfsstat.NFSERR_TOOSMALL;
-                        res.resfail = new READDIR3resfail();
-                        res.resfail.dir_attributes = defaultPostOpAttr();
-                        return res;
+                        throw new TooSmallException("can't send even a single entry");
                     }
 
                     res.resok.reply.eof = false;
@@ -1005,6 +991,16 @@ public class NfsServerV3 extends nfs3_protServerStub {
         }
 
         return res;
+    }
+
+    private List<DirectoryEntry> fetchDirectoryListing(InodeCacheEntry<cookieverf3> cacheKey, VirtualFileSystem fs, Inode dir)
+            throws ChimeraNFSException {
+        try {
+            return _dlCacheFull.get(cacheKey, () -> fs.list(dir));
+        } catch (ExecutionException e) {
+            Throwables.propagateIfPossible(e.getCause(), ChimeraNFSException.class);
+            throw new NfsIoException(e.getMessage());
+        }
     }
 
     @Override
