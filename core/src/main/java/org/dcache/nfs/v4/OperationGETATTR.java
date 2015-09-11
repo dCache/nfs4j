@@ -373,214 +373,214 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         switch(offset) {
 
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS :
-                maskName=" FATTR4_SUPPORTED_ATTRS ";
+                maskName="FATTR4_SUPPORTED_ATTRS";
                 break;
             case nfs4_prot.FATTR4_TYPE :
-                maskName=" FATTR4_TYPE ";
+                maskName="FATTR4_TYPE";
                 break;
             case nfs4_prot.FATTR4_FH_EXPIRE_TYPE :
-                maskName=" FATTR4_FH_EXPIRE_TYPE ";
+                maskName="FATTR4_FH_EXPIRE_TYPE";
                 break;
             case nfs4_prot.FATTR4_CHANGE :
-                maskName=" FATTR4_CHANGE ";
+                maskName="FATTR4_CHANGE";
                 break;
             case nfs4_prot.FATTR4_SIZE :
-                maskName=" FATTR4_SIZE ";
+                maskName="FATTR4_SIZE";
                 break;
             case nfs4_prot.FATTR4_LINK_SUPPORT :
-                maskName=" FATTR4_LINK_SUPPORT ";
+                maskName="FATTR4_LINK_SUPPORT";
                 break;
             case nfs4_prot.FATTR4_SYMLINK_SUPPORT :
-                maskName=" FATTR4_SYMLINK_SUPPORT ";
+                maskName="FATTR4_SYMLINK_SUPPORT";
                 break;
             case nfs4_prot.FATTR4_NAMED_ATTR :
-                maskName=" FATTR4_NAMED_ATTR ";
+                maskName="FATTR4_NAMED_ATTR";
                 break;
             case nfs4_prot.FATTR4_FSID :
-                maskName=" FATTR4_FSID ";
+                maskName="FATTR4_FSID";
                 break;
             case nfs4_prot.FATTR4_UNIQUE_HANDLES :
-                maskName=" FATTR4_UNIQUE_HANDLES ";
+                maskName="FATTR4_UNIQUE_HANDLES";
                 break;
             case nfs4_prot.FATTR4_LEASE_TIME :
-                maskName=" FATTR4_LEASE_TIME ";
+                maskName="FATTR4_LEASE_TIME";
                 break;
             case nfs4_prot.FATTR4_RDATTR_ERROR :
-                maskName=" FATTR4_RDATTR_ERROR ";
+                maskName="FATTR4_RDATTR_ERROR";
                 break;
             case nfs4_prot.FATTR4_FILEHANDLE :
-                maskName=" FATTR4_FILEHANDLE ";
+                maskName="FATTR4_FILEHANDLE";
                 break;
             case nfs4_prot.FATTR4_ACL :
-                maskName=" FATTR4_ACL ";
+                maskName="FATTR4_ACL";
                 break;
             case nfs4_prot.FATTR4_ACLSUPPORT :
-                maskName=" FATTR4_ACLSUPPORT ";
+                maskName="FATTR4_ACLSUPPORT";
                 break;
             case nfs4_prot.FATTR4_ARCHIVE :
-                maskName=" FATTR4_ARCHIVE ";
+                maskName="FATTR4_ARCHIVE";
                 break;
             case nfs4_prot.FATTR4_CANSETTIME :
-                maskName=" FATTR4_CANSETTIME ";
+                maskName="FATTR4_CANSETTIME";
                 break;
             case nfs4_prot.FATTR4_CASE_INSENSITIVE :
-                maskName=" FATTR4_CASE_INSENSITIVE ";
+                maskName="FATTR4_CASE_INSENSITIVE";
                 break;
             case nfs4_prot.FATTR4_CASE_PRESERVING :
-                maskName=" FATTR4_CASE_PRESERVING ";
+                maskName="FATTR4_CASE_PRESERVING";
                 break;
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED :
-                maskName=" FATTR4_CHOWN_RESTRICTED ";
+                maskName="FATTR4_CHOWN_RESTRICTED";
                 break;
             case nfs4_prot.FATTR4_FILEID :
-                maskName=" FATTR4_FILEID ";
+                maskName="FATTR4_FILEID";
                 break;
             case nfs4_prot.FATTR4_FILES_AVAIL :
-                maskName=" FATTR4_FILES_AVAIL ";
+                maskName="FATTR4_FILES_AVAIL";
                 break;
             case nfs4_prot.FATTR4_FILES_FREE :
-                maskName=" FATTR4_FILES_FREE ";
+                maskName="FATTR4_FILES_FREE";
                 break;
             case nfs4_prot.FATTR4_FILES_TOTAL :
-                maskName=" FATTR4_FILES_TOTAL ";
+                maskName="FATTR4_FILES_TOTAL";
                 break;
             case nfs4_prot.FATTR4_FS_LOCATIONS :
-                maskName=" FATTR4_FS_LOCATIONS ";
+                maskName="FATTR4_FS_LOCATIONS";
                 break;
             case nfs4_prot.FATTR4_HIDDEN :
-                maskName=" FATTR4_HIDDEN ";
+                maskName="FATTR4_HIDDEN";
                 break;
             case nfs4_prot.FATTR4_HOMOGENEOUS :
-                maskName=" FATTR4_HOMOGENEOUS ";
+                maskName="FATTR4_HOMOGENEOUS";
                 break;
             case nfs4_prot.FATTR4_MAXFILESIZE :
-                maskName=" FATTR4_MAXFILESIZE ";
+                maskName="FATTR4_MAXFILESIZE";
                 break;
             case nfs4_prot.FATTR4_MAXLINK :
-                maskName=" FATTR4_MAXLINK ";
+                maskName="FATTR4_MAXLINK";
                 break;
             case nfs4_prot.FATTR4_MAXNAME :
-                maskName=" FATTR4_MAXNAME ";
+                maskName="FATTR4_MAXNAME";
                 break;
             case nfs4_prot.FATTR4_MAXREAD :
-                maskName=" FATTR4_MAXREAD ";
+                maskName="FATTR4_MAXREAD";
                 break;
             case nfs4_prot.FATTR4_MAXWRITE :
-                maskName=" FATTR4_MAXWRITE ";
+                maskName="FATTR4_MAXWRITE";
                 break;
             case nfs4_prot.FATTR4_MIMETYPE :
-                maskName=" FATTR4_MIMETYPE ";
+                maskName="FATTR4_MIMETYPE";
                 break;
             case nfs4_prot.FATTR4_MODE :
-                maskName=" FATTR4_MODE ";
+                maskName="FATTR4_MODE";
                 break;
             case nfs4_prot.FATTR4_NO_TRUNC :
-                maskName=" FATTR4_NO_TRUNC ";
+                maskName="FATTR4_NO_TRUNC";
                 break;
             case nfs4_prot.FATTR4_NUMLINKS :
-                maskName=" FATTR4_NUMLINKS ";
+                maskName="FATTR4_NUMLINKS";
                 break;
             case nfs4_prot.FATTR4_OWNER :
-                maskName=" FATTR4_OWNER ";
+                maskName="FATTR4_OWNER";
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
-                maskName=" FATTR4_OWNER_GROUP ";
+                maskName="FATTR4_OWNER_GROUP";
                 break;
             case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD :
-                maskName=" FATTR4_QUOTA_AVAIL_HARD ";
+                maskName="FATTR4_QUOTA_AVAIL_HARD";
                 break;
             case nfs4_prot.FATTR4_QUOTA_AVAIL_SOFT :
-                maskName=" FATTR4_QUOTA_AVAIL_SOFT ";
+                maskName="FATTR4_QUOTA_AVAIL_SOFT";
                 break;
             case nfs4_prot.FATTR4_QUOTA_USED :
-                maskName=" FATTR4_QUOTA_USED ";
+                maskName="FATTR4_QUOTA_USED";
                 break;
             case nfs4_prot.FATTR4_RAWDEV :
-                maskName=" FATTR4_RAWDEV ";
+                maskName="FATTR4_RAWDEV";
                 break;
             case nfs4_prot.FATTR4_SPACE_AVAIL :
-                maskName=" FATTR4_SPACE_AVAIL ";
+                maskName="FATTR4_SPACE_AVAIL";
                 break;
             case nfs4_prot.FATTR4_SPACE_FREE :
-                maskName=" FATTR4_SPACE_FREE ";
+                maskName="FATTR4_SPACE_FREE";
                 break;
             case nfs4_prot.FATTR4_SPACE_TOTAL :
-                maskName=" FATTR4_SPACE_TOTAL ";
+                maskName="FATTR4_SPACE_TOTAL";
                 break;
             case nfs4_prot.FATTR4_SPACE_USED :
-                maskName=" FATTR4_SPACE_USED ";
+                maskName="FATTR4_SPACE_USED";
                 break;
             case nfs4_prot.FATTR4_SYSTEM :
-                maskName=" FATTR4_SYSTEM ";
+                maskName="FATTR4_SYSTEM";
                 break;
             case nfs4_prot.FATTR4_TIME_ACCESS :
-                maskName=" FATTR4_TIME_ACCESS ";
+                maskName="FATTR4_TIME_ACCESS";
                 break;
             case nfs4_prot.FATTR4_TIME_ACCESS_SET :
-                maskName=" FATTR4_TIME_ACCESS_SET ";
+                maskName="FATTR4_TIME_ACCESS_SET";
                 break;
             case nfs4_prot.FATTR4_TIME_BACKUP :
-                maskName=" FATTR4_TIME_BACKUP ";
+                maskName="FATTR4_TIME_BACKUP";
                 break;
             case nfs4_prot.FATTR4_TIME_CREATE :
-                maskName=" FATTR4_TIME_CREATE ";
+                maskName="FATTR4_TIME_CREATE";
                 break;
             case nfs4_prot.FATTR4_TIME_DELTA :
-                maskName=" FATTR4_TIME_DELTA ";
+                maskName="FATTR4_TIME_DELTA";
                 break;
             case nfs4_prot.FATTR4_TIME_METADATA :
-                maskName=" FATTR4_TIME_METADATA ";
+                maskName="FATTR4_TIME_METADATA";
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY :
-                maskName=" FATTR4_TIME_MODIFY ";
+                maskName="FATTR4_TIME_MODIFY";
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET :
-                maskName=" FATTR4_TIME_MODIFY_SET ";
+                maskName="FATTR4_TIME_MODIFY_SET";
                 break;
             case nfs4_prot.FATTR4_MOUNTED_ON_FILEID :
-                maskName=" FATTR4_MOUNTED_ON_FILEID ";
+                maskName="FATTR4_MOUNTED_ON_FILEID";
                 break;
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPE :
-                maskName=" FATTR4_FS_LAYOUT_TYPE ";
+                maskName="FATTR4_FS_LAYOUT_TYPE";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_HINT:
-                maskName=" FATTR4_LAYOUT_HINT ";
+                maskName="FATTR4_LAYOUT_HINT";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_TYPE:
-                maskName=" FATTR4_LAYOUT_TYPE ";
+                maskName="FATTR4_LAYOUT_TYPE";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_BLKSIZE:
-                maskName=" FATTR4_LAYOUT_BLKSIZE ";
+                maskName="FATTR4_LAYOUT_BLKSIZE";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_ALIGNMENT:
-                maskName=" FATTR4_LAYOUT_ALIGNMENT ";
+                maskName="FATTR4_LAYOUT_ALIGNMENT";
                 break;
             case nfs4_prot.FATTR4_FS_LOCATIONS_INFO:
-                maskName=" FATTR4_FS_LOCATIONS_INFO ";
+                maskName="FATTR4_FS_LOCATIONS_INFO";
                 break;
             case nfs4_prot.FATTR4_MDSTHRESHOLD:
-                maskName=" FATTR4_MDSTHRESHOLD ";
+                maskName="FATTR4_MDSTHRESHOLD";
                 break;
             case nfs4_prot.FATTR4_RETENTION_GET:
-                maskName=" FATTR4_RETENTION_GET ";
+                maskName="FATTR4_RETENTION_GET";
                 break;
             case nfs4_prot.FATTR4_RETENTION_SET:
-                maskName=" FATTR4_RETENTION_SET ";
+                maskName="FATTR4_RETENTION_SET";
                 break;
             case nfs4_prot.FATTR4_RETENTEVT_GET:
-                maskName=" FATTR4_RETENTEVT_GET ";
+                maskName="FATTR4_RETENTEVT_GET";
                 break;
             case nfs4_prot.FATTR4_RETENTEVT_SET:
-                maskName=" FATTR4_RETENTEVT_SET ";
+                maskName="FATTR4_RETENTEVT_SET";
                 break;
             case nfs4_prot.FATTR4_RETENTION_HOLD:
-                maskName=" FATTR4_RETENTION_HOLD ";
+                maskName="FATTR4_RETENTION_HOLD";
                 break;
             case nfs4_prot.FATTR4_MODE_SET_MASKED:
-                maskName=" FATTR4_MODE_SET_MASKED ";
+                maskName="FATTR4_MODE_SET_MASKED";
                 break;
             case nfs4_prot.FATTR4_FS_CHARSET_CAP:
-                maskName=" FATTR4_FS_CHARSET_CAP ";
+                maskName="FATTR4_FS_CHARSET_CAP";
                 break;
             default:
             	maskName += "(" + offset + ")";
