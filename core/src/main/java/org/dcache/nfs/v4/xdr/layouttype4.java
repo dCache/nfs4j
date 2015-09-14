@@ -28,5 +28,7 @@ public interface layouttype4 {
     public static final int LAYOUT4_BLOCK_VOLUME = 0x3;
     public static final int LAYOUT4_FLEX_FILES = 0x4;
 
+    public static final int LAYOUT4_TYPE_MAX = LAYOUT4_FLEX_FILES;
+
 }
 // End of layouttype4.java

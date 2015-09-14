@@ -37,6 +37,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.layout4;
+import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
@@ -73,8 +74,8 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
             throw new BadIoModeException("invalid loga_iomode");
         }
 
-        if (_args.oplayoutget.loga_layout_type > 3) {
-            throw new BadLayoutException("layouts supported but no matching found (" + _args.oplayoutget.loga_layout_type + ")");
+        if (_args.oplayoutget.loga_layout_type > layouttype4.LAYOUT4_TYPE_MAX) {
+            throw new BadLayoutException("Invalid layout type requested(" + _args.oplayoutget.loga_layout_type + ")");
         }
 
         Inode inode = context.currentInode();
