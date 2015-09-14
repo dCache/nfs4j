@@ -56,9 +56,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         deviceid4 deviceId = _args.opgetdeviceinfo.gdia_device_id;
 
-        _log.debug("             Info for #{}", deviceId);
-        _log.debug("             type for #{}",
-                _args.opgetdeviceinfo.gdia_layout_type);
+        _log.debug("Get device info for device [{}], type {} ", deviceId, _args.opgetdeviceinfo.gdia_layout_type);
 
         res.gdir_resok4 = new GETDEVICEINFO4resok();
 
@@ -69,7 +67,6 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         }
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;
-        res.gdir_resok4.gdir_device_addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
         res.gdir_resok4.gdir_notification = bitmap4.of(NOTIFY_DEVICEID4_CHANGE, NOTIFY_DEVICEID4_DELETE);
 
         res.gdir_status = nfsstat.NFS_OK;

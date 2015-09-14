@@ -19,18 +19,12 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.layout4;
-import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.multipath_list4;
 import org.dcache.nfs.v4.xdr.device_addr4;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.LayoutUnavailableException;
+import org.dcache.nfs.v4.xdr.length4;
+import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.utils.Bytes;
 import org.dcache.utils.net.InetSocketAddresses;
-import org.glassfish.grizzly.Buffer;
 
 /**
  *
@@ -70,8 +66,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             new ConcurrentHashMap<>();
 
     private InetSocketAddress[] _knownDataServers;
-    private final StripingPattern<InetSocketAddress> _stripingPattern = new
-            RoundRobinStripingPattern<>();
+    private final LayoutDriver layoutDriver = new NfsV41FileLayoutDriver();
 
     /**
      * Set configures data servers. Each string represents a dataserver
@@ -103,8 +98,8 @@ public class DeviceManager implements NFSv41DeviceManager {
         device_addr4 deviceAddr;
         deviceid4 deviceId;
 
-        if (layoutType != layouttype4.LAYOUT4_NFSV4_1_FILES) {
-                    throw new LayoutUnavailableException("layout not supported");
+        if (layoutType != layoutDriver.getLayoutType()) {
+            throw new LayoutUnavailableException("layout not supported");
         }
 
         if (!context.getFs().hasIOLayout(inode)) {
@@ -120,7 +115,7 @@ public class DeviceManager implements NFSv41DeviceManager {
             _log.debug("generating new device: {} ({}) for stateid {}",
                     deviceId, id, stateid);
 
-            deviceAddr = deviceAddrOf(_stripingPattern, _knownDataServers);
+            deviceAddr = layoutDriver.getDeviceAddress(_knownDataServers);
 
             _deviceMap.put(deviceId, deviceAddr);
         }
@@ -128,7 +123,11 @@ public class DeviceManager implements NFSv41DeviceManager {
         nfs_fh4 fh = new nfs_fh4(context.currentInode().toNfsHandle());
 
         //  -1 is special value, which means entire file
-        layout4 layout = Layout.getLayoutSegment(deviceId, NFSv4Defaults.NFS4_STRIPE_SIZE, fh, ioMode, 0, nfs4_prot.NFS4_UINT64_MAX);
+        layout4 layout = new layout4();
+        layout.lo_iomode = ioMode;
+        layout.lo_offset = new offset4(0);
+        layout.lo_length = new length4(nfs4_prot.NFS4_UINT64_MAX);
+        layout.lo_content = layoutDriver.getLayoutContent(deviceId, stateid,  NFSv4Defaults.NFS4_STRIPE_SIZE, fh);
 
         return  new Layout(true, stateid, new layout4[]{layout});
     }
@@ -140,12 +139,12 @@ public class DeviceManager implements NFSv41DeviceManager {
      * @see org.dcache.nfsv4.NFSv41DeviceManager#getDeviceInfo(CompoundContext context, deviceid4 deviceId)
      */
     @Override
-    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) {
+    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) throws ChimeraNFSException {
 
         _log.debug("lookup for device: {}", deviceId );
         /* in case of MDS access we return the same interface which client already connected to */
         if(deviceId.equals(MDS_ID)) {
-            return deviceAddrOf(_stripingPattern, context.getLocalSocketAddress());
+            return layoutDriver.getDeviceAddress(context.getLocalSocketAddress());
         }
 
         return  _deviceMap.get(deviceId);
@@ -179,56 +178,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      */
     @Override
     public int[] getLayoutTypes() {
-        return new int[]{layouttype4.LAYOUT4_NFSV4_1_FILES};
-    }
-
-    /**
-     * Create a multipath based NFSv4.1 file layout address.
-     *
-     * @param stripingPattern of the device
-     * @param deviceAddress
-     * @return device address
-     */
-    public static device_addr4 deviceAddrOf(StripingPattern<InetSocketAddress> stripingPattern,
-            InetSocketAddress ... deviceAddress) {
-
-        nfsv4_1_file_layout_ds_addr4 file_type = new nfsv4_1_file_layout_ds_addr4();
-
-        file_type.nflda_multipath_ds_list = new multipath_list4[deviceAddress.length];
-
-        for( int i = 0; i < deviceAddress.length; i++ ) {
-
-            file_type.nflda_multipath_ds_list[i] = new multipath_list4();
-            file_type.nflda_multipath_ds_list[i].value = new netaddr4[1];
-
-            file_type.nflda_multipath_ds_list[i].value[0] = new netaddr4(deviceAddress[i]);
-        }
-
-        file_type.nflda_stripe_indices = stripingPattern.getPattern(deviceAddress);
-
-        XdrBuffer xdr = new XdrBuffer(128);
-        try {
-            xdr.beginEncoding();
-            file_type.xdrEncode(xdr);
-            xdr.endEncoding();
-        }catch(OncRpcException e) {
-            /* forced by interface, should never happen. */
-            throw new RuntimeException("Unexpected OncRpcException:", e);
-        }catch(IOException e) {
-            /* forced by interface, should never happen. */
-            throw new RuntimeException("Unexpected IOException:", e);
-        }
-
-        Buffer body = xdr.asBuffer();
-        byte[] retBytes = new byte[body.remaining()] ;
-        body.get(retBytes);
-
-        device_addr4 addr = new device_addr4();
-        addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
-        addr.da_addr_body = retBytes;
-
-        return addr;
-
+        return new int[]{layoutDriver.getLayoutType()};
     }
 
     private static deviceid4 deviceidOf(int id) {

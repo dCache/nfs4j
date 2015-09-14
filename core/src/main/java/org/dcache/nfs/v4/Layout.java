@@ -19,20 +19,8 @@
  */
 package org.dcache.nfs.v4;
 
-import java.io.IOException;
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.layout4;
-import org.dcache.nfs.v4.xdr.layout_content4;
-import org.dcache.nfs.v4.xdr.layouttype4;
-import org.dcache.nfs.v4.xdr.length4;
-import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.status.ServerFaultException;
-import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
-import org.dcache.nfs.v4.xdr.offset4;
-import org.dcache.xdr.XdrBuffer;
-import org.glassfish.grizzly.Buffer;
 
 /**
  * A Layout defines how a file's data is organized on one or more storage devices.
@@ -94,58 +82,5 @@ public class Layout {
      */
     public layout4[] getLayoutSegments() {
         return _layoutSegments;
-    }
-
-    private static layout_content4 getSegmentContent(deviceid4 deviceid, int stripeSize, nfs_fh4 fh) throws ChimeraNFSException {
-
-        nfsv4_1_file_layout4 layout = Layouts.newNfsFileLayout(deviceid, stripeSize, fh);
-
-        XdrBuffer xdr = new XdrBuffer(512);
-        xdr.beginEncoding();
-
-        try {
-            layout.xdrEncode(xdr);
-        } catch (IOException e) {
-            throw new ServerFaultException("failed to encode layout body");
-        }
-        xdr.endEncoding();
-
-        Buffer xdrBody = xdr.asBuffer();
-        byte[] body = new byte[xdrBody.remaining()];
-        xdrBody.get(body);
-
-        layout_content4 content = new layout_content4();
-        content.loc_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
-        content.loc_body = body;
-
-        return content;
-    }
-
-    /**
-     * Create a layout segment for a given io mode, offset and length.
-     * The special value of length NFS4_UINT64_MAX corresponds to up to EOF.
-     * The valid values for <code>iomode</code> are LAYOUTIOMODE4_READ
-     * or LAYOUTIOMODE4_RW.
-     *
-     * @param deviceid on which segment is available.
-     * @param stripeSize preferred stripe unit size
-     * @param fh file handle to be used on data servers.
-     * @param iomode io mode for the segment.
-     * @param offset where segment starts.
-     * @param length segment length.
-     * @return layout segment
-     * @throws IOException
-     */
-    public static layout4 getLayoutSegment(deviceid4 deviceid, int stripeSize, nfs_fh4 fh, int iomode, long offset, long length)
-            throws IOException {
-
-        layout4 segment = new layout4();
-        segment.lo_offset = new offset4(offset);
-        segment.lo_length = new length4(length);
-        segment.lo_iomode = iomode;
-        segment.lo_content = new layout_content4();
-        segment.lo_content = getSegmentContent(deviceid, stripeSize, fh);
-
-        return segment;
     }
 }
