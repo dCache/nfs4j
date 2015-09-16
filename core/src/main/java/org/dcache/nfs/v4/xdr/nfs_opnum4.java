@@ -162,32 +162,44 @@ public final class nfs_opnum4 {
                 return "WRITE";
             case nfs_opnum4.OP_RELEASE_LOCKOWNER:
                 return "RELEASE_LOCKOWNER";
-            case nfs_opnum4.OP_GETDEVICELIST:
-                return "GETDEVICELIST";
-            case nfs_opnum4.OP_LAYOUTGET:
-                return "LAYOUTGET";
-            case nfs_opnum4.OP_LAYOUTCOMMIT:
-                return "LAYOUTCOMMIT";
-            case nfs_opnum4.OP_LAYOUTRETURN:
-                return "LAYOUTRETURN";
-            case nfs_opnum4.OP_GETDEVICEINFO:
-                return "GETDEVICEINFO";
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                return "BACKCHANNEL_CTL";
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                return "BIND_CONN_TO_SESSION";
             case nfs_opnum4.OP_EXCHANGE_ID:
                 return "EXCHANGE_ID";
             case nfs_opnum4.OP_CREATE_SESSION:
                 return "CREATE_SESSION";
             case nfs_opnum4.OP_DESTROY_SESSION:
                 return "DESTROY_SESSION";
-            case nfs_opnum4.OP_SEQUENCE:
-                return "SEQUENCE";
-            case nfs_opnum4.OP_RECLAIM_COMPLETE:
-                return "RECLAIM_COMPLETE";
             case nfs_opnum4.OP_FREE_STATEID:
                 return "FREE_STATEID";
-            case nfs_opnum4.OP_TEST_STATEID:
-                return "TEST_STATEID";
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
+                return "GET_DIR_DELEGATION";
+            case nfs_opnum4.OP_GETDEVICEINFO:
+                return "GETDEVICEINFO";
+            case nfs_opnum4.OP_GETDEVICELIST:
+                return "GETDEVICELIST";
+            case nfs_opnum4.OP_LAYOUTCOMMIT:
+                return "LAYOUTCOMMIT";
+            case nfs_opnum4.OP_LAYOUTGET:
+                return "LAYOUTGET";
+            case nfs_opnum4.OP_LAYOUTRETURN:
+                return "LAYOUTRETURN";
             case nfs_opnum4.OP_SECINFO_NO_NAME:
                 return "SECINFO_NO_NAME";
+            case nfs_opnum4.OP_SEQUENCE:
+                return "SEQUENCE";
+            case nfs_opnum4.OP_SET_SSV:
+                return "SET_SSV";
+            case nfs_opnum4.OP_TEST_STATEID:
+                return "TEST_STATEID";
+            case nfs_opnum4.OP_WANT_DELEGATION:
+                return "WANT_DELEGATION";
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                return "DESTROY_CLIENTID";
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                return "RECLAIM_COMPLETE";
             case nfs_opnum4.OP_ILLEGAL:
                 return "ILLEGAL";
             default:
