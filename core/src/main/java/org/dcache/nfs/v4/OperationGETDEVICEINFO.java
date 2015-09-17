@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.GETDEVICEINFO4res;
@@ -30,7 +29,7 @@ import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.device_addr4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.NoEntException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId);
 
         if (deviceInfo == null) {
-            throw new InvalException("invalid deviceInfo id");
+            throw new NoEntException("invalid deviceInfo id [" + deviceId +"]");
         }
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;
