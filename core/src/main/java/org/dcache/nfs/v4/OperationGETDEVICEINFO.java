@@ -66,7 +66,16 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         }
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;
-        res.gdir_resok4.gdir_notification = bitmap4.of(NOTIFY_DEVICEID4_CHANGE, NOTIFY_DEVICEID4_DELETE);
+        res.gdir_resok4.gdir_notification = new bitmap4();
+        /*
+         * provide faked notification only if client expects them
+         */
+        if (_args.opgetdeviceinfo.gdia_notify_types.isSet(NOTIFY_DEVICEID4_CHANGE)) {
+            res.gdir_resok4.gdir_notification.set(NOTIFY_DEVICEID4_CHANGE);
+        }
+        if (_args.opgetdeviceinfo.gdia_notify_types.isSet(NOTIFY_DEVICEID4_DELETE)) {
+            res.gdir_resok4.gdir_notification.set(NOTIFY_DEVICEID4_DELETE);
+        }
 
         res.gdir_status = nfsstat.NFS_OK;
     }
