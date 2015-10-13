@@ -28,6 +28,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
     public int[] value;
 
     public bitmap4() {
+        this(new int[0]);
     }
 
     public bitmap4(int [] value) {
@@ -262,6 +263,5 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
 
         return true;
     }
-
 }
 // End of bitmap4.java
