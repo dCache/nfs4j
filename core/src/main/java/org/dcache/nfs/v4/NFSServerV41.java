@@ -56,6 +56,8 @@ import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.status.StaleStateidException;
 import org.dcache.nfs.status.TooManyOpsException;
+import org.dcache.nfs.v4.nlm.LockManager;
+import org.dcache.nfs.v4.nlm.SimpleLm;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
@@ -65,6 +67,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final NFSv4OperationFactory _operationFactory;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _statHandler = new NFSv4StateHandler();
+    private final LockManager _nlm = new SimpleLm();
 
     private static final RequestExecutionTimeGauges<String> GAUGES =
             new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
@@ -120,7 +123,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
-                fs, _statHandler, _deviceManager, call$,
+                fs, _statHandler, _nlm, _deviceManager, call$,
                     _exportFile, arg1.argarray.length);
 
             boolean retransmit = false;
