@@ -39,5 +39,18 @@ public class clientid4 extends uint64_t {
     public String toString() {
         return Long.toString(value);
     }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof clientid4) {
+            return value == ((clientid4) obj).value;
+        }
+        return false;
+    }
 }
 // End of clientid4.java

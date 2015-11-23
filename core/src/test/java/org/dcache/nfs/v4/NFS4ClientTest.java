@@ -112,7 +112,7 @@ public class NFS4ClientTest {
     public void testAttacheDetachState() throws ChimeraNFSException {
 
         state_owner4 so = new state_owner4();
-        so.clientid = new clientid4(nfsClient.getId());
+        so.clientid = nfsClient.getId();
         so.owner = "someOtherOwner".getBytes(StandardCharsets.UTF_8);
         StateOwner stateOwner = new StateOwner(so, 0);
         NFS4State state = new NFS4State(stateOwner, new stateid4(new byte[] {}, 0));

@@ -76,9 +76,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-            Long clientid = _args.opopen.owner.clientid.value;
-            client = context.getStateHandler().getClientByID(clientid);
-
+            client = context.getStateHandler().getClientByID(_args.opopen.owner.clientid);
             if (client == null || !client.isConfirmed()) {
                 throw new StaleClientidException("bad client id.");
             }
