@@ -31,6 +31,7 @@ import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
+import org.dcache.nfs.v4.xdr.clientid4;
 
 public class NFSv4StateHandlerTest {
 
@@ -51,7 +52,7 @@ public class NFSv4StateHandlerTest {
 
     @Test(expected=StaleClientidException.class)
     public void testGetClientNotExists() throws Exception {
-        _stateHandler.getClientByID(1L);
+        _stateHandler.getClientByID(new clientid4(1L));
     }
 
     @Test

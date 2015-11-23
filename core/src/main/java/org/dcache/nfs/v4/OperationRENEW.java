@@ -42,9 +42,7 @@ public class OperationRENEW extends AbstractNFSv4Operation {
 
         final RENEW4res res = result.oprenew;
 
-        Long clientid = _args.oprenew.clientid.value;
-
-        NFS4Client client = context.getStateHandler().getClientByID(clientid);
+        NFS4Client client = context.getStateHandler().getClientByID(_args.oprenew.clientid);
         if (client == null) {
             throw new StaleClientidException();
         }
