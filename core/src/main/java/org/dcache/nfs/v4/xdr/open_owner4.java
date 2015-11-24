@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,30 +21,20 @@ package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class open_owner4 implements XdrAble {
+public class open_owner4 extends state_owner4 {
 
     public state_owner4 value;
 
     public open_owner4() {
     }
 
-    public open_owner4(state_owner4 value) {
-        this.value = value;
+    public open_owner4(state_owner4 stateOwner) {
+        super(stateOwner);
     }
 
     public open_owner4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);
-    }
-
-    public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
-    }
-
-    public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new state_owner4(xdr);
     }
 
 }

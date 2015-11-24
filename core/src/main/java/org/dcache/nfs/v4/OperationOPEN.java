@@ -74,7 +74,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-            Long clientid = _args.opopen.owner.value.clientid.value;
+            Long clientid = _args.opopen.owner.clientid.value;
             client = context.getStateHandler().getClientByID(clientid);
 
             if (client == null || !client.isConfirmed()) {
@@ -83,8 +83,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             client.validateSequence(_args.opopen.seqid);
             client.updateLeaseTime();
-            _log.debug("open request form clientid: {}, owner: {}",
-                    client, new String(_args.opopen.owner.value.owner));
+            _log.debug("open request form {}", _args.opopen.owner);
         }
 
         res.resok4 = new OPEN4resok();

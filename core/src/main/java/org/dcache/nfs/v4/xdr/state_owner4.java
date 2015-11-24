@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,14 +18,29 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import org.dcache.xdr.*;
+
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.io.BaseEncoding;
+import org.dcache.xdr.OncRpcException;
+
+import org.dcache.xdr.XdrAble;
+import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.xdr.XdrEncodingStream;
 
 public class state_owner4 implements XdrAble {
     public clientid4 clientid;
     public byte [] owner;
 
     public state_owner4() {
+    }
+
+    public state_owner4(state_owner4  stateOwner) {
+        clientid = stateOwner.clientid;
+        owner = stateOwner.owner;
     }
 
     public state_owner4(XdrDecodingStream xdr)
@@ -45,5 +60,36 @@ public class state_owner4 implements XdrAble {
         owner = xdr.xdrDecodeDynamicOpaque();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + Objects.hashCode(this.clientid);
+        hash = 67 * hash + Arrays.hashCode(this.owner);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final state_owner4 other = (state_owner4) obj;
+
+        return this.clientid.value == other.clientid.value && Arrays.equals(this.owner, other.owner);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this.getClass().getSimpleName())
+                .add("clientid", Long.toString(clientid.value, 16))
+                .add("ownerid", BaseEncoding.base16().encode(owner))
+                .toString();
+    }
 }
 // End of state_owner4.java
