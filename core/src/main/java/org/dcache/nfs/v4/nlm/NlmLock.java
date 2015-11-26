@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4.nlm;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Range;
 import org.dcache.nfs.v4.xdr.lock_owner4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_lock_type4;
@@ -31,25 +32,24 @@ public class NlmLock {
      * lock.
      */
     private final lock_owner4 owner;
+
     /**
-     * Identifies offset where locked region starts
+     * Range of locked region
      */
-    private final long offset;
-    /**
-     * The length of locked region.
-     */
-    private final long length;
+    private final Range<Long> lockRange;
 
     /**
      * Type of lock defined by {@link nfs_lock_type4}
      */
     private final int lockType;
 
-    public NlmLock(lock_owner4 owner, int lockType, long offset, long length) {
+    private NlmLock(lock_owner4 owner, int lockType, Range<Long> lockRange) {
         this.owner = owner;
-        this.offset = offset;
-        this.length = length;
         this.lockType = lockType;
+        this.lockRange = lockRange;
+    }
+    public NlmLock(lock_owner4 owner, int lockType, long offset, long length) {
+        this(owner, lockType, length == nfs4_prot.NFS4_UINT64_MAX ? Range.greaterThan(offset) : Range.closedOpen(offset, offset + length));
     }
 
     public lock_owner4 getOwner() {
@@ -57,11 +57,11 @@ public class NlmLock {
     }
 
     public long getOffset() {
-        return offset;
+        return lockRange.lowerEndpoint();
     }
 
     public long getLength() {
-        return length;
+        return lockRange.hasUpperBound() ? lockRange.upperEndpoint() - lockRange.lowerEndpoint() : nfs4_prot.NFS4_UINT64_MAX;
     }
 
     public int getLockType() {
@@ -72,8 +72,7 @@ public class NlmLock {
     public int hashCode() {
         int hash = 5;
         hash = 23 * hash + this.owner.hashCode();
-        hash = 23 * hash + (int) (this.offset ^ (this.offset >>> 32));
-        hash = 23 * hash + (int) (this.length ^ (this.length >>> 32));
+        hash = 23 * hash + lockRange.hashCode();
         hash = 23 * hash + (int) (this.lockType ^ (this.lockType >>> 32));
         return hash;
     }
@@ -90,10 +89,8 @@ public class NlmLock {
             return false;
         }
         final NlmLock other = (NlmLock) obj;
-        if (this.offset != other.offset) {
-            return false;
-        }
-        if (this.length != other.length) {
+
+        if (!lockRange.equals(other.lockRange)) {
             return false;
         }
         if (this.lockType != other.lockType) {
@@ -107,19 +104,43 @@ public class NlmLock {
     }
 
     public boolean isOverlappingRange(NlmLock other) {
-        // both lock up-to the end
-        if (other.length == nfs4_prot.NFS4_UINT64_MAX && length == nfs4_prot.NFS4_UINT64_MAX) {
-            return true;
-        } else if (other.length == nfs4_prot.NFS4_UINT64_MAX) {
-            // check that this lock range ends before other starts
-            return offset + length > other.offset;
-        } else if (length == nfs4_prot.NFS4_UINT64_MAX ){
-            // check that other lock range ends before this oner starts
-            return other.offset + other.length > offset;
+        return lockRange.isConnected(other.lockRange);
+    }
+
+    public NlmLock mergeLock(NlmLock lock) {
+
+        if(!lockRange.isConnected(lock.lockRange)) {
+            throw new RuntimeException("an attempt to merge non owerlapping leck regions");
         }
-        // both lock are segments
-        return ( (other.offset >= offset && other.offset < offset + length)
-                || (offset >= other.offset && offset < other.offset + other.length));
+
+        if(lockType != lock.lockType) {
+            throw new RuntimeException("an attempt to merge different lock types");
+        }
+
+        if (!isSameOwner(lock)) {
+            throw new RuntimeException("an attempt to merge lock of different owners");
+        }
+
+        Range newLockRange = lockRange.span(lock.lockRange);
+        return new NlmLock(owner, lockType, newLockRange);
+    }
+
+    public NlmLock splitLock(NlmLock lock) {
+
+        if (!lockRange.isConnected(lock.lockRange)) {
+            throw new RuntimeException("an attempt to merge non owerlapping leck regions");
+        }
+
+        if (lockType != lock.lockType) {
+            throw new RuntimeException("an attempt to merge different lock types");
+        }
+
+        if (!isSameOwner(lock)) {
+            throw new RuntimeException("an attempt to merge lock of different owners");
+        }
+
+
+        return new NlmLock(owner, lockType, lockRange);
     }
 
     public boolean isConflictingType(NlmLock other) {
@@ -134,8 +155,7 @@ public class NlmLock {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper("Lock")
-                .add("offset", offset)
-                .add("length", length)
+                .add("lock-range", lockRange)
                 .add("owner", owner)
                 .add("lock_type", nfs_lock_type4.toString(lockType))
                 .toString();

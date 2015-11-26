@@ -36,23 +36,12 @@ public class SimpleLm implements LockManager {
                 .filter(l-> l.getLockType() == lock.getLockType())
                 .collect(Collectors.toList());
 
-        if(toMerge.isEmpty()) {
-            locks.put(fh, lock);
-        } else {
-            // merge overlaping/continues locks
-            long lockBegin = lock.getOffset();
-            long lockEnd = lock.getLength() == nfs4_prot.NFS4_UINT64_MAX ? nfs4_prot.NFS4_UINT64_MAX : (lockBegin + lock.getLength());
-
-            for(NlmLock l: toMerge) {
-                lockBegin = Math.min(lockBegin, l.getOffset());
-                lockEnd = lockEnd == nfs4_prot.NFS4_UINT64_MAX  || l.getLength() == nfs4_prot.NFS4_UINT64_MAX ?
-                        nfs4_prot.NFS4_UINT64_MAX : Math.max(lockEnd, l.getOffset() + l.getLength() - 1);
-            }
-            NlmLock mergedLock = new NlmLock(lock.getOwner(), lock.getLockType(), lockBegin,
-                    lockEnd == nfs4_prot.NFS4_UINT64_MAX ? lockEnd : lockEnd - lockBegin);
-            currentLocks.removeAll(toMerge);
-            locks.put(fh, mergedLock);
+        NlmLock mergedLock = lock;
+        for (NlmLock l : toMerge) {
+            mergedLock = mergedLock.mergeLock(l);
         }
+        currentLocks.removeAll(toMerge);
+        locks.put(fh, mergedLock);
     }
 
     @Override
@@ -68,6 +57,7 @@ public class SimpleLm implements LockManager {
         List<NlmLock> toRemove = new ArrayList<>();
         List<NlmLock> toAdd = new ArrayList<>();
 
+        // TODO: is there in elegant solution with Range?
         currentLocks.stream()
                 .filter(l -> l.isSameOwner(lock))
                 .filter(l -> l.isOverlappingRange(lock))
