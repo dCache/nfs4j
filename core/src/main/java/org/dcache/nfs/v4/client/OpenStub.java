@@ -56,7 +56,7 @@ public class OpenStub {
         op.argop = nfs_opnum4.OP_OPEN;
         op.opopen = new OPEN4args();
 
-        op.opopen.seqid = new seqid4(new uint32_t(sequenceId));
+        op.opopen.seqid = new seqid4(sequenceId);
 
         state_owner4 owner = new state_owner4();
         owner.clientid = clientid;
@@ -108,7 +108,7 @@ public class OpenStub {
         op.argop = nfs_opnum4.OP_OPEN;
         op.opopen = new OPEN4args();
 
-        op.opopen.seqid = new seqid4(new uint32_t(sequenceId));
+        op.opopen.seqid = new seqid4(sequenceId);
 
         // if ((access & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) == 0){
         // access |= nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;

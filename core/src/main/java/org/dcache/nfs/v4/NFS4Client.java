@@ -322,11 +322,11 @@ public class NFS4Client {
         if (_clientSeq == null) {
             _clientSeq = openSeqid;
         } else {
-            int next = _clientSeq.value.value + 1;
-            if (next != openSeqid.value.value) {
+            int next = _clientSeq.value + 1;
+            if (next != openSeqid.value) {
                 throw new BadSeqidException();
             }
-            _clientSeq.value.value = next;
+            _clientSeq.value = next;
         }
     }
 

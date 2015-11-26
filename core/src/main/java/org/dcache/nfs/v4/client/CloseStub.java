@@ -32,7 +32,7 @@ public class CloseStub {
 
         CLOSE4args args = new CLOSE4args();
 
-        args.seqid = new seqid4(new uint32_t (0));
+        args.seqid = new seqid4(0);
         args.open_stateid = stateid;
 
 

@@ -411,7 +411,7 @@ public class CompoundBuilder {
     public CompoundBuilder withClose(stateid4 stateid) {
         CLOSE4args args = new CLOSE4args();
 
-        args.seqid = new seqid4(new uint32_t(0));
+        args.seqid = new seqid4(0);
         args.open_stateid = stateid;
 
         nfs_argop4 op = new nfs_argop4();
@@ -427,7 +427,7 @@ public class CompoundBuilder {
         op.argop = nfs_opnum4.OP_OPEN;
         op.opopen = new OPEN4args();
 
-        op.opopen.seqid = new seqid4(new uint32_t(sequenceId));
+        op.opopen.seqid = new seqid4(sequenceId);
 
         state_owner4 owner = new state_owner4();
         owner.clientid = clientid;
@@ -501,7 +501,7 @@ public class CompoundBuilder {
         op.argop = nfs_opnum4.OP_OPEN;
         op.opopen = new OPEN4args();
 
-        op.opopen.seqid = new seqid4(new uint32_t(sequenceId));
+        op.opopen.seqid = new seqid4(sequenceId);
 
         // if ((access & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) == 0){
         // access |= nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
