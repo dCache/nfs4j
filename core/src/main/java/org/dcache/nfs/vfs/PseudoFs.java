@@ -347,7 +347,7 @@ public class PseudoFs extends ForwardingFileSystem {
             }
 
             if(export.isAllRoot()) {
-                _log.info("permission check to inode {} skipped due to all_root option for client {}",
+                _log.debug("permission check to inode {} skipped due to all_root option for client {}",
                         inode, _inetAddress);
                 return effectiveSubject;
             }
