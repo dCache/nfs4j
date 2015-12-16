@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,12 +20,18 @@
 package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
 
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
 public class nfstime4 implements XdrAble {
+
     /**
      * max allowed value for nseconds
      * @see  https://tools.ietf.org/html/rfc5661#section-3.3.1
@@ -73,5 +79,22 @@ public class nfstime4 implements XdrAble {
                 + TimeUnit.MILLISECONDS.convert(nseconds, TimeUnit.NANOSECONDS);
     }
 
+
+    /**
+     * Returns {@Link String} form of this timestamp using the specified formatter.
+     *
+     * @param formatter the formatter to use
+     * @return the formatted string
+     */
+    public String toString(DateTimeFormatter formatter) {
+        return ZonedDateTime
+                .ofInstant(Instant.ofEpochSecond(seconds, nseconds), ZoneId.systemDefault())
+                .format(formatter);
+    }
+
+    @Override
+    public String toString() {
+        return toString(ISO_OFFSET_DATE_TIME);
+    }
 }
 // End of nfstime4.java
