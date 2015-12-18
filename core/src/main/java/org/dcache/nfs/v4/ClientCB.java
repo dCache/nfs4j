@@ -40,6 +40,7 @@ import org.dcache.nfs.v4.xdr.layoutrecall4;
 import org.dcache.nfs.v4.xdr.referring_call_list4;
 import org.dcache.nfs.v4.xdr.nfs_cb_argop4;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.dcache.xdr.*;
 
@@ -111,7 +112,7 @@ class ClientCB {
     }
 
     public void cbPing() throws OncRpcException, IOException, TimeoutException {
-        _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 1000);
+        _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 1, TimeUnit.SECONDS);
     }
 
     private XdrAble generateCompound(String tag, nfs_cb_argop4...cbOperations) {
