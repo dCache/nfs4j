@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.utils;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,7 +59,7 @@ import org.slf4j.LoggerFactory;
 public class Cache<K, V> implements Runnable {
 
     private static final Logger _log = LoggerFactory.getLogger(Cache.class);
-    private final TimeSource _timeSource;
+    private final Clock _timeSource;
 
     /**
      * {@link TimerTask} to periodically check and remove expired entries.
@@ -173,7 +174,7 @@ public class Cache<K, V> implements Runnable {
      */
     public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
             CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit) {
-        this(name, size, entryLifeTime, entryIdleTime, eventListener, timeValue, timeUnit, TimeSource.systemTimeSource());
+        this(name, size, entryLifeTime, entryIdleTime, eventListener, timeValue, timeUnit, Clock.systemDefaultZone());
     }
 
     /**
@@ -186,11 +187,11 @@ public class Cache<K, V> implements Runnable {
      * @param eventListener {@link CacheEventListener}
      * @param timeValue how often cleaner thread have to check for invalidated entries.
      * @param timeUnit a {@link TimeUnit} determining how to interpret the
-     * @param timeSource {@link TimeSource} to use
+     * @param clock {@link Clock} to use
      * <code>timeValue</code> parameter.
      */
     public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
-            CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit, TimeSource timeSource) {
+            CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit, Clock clock) {
         _name = name;
         _size = size;
         _defaultEntryMaxLifeTime = entryLifeTime;
@@ -205,7 +206,7 @@ public class Cache<K, V> implements Runnable {
                         .build()
         );
         _cleanerScheduler.scheduleAtFixedRate(this, timeValue, timeValue, timeUnit);
-        _timeSource = timeSource;
+        _timeSource = clock;
     }
 
     /**
@@ -275,7 +276,7 @@ public class Cache<K, V> implements Runnable {
                 return null;
             }
 
-            long now = _timeSource.read();
+            long now = _timeSource.millis();
             valid = element.validAt(now);
             v = element.getObject();
 
@@ -314,7 +315,7 @@ public class Cache<K, V> implements Runnable {
         try {
             CacheElement<V> element = _storage.remove(k);
             if( element == null ) return null;
-            valid = element.validAt(_timeSource.read());
+            valid = element.validAt(_timeSource.millis());
             v = element.getObject();
         } finally {
             _accessLock.unlock();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.utils;
 
+import java.time.Clock;
 import java.util.Date;
 
 /**
@@ -52,11 +53,11 @@ public class CacheElement<V> {
      */
     private final V _inner;
 
-    private final TimeSource _timeSource;
+    private final Clock _clock;
 
-    CacheElement(V inner, TimeSource timeSource, long maxLifeTime, long idleTime) {
-        _timeSource = timeSource;
-        _creationTime = _timeSource.read();
+    CacheElement(V inner, Clock clock, long maxLifeTime, long idleTime) {
+        _clock = clock;
+        _creationTime = _clock.millis();
         _lastAccessTime = _creationTime;
         _inner = inner;
         _maxLifeTime = maxLifeTime;
@@ -70,7 +71,7 @@ public class CacheElement<V> {
      * @return internal object.
      */
     V getObject() {
-        _lastAccessTime = _timeSource.read();
+        _lastAccessTime = _clock.millis();
         return _inner;
     }
 
@@ -87,7 +88,7 @@ public class CacheElement<V> {
 
     @Override
     public String toString() {
-        long now = _timeSource.read();
+        long now = _clock.millis();
         return String.format("Element: [%s], created: %s, last access: %s, life time %d, idle: %d, max idle: %d",
             _inner.toString(), new Date( _creationTime), new Date(_lastAccessTime),
             _maxLifeTime, now - _lastAccessTime, _idleTime);

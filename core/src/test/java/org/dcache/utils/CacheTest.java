@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,9 @@
  */
 package org.dcache.utils;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
@@ -29,16 +32,16 @@ import static org.junit.Assert.*;
 public class CacheTest {
 
     private Cache<String, String> _cache;
-    private ManualTimeSource _timeSource;
+    private ManualClock _clock;
 
     @Before
     public void setUp() {
-        _timeSource = new ManualTimeSource();
+        _clock = new ManualClock();
         _cache = new Cache<>("test cache", 10, TimeUnit.SECONDS.toMillis(5),
                 TimeUnit.SECONDS.toMillis(5),
                 new NopCacheEventListener(),
                 30, TimeUnit.SECONDS,
-                _timeSource);
+                _clock);
     }
 
     @Test
@@ -54,7 +57,7 @@ public class CacheTest {
     public void testGetAfterTimeout() throws Exception {
 
         _cache.put("key1", "value1");
-        _timeSource.advance(6, TimeUnit.SECONDS);
+        _clock.advance(6, TimeUnit.SECONDS);
 
         String value = _cache.get("key1");
         assertNull("Object not expired", value);
@@ -85,14 +88,14 @@ public class CacheTest {
     @Test
     public void testRemoveExpired() throws Exception {
         _cache.put("key1", "value1");
-        _timeSource.advance(6, TimeUnit.SECONDS);
+        _clock.advance(6, TimeUnit.SECONDS);
         assertNull(_cache.remove("key1"));
     }
 
     @Test
     public void testExpiredByTime() throws Exception {
         _cache.put("key1", "value1");
-        _timeSource.advance(_cache.getEntryIdleTime() + 1000, TimeUnit.MILLISECONDS);
+        _clock.advance(_cache.getEntryIdleTime() + 1000, TimeUnit.MILLISECONDS);
         String value = _cache.get("key1");
         assertNull("Object not expired", value);
     }
@@ -103,17 +106,27 @@ public class CacheTest {
           assertNotNull("Object expired", _cache.get("key1"));
     }
 
-    private static class ManualTimeSource extends TimeSource {
+    private static class ManualClock extends Clock {
 
         private final AtomicLong currentTime = new AtomicLong();
 
         @Override
-        public long read() {
-            return currentTime.get();
+        public Instant instant() {
+            return Instant.ofEpochSecond(currentTime.get());
         }
 
         void advance(long time, TimeUnit unit) {
             currentTime.addAndGet(unit.toMillis(time));
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return Clock.systemDefaultZone().getZone();
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            throw new UnsupportedClassVersionError();
         }
     }
 }
