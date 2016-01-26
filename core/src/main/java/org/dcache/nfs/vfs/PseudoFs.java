@@ -143,6 +143,10 @@ public class PseudoFs extends ForwardingFileSystem {
     public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
 
+        if (subject != null && Subjects.isRoot(effectiveSubject)) {
+            effectiveSubject = subject;
+        }
+
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
             effectiveSubject = Subjects.of(s.getUid(), s.getGid());
@@ -208,6 +212,10 @@ public class PseudoFs extends ForwardingFileSystem {
     @Override
     public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
+        if (subject != null && Subjects.isRoot(effectiveSubject)) {
+            effectiveSubject = subject;
+        }
+
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
             effectiveSubject = Subjects.of(s.getUid(), s.getGid());
