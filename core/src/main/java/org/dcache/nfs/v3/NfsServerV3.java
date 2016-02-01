@@ -20,6 +20,7 @@
 package org.dcache.nfs.v3;
 
 import com.google.common.base.Throwables;
+import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.InodeCacheEntry;
 import org.dcache.nfs.nfsstat;
@@ -157,6 +158,8 @@ import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.utils.GuavaCacheMXBean;
 import org.dcache.utils.GuavaCacheMXBeanImpl;
+
+import javax.security.auth.Subject;
 
 public class NfsServerV3 extends nfs3_protServerStub {
 
@@ -313,10 +316,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
             parentStat = fs.getattr(parent);
 
             int fmode = 0644 | Stat.S_IFREG;
+            Subject actualSubject = null;
             if (newAttr != null) {
                 fmode = newAttr.mode.mode.value.value | Stat.S_IFREG;
+                if( newAttr.uid.set_it || newAttr.gid.set_it) {
+                    actualSubject = Subjects.of(newAttr.uid.uid.value.value, newAttr.gid.gid.value.value);
+                }
             }
-            inode = fs.create(parent, Stat.Type.REGULAR, path, call$.getCredential().getSubject(), fmode);
+            inode = fs.create(parent, Stat.Type.REGULAR, path, actualSubject, fmode);
             Stat inodeStat = fs.getattr(inode);
 
 
@@ -609,11 +616,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat parentStat = fs.getattr(parent);
 
             int mode = 0777;
+            Subject actualSubject = null;
             if (attr != null) {
                 mode = attr.mode.mode.value.value | Stat.S_IFDIR;
+                if( attr.uid.set_it || attr.gid.set_it) {
+                    actualSubject = Subjects.of(attr.uid.uid.value.value, attr.gid.gid.value.value);
+                }
             }
 
-            Inode inode = fs.mkdir(parent, name, call$.getCredential().getSubject(), mode);
+            Inode inode = fs.mkdir(parent, name, actualSubject, mode);
 
             res.resok = new MKDIR3resok();
             res.resok.obj = new post_op_fh3();
