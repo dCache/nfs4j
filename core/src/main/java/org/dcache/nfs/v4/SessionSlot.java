@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -36,13 +36,9 @@ public class SessionSlot {
 
     private int _sequence;
     private List<nfs_resop4> _reply;
-    SessionSlot(int sequence) {
-        _sequence = sequence;
-
-    }
 
     public SessionSlot() {
-        this(0);
+       _sequence = 0;
     }
 
     /**
