@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -54,6 +54,27 @@ public class FlexFileLayoutDriver implements LayoutDriver {
 
     private final static utf8str_mixed NO_PRINCIPAL = new utf8str_mixed("");
 
+    /**
+     * The {@code nfsVersion} and {@code nfsMinorVersion} represent the
+     * NFS protocol to be used to access the storage device.
+     */
+    private final int nfsVersion;
+    private final int nfsMinorVersion;
+
+    /**
+     * Greate new FlexFile layout driver with. The @code nfsVersion} and
+     * {@code nfsMinorVersion} represent the protocol to be used to access the
+     * storage device.
+     *
+     * @param nfsVersion nfs version to use
+     * @param nfsMinorVersion nfs minor version to use.
+     */
+    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion) {
+        this.nfsVersion = nfsVersion;
+        this.nfsMinorVersion = nfsMinorVersion;
+    }
+
+
     @Override
     public int getLayoutType() {
         return layouttype4.LAYOUT4_FLEX_FILES;
@@ -65,8 +86,8 @@ public class FlexFileLayoutDriver implements LayoutDriver {
 
         flexfile_type.ffda_versions = new ff_device_versions4[1];
         flexfile_type.ffda_versions[0] = new ff_device_versions4();
-        flexfile_type.ffda_versions[0].ffdv_version = new uint32_t(4);
-        flexfile_type.ffda_versions[0].ffdv_minorversion = new uint32_t(0);
+        flexfile_type.ffda_versions[0].ffdv_version = new uint32_t(nfsVersion);
+        flexfile_type.ffda_versions[0].ffdv_minorversion = new uint32_t(nfsMinorVersion);
         flexfile_type.ffda_versions[0].ffdv_rsize = new uint32_t(64 * 1024);
         flexfile_type.ffda_versions[0].ffdv_wsize = new uint32_t(64 * 1024);
         flexfile_type.ffda_versions[0].ffdv_tightly_coupled = true;
