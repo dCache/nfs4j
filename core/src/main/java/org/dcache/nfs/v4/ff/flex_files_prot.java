@@ -12,6 +12,8 @@ package org.dcache.nfs.v4.ff;
  */
 public interface flex_files_prot {
 
-    public static final int FF_FLAGS_NO_LAYOUTCOMMIT = 1;
+    public static final int FF_FLAGS_NO_LAYOUTCOMMIT  = 0x00000001;
+    public static final int FF_FLAGS_NO_IO_THRU_MDS   = 0x00000002;
+
 }
 // End of flex_files_prot.java

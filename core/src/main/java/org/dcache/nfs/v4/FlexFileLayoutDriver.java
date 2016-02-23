@@ -129,7 +129,9 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         layout.ffl_stripe_unit = new length4(0);
         layout.ffl_mirrors = new ff_mirror4[1];
         layout.ffl_mirrors[0] = createNewMirror(deviceid, 0, stateid, fh);
-        layout.ffl_flags4 = new uint32_t(flex_files_prot.FF_FLAGS_NO_LAYOUTCOMMIT);
+        layout.ffl_flags4 = new uint32_t(flex_files_prot.FF_FLAGS_NO_LAYOUTCOMMIT
+                | flex_files_prot.FF_FLAGS_NO_IO_THRU_MDS);
+        layout.ffl_stats_collect_hint = new uint32_t(0);
 
         XdrBuffer xdr = new XdrBuffer(512);
         xdr.beginEncoding();

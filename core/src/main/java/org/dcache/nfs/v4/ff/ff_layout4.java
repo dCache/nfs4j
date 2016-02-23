@@ -16,6 +16,7 @@ public class ff_layout4 implements XdrAble, java.io.Serializable {
     public length4 ffl_stripe_unit;
     public ff_mirror4 [] ffl_mirrors;
     public uint32_t ffl_flags4;
+    public uint32_t ffl_stats_collect_hint;
 
     private static final long serialVersionUID = 9097043134498097746L;
 
@@ -32,12 +33,15 @@ public class ff_layout4 implements XdrAble, java.io.Serializable {
         ffl_stripe_unit.xdrEncode(xdr);
         { int $size = ffl_mirrors.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ffl_mirrors[$idx].xdrEncode(xdr); } }
         ffl_flags4.xdrEncode(xdr);
+        ffl_stats_collect_hint.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         ffl_stripe_unit = new length4(xdr);
         { int $size = xdr.xdrDecodeInt(); ffl_mirrors = new ff_mirror4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ffl_mirrors[$idx] = new ff_mirror4(xdr); } }
+        ffl_flags4 = new uint32_t(xdr);
+        ffl_stats_collect_hint = new uint32_t(xdr);
     }
 
 }
