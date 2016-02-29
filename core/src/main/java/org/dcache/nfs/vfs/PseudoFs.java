@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -192,6 +192,7 @@ public class PseudoFs extends ForwardingFileSystem {
 
     @Override
     public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
+        checkAccess(link, ACE4_WRITE_ATTRIBUTES);
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
