@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -115,26 +115,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_back_chan_attrs.ca_maxoperations.value));
         _log.debug("adding new session [{}]", session);
         context.getStateHandler().addSession(session);
-
-        /*
-         * if client supports call backs on the same channel make use of it.
-         */
-        if ((_args.opcreate_session.csa_flags.value & nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN) != 0) {
-
-            ClientCB cb = new ClientCB(
-                    context.getRpcCall().getTransport().getPeerTransport(),
-                    _args.opcreate_session.csa_cb_program.value,
-                    session.id(),
-                    _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value,
-                    _args.opcreate_session.csa_sec_parms);
-            try {
-                cb.cbPing();
-                client.setCB(cb);
-                sessionFlags |= nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN;
-            } catch (IOException e) {
-                _log.info("Can't ping client over back channel: {}", e.getMessage() );
-            }
-        }
 
         client.refreshLeaseTime();
         //client.updateLeaseTime(NFSv4Defaults.NFS4_LEASE_TIME);
