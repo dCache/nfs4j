@@ -52,8 +52,6 @@ import org.glassfish.grizzly.Buffer;
  */
 public class FlexFileLayoutDriver implements LayoutDriver {
 
-    private final static utf8str_mixed NO_PRINCIPAL = new utf8str_mixed("");
-
     /**
      * The {@code nfsVersion} and {@code nfsMinorVersion} represent the
      * NFS protocol to be used to access the storage device.
@@ -62,16 +60,32 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final int nfsMinorVersion;
 
     /**
-     * Greate new FlexFile layout driver with. The @code nfsVersion} and
+     * User principal, which must be used by client when RPC packet sent to data server.
+     */
+    private final utf8str_mixed userPrincipal;
+
+    /**
+     * Group principal, which must be used by client when RPC packet sent to data
+     * server.
+     */
+    private final utf8str_mixed groupPrincipal;
+
+    /**
+     * Create new FlexFile layout driver with. The @code nfsVersion} and
      * {@code nfsMinorVersion} represent the protocol to be used to access the
-     * storage device.
+     * storage device. If client uses AUTH_SYS, then provided {@code userPrincipal}
+     * and {@code groupPrincipal} must be used for client - data server communication.
      *
      * @param nfsVersion nfs version to use
      * @param nfsMinorVersion nfs minor version to use.
+     * @param userPrincipal user principal to be used by client
+     * @param groupPrincipal group principal to be used by client
      */
-    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion) {
+    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal) {
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
+        this.userPrincipal = userPrincipal;
+        this.groupPrincipal = groupPrincipal;
     }
 
 
@@ -153,19 +167,19 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         return content;
     }
 
-    private static ff_data_server4 createDataserver(deviceid4 deviceid,
+    private ff_data_server4 createDataserver(deviceid4 deviceid,
             int efficiency, stateid4 stateid, nfs_fh4 fileHandle) {
         ff_data_server4 ds = new ff_data_server4();
         ds.ffds_deviceid = deviceid;
         ds.ffds_efficiency = new uint32_t(efficiency);
         ds.ffds_stateid = stateid;
         ds.ffds_fh_vers = new nfs_fh4[]{fileHandle};
-        ds.ffds_user = new fattr4_owner(NO_PRINCIPAL);
-        ds.ffds_group = new fattr4_owner_group(NO_PRINCIPAL);
+        ds.ffds_user = new fattr4_owner(userPrincipal);
+        ds.ffds_group = new fattr4_owner_group(groupPrincipal);
         return ds;
     }
 
-    private static ff_mirror4 createNewMirror(deviceid4 deviceid, int efficiency, stateid4 stateid, nfs_fh4 fileHandle) {
+    private ff_mirror4 createNewMirror(deviceid4 deviceid, int efficiency, stateid4 stateid, nfs_fh4 fileHandle) {
         ff_mirror4 mirror = new ff_mirror4();
         mirror.ffm_data_servers = new ff_data_server4[1];
         mirror.ffm_data_servers[0] = createDataserver(deviceid, efficiency, stateid, fileHandle);
