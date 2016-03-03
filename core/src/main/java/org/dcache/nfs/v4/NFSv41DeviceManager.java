@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -50,14 +50,15 @@ public interface NFSv41DeviceManager {
     /**
      * Get storage device address information for the specified device {@link deviceid4}.
      *
-     * @param client
+     * @param context
      * @param deviceId
+     * @param layoutType
      * @return device address
      */
-    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) throws IOException;
+    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId, int layoutType) throws IOException;
 
     /**
-     * Get list of all device IDs used bu server.
+     * Get list of all device IDs used by server.
      *
      * @param context of the nfs request
      * @return list of devices

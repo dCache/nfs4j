@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -139,7 +139,7 @@ public class DeviceManager implements NFSv41DeviceManager {
      * @see org.dcache.nfsv4.NFSv41DeviceManager#getDeviceInfo(CompoundContext context, deviceid4 deviceId)
      */
     @Override
-    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId) throws ChimeraNFSException {
+    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId, int layoutType) throws ChimeraNFSException {
 
         _log.debug("lookup for device: {}", deviceId );
         /* in case of MDS access we return the same interface which client already connected to */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -59,7 +59,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         res.gdir_resok4 = new GETDEVICEINFO4resok();
 
-        device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId);
+        device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId, _args.opgetdeviceinfo.gdia_layout_type);
 
         if (deviceInfo == null) {
             throw new NoEntException("invalid deviceInfo id [" + deviceId +"]");
