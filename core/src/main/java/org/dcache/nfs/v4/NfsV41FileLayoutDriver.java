@@ -58,17 +58,16 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
 
         nfsv4_1_file_layout_ds_addr4 file_type = new nfsv4_1_file_layout_ds_addr4();
 
-        file_type.nflda_multipath_ds_list = new multipath_list4[deviceAddress.length];
+        file_type.nflda_multipath_ds_list = new multipath_list4[1];
+        file_type.nflda_multipath_ds_list[0] = new multipath_list4();
+        file_type.nflda_multipath_ds_list[0].value = new netaddr4[deviceAddress.length];
 
         for (int i = 0; i < deviceAddress.length; i++) {
-
-            file_type.nflda_multipath_ds_list[i] = new multipath_list4();
-            file_type.nflda_multipath_ds_list[i].value = new netaddr4[1];
-
-            file_type.nflda_multipath_ds_list[i].value[0] = new netaddr4(deviceAddress[i]);
+            file_type.nflda_multipath_ds_list[0].value[i] = new netaddr4(deviceAddress[i]);
         }
 
-        file_type.nflda_stripe_indices = _stripingPattern.getPattern(deviceAddress);
+        file_type.nflda_stripe_indices = new uint32_t[1];
+        file_type.nflda_stripe_indices[0] = new uint32_t(0);
 
         XdrBuffer xdr = new XdrBuffer(128);
         try {
