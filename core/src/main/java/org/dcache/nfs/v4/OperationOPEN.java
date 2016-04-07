@@ -74,16 +74,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-            Long clientid = _args.opopen.owner.clientid.value;
-            client = context.getStateHandler().getClientByID(clientid);
-
+            client = context.getStateHandler().getClientByID(_args.opopen.owner.clientid);
             if (client == null || !client.isConfirmed()) {
                 throw new StaleClientidException("bad client id.");
             }
 
             client.validateSequence(_args.opopen.seqid);
             client.updateLeaseTime();
-            _log.debug("open request form {}", _args.opopen.owner);
+            _log.debug("open request form {} ", _args.opopen.owner);
         }
 
         res.resok4 = new OPEN4resok();
@@ -254,7 +252,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     | nfs4_prot.OPEN4_RESULT_CONFIRM);
         }
 
-        NFS4State nfs4state = client.createState();
+        NFS4State nfs4state = context.getMinorversion() == 0 ?
+                client.createState(_args.opopen.owner) : client.createState(client.asStateOwner());
         context.currentStateid(nfs4state.stateid());
         res.resok4.stateid = nfs4state.stateid();
 

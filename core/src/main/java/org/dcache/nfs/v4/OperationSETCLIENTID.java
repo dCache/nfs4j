@@ -22,7 +22,6 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETCLIENTID4resok;
 import org.dcache.nfs.v4.xdr.SETCLIENTID4res;
@@ -71,7 +70,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
         }
 
         res.resok4 = new SETCLIENTID4resok();
-        res.resok4.clientid = new clientid4(client.getId());
+        res.resok4.clientid = client.getId();
         res.resok4.setclientid_confirm = client.verifier();
         res.status = nfsstat.NFS_OK;
     }

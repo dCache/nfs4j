@@ -24,11 +24,14 @@ import java.net.InetSocketAddress;
 import java.util.Random;
 import javax.security.auth.Subject;
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.v4.nlm.LockManager;
+import org.dcache.nfs.v4.nlm.SimpleLm;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.*;
 
 public class CompoundContextBuilder {
 
+    private final LockManager lm = new SimpleLm();
     private final XdrTransport transport = new XdrTransport() {
 
         private final Random rnd = new Random();
@@ -135,6 +138,7 @@ public class CompoundContextBuilder {
                 minorversion,
                 fs,
                 stateHandler,
+                lm,
                 deviceManager,
                 call,
                 exportFile,

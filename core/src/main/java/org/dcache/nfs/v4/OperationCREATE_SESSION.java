@@ -55,7 +55,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
         final CREATE_SESSION4res res = result.opcreate_session;
 
-        Long clientId = _args.opcreate_session.csa_clientid.value;
         int sessionFlags = 0;
 
         /*
@@ -72,7 +71,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
             throw new InvalException("bad ceate_session flag");
         }
 
-        NFS4Client client = context.getStateHandler().getClientByID(clientId);
+        NFS4Client client = context.getStateHandler().getClientByID(_args.opcreate_session.csa_clientid);
 
         /*
          * Phase 1:

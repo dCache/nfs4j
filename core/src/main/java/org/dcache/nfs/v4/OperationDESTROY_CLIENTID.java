@@ -38,10 +38,8 @@ public class OperationDESTROY_CLIENTID extends AbstractNFSv4Operation {
 
         final DESTROY_CLIENTID4res res = result.opdestroy_clientid;
 
-        Long clientId = _args.opdestroy_clientid.dca_clientid.value;
-
         NFSv4StateHandler stateHandler = context.getStateHandler();
-        NFS4Client client = stateHandler.getClientByID(clientId);
+        NFS4Client client = stateHandler.getClientByID(_args.opdestroy_clientid.dca_clientid);
         if (client.hasSessions()) {
             throw new ClientidBusyException("client holds valid sessions");
         }

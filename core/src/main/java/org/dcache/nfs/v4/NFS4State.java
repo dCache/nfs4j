@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class NFS4State {
@@ -42,18 +43,20 @@ public class NFS4State {
      */
 
     private final stateid4 _stateid;
+    private final state_owner4 _owner;
     private boolean _isConfimed = false;
     private boolean _disposed = false;
 
     private final List<StateDisposeListener> _disposeListeners;
 
-    public NFS4State(stateid4 stateid) {
+    public NFS4State(state_owner4 owner, stateid4 stateid) {
         _stateid = stateid;
         _disposeListeners = new ArrayList<>();
+        _owner = owner;
     }
 
-    public NFS4State(byte[] other, int seqid) {
-        this(new stateid4(other, seqid));
+    public NFS4State(state_owner4 owner, byte[] other, int seqid) {
+        this(owner, new stateid4(other, seqid));
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
@@ -68,6 +71,10 @@ public class NFS4State {
 
     public boolean isConfimed() {
     	return _isConfimed;
+    }
+
+    public state_owner4 getStateOwner() {
+        return _owner;
     }
 
     /**

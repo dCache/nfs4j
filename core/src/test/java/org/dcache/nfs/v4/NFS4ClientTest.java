@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
@@ -33,6 +34,8 @@ import org.junit.Test;
 import org.dcache.nfs.vfs.Inode;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
+import org.dcache.nfs.v4.xdr.clientid4;
+import org.dcache.nfs.v4.xdr.state_owner4;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -41,11 +44,13 @@ public class NFS4ClientTest {
 
     private NFSv4StateHandler stateHandler;
     private NFS4Client nfsClient;
+    private state_owner4 owner;
 
     @Before
     public void setUp() throws UnknownHostException, ChimeraNFSException {
         stateHandler = new NFSv4StateHandler();
         nfsClient = createClient(stateHandler);
+        owner = nfsClient.asStateOwner();
     }
 
     @Test
@@ -54,7 +59,7 @@ public class NFS4ClientTest {
         nfs_resop4 result;
 
         NFSv41Session session = nfsClient.createSession(1, 2, 1, 8, 8);
-        NFS4State state = nfsClient.createState();
+        NFS4State state = nfsClient.createState(owner);
 
         nfs_argop4 close_args = CloseStub.generateRequest(state.stateid());
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
@@ -78,7 +83,7 @@ public class NFS4ClientTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        NFS4State state = nfsClient.createState();
+        NFS4State state = nfsClient.createState(owner);
 
         nfs_argop4 close_args = CloseStub.generateRequest(state.stateid());
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
@@ -102,7 +107,10 @@ public class NFS4ClientTest {
 
     @Test
     public void testAttacheDetachState() throws ChimeraNFSException {
-        NFS4State state = new NFS4State(new byte[] {}, 0);
+        state_owner4 otherOwner = new state_owner4();
+        otherOwner.clientid = new clientid4(123);
+        otherOwner.owner = "someOtherOwner".getBytes(StandardCharsets.UTF_8);
+        NFS4State state = new NFS4State(otherOwner, new byte[] {}, 0);
 
         nfsClient.attachState(state);
         assertTrue(nfsClient.hasState());
@@ -113,7 +121,7 @@ public class NFS4ClientTest {
 
     @Test
     public void testCreateState() throws ChimeraNFSException {
-        NFS4State state = nfsClient.createState();
+        NFS4State state = nfsClient.createState(owner);
         assertTrue(nfsClient.hasState());
     }
 

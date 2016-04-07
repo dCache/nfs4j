@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ public class NFSv41Session {
         _slots = new SessionSlot[replyCacheSize];
         byte[] id  = new byte[nfs4_prot.NFS4_SESSIONID_SIZE];
 
-        Bytes.putLong(id, 0, client.getId());
+        Bytes.putLong(id, 0, client.getId().value);
         Bytes.putInt(id, 12, sequence);
         _session = new sessionid4(id);
 	_maxOps = maxOps;
