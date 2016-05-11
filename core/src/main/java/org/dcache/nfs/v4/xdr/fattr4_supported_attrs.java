@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,8 +22,6 @@ import org.dcache.xdr.*;
 import java.io.IOException;
 
 public class fattr4_supported_attrs extends bitmap4 {
-
-    public bitmap4 value;
 
     public fattr4_supported_attrs() {
     }
