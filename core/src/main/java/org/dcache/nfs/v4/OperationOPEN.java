@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -89,7 +89,6 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
         res.resok4 = new OPEN4resok();
         res.resok4.attrset = new bitmap4();
-        res.resok4.attrset.value = new int[]{0, 0};
         res.resok4.delegation = new open_delegation4();
         res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_NONE;
         res.resok4.cinfo = new change_info4();
@@ -130,7 +129,6 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                          */
                         int mode = 0600;
                         AttributeMap attributeMap;
-                        bitmap4 appliedAttribytes = bitmap4.of(0);
                         switch (_args.opopen.openhow.how.mode) {
                             case createmode4.UNCHECKED4:
                             case createmode4.GUARDED4:
@@ -149,12 +147,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
                         if (createMode.isPresent()) {
                             mode = createMode.get().value;
-                            appliedAttribytes.set(nfs4_prot.FATTR4_MODE);
+                            res.resok4.attrset.set(nfs4_prot.FATTR4_MODE);
                         }
 
                         Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
                         if (createSize.isPresent() && createSize.get().value == 0) {
-                            appliedAttribytes.set(nfs4_prot.FATTR4_SIZE);
+                            res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
                         }
 
                         _log.debug("Creating a new file: {}", name);
@@ -184,7 +182,6 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             throw new AccessException();
                         }
 
-                        OperationSETATTR.setAttributes(_args.opopen.openhow.how.createattrs, inode, context);
                     }
 
                 } else {
