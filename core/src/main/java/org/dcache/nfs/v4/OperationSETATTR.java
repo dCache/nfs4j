@@ -52,6 +52,8 @@ import org.dcache.xdr.XdrBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTR_MASK_V4_1;
+
 public class OperationSETATTR extends AbstractNFSv4Operation {
 
 
@@ -89,13 +91,9 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         Stat stat = new Stat();
         try {
             for (int i : attributes.attrmask) {
-                if (xdr2fattr(i, stat, inode, context, xdr)) {
-                    _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
-                    processedAttributes.set(i);
-                } else {
-                    _log.debug("   setAttributes : {} ({}) NOT SUPPORTED", i, OperationGETATTR.attrMask2String(i));
-                    throw new AttrNotSuppException("attribute " + OperationGETATTR.attrMask2String(i) + " not supported");
-                }
+                xdr2fattr(i, stat, inode, context, xdr);
+                _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
+                processedAttributes.set(i);
             }
         }catch (BadXdrOncRpcException e) {
             throw new BadXdrException(e.getMessage());
@@ -110,11 +108,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         return processedAttributes;
     }
 
-    static boolean xdr2fattr( int fattr , Stat stat, Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
-
-        boolean isApplied = false;
-
-        _log.debug("    FileAttribute: {}", fattr);
+    static void xdr2fattr(int fattr , Stat stat, Inode inode, CompoundContext context, XdrDecodingStream xdr) throws IOException, OncRpcException {
 
         switch(fattr) {
 
@@ -122,7 +116,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 uint64_t size = new uint64_t();
                 size.xdrDecode(xdr);
                 stat.setSize(size.value);
-                isApplied = true;
                 break;
             case nfs4_prot.FATTR4_ACL :
                 fattr4_acl acl = new fattr4_acl();
@@ -130,30 +123,12 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
                 context.getFs().setAcl(inode, acl.value);
                 stat.setMTime(System.currentTimeMillis());
-
-                isApplied = true;
-                break;
-            case nfs4_prot.FATTR4_ARCHIVE :
-                int32_t isArchive = new int32_t();
-                isArchive.xdrDecode(xdr);
-                isApplied = false;
-                break;
-            case nfs4_prot.FATTR4_HIDDEN :
-                int32_t isHidden = new int32_t();
-                isHidden.xdrDecode(xdr);
-                isApplied = false;
-                break;
-            case nfs4_prot.FATTR4_MIMETYPE :
-                utf8str_cs mimeType = new utf8str_cs();
-                mimeType.xdrDecode(xdr);
-                isApplied = false;
                 break;
             case nfs4_prot.FATTR4_MODE :
                 mode4 mode = new mode4();
                 mode.xdrDecode(xdr);
                 stat.setMode(mode.value);
                 context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), mode.value));
-                isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER :
                 // TODO: use princilat
@@ -161,7 +136,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 owner.xdrDecode(xdr);
                 String new_owner = owner.toString();
                 stat.setUid(context.getFs().getIdMapper().principalToUid(new_owner));
-                isApplied = true;
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
                 // TODO: use princilat
@@ -169,29 +143,17 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 owner_group.xdrDecode(xdr);
                 String new_group = owner_group.toString();
                 stat.setGid(context.getFs().getIdMapper().principalToGid(new_group));
-                isApplied = true;
-                break;
-            case nfs4_prot.FATTR4_SYSTEM :
-                int32_t isSystem = new int32_t();
-                isSystem.xdrDecode(xdr);
-                isApplied = false;
                 break;
             case nfs4_prot.FATTR4_TIME_ACCESS_SET :
                 settime4 atime = new settime4();
                 atime.xdrDecode(xdr);
                 // ignore for performance
-                isApplied = true;
-                break;
-            case nfs4_prot.FATTR4_TIME_BACKUP :
-                nfstime4 btime = new nfstime4();
-                btime.xdrDecode(xdr);
-                isApplied = false;
+
                 break;
             case nfs4_prot.FATTR4_TIME_CREATE :
                 nfstime4 ctime = new nfstime4();
                 ctime.xdrDecode(xdr);
                 stat.setCTime(ctime.toMillis());
-                isApplied = true;
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET :
                 settime4 setMtime = new settime4();
@@ -201,16 +163,14 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                     System.currentTimeMillis() : setMtime.time.toMillis();
 
                 stat.setMTime(realMtime);
-                isApplied = true;
                 break;
-            case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
-                throw new InvalException("setattr of read-only attributes");
+            default:
+                if (SUPPORTED_ATTR_MASK_V4_1.isSet(fattr)) {
+                    throw new InvalException("Read-only attribute: " + fattr);
+                } else {
+                    throw new AttrNotSuppException("Attribute not supported: " + fattr);
+                }
         }
-
-        if(!isApplied ) {
-            _log.info("Attribute not applied: {}", OperationGETATTR.attrMask2String(fattr) );
-        }
-        return isApplied;
     }
 
 }

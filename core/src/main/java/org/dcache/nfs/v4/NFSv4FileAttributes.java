@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.v4.xdr.bitmap4;
+
 
 /**
  * NFSv4 file attribute mask
@@ -176,4 +178,5 @@ public interface NFSv4FileAttributes {
         NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
     };
 
+    final static bitmap4 SUPPORTED_ATTR_MASK_V4_1 = new bitmap4(NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1);
 }
