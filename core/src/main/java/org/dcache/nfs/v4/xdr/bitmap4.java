@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
     public int[] value;
 
     public bitmap4() {
-        this(new int[0]);
+        this(new int[] {0, 0});
     }
 
     public bitmap4(int [] value) {
