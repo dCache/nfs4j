@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -43,8 +43,10 @@ import org.dcache.nfs.status.CompleteAlreadyException;
 import org.dcache.nfs.status.ExpiredException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SeqMisorderedException;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Bytes;
 
@@ -390,7 +392,9 @@ public class NFS4Client {
             throw new SeqMisorderedException("bad sequence id: " + _sessionSequence + " / " + sequence);
         }
 
-        NFSv41Session session = new NFSv41Session(this, _sessionSequence, cacheSize, cbCacheSize, maxOps, maxCbOps);
+        sessionid4 sessionid = new sessionid4(generateSessionId());
+        NFSv41Session session = new NFSv41Session(this, sessionid, cacheSize, cbCacheSize, maxOps, maxCbOps);
+
         _sessions.put(_sessionSequence, session);
         _sessionSequence++;
 
@@ -403,7 +407,8 @@ public class NFS4Client {
     }
 
     public void removeSession(NFSv41Session session) {
-        _sessions.remove(session.getSequence());
+        int sequenceId = Bytes.getInt(session.id().value, 12);
+        _sessions.remove(sequenceId);
     }
 
     /**
@@ -484,5 +489,17 @@ public class NFS4Client {
         Bytes.putLong(other, 0, _clientId);
         Bytes.putInt(other, 8, _stateIdCounter.incrementAndGet());
         return other;
+    }
+
+    /*
+     * unique session identifier. 16 bytes long.
+     *
+     * |0 - client id - 7|8 - reserved - 11 | 12 - sequence id - 15|
+     */
+    private byte[] generateSessionId() {
+        byte[] id = new byte[nfs4_prot.NFS4_SESSIONID_SIZE];
+        Bytes.putLong(id, 0, getId());
+        Bytes.putInt(id, 12, _sessionSequence);
+        return id;
     }
 }

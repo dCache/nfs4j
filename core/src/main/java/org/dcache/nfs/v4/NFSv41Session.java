@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.status.BadSlotException;
@@ -31,11 +30,6 @@ import org.dcache.utils.Bytes;
 
 public class NFSv41Session {
 
-    /**
-     * Unique session identifier. 16 bytes long.
-     *
-     * |0 - client id - 7|8 - reserved - 11 | 12 - sequence id - 15|
-     */
     private final sessionid4 _session;
     /**
      * Session reply slots.
@@ -46,19 +40,12 @@ public class NFSv41Session {
     private final int _maxCbOps;
 
     private final int _cbReplyCacheSize;
-    private final int _sequence;
-
     private final Set<SessionConnection> _boundConnections;
 
-    public NFSv41Session(NFS4Client client, int sequence, int replyCacheSize, int cbReplyCacheSize, int maxOps, int maxCbOps) {
+    public NFSv41Session(NFS4Client client, sessionid4 sessionid,  int replyCacheSize, int cbReplyCacheSize, int maxOps, int maxCbOps) {
         _client = client;
-        _sequence = sequence;
         _slots = new SessionSlot[replyCacheSize];
-        byte[] id  = new byte[nfs4_prot.NFS4_SESSIONID_SIZE];
-
-        Bytes.putLong(id, 0, client.getId());
-        Bytes.putInt(id, 12, sequence);
-        _session = new sessionid4(id);
+        _session = sessionid;
 	_maxOps = maxOps;
 	_maxCbOps = maxCbOps;
         _cbReplyCacheSize = cbReplyCacheSize;
@@ -122,10 +109,6 @@ public class NFSv41Session {
         }
 
         return _slots[slot];
-    }
-
-    public int getSequence() {
-        return _sequence;
     }
 
     /**
