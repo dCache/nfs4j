@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
-import org.dcache.nfs.v4.xdr.int32_t;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.bitmap4;
@@ -39,6 +38,7 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.AttrNotSuppException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.v4.acl.Acls;
 
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -94,7 +94,11 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             // will throw BAD_STATEID
             client.state(stateid);
 
-            // FIXME: we need to check that file was opened for write
+            // setting file size requires open for writing
+            int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, stateid);
+            if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
+                throw new OpenModeException("Invalid open mode");
+            }
         }
 
         res.status = nfsstat.NFS_OK;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -70,6 +70,8 @@ public class NFSv4StateHandler {
      * a system wide unique id of this state handler.
      */
     private final int _instanceId;
+
+    private final FileTracker _openFileTracker = new FileTracker();
 
     public NFSv4StateHandler() {
         this(NFSv4Defaults.NFS4_LEASE_TIME, 0);
@@ -182,6 +184,14 @@ public class NFSv4StateHandler {
         NFS4Client client = new NFS4Client(nextClientId(), minorVersion, clientAddress, localAddress, ownerID, verifier, principal, _leaseTime, callbackNeeded);
         addClient(client);
         return client;
+    }
+
+    /**
+     * Get open files tacker.
+     * @return open files tracker
+     */
+    public FileTracker getFileTracker() {
+        return _openFileTracker;
     }
 
     /**

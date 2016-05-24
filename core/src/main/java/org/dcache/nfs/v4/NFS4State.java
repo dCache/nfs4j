@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class NFS4State {
@@ -48,18 +49,20 @@ public class NFS4State {
      */
 
     private final stateid4 _stateid;
+    private final state_owner4 _owner;
     private boolean _isConfimed = false;
     private boolean _disposed = false;
 
     private final List<StateDisposeListener> _disposeListeners;
 
-    public NFS4State(stateid4 stateid) {
+    public NFS4State(state_owner4 owner, stateid4 stateid) {
+        _owner = owner;
         _stateid = stateid;
         _disposeListeners = new ArrayList<>();
     }
 
-    public NFS4State(byte[] other, int seqid) {
-        this(new stateid4(other, seqid));
+    public NFS4State(state_owner4 owner, byte[] other, int seqid) {
+        this(owner, new stateid4(other, seqid));
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
