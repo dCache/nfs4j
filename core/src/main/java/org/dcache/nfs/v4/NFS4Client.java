@@ -319,12 +319,21 @@ public class NFS4Client {
         return _sessionSequence;
     }
 
+    public NFS4State createState(state_owner4 owner, NFS4State openState) throws ChimeraNFSException {
+        NFS4State state = new NFS4State(openState, owner, new stateid4(generateNewState(), 0));
+        if (openState != null) {
+            openState.addDisposeListener(s -> state.tryDispose());
+        }
+        _clientStates.put(state.stateid(), state);
+        return state;
+    }
+
     public NFS4State createState(state_owner4 owner) throws ChimeraNFSException {
         if (_clientStates.size() >= MAX_OPEN_STATES) {
             throw new ResourceException("Too many states.");
         }
 
-        NFS4State state = new NFS4State(owner, generateNewState(), _openStateId);
+        NFS4State state = new NFS4State(owner, new stateid4(generateNewState(), _openStateId));
         _openStateId++;
         _clientStates.put(state.stateid(), state);
         return state;

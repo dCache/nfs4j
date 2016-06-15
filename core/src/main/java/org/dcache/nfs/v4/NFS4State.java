@@ -53,16 +53,23 @@ public class NFS4State {
     private boolean _isConfimed = false;
     private boolean _disposed = false;
 
+    /**
+     * A state (lock, layout)) can be derived from an open state.
+     * If null, then this is the original open state.
+     */ 
+    private final NFS4State _openState;
+
     private final List<StateDisposeListener> _disposeListeners;
 
     public NFS4State(state_owner4 owner, stateid4 stateid) {
+        this(null, owner, stateid);
+    }
+
+    public NFS4State(NFS4State openState, state_owner4 owner, stateid4 stateid) {
+        _openState = openState;
         _owner = owner;
         _stateid = stateid;
         _disposeListeners = new ArrayList<>();
-    }
-
-    public NFS4State(state_owner4 owner, byte[] other, int seqid) {
-        this(owner, new stateid4(other, seqid));
     }
 
     public void bumpSeqid() { ++ _stateid.seqid.value; }
@@ -97,6 +104,10 @@ public class NFS4State {
         } catch (RuntimeException e) {
             LOG.error("Bug detected notifying {}", listener, e);
         }
+    }
+
+    public NFS4State getOpenState() {
+        return _openState == null? this : _openState;
     }
 
     /**

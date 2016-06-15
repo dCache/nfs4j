@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,20 +20,23 @@
 package org.dcache.nfs.v4;
 
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.client.CloseStub;
+import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.state_owner4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.dcache.nfs.vfs.Inode;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
-import org.dcache.nfs.v4.xdr.state_owner4;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -105,7 +108,11 @@ public class NFS4ClientTest {
 
     @Test
     public void testAttacheDetachState() throws ChimeraNFSException {
-        NFS4State state = new NFS4State(owner, new byte[] {}, 0);
+
+        state_owner4 otherOwner = new state_owner4();
+        otherOwner.clientid = new clientid4(123);
+        otherOwner.owner = "someOtherOwner".getBytes(StandardCharsets.UTF_8);
+        NFS4State state = new NFS4State(otherOwner, new stateid4(new byte[] {}, 0));
 
         nfsClient.attachState(state);
         assertTrue(nfsClient.hasState());
