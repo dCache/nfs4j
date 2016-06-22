@@ -352,7 +352,7 @@ public class PseudoFs extends ForwardingFileSystem {
                 return effectiveSubject;
             }
 
-            if (export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
+            if (Subjects.isNobody(_subject) || export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
                 effectiveSubject = Subjects.of(export.getAnonUid(), export.getAnonGid());
             }
 
