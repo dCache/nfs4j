@@ -22,19 +22,21 @@ package org.dcache.nfs.v4;
 /**
  *  with great help of William A.(Andy) Adamson
  */
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.v4.xdr.stateid4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
@@ -42,6 +44,7 @@ import org.dcache.nfs.status.ExpiredException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SeqMisorderedException;
 import org.dcache.nfs.v4.xdr.seqid4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Bytes;
 
@@ -162,8 +165,6 @@ public class NFS4Client {
      */
     private final long _leaseTime;
 
-    private boolean _disposed;
-
     /**
      * A flag to indicate that the client already have
      * reclaimed associated states.
@@ -264,7 +265,7 @@ public class NFS4Client {
         long curentTime = System.currentTimeMillis();
         long delta = curentTime - _cl_time;
         if (delta > _leaseTime) {
-            _clientStates.clear();
+            drainStates();
             throw new ExpiredException("lease time expired: (" + delta +"): " + Bytes.toHexString(_ownerId) +
                     " (" + _clientId + ").");
         }
@@ -440,24 +441,22 @@ public class NFS4Client {
         _clientStates.remove(state.stateid());
     }
 
+    private void drainStates() {
+        Collection<NFS4State> states = new ArrayList<>(_clientStates.size());
+        Iterator<NFS4State> i = _clientStates.values().iterator();
+        while (i.hasNext()) {
+            states.add(i.next());
+            i.remove();
+        }
+        states.forEach(NFS4State::tryDispose);
+    }
+
     /**
      * Release resources used by this client if not released yet. Any subsequent
      * call will have no effect.
      */
     public final void tryDispose() {
-        if (!_disposed) {
-            dispose();
-            _disposed = true;
-        }
-    }
-
-    /**
-     * Release resources used by this client.
-     */
-    protected void dispose() {
-        _clientStates.values().forEach((state) -> {
-            state.tryDispose();
-        });
+        drainStates();
     }
 
     public synchronized void reclaimComplete() throws ChimeraNFSException {
