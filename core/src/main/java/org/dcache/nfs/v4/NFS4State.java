@@ -19,11 +19,17 @@
  */
 package org.dcache.nfs.v4;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class NFS4State {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NFS4State.class);
 
     /*
         struct stateid4 {
@@ -77,8 +83,16 @@ public class NFS4State {
     synchronized public final void tryDispose() {
         if (!_disposed) {
             dispose();
-            _disposeListeners.forEach(l -> l.notifyDisposed(this));
+            _disposeListeners.forEach(this::tryNotifyDisposal);
             _disposed = true;
+        }
+    }
+
+    private void tryNotifyDisposal(StateDisposeListener listener) {
+        try {
+            listener.notifyDisposed(this);
+        } catch (RuntimeException e) {
+            LOG.error("Bug detected notifying {}", listener, e);
         }
     }
 
