@@ -19,26 +19,29 @@
  */
 package org.dcache.nfs.v4;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetSocketAddress;
 import java.security.Principal;
-import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.ChimeraNFSException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.sessionid4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.utils.Cache;
 import org.dcache.utils.Bytes;
+import org.dcache.utils.Cache;
 import org.dcache.utils.NopCacheEventListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -222,12 +225,25 @@ public class NFSv4StateHandler {
 	return true;
     }
 
+    private synchronized void drainClients() {
+        Iterator<NFS4Client> i = _clientsByServerId.values().iterator();
+        while (i.hasNext()) {
+            NFS4Client client = i.next();
+            client.sessions().stream()
+                    .map(NFSv41Session::id)
+                    .forEach(_sessionById::remove);
+            client.tryDispose();
+            i.remove();
+        }
+    }
+
     /**
      * Shutdown session lease time watchdog thread.
      */
     public synchronized void shutdown() {
         checkState(_running, "NFS state handler not running");
         _running = false;
+        drainClients();
         _sessionById.shutdown();
     }
 
