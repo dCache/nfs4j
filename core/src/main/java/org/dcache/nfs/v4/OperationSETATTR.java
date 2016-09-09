@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,10 +39,10 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.AttrNotSuppException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.acl.Acls;
 
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -58,6 +58,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSETATTR.class);
+    private static final bitmap4 EMPTY_BITMASK = new bitmap4();
 
     public OperationSETATTR(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_SETATTR);
@@ -68,15 +69,36 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         final SETATTR4res res = result.opsetattr;
 
-        try {
+        /*
+         * on either success or failure of the operation, the server will return
+         * the attrsset bitmask to represent what (if any) attributes were
+         * successfully set.
+         *
+         * Initialize with an empty bitmask, which will be replaces on success.
+         */
+        res.attrsset = EMPTY_BITMASK;
 
-            res.status = nfsstat.NFS_OK;
-            res.attrsset = setAttributes(_args.opsetattr.obj_attributes, context.currentInode(), context);
+        Inode inode = context.currentInode();
 
-        } catch (ChimeraNFSException e) {
-            res.attrsset = new bitmap4(new int[] {0, 0});
-            throw e;
+        // Require a valid open state id before we can set file size
+        if (_args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_SIZE)) {
+
+            NFS4Client client;
+            stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opsetattr.stateid);
+            if (context.getMinorversion() > 0) {
+                client = context.getSession().getClient();
+            } else {
+                client = context.getStateHandler().getClientIdByStateId(stateid);
+            }
+
+            // will throw BAD_STATEID
+            client.state(stateid);
+
+            // FIXME: we need to check that file was opened for write
         }
+
+        res.status = nfsstat.NFS_OK;
+        res.attrsset = setAttributes(_args.opsetattr.obj_attributes, inode, context);
     }
 
     static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException, OncRpcException {
@@ -87,7 +109,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         /*
          * bitmap we send back. can't be uninitialized.
          */
-        bitmap4 processedAttributes = new bitmap4(new int[0]);
+        bitmap4 processedAttributes = new bitmap4();
         Stat stat = new Stat();
         try {
             for (int i : attributes.attrmask) {
