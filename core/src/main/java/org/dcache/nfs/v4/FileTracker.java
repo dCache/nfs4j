@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.ShareDeniedException;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
@@ -140,6 +141,49 @@ public class FileTracker {
             opens.add(openState);
             state.addDisposeListener(s -> removeOpen(inode, stateid));
             return stateid;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Reduce access on open file.
+     *
+     * @param client nfs client performing the open operation.
+     * @param stateid associated with the open.
+     * @param inode of opened file.
+     * @param shareAccess type of access required.
+     * @param shareDeny type of access to deny others.
+     * @return stateid associated with open.
+     * @throws ChimeraNFSException
+     */
+    public stateid4 downgradeOpen(NFS4Client client, stateid4 stateid, Inode inode, int shareAccess, int shareDeny) throws ChimeraNFSException {
+
+        Opaque fileId = new Opaque(inode.getFileId());
+        Lock lock = filesLock.get(fileId);
+        lock.lock();
+        try {
+            final List<OpenState> opens = files.get(fileId);
+
+            OpenState os = opens.stream()
+                    .filter(s -> client.getId() == s.client.getId())
+                    .filter(s -> s.stateid.equals(stateid))
+                    .findFirst()
+                    .orElseThrow(BadStateidException::new);
+
+            if ((os.shareAccess & shareAccess) != shareAccess) {
+                throw new InvalException("downgrading to not owned share_access mode");
+            }
+
+            if ((os.shareDeny & shareDeny) != shareDeny) {
+                throw new InvalException("downgrading to not owned share_deny mode");
+            }
+
+            os.shareAccess = shareAccess;
+            os.shareDeny = shareDeny;
+
+            os.stateid.seqid.value++;
+            return os.stateid;
         } finally {
             lock.unlock();
         }

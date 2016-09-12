@@ -67,7 +67,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_OPEN_CONFIRM:
                 return new OperationOPEN_CONFIRM(op);
             case nfs_opnum4.OP_OPEN_DOWNGRADE:
-                break;
+                return new OperationOPEN_DOWNGRADE(op);
             case nfs_opnum4.OP_PUTFH:
                 return new OperationPUTFH(op);
             case nfs_opnum4.OP_PUTPUBFH:

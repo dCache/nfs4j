@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,17 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.v4.xdr.OPEN_DOWNGRADE4res;
+import org.dcache.nfs.v4.xdr.OPEN_DOWNGRADE4resok;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +42,45 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
-        result.opopen_downgrade.status = nfsstat.NFSERR_NOTSUPP;
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+
+        final OPEN_DOWNGRADE4res res = result.opopen_downgrade;
+
+        final int shareAccess = _args.opopen_downgrade.share_access.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK;
+        final int shareDeny = _args.opopen_downgrade.share_deny.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK;
+
+        /*
+         * Share access must be one of OPEN4_SHARE_ACCESS_READ, OPEN4_SHARE_ACCESS_WRITE
+         * or OPEN4_SHARE_ACCESS_BOTH. Share deny can be zero or one of
+         * OPEN4_SHARE_DENY_READ, OPEN4_SHARE_DENY_WRITE or OPEN4_SHARE_DENY_BOTH.
+         */
+        if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) == 0) {
+            throw new InvalException("Invalid share access mode");
+        }
+
+        if ((shareAccess & ~nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) != 0) {
+            throw new InvalException("Invalid share access mode");
+        }
+
+        if ((shareDeny & ~nfs4_prot.OPEN4_SHARE_DENY_BOTH) != 0) {
+            throw new InvalException("Invalid share deny mode");
+        }
+
+        final Inode inode = context.currentInode();
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opopen_downgrade.open_stateid);
+        NFS4Client client;
+        if (context.getMinorversion() > 0) {
+            client = context.getSession().getClient();
+        } else {
+
+            client = context.getStateHandler().getClientIdByStateId(stateid);
+            client.validateSequence(_args.opopen_downgrade.seqid);
+        }
+
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new OPEN_DOWNGRADE4resok();
+        res.resok4.open_stateid = context.getStateHandler()
+                .getFileTracker()
+                .downgradeOpen(client, stateid, inode, shareAccess, shareDeny);
     }
 }
