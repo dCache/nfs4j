@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,6 +26,8 @@ import java.net.UnknownHostException;
 import java.util.Random;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.utils.Bytes;
@@ -63,5 +65,11 @@ class NfsTestUtils {
             currentStatus = e.getStatus();
         }
         AssertNFS.assertNFSStatus(status, currentStatus);
+    }
+
+    public static nfs_fh4 generateFileHandle() {
+        byte[] b = new byte[nfs4_prot.NFS4_FHSIZE];
+        RANDOM.nextBytes(b);
+        return new nfs_fh4(b);
     }
 }

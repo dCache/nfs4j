@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,11 +191,11 @@ public class FileTracker {
     }
 
     /**
-     * Utility method to remove an open from the list.
+     * Remove an open from the list.
      * @param inode of the opened file
      * @param stateid associated with the open.
      */
-    private void removeOpen(Inode inode, stateid4 stateid) {
+    void removeOpen(Inode inode, stateid4 stateid) {
 
         Opaque fileId = new Opaque(inode.getFileId());
         Lock lock = filesLock.get(fileId);
