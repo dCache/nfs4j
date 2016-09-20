@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@ import org.dcache.nfs.status.BadIoModeException;
 import org.dcache.nfs.status.BadLayoutException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
+import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.layout4;
 import org.dcache.nfs.v4.xdr.layouttype4;
@@ -82,6 +83,19 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         if (!isPnfsAllowed(context, inode)) {
             throw new LayoutUnavailableException("pNFS is not allowed");
+        }
+
+       int ioMode = _args.oplayoutget.loga_iomode;
+
+        // check open file mode
+        int shareAccess = context
+                .getStateHandler()
+                .getFileTracker()
+                .getShareAccess(context.getSession().getClient(), inode, _args.oplayoutget.loga_stateid);
+
+        if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0 &&
+                (ioMode & layoutiomode4.LAYOUTIOMODE4_RW) != 0) {
+            throw new OpenModeException("can't provide RW layout for RO open");
         }
 
         Layout ioLayout = context.getDeviceManager().layoutGet(context, inode,
