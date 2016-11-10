@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -216,7 +216,7 @@ public class VfsCache extends ForwardingFileSystem {
 	    return _lookupCache.get(new CacheKey(parent, path));
 	} catch (ExecutionException e) {
 	    Throwable t = e.getCause();
-	    Throwables.propagateIfInstanceOf(t, IOException.class);
+	    Throwables.throwIfInstanceOf(t, IOException.class);
 	    throw new IOException(e.getMessage(), t);
 	}
     }
@@ -232,7 +232,7 @@ public class VfsCache extends ForwardingFileSystem {
 	    });
 	} catch (ExecutionException e) {
 	    Throwable t = e.getCause();
-	    Throwables.propagateIfInstanceOf(t, IOException.class);
+	    Throwables.throwIfInstanceOf(t, IOException.class);
 	    throw new IOException(e.getMessage(), t);
 	}
     }
@@ -250,7 +250,7 @@ public class VfsCache extends ForwardingFileSystem {
             return _parentCache.get(inode);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
-            Throwables.propagateIfInstanceOf(t, IOException.class);
+            Throwables.throwIfInstanceOf(t, IOException.class);
             throw new IOException(e.getMessage(), t);
         }
     }

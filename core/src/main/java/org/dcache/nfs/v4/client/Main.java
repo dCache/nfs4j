@@ -132,7 +132,7 @@ public class Main {
                     .withDefaultPort(2049)
                     .requireBracketsForIPv6();
 
-            InetSocketAddress serverAddress = new InetSocketAddress(hp.getHostText(), hp.getPort());
+            InetSocketAddress serverAddress = new InetSocketAddress(hp.getHost(), hp.getPort());
             nfsClient = new Main(serverAddress);
             nfsClient.mount("/");
         }
