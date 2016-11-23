@@ -59,10 +59,7 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
         res.lorr_stateid = new layoutreturn_stateid();
         res.lorr_stateid.lrs_present = false;
-        res.lorr_stateid.lrs_stateid = new stateid4();
-        res.lorr_stateid.lrs_stateid.seqid = new uint32_t(0);
-        res.lorr_stateid.lrs_stateid.other = new byte[12];
-
+        res.lorr_stateid.lrs_stateid = Stateids.ZeroStateId();
         res.lorr_status = nfsstat.NFS_OK;
 
     }
