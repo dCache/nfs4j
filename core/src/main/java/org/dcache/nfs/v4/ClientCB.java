@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -42,12 +42,18 @@ import org.dcache.nfs.v4.xdr.nfs_cb_argop4;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.layoutrecall_file4;
+import org.dcache.nfs.v4.xdr.length4;
+import org.dcache.nfs.v4.xdr.nfs_fh4;
+import org.dcache.nfs.v4.xdr.offset4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.xdr.*;
 
 /**
  * A class to provide callbacks to the client.
  */
-class ClientCB {
+public class ClientCB {
 
     /**
      * call-back rpc program version number.
@@ -142,7 +148,7 @@ class ClientCB {
         return cbCompound;
     }
 
-    public void cbLauoutrecallAll() throws OncRpcException, IOException {
+    public void cbLayoutRecallFsid() throws OncRpcException, IOException {
 
         CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
         cbLayoutrecall.clora_changed = true;
@@ -158,7 +164,33 @@ class ClientCB {
         opArgs.argop = nfs_cb_opnum4.OP_CB_LAYOUTRECALL;
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
-        XdrAble args = generateCompound("cb_layout_recall", opArgs);
+        XdrAble args = generateCompound("cb_layout_recall_fs", opArgs);
         _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
     }
+
+    public void cbLayoutRecallFile(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
+
+        CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
+        cbLayoutrecall.clora_changed = true;
+        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        cbLayoutrecall.clora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
+        cbLayoutrecall.clora_recall = new layoutrecall4();
+        cbLayoutrecall.clora_recall.lor_recalltype = layoutrecall_type4.LAYOUTRECALL4_FILE;
+        cbLayoutrecall.clora_recall.lor_layout = new layoutrecall_file4();
+        cbLayoutrecall.clora_recall.lor_layout.lor_fh = fh;
+        cbLayoutrecall.clora_recall.lor_layout.lor_offset = new offset4(0L);
+        cbLayoutrecall.clora_recall.lor_layout.lor_length = new length4(nfs4_prot.NFS4_UINT64_MAX);
+        cbLayoutrecall.clora_recall.lor_layout.lor_stateid = stateid;
+
+        nfs_cb_argop4 opArgs = new nfs_cb_argop4();
+        opArgs.argop = nfs_cb_opnum4.OP_CB_LAYOUTRECALL;
+        opArgs.opcblayoutrecall = cbLayoutrecall;
+
+        XdrAble args = generateCompound("cb_layout_recall_file", opArgs);
+
+        CB_COMPOUND4res res = new CB_COMPOUND4res();
+        _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
+        nfsstat.throwIfNeeded(res.status);
+    }
+
 }
