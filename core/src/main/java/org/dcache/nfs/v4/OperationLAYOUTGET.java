@@ -35,6 +35,7 @@ import org.dcache.nfs.status.BadIoModeException;
 import org.dcache.nfs.status.BadLayoutException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.layout4;
@@ -99,10 +100,17 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
             throw new OpenModeException("can't provide RW layout for RO open");
         }
 
-        Layout ioLayout = context.getDeviceManager().layoutGet(context, inode,
-                _args.oplayoutget.loga_layout_type,
-                _args.oplayoutget.loga_iomode,
-                _args.oplayoutget.loga_stateid);
+        Layout ioLayout;
+        try {
+            ioLayout = context.getDeviceManager().layoutGet(context, inode,
+                    _args.oplayoutget.loga_layout_type,
+                    _args.oplayoutget.loga_iomode,
+                    _args.oplayoutget.loga_stateid);
+        } catch (NfsIoException e) {
+            // linux client can't handle EIO on layout get. force it to proxy IO to
+            // hit a different code path.
+            throw new LayoutUnavailableException("IO error on layout get", e);
+        }
 
         layout4[] layoutSegments = ioLayout.getLayoutSegments();
 
