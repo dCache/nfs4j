@@ -69,7 +69,6 @@ public class NFS4ClientTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withMinorversion(1)
                 .withDeviceManager(mock(NFSv41DeviceManager.class))
                 .withCall(generateRpcCall())
@@ -94,7 +93,6 @@ public class NFS4ClientTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withMinorversion(0)
                 .withCall(generateRpcCall())
                 .build();

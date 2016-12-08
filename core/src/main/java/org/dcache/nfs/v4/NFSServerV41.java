@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -51,6 +51,7 @@ import org.dcache.nfs.status.NotOnlyOpException;
 import org.dcache.nfs.status.OpIllegalException;
 import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
+import org.dcache.nfs.status.RetryUncacheRepException;
 import org.dcache.nfs.status.SequencePosException;
 import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.status.StaleClientidException;
@@ -121,12 +122,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
             CompoundContext context = new CompoundContext(arg1.minorversion.value,
                 fs, _statHandler, _deviceManager, call$,
-                    _exportFile, arg1.argarray.length);
+                    _exportFile);
 
             boolean retransmit = false;
-            for (nfs_argop4 op : arg1.argarray) {
-                context.nextOperation();
-                int position = context.getOperationPosition();
+            for (int position = 0; position <arg1.argarray.length; position++) {
+
+                nfs_argop4 op = arg1.argarray[position];
                 nfs_resop4 opResult = nfs_resop4.resopFor(op.argop);
                 try {
                     if (minorversion != 0) {
@@ -141,6 +142,16 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
                             List<nfs_resop4> cache = context.getCache();
                             if (cache != null) {
+
+                                if (cache.isEmpty()) {
+                                    /*
+                                     * we got a duplicated request, but there
+                                     * is nothing in the cache, though must be
+                                     * as we are the second op in the compound.
+                                     */
+                                    throw new RetryUncacheRepException();
+                                }
+
                                 res.resarray.addAll(cache.subList(position, cache.size()));
                                 res.status = statusOfLastOperation(cache);
                                 retransmit = true;

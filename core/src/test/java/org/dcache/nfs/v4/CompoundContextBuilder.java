@@ -60,11 +60,6 @@ public class CompoundContextBuilder {
         return this;
     }
 
-    public CompoundContextBuilder withOpCount(int opCount) {
-        this.opCount = opCount;
-        return this;
-    }
-
     public CompoundContextBuilder withStateHandler(NFSv4StateHandler stateHandler) {
         this.stateHandler = stateHandler;
         return this;
@@ -80,8 +75,7 @@ public class CompoundContextBuilder {
                 stateHandler,
                 deviceManager,
                 call,
-                exportFile,
-                opCount);
+                exportFile);
     }
 
 }

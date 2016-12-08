@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -63,7 +63,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -76,7 +75,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -95,7 +93,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -113,7 +110,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -127,7 +123,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -145,7 +140,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -158,7 +152,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -170,7 +163,6 @@ public class OperationCREATE_SESSIONTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_DESTROY_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall())
                 .build();
 
@@ -182,7 +174,6 @@ public class OperationCREATE_SESSIONTest {
     public void testDestroySessionNoBind() throws Exception {
         CompoundContextBuilder contextBdr = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1)
                 .withCall(generateRpcCall());
 
         nfs_resop4 result;
