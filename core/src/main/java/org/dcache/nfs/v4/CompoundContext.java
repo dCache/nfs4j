@@ -84,7 +84,7 @@ public class CompoundContext {
     private final ExportFile _exportFile;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _stateHandler;
-    private int _slotId;
+    private SessionSlot _slot;
     private boolean _cacheThis;
     private stateid4 _currentStateid = null;
     private stateid4 _savedStateid = null;
@@ -238,12 +238,20 @@ public class CompoundContext {
         return _stateHandler;
     }
 
-    public int getSlotId() {
-        return _slotId;
+    /**
+     * Get sessions reply cache slot which must be used by this request.
+     * @return session's reply cache slot
+     */
+    public SessionSlot getSessionSlot() {
+        return _slot;
     }
 
-    public void setSlotId(int slotId) {
-        _slotId = slotId;
+    /**
+     * Set session's reply cache slot to be used.
+     * @param slot reply cache slot to be used.
+     */
+    public void setSessionSlot(SessionSlot slot) {
+        _slot = slot;
     }
 
     public boolean cacheThis() {

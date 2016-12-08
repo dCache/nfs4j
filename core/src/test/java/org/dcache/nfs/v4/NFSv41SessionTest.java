@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,11 +20,8 @@
 package org.dcache.nfs.v4;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSlotException;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -53,8 +50,7 @@ public class NFSv41SessionTest {
     public void testHighestSlotUsed() throws ChimeraNFSException {
 
         int slotToUse = _session.getHighestSlot() / 2;
-        List<nfs_resop4> reply = new ArrayList<>();
-        _session.updateSlotCache(slotToUse, reply);
+        _session.getSessionSlot(slotToUse);
 
         assertEquals("invalid highest slot id on empty session", slotToUse, _session.getHighestUsedSlot());
     }
@@ -63,8 +59,7 @@ public class NFSv41SessionTest {
     public void testInvalidSlotAccess() throws ChimeraNFSException {
 
         int slotToUse = _session.getHighestSlot() + 1;
-        List<nfs_resop4> reply = new ArrayList<>();
-        _session.updateSlotCache(slotToUse, reply);
+        _session.getSessionSlot(slotToUse);
     }
 
     @Test

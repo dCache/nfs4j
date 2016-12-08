@@ -54,8 +54,8 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
             throw new BadSessionException("client not found");
         }
 
-        context.setCache(session.checkCacheSlot(_args.opsequence.sa_slotid.value,
-                _args.opsequence.sa_sequenceid.value));
+        SessionSlot slot = session.getSessionSlot(_args.opsequence.sa_slotid.value);
+        context.setCache(slot.checkSlotSequence(_args.opsequence.sa_sequenceid.value));
 
         session.bindIfNeeded( new SessionConnection(
                 context.getLocalSocketAddress(),
@@ -66,7 +66,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
         context.setSession(session);
         context.setCacheThis(_args.opsequence.sa_cachethis);
-        context.setSlotId(_args.opsequence.sa_slotid.value);
+        context.setSessionSlot(slot);
 
         res.sr_resok4 = new SEQUENCE4resok();
 

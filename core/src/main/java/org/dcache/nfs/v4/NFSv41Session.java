@@ -89,16 +89,16 @@ public class NFSv41Session {
 
     public List<nfs_resop4> checkCacheSlot(int slot, int sequence)
             throws ChimeraNFSException {
-        return getSlot(slot).checkSlotSequence(sequence);
+        return getSessionSlot(slot).checkSlotSequence(sequence);
     }
 
     /**
      * Get cache slot for given id.
-     * @param i
+     * @param slot
      * @return cache slot.
      * @throws ChimeraNFSException
      */
-    private SessionSlot getSlot(int slot) throws ChimeraNFSException {
+    public SessionSlot getSessionSlot(int slot) throws ChimeraNFSException {
 
         if (slot < 0 || slot > getHighestSlot()) {
             throw new BadSlotException("slot id overflow");
@@ -131,10 +131,6 @@ public class NFSv41Session {
     @Override
     public String toString() {
         return _client.getRemoteAddress() + " : " + Bytes.toHexString(_session.value);
-    }
-
-    public void updateSlotCache(int slot, List<nfs_resop4> reply) throws ChimeraNFSException {
-        getSlot(slot).update(reply);
     }
 
     /**

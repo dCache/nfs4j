@@ -190,7 +190,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             }
 
             if (!retransmit && context.cacheThis()) {
-                context.getSession().updateSlotCache(context.getSlotId(), res.resarray);
+                context.getSessionSlot().update(res.resarray);
             }
 
             _log.debug( "OP: [{}] status: {}", res.tag, res.status);
