@@ -89,7 +89,7 @@ public class NFSv41Session {
 
     public List<nfs_resop4> checkCacheSlot(int slot, int sequence)
             throws ChimeraNFSException {
-        return getSessionSlot(slot).checkSlotSequence(sequence);
+        return getSessionSlot(slot).acquire(sequence);
     }
 
     /**

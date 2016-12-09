@@ -55,7 +55,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         }
 
         SessionSlot slot = session.getSessionSlot(_args.opsequence.sa_slotid.value);
-        context.setCache(slot.checkSlotSequence(_args.opsequence.sa_sequenceid.value));
+        context.setCache(slot.acquire(_args.opsequence.sa_sequenceid.value));
 
         session.bindIfNeeded( new SessionConnection(
                 context.getLocalSocketAddress(),
