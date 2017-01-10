@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -60,6 +60,8 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         final WRITE4res res = result.opwrite;
 
         long offset = _args.opwrite.offset.value;
+
+        _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
 
         Inode inode = context.currentInode();
         Stat stat = context.getFs().getattr(inode);
