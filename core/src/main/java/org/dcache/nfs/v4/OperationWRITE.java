@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -53,9 +53,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
         final WRITE4res res = result.opwrite;
 
-        if (_args.opwrite.offset.value + _args.opwrite.data.remaining() > 0x3ffffffe) {
-            throw new InvalException("Arbitrary value");
-        }
+        _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
 
         Stat stat = context.getFs().getattr(context.currentInode());
 

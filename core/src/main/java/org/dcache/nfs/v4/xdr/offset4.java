@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,8 +37,34 @@ public class offset4 extends uint64_t {
     }
 
     /**
-     * Checks whatever extending a file from this offset with to a given
-     * length will overflow NFS4_UINT64_MAX.
+     * Checks whatever extending a file from this offset with to a given length
+     * will overflow NFS4_UINT64_MAX.
+     *
+     * @see #checkOverflow(long, java.lang.String)
+     * @param length to verify
+     * @param msg included into exception
+     * @throws InvalException if offset + length will overflow
+     */
+    public void checkOverflow(length4 length, String msg) throws InvalException {
+        checkOverflow(length.value, msg);
+    }
+
+    /**
+     * Checks whatever extending a file from this offset with to a given length
+     * will overflow NFS4_UINT64_MAX.
+     *
+     * @see #checkOverflow(long, java.lang.String)
+     * @param length to verify
+     * @param msg included into exception
+     * @throws InvalException if offset + length will overflow
+     */
+    public void checkOverflow(int length, String msg) throws InvalException {
+        checkOverflow((long)length, msg);
+    }
+
+    /**
+     * Checks whatever extending a file from this offset with to a given length
+     * will overflow NFS4_UINT64_MAX.
      *
      * <p>
      * NOTICE: as Java does not supports unsigned longs, check is performed for
@@ -47,10 +73,11 @@ public class offset4 extends uint64_t {
      *
      * @param length to verify
      * @param msg included into exception
-     * @throws InvalException if offset + length will overflow {@link Long.MAX_VALUE}
+     * @throws InvalException if offset + length will overflow
+     * {@link Long.MAX_VALUE}
      */
-    public void checkOverflow(length4 length, String msg) throws InvalException {
-        if (Long.MAX_VALUE - value < length.value) {
+    public void checkOverflow(long length, String msg) throws InvalException {
+        if (Long.MAX_VALUE - value < length) {
             throw new InvalException(msg);
         }
     }
