@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -158,17 +158,21 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 context.getFs().setAcl(inode, Acls.adjust( context.getFs().getAcl(inode), mode.value));
                 break;
             case nfs4_prot.FATTR4_OWNER :
-                // TODO: use princilat
                 utf8str_cs owner = new utf8str_cs ();
                 owner.xdrDecode(xdr);
                 String new_owner = owner.toString();
+                if (new_owner.isEmpty()) {
+                    throw new InvalException("empty principal");
+                }
                 stat.setUid(context.getFs().getIdMapper().principalToUid(new_owner));
                 break;
             case nfs4_prot.FATTR4_OWNER_GROUP :
-                // TODO: use princilat
                 utf8str_cs owner_group = new utf8str_cs ();
                 owner_group.xdrDecode(xdr);
                 String new_group = owner_group.toString();
+                if (new_group.isEmpty()) {
+                    throw new InvalException("empty principal");
+                }
                 stat.setGid(context.getFs().getIdMapper().principalToGid(new_group));
                 break;
             case nfs4_prot.FATTR4_TIME_ACCESS_SET :
