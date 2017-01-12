@@ -53,7 +53,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         } else {
 
             client = context.getStateHandler().getClientIdByStateId(stateid);
-            client.validateSequence(_args.opclose.seqid);
+            client.state(stateid).getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
         }
 
         if (context.getMinorversion() > 0) {

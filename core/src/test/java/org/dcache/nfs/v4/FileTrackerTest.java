@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.ShareDeniedException;
@@ -36,11 +37,12 @@ import static org.dcache.nfs.v4.NfsTestUtils.generateFileHandle;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_READ;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_WRITE;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_BOTH;
+import org.dcache.nfs.v4.xdr.seqid4;
 
 public class FileTrackerTest {
 
-    FileTracker tracker;
-    NFSv4StateHandler sh;
+    private FileTracker tracker;
+    private NFSv4StateHandler sh;
 
     @Before
     public void setUp() {
@@ -52,24 +54,26 @@ public class FileTrackerTest {
     public void shouldAllowNonConflictingOpens() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
     }
 
     @Test
     public void shouldReturnSameStateIdForSameClient() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        stateid4 s1 = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        stateid4 s2 = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        stateid4 s1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        stateid4 s2 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
         assertEquals("New stateid returned", s1, s2);
     }
 
@@ -77,12 +81,13 @@ public class FileTrackerTest {
     public void shouldMergeAccessModesOnMultipleOpenes() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        stateid4 s = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        stateid4 s = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
         int accessMode = tracker.getShareAccess(client1, inode, s);
         assertEquals("Access mode not merged", OPEN4_SHARE_ACCESS_BOTH, accessMode);
     }
@@ -91,12 +96,13 @@ public class FileTrackerTest {
     public void shouldChangeAccessModesAfterDowngrade() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        stateid4 s = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        stateid4 s = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
 
         tracker.downgradeOpen(client1, s, inode, OPEN4_SHARE_ACCESS_READ, 0);
 
@@ -108,12 +114,13 @@ public class FileTrackerTest {
     public void shouldRejectDowngradeToNotOwnedMode() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        stateid4 s = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        stateid4 s = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
 
         tracker.downgradeOpen(client1, s, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
     }
@@ -122,12 +129,13 @@ public class FileTrackerTest {
     public void shouldRejectDowngradeDenyToNotOwnedMode() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_BOTH, OPEN4_SHARE_ACCESS_READ);
-        stateid4 s = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_BOTH, OPEN4_SHARE_ACCESS_READ);
+        stateid4 s = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
 
         tracker.downgradeOpen(client1, s, inode, OPEN4_SHARE_ACCESS_READ, OPEN4_SHARE_ACCESS_WRITE);
     }
@@ -136,13 +144,15 @@ public class FileTrackerTest {
     public void shouldReturnDifferentStateIdForDifferentClient() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
         NFS4Client client2 = createClient(sh);
+        StateOwner stateOwner2 = client1.getOrCreateOwner("client2".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        stateid4 s1 = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        stateid4 s2 = tracker.addOpen(client2, client2.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        stateid4 s1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        stateid4 s2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
         assertNotEquals("Same stateid returned", s1, s2);
     }
 
@@ -150,38 +160,41 @@ public class FileTrackerTest {
     public void shouldRejectConflictingOpens() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ);
     }
 
     @Test
     public void shouldAllowConflictingOpensAfterRemove() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        stateid4 s = tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
+        stateid4 s = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
         tracker.removeOpen(inode, s);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ);
     }
 
     @Test(expected = BadStateidException.class)
     public void shouldFailToGetAccessModeWithBadStateid() throws Exception {
 
         NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, client1.asStateOwner(), inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.getShareAccess(client1, inode, client1.createState(client1.asStateOwner()).stateid());
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.getShareAccess(client1, inode, client1.createState(stateOwner1).stateid());
     }
 
 }

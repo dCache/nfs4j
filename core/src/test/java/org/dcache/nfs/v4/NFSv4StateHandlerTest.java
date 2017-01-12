@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,10 +26,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
-import org.dcache.nfs.v4.xdr.state_owner4;
+import org.dcache.nfs.v4.xdr.seqid4;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 
@@ -37,13 +39,13 @@ public class NFSv4StateHandlerTest {
 
     private NFSv4StateHandler _stateHandler;
     private NFS4Client _client;
-    private state_owner4 _owner;
+    private StateOwner _owner;
 
     @Before
-    public void setUp() throws UnknownHostException {
+    public void setUp() throws UnknownHostException, BadSeqidException {
         _stateHandler = new NFSv4StateHandler();
         _client = createClient(_stateHandler);
-        _owner = _client.asStateOwner();
+        _owner =  _client.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8), new seqid4(0));
     }
 
     @Test

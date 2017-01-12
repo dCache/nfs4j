@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -52,7 +52,6 @@ import org.dcache.nfs.status.WrongTypeException;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -73,6 +72,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         final OPEN4res res = result.opopen;
 
         NFS4Client client;
+        StateOwner owner;
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
@@ -83,10 +83,11 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 throw new StaleClientidException("bad client id.");
             }
 
-            client.validateSequence(_args.opopen.seqid);
             client.updateLeaseTime();
             _log.debug("open request form {}", _args.opopen.owner);
         }
+
+        owner = client.getOrCreateOwner(_args.opopen.owner.owner, _args.opopen.seqid);
 
         res.resok4 = new OPEN4resok();
         res.resok4.attrset = new bitmap4();
@@ -261,8 +262,6 @@ public class OperationOPEN extends AbstractNFSv4Operation {
          * THis is a perfectly a valid situation as at the end file is created and only
          * one writer is allowed.
          */
-        state_owner4 owner = context.getMinorversion() == 0
-                ?_args.opopen.owner : client.asStateOwner();
         stateid4 stateid = context
                 .getStateHandler()
                 .getFileTracker()

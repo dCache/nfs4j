@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -152,12 +152,11 @@ public class NFSv4StateHandler {
     }
 
     public synchronized NFS4Client clientByOwner(byte[] ownerid) {
-	for(NFS4Client client: _clientsByServerId.values()) {
-	    if (client.isOwner(ownerid)) {
-		return client;
-	    }
-	}
-        return null;
+        return _clientsByServerId.values()
+                .stream()
+                .filter(c -> c.isOwner(ownerid))
+                .findAny()
+                .orElse(null);
     }
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {

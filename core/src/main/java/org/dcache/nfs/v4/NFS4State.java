@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class NFS4State {
@@ -49,23 +48,23 @@ public class NFS4State {
      */
 
     private final stateid4 _stateid;
-    private final state_owner4 _owner;
+    private final StateOwner _owner;
     private boolean _isConfimed = false;
     private boolean _disposed = false;
 
     /**
      * A state (lock, layout)) can be derived from an open state.
      * If null, then this is the original open state.
-     */ 
+     */
     private final NFS4State _openState;
 
     private final List<StateDisposeListener> _disposeListeners;
 
-    public NFS4State(state_owner4 owner, stateid4 stateid) {
+    public NFS4State(StateOwner owner, stateid4 stateid) {
         this(null, owner, stateid);
     }
 
-    public NFS4State(NFS4State openState, state_owner4 owner, stateid4 stateid) {
+    public NFS4State(NFS4State openState, StateOwner owner, stateid4 stateid) {
         _openState = openState;
         _owner = owner;
         _stateid = stateid;
@@ -115,6 +114,10 @@ public class NFS4State {
      */
     protected void dispose() {
         // NOP
+    }
+
+    public StateOwner getStateOwner() {
+        return _owner;
     }
 
     synchronized public void addDisposeListener(StateDisposeListener disposeListener) {

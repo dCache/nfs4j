@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,15 +24,14 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 
 public class CloseStub {
 
-    public static nfs_argop4 generateRequest(stateid4 stateid) {
+    public static nfs_argop4 generateRequest(stateid4 stateid, int seq) {
 
         CLOSE4args args = new CLOSE4args();
 
-        args.seqid = new seqid4(0);
+        args.seqid = new seqid4(seq);
         args.open_stateid = stateid;
 
 

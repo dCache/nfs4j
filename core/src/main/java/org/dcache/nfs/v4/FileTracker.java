@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +31,6 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.ShareDeniedException;
-import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.utils.Opaque;
@@ -59,11 +57,11 @@ public class FileTracker {
 
         private final NFS4Client client;
         private final stateid4 stateid;
-        private final state_owner4 owner;
+        private final StateOwner owner;
         private int shareAccess;
         private int shareDeny;
 
-        public OpenState(NFS4Client client, state_owner4 owner, stateid4 stateid, int shareAccess, int shareDeny) {
+        public OpenState(NFS4Client client, StateOwner owner, stateid4 stateid, int shareAccess, int shareDeny) {
             this.client = client;
             this.stateid = stateid;
             this.shareAccess = shareAccess;
@@ -83,7 +81,7 @@ public class FileTracker {
             return shareDeny;
         }
 
-        public state_owner4 getOwner() {
+        public StateOwner getOwner() {
             return owner;
         }
 
@@ -102,7 +100,7 @@ public class FileTracker {
      * @throws ShareDeniedException if share reservation conflicts with an existing open.
      * @throws ChimeraNFSException
      */
-    public stateid4 addOpen(NFS4Client client, state_owner4 owner, Inode inode, int shareAccess, int shareDeny) throws  ChimeraNFSException {
+    public stateid4 addOpen(NFS4Client client, StateOwner owner, Inode inode, int shareAccess, int shareDeny) throws  ChimeraNFSException {
 
         Opaque fileId = new Opaque(inode.getFileId());
         Lock lock = filesLock.get(fileId);
