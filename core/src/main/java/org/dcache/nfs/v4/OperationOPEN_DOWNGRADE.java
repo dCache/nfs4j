@@ -73,7 +73,13 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
             client = context.getSession().getClient();
         } else {
             client = context.getStateHandler().getClientIdByStateId(stateid);
-            client.state(stateid).getStateOwner().acceptAsNextSequence(_args.opopen_downgrade.seqid);
+        }
+
+        NFS4State nfsState = client.state(stateid);
+        Stateids.checkStateId(nfsState.stateid(), stateid);
+
+        if (context.getMinorversion() == 0) {
+            nfsState.getStateOwner().acceptAsNextSequence(_args.opopen_downgrade.seqid);
         }
 
         res.status = nfsstat.NFS_OK;

@@ -51,13 +51,16 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-
             client = context.getStateHandler().getClientIdByStateId(stateid);
-            client.state(stateid).getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
         }
+
+        NFS4State nfsState = client.state(stateid);
+        Stateids.checkStateId(nfsState.stateid(), stateid);
 
         if (context.getMinorversion() > 0) {
             context.getDeviceManager().layoutReturn(context, stateid);
+        } else {
+            nfsState.getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
         }
 
         client.releaseState(stateid);
