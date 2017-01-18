@@ -38,6 +38,7 @@ import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -71,6 +72,7 @@ public class NFS4ClientTest {
                 .withOpCount(1)
                 .withMinorversion(1)
                 .withDeviceManager(mock(NFSv41DeviceManager.class))
+                .withCall(generateRpcCall())
                 .build();
 
         context.currentInode( Inode.forFile( new byte[] {}));
@@ -94,6 +96,7 @@ public class NFS4ClientTest {
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
                 .withMinorversion(0)
+                .withCall(generateRpcCall())
                 .build();
 
         context.currentInode(Inode.forFile(new byte[]{}));

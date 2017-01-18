@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import static org.mockito.Mockito.mock;
 
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
 
 public class OperationSECINFO_NO_NAMETest {
 
@@ -55,6 +56,7 @@ public class OperationSECINFO_NO_NAMETest {
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.sys").toURI());
         CompoundContext context = new CompoundContextBuilder()
                 .withExportFile(exportFile)
+                .withCall(generateRpcCall())
                 .build();
         context.currentInode(inode);
         nfs_resop4 result = nfs_resop4.resopFor(nfs_opnum4.OP_SECINFO_NO_NAME);
@@ -69,6 +71,7 @@ public class OperationSECINFO_NO_NAMETest {
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.krb").toURI());
         CompoundContext context = new CompoundContextBuilder()
                 .withExportFile(exportFile)
+                .withCall(generateRpcCall())
                 .build();
         context.currentInode(inode);
         nfs_resop4 result = nfs_resop4.resopFor(nfs_opnum4.OP_SECINFO_NO_NAME);
@@ -83,6 +86,7 @@ public class OperationSECINFO_NO_NAMETest {
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.mix").toURI());
         CompoundContext context = new CompoundContextBuilder()
                 .withExportFile(exportFile)
+                .withCall(generateRpcCall())
                 .build();
         context.currentInode(inode);
         nfs_resop4 result = nfs_resop4.resopFor(nfs_opnum4.OP_SECINFO_NO_NAME);

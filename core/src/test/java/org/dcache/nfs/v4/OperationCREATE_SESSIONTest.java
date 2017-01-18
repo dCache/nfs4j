@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -38,7 +38,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.dcache.nfs.v4.NfsTestUtils.*;
-import static org.junit.Assert.*;
 
 public class OperationCREATE_SESSIONTest {
 
@@ -65,6 +64,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
@@ -77,6 +77,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
          AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
@@ -95,6 +96,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFSERR_STALE_CLIENTID);
@@ -109,7 +111,11 @@ public class OperationCREATE_SESSIONTest {
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-        context = new CompoundContextBuilder().withStateHandler(stateHandler).withOpCount(1).build();
+        context = new CompoundContextBuilder()
+                .withStateHandler(stateHandler)
+                .withOpCount(1)
+                .withCall(generateRpcCall())
+                .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
@@ -122,6 +128,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFSERR_SEQ_MISORDERED);
@@ -139,6 +146,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
@@ -151,6 +159,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
@@ -162,6 +171,7 @@ public class OperationCREATE_SESSIONTest {
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withOpCount(1)
+                .withCall(generateRpcCall())
                 .build();
 
         AssertNFS.assertNFS(DESTROY_SESSION, context, result, nfsstat.NFS_OK);
@@ -172,7 +182,8 @@ public class OperationCREATE_SESSIONTest {
     public void testDestroySessionNoBind() throws Exception {
         CompoundContextBuilder contextBdr = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
-                .withOpCount(1);
+                .withOpCount(1)
+                .withCall(generateRpcCall());
 
         nfs_resop4 result;
 
@@ -196,6 +207,7 @@ public class OperationCREATE_SESSIONTest {
 
         // new context, new client
         contextBdr = new CompoundContextBuilder()
+                .withCall(generateRpcCall())
                 .withStateHandler(stateHandler);
 
         nfs_argop4 destroysession_args = DestroySessionStub.standard(session);

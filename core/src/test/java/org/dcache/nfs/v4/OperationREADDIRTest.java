@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.junit.Before;
 
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+
 public class OperationREADDIRTest {
 
     private FileHandle dirHandle;
@@ -53,6 +55,7 @@ public class OperationREADDIRTest {
         result = nfs_resop4.resopFor(nfs_opnum4.OP_READDIR);
         context = new CompoundContextBuilder()
                 .withFs(vfs)
+                .withCall(generateRpcCall())
                 .build();
         context.currentInode(dirInode);
     }
