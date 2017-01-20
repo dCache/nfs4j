@@ -42,7 +42,9 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
 
         final DESTROY_SESSION4res res = result.opdestroy_session;
 
-        NFSv41Session session = context.getStateHandler().getSession(_args.opdestroy_session.dsa_sessionid);
+        NFS4Client client = context.getStateHandler().getClient(_args.opdestroy_session.dsa_sessionid);
+        NFSv41Session session = client.getSession(_args.opdestroy_session.dsa_sessionid);
+
         SessionConnection sessionConnection = new SessionConnection(
                 context.getLocalSocketAddress(),
                 context.getRemoteSocketAddress());
@@ -51,7 +53,7 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
             throw new ConnNotBoundToSessionException("Session not " +  session +" not bound to" + sessionConnection.getRemoteConnection());
         }
 
-        context.getStateHandler().removeSession(_args.opdestroy_session.dsa_sessionid);
+        client.removeSession(_args.opdestroy_session.dsa_sessionid);
 
         res.dsr_status = nfsstat.NFS_OK;
     }

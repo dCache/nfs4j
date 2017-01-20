@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -70,7 +70,7 @@ public class CacheElement<V> {
      *
      * @return internal object.
      */
-    V getObject() {
+    public V getObject() {
         _lastAccessTime = _clock.millis();
         return _inner;
     }
@@ -82,7 +82,7 @@ public class CacheElement<V> {
      *
      * @return true if entry still valid and false otherwise.
      */
-    boolean validAt(long time) {
+    public boolean validAt(long time) {
         return time - _lastAccessTime < _idleTime && time - _creationTime < _maxLifeTime;
     }
 

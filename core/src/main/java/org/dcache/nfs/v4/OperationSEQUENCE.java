@@ -46,13 +46,8 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
         final SEQUENCE4res res = result.opsequence;
 
-        NFSv41Session session = context.getStateHandler().getSession(_args.opsequence.sa_sessionid);
-        NFS4Client client = session.getClient();
-
-        if (!client.hasSessions()) {
-            _log.debug("no client for session for id [{}]", _args.opsequence.sa_sessionid);
-            throw new BadSessionException("client not found");
-        }
+        NFS4Client client = context.getStateHandler().getClient(_args.opsequence.sa_sessionid);
+        NFSv41Session session = client.getSession(_args.opsequence.sa_sessionid);
 
         SessionSlot slot = session.getSessionSlot(_args.opsequence.sa_slotid.value);
         context.setCache(slot.acquire(_args.opsequence.sa_sequenceid.value));

@@ -65,7 +65,7 @@ public class NFSv41SessionTest {
     @Test
     public void testSessionRemove() throws ChimeraNFSException {
         assertTrue(_client.hasSessions());
-        _client.removeSession(_session);
+        _client.removeSession(_session.id());
         assertFalse(_client.hasSessions());
     }
 }

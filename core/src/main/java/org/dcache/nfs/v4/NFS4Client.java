@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSeqidException;
+import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
 import org.dcache.nfs.status.ExpiredException;
@@ -124,7 +125,7 @@ public class NFS4Client {
     /**
      * sessions associated with the client
      */
-    private final Map<Integer, NFSv41Session> _sessions = new HashMap<>();
+    private final Map<sessionid4, NFSv41Session> _sessions = new HashMap<>();
     private long _cl_time = System.currentTimeMillis();        // time of last lease renewal
 
     /**
@@ -384,7 +385,8 @@ public class NFS4Client {
 
         if (sequence == _sessionSequence - 1) {
             _log.debug("Retransmit on create session detected");
-            return _sessions.get(sequence);
+            sessionid4 sessionid = _stateHandler.createSessionId(this, _sessionSequence);
+            return _sessions.get(sessionid);
         }
 
         if (sequence != _sessionSequence ) {
@@ -394,7 +396,7 @@ public class NFS4Client {
         sessionid4 sessionid = _stateHandler.createSessionId(this, _sessionSequence);
         NFSv41Session session = new NFSv41Session(this, sessionid, cacheSize, cbCacheSize, maxOps, maxCbOps);
 
-        _sessions.put(_sessionSequence, session);
+        _sessions.put(sessionid, session);
         _sessionSequence++;
 
         if(!_isConfirmed){
@@ -405,9 +407,19 @@ public class NFS4Client {
         return session;
     }
 
-    public void removeSession(NFSv41Session session) {
-        int sequenceId = Bytes.getInt(session.id().value, 12);
-        _sessions.remove(sequenceId);
+    public synchronized void removeSession(sessionid4 id) throws BadSessionException {
+        NFSv41Session session = _sessions.remove(id);
+        if (session == null) {
+            throw new BadSessionException("session not found");
+        }
+    }
+
+    public synchronized NFSv41Session getSession(sessionid4 id) throws BadSessionException {
+        NFSv41Session session = _sessions.get(id);
+        if (session == null) {
+            throw new BadSessionException("session not found");
+        }
+        return session;
     }
 
     /**

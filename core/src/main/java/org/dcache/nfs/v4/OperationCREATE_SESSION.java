@@ -114,7 +114,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
                 Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_fore_chan_attrs.ca_maxoperations.value),
                 Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_back_chan_attrs.ca_maxoperations.value));
         _log.debug("adding new session [{}]", session);
-        context.getStateHandler().addSession(session);
 
         /*
          * if client supports call backs on the same channel make use of it
