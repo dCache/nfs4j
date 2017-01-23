@@ -44,6 +44,7 @@ import org.dcache.nfs.status.CompleteAlreadyException;
 import org.dcache.nfs.status.ExpiredException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SeqMisorderedException;
+import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.stateid4;
@@ -520,5 +521,18 @@ public class NFS4Client {
             stateOwner = new StateOwner(so, 0);
         }
         return stateOwner;
+    }
+
+   /**
+     * Remove {@link StateOwner}.
+     *
+     * @param owner client unique state owner
+     */
+    public synchronized void releaseOwner(byte[] owner) throws StaleClientidException  {
+        Opaque k = new Opaque(owner);
+        StateOwner stateOwner = _owners.remove(k);
+        if (stateOwner == null) {
+            throw new StaleClientidException();
+        }
     }
 }

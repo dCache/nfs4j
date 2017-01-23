@@ -102,11 +102,8 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
                 return new OperationVERIFY(op);
             case nfs_opnum4.OP_WRITE:
                 return new OperationWRITE(op);
-            /*            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
-            nRes.oprelease_lockowner = new RELEASE_LOCKOWNER4res();
-            res = new NFSv4OperationResult(nRes, nfsstat4.NFS4ERR_NOTSUPP);
-            break; */
-
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
+                return new OperationRELEASE_LOCKOWNER(op);
             /**
              *  NFSv4.1 (pNFS)
              */
