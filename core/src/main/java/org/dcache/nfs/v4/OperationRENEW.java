@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.RENEW4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
@@ -41,6 +42,10 @@ public class OperationRENEW extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
         final RENEW4res res = result.oprenew;
+
+        if (context.getMinorversion() > 0) {
+            throw new NotSuppException("operation RENEW4 is obsolete in 4.x, x > 0");
+        }
 
         NFS4Client client = context.getStateHandler().getClientByID(_args.oprenew.clientid);
         if (client == null) {

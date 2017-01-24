@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.SETCLIENTID4resok;
 import org.dcache.nfs.v4.xdr.SETCLIENTID4res;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.ClidInUseException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.clientaddr4;
 import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -45,6 +46,10 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
         final SETCLIENTID4res res = result.opsetclientid;
+
+        if (context.getMinorversion() > 0) {
+            throw new NotSuppException("operation SETCLIENTID4 is obsolete in 4.x, x > 0");
+        }
 
         verifier4 verifier = _args.opsetclientid.client.verifier;
         final byte[] id = _args.opsetclientid.client.id;
