@@ -130,7 +130,7 @@ public class NFS4State {
         return MoreObjects.toStringHelper(this.getClass().getSimpleName())
                 .add("stateid", _stateid)
                 .add("open-stateid", _openState == null? null : _openState.stateid())
-                .add("owner", _owner.getRawStateOwner())
+                .add("owner", _owner)
                 .add("confirmed", _isConfimed)
                 .omitNullValues()
                 .toString();
