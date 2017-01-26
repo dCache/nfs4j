@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.base.MoreObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,5 +123,16 @@ public class NFS4State {
 
     synchronized public void addDisposeListener(StateDisposeListener disposeListener) {
         _disposeListeners.add(disposeListener);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this.getClass().getSimpleName())
+                .add("stateid", _stateid)
+                .add("open-stateid", _openState == null? null : _openState.stateid())
+                .add("owner", _owner.getRawStateOwner())
+                .add("confirmed", _isConfimed)
+                .omitNullValues()
+                .toString();
     }
 }
