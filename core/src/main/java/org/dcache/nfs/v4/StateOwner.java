@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.base.MoreObjects;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
@@ -72,4 +73,11 @@ public class StateOwner {
         return this.owner.equals(other.owner);
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this.getClass().getSimpleName())
+                .add("owner", owner)
+                .add("seq", seq)
+                .toString();
+    }
 }
