@@ -342,11 +342,23 @@ public class NFS4Client {
     }
 
     public void releaseState(stateid4 stateid) throws ChimeraNFSException {
-        NFS4State state = _clientStates.remove(stateid);
+
+        NFS4State state = _clientStates.get(stateid);
+        if (state == null) {
+            throw new BadStateidException("State not known to the client: " + stateid);
+        }
+        state.disposeIgnoreFailures();
+        _clientStates.remove(stateid);
+    }
+
+    public void tryReleaseState(stateid4 stateid) throws ChimeraNFSException {
+
+        NFS4State state = _clientStates.get(stateid);
         if (state == null) {
             throw new BadStateidException("State not known to the client: " + stateid);
         }
         state.tryDispose();
+        _clientStates.remove(stateid);
     }
 
     public NFS4State state(stateid4 stateid) throws ChimeraNFSException {
@@ -469,10 +481,10 @@ public class NFS4Client {
         Collection<NFS4State> states = new ArrayList<>(_clientStates.size());
         Iterator<NFS4State> i = _clientStates.values().iterator();
         while (i.hasNext()) {
-            states.add(i.next());
+            NFS4State state = i.next();
+            state.disposeIgnoreFailures();
             i.remove();
         }
-        states.forEach(NFS4State::tryDispose);
     }
 
     /**

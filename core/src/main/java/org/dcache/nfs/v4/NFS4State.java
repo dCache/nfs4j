@@ -24,8 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class NFS4State {
@@ -89,20 +91,39 @@ public class NFS4State {
     /**
      * Release resources used by this State if not released yet.
      * Any subsequent call will have no effect.
+     * @throws ChimeraNFSException on errors.
      */
-    synchronized public final void tryDispose() {
+    synchronized public final void tryDispose() throws ChimeraNFSException {
         if (!_disposed) {
+            Iterator<StateDisposeListener> i = _disposeListeners.iterator();
+            while(i.hasNext()) {
+                StateDisposeListener listener = i.next();
+                listener.notifyDisposed(this);
+                i.remove();
+            }
             dispose();
-            _disposeListeners.forEach(this::tryNotifyDisposal);
             _disposed = true;
         }
     }
 
-    private void tryNotifyDisposal(StateDisposeListener listener) {
-        try {
-            listener.notifyDisposed(this);
-        } catch (RuntimeException e) {
-            LOG.error("Bug detected notifying {}", listener, e);
+    /**
+     * Release resources used by this State if not released yet. Any subsequent
+     * call will have no effect.
+     */
+    synchronized public final void disposeIgnoreFailures() {
+        if (!_disposed) {
+            Iterator<StateDisposeListener> i = _disposeListeners.iterator();
+            while (i.hasNext()) {
+                StateDisposeListener listener = i.next();
+                try {
+                    listener.notifyDisposed(this);
+                } catch (ChimeraNFSException e) {
+                    LOG.info("failed to notify: {}", e.getMessage());
+                }
+                i.remove();
+            }
+            dispose();
+            _disposed = true;
         }
     }
 
