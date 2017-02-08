@@ -73,6 +73,10 @@ public class StateOwner {
         return this.owner.equals(other.owner);
     }
 
+    public state_owner4 getRawStateOwner() {
+        return owner;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this.getClass().getSimpleName())

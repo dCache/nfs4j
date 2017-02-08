@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadOwnerException;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
@@ -531,6 +532,30 @@ public class NFS4Client {
                 _owners.put(k, stateOwner);
             } else {
                 stateOwner.acceptAsNextSequence(seq);
+            }
+        } else {
+            // for minor version > 0 state owner derived from session
+            state_owner4 so = new state_owner4();
+            so.clientid = _clientId;
+            so.owner = _ownerId;
+            stateOwner = new StateOwner(so, 0);
+        }
+        return stateOwner;
+    }
+
+    /**
+     * Get {@link StateOwner}.
+     *
+     * @param owner client unique state owner
+     * @return state owner
+     */
+    public synchronized StateOwner getOwner(byte[] owner) throws StaleClientidException {
+        StateOwner stateOwner;
+        if (_minorVersion == 0) {
+            Opaque k = new Opaque(owner);
+            stateOwner = _owners.get(k);
+            if (stateOwner == null) {
+                throw new StaleClientidException();
             }
         } else {
             // for minor version > 0 state owner derived from session

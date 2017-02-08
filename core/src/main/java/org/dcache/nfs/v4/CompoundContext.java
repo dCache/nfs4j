@@ -38,6 +38,7 @@ import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.NoFileHandleException;
 import org.dcache.nfs.status.RestoreFhException;
+import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.server_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
@@ -89,6 +90,7 @@ public class CompoundContext {
     private stateid4 _currentStateid = null;
     private stateid4 _savedStateid = null;
     private final Principal _principal;
+    private final LockManager _nlm;
 
     /**
      * Create context of COUMPOUND request.
@@ -101,6 +103,7 @@ public class CompoundContext {
      */
     public CompoundContext(int minorversion, VirtualFileSystem fs,
             NFSv4StateHandler stateHandler,
+            LockManager nlm,
             NFSv41DeviceManager deviceManager, RpcCall call,
             ExportFile exportFile) {
         _minorversion = minorversion;
@@ -111,6 +114,7 @@ public class CompoundContext {
         _subject = call.getCredential().getSubject();
         _stateHandler = stateHandler;
         _principal = principalOf(call);
+        _nlm = nlm;
     }
 
     public RpcCall getRpcCall() {
@@ -127,6 +131,10 @@ public class CompoundContext {
 
     public NFSv41DeviceManager getDeviceManager() {
         return _deviceManager;
+    }
+
+    public LockManager getLm() {
+        return _nlm;
     }
 
     /**

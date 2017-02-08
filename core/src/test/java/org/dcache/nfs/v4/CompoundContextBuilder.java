@@ -20,13 +20,15 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.v4.nlm.LockManager;
+import org.dcache.nfs.v4.nlm.SimpleLm;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.*;
 
 import static java.util.Objects.requireNonNull;
-
 public class CompoundContextBuilder {
 
+    private final LockManager lm = new SimpleLm();
     private RpcCall call = null;
     private int minorversion = 0;
     private VirtualFileSystem fs = null;
@@ -73,6 +75,7 @@ public class CompoundContextBuilder {
                 minorversion,
                 fs,
                 stateHandler,
+                lm,
                 deviceManager,
                 call,
                 exportFile);
