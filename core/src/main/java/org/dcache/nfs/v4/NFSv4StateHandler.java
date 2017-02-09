@@ -106,7 +106,54 @@ public class NFSv4StateHandler {
         _clientsByServerId.put(newClient.getId(), newClient);
     }
 
-    public synchronized NFS4Client getClientByID(clientid4 clientid) throws ChimeraNFSException {
+    /**
+     * Get confirmed, valid client by short-hand {@code clientid}.
+     *
+     * @param clientid short-hand client id.
+     * @return nfs client associated with clientid.
+     * @throws StaleClientidException if there are no corresponding verified
+     * valid record exist.
+     */
+    public synchronized NFS4Client getConfirmedClient(clientid4 clientid) throws StaleClientidException {
+
+        NFS4Client client = getValidClient(clientid);
+
+        if (!client.isConfirmed()) {
+            throw new StaleClientidException("client not confirmed.");
+        }
+
+        return client;
+    }
+
+    /**
+     * Get valid client by short-hand {@code clientid}. The returned {@link NFS4Client}
+     * can be not confirmed.
+     *
+     * @param clientid short-hand client id.
+     * @return nfs client associated with clientid.
+     * @throws StaleClientidException if there are no corresponding verified
+     * valid record exist.
+     */
+    public synchronized NFS4Client getValidClient(clientid4 clientid) throws StaleClientidException {
+
+        NFS4Client client = getClient(clientid);
+
+        if (!client.isLeaseValid()) {
+            throw new StaleClientidException("client expired.");
+        }
+
+        return client;
+    }
+
+    /**
+     * Get by short-hand {@code clientid}. The returned {@link NFS4Client}
+     * can be not valid and not verified.
+     *
+     * @param clientid short-hand client id.
+     * @return nfs client associated with clientid.
+     * @throws StaleClientidException if there are no corresponding record exist.
+     */
+    public synchronized NFS4Client getClient(clientid4 clientid) throws StaleClientidException {
 
         checkState(_running, "NFS state handler not running");
 

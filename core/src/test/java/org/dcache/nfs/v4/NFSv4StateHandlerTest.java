@@ -57,13 +57,13 @@ public class NFSv4StateHandlerTest {
 
     @Test(expected=StaleClientidException.class)
     public void testGetClientNotExists() throws Exception {
-        _stateHandler.getClientByID(new clientid4(1L));
+        _stateHandler.getClient(new clientid4(1L));
     }
 
     @Test
     public void testGetClientExists() throws Exception {
          _client = createClient(_stateHandler);
-        assertEquals(_client,  _stateHandler.getClientByID(_client.getId()));
+        assertEquals(_client,  _stateHandler.getClient(_client.getId()));
     }
 
     @Test

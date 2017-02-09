@@ -73,7 +73,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
                 client = context.getStateHandler().getClientIdByStateId(oldStateid);
                 context.getStateHandler().updateClientLeaseTime(oldStateid);
                 // poke lock owner to check it's validity
-                context.getStateHandler().getClientByID(_args.oplock.locker.open_owner.lock_owner.clientid);
+                context.getStateHandler().getConfirmedClient(_args.oplock.locker.open_owner.lock_owner.clientid);
             } else {
                 client = context.getSession().getClient();
             }

@@ -46,7 +46,6 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.status.NoGraceException;
-import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.status.SymlinkException;
 import org.dcache.nfs.status.WrongTypeException;
 import org.dcache.nfs.v4.xdr.fattr4_size;
@@ -76,10 +75,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-            client = context.getStateHandler().getClientByID(_args.opopen.owner.clientid);
-            if (client == null || !client.isConfirmed()) {
-                throw new StaleClientidException("bad client id.");
-            }
+            client = context.getStateHandler().getConfirmedClient(_args.opopen.owner.clientid);
 
             client.updateLeaseTime();
             _log.debug("open request form {}", _args.opopen.owner);

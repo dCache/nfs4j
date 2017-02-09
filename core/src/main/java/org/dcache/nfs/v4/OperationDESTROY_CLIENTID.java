@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ public class OperationDESTROY_CLIENTID extends AbstractNFSv4Operation {
         final DESTROY_CLIENTID4res res = result.opdestroy_clientid;
 
         NFSv4StateHandler stateHandler = context.getStateHandler();
-        NFS4Client client = stateHandler.getClientByID(_args.opdestroy_clientid.dca_clientid);
+        NFS4Client client = stateHandler.getClient(_args.opdestroy_clientid.dca_clientid);
         if (client.hasSessions()) {
             throw new ClientidBusyException("client holds valid sessions");
         }

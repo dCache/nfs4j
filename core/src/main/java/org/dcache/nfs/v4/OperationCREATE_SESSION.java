@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ClidInUseException;
 import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
@@ -71,8 +70,6 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
             throw new InvalException("bad ceate_session flag");
         }
 
-        NFS4Client client = context.getStateHandler().getClientByID(_args.opcreate_session.csa_clientid);
-
         /*
          * Phase 1:
          *
@@ -84,9 +81,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * made to any client records on the server. Otherwise, the server goes
          * to phase 2.
          */
-        if (client == null || !client.isLeaseValid()) {
-            throw new StaleClientidException("client not known");
-        }
+        NFS4Client client = context.getStateHandler().getValidClient(_args.opcreate_session.csa_clientid);
 
         /*
          * Phase 2:

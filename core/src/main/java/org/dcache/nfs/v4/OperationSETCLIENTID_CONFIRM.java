@@ -25,7 +25,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETCLIENTID_CONFIRM4res;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.NotSuppException;
-import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +46,7 @@ public class OperationSETCLIENTID_CONFIRM extends AbstractNFSv4Operation {
             throw new NotSuppException("operation SETCLIENTID_CONFIRM4 is obsolete in 4.x, x > 0");
         }
 
-        NFS4Client client = context.getStateHandler().getClientByID(_args.opsetclientid_confirm.clientid);
-        if (client == null) {
-            throw new StaleClientidException();
-        }
+        NFS4Client client = context.getStateHandler().getClient(_args.opsetclientid_confirm.clientid);
 
         res.status = nfsstat.NFSERR_INVAL;
         if (client.verifierEquals(_args.opsetclientid_confirm.setclientid_confirm)) {

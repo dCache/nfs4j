@@ -46,7 +46,7 @@ public class OperationRELEASE_LOCKOWNER extends AbstractNFSv4Operation {
             throw new NotSuppException("operation RELEASE_LOCKOWNER is obsolete in 4.x, x > 0");
         }
 
-        NFS4Client client = context.getStateHandler().getClientByID(lockOwner.clientid);
+        NFS4Client client = context.getStateHandler().getConfirmedClient(lockOwner.clientid);
         client.releaseOwner(lockOwner.owner);
 
         result.oprelease_lockowner.status = nfsstat.NFS_OK;
