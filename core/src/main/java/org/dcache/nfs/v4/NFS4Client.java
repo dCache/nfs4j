@@ -406,7 +406,7 @@ public class NFS4Client {
 
         if (sequence == _sessionSequence - 1) {
             _log.debug("Retransmit on create session detected");
-            sessionid4 sessionid = _stateHandler.createSessionId(this, _sessionSequence);
+            sessionid4 sessionid = _stateHandler.createSessionId(this, sequence);
             return _sessions.get(sessionid);
         }
 
