@@ -64,6 +64,11 @@ public class Stateids {
     }
 
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
+        if (stateid.seqid.value == 0) {
+            // so called 'most up-to-date seqid', see https://tools.ietf.org/html/rfc5661#section-8.2.2
+            return;
+        }
+
         if (expected.seqid.value > stateid.seqid.value) {
             throw new OldStateidException();
         }
