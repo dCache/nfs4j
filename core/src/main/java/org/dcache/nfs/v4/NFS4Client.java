@@ -534,10 +534,10 @@ public class NFS4Client {
                 stateOwner.acceptAsNextSequence(seq);
             }
         } else {
-            // for minor version > 0 state owner derived from session
+            // for minor version client id derived from session
             state_owner4 so = new state_owner4();
             so.clientid = _clientId;
-            so.owner = _ownerId;
+            so.owner = owner;
             stateOwner = new StateOwner(so, 0);
         }
         return stateOwner;
@@ -561,7 +561,7 @@ public class NFS4Client {
             // for minor version > 0 state owner derived from session
             state_owner4 so = new state_owner4();
             so.clientid = _clientId;
-            so.owner = _ownerId;
+            so.owner = owner;
             stateOwner = new StateOwner(so, 0);
         }
         return stateOwner;
