@@ -89,4 +89,21 @@ public class NlmLockTest {
         assertTrue("must detect same owners", lock1.isSameOwner(lock2));
     }
 
+    @Test
+    public void shouldDetectConflictingRangeLock() {
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, nfs4_prot.NFS4_UINT64_MAX);
+        NlmLock lock2 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 1, 9223372036854775807L);
+
+        assertTrue("overlaping lock range not detected", lock1.isOverlappingRange(lock2));
+    }
+
+    @Test
+    public void shouldAllowEndingLockRange() {
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, 1);
+        NlmLock lock2 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 2, 1);
+        NlmLock lock = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 3, nfs4_prot.NFS4_UINT64_MAX);
+
+        assertFalse("false conflicting lock range", lock.isOverlappingRange(lock1));
+        assertFalse("false conflicting lock range", lock.isOverlappingRange(lock2));
+    }
 }
