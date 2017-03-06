@@ -110,16 +110,42 @@ public class NlmLock {
         // both lock up-to the end
         if (other.length == nfs4_prot.NFS4_UINT64_MAX && length == nfs4_prot.NFS4_UINT64_MAX) {
             return true;
-        } else if (other.length == nfs4_prot.NFS4_UINT64_MAX) {
-            // check that this lock range ends before other starts
-            return offset + length > other.offset;
-        } else if (length == nfs4_prot.NFS4_UINT64_MAX ){
-            // check that other lock range ends before this oner starts
-            return other.offset + other.length > offset;
         }
-        // both lock are segments
-        return ( (other.offset >= offset && other.offset < offset + length)
-                || (offset >= other.offset && offset < other.offset + other.length));
+
+        /*
+         * use subtraction to avoid positive long overflow, e.g.
+         * instead of
+         *     A + B < C
+         *  use
+         *     C - A > B
+         */
+
+        if (other.length == nfs4_prot.NFS4_UINT64_MAX) {
+            /*
+             * either this lock region starts at higher offset,
+             * or lock region doesn't ends before other one starts.
+             */
+            return offset > other.offset || other.offset - length < offset;
+        }
+
+        if (length == nfs4_prot.NFS4_UINT64_MAX ){
+            /**
+             * either other lock region starts at higher offset,
+             * or lock region doesn't ends before this one starts.
+             */
+            return other.offset > offset || offset - other.length < other.offset;
+        }
+
+        if (offset > other.offset) {
+            return offset - other.offset < other.length;
+        }
+
+        if (other.offset > offset) {
+            return other.offset - offset < length;
+        }
+
+        // both locks have the same offset
+        return true;
     }
 
     public boolean isConflictingType(NlmLock other) {
