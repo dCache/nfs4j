@@ -18,11 +18,17 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import org.dcache.xdr.*;
+
+import com.google.common.primitives.UnsignedLong;
+
 import java.io.IOException;
+
+import org.dcache.xdr.*;
 import org.dcache.nfs.status.InvalException;
 
 public class offset4 extends uint64_t {
+
+    private final static UnsignedLong MAX_UINT64 = UnsignedLong.fromLongBits(nfs4_prot.NFS4_UINT64_MAX);
 
     public offset4() {
     }
@@ -66,18 +72,19 @@ public class offset4 extends uint64_t {
      * Checks whatever extending a file from this offset with to a given length
      * will overflow NFS4_UINT64_MAX.
      *
-     * <p>
-     * NOTICE: as Java does not supports unsigned longs, check is performed for
-     * {@link Long.MAX_VALUE}.
-     * </p>
-     *
      * @param length to verify
      * @param msg included into exception
      * @throws InvalException if offset + length will overflow
      * {@link Long.MAX_VALUE}
      */
     public void checkOverflow(long length, String msg) throws InvalException {
-        if (Long.MAX_VALUE - value < length) {
+
+        if (length == nfs4_prot.NFS4_UINT64_MAX) {
+            // special case - up-to-the-end
+            return;
+        }
+
+        if (MAX_UINT64.minus(UnsignedLong.fromLongBits(value)).compareTo(UnsignedLong.fromLongBits(length)) < 0) {
             throw new InvalException(msg);
         }
     }
