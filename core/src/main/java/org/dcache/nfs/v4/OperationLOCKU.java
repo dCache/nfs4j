@@ -66,7 +66,11 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
             }
 
             NlmLock lock = new NlmLock(lockOwner, _args.oplocku.locktype, _args.oplocku.offset.value, _args.oplocku.length.value);
-            context.getLm().unlock(inode.getFileId(), lock);
+            try {
+                context.getLm().unlock(inode.getFileId(), lock);
+            } catch (LockRangeUnavailabeException e) {
+                // posix locks allows unlocking of not locked regions
+            }
 
             lock_state.bumpSeqid();
             context.currentStateid(lock_state.stateid());
