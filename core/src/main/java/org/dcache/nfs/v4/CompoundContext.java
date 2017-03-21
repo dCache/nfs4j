@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
@@ -43,8 +42,10 @@ import org.dcache.nfs.v4.xdr.server_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.RpcAuthType;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class CompoundContext {
 
@@ -302,17 +303,17 @@ public class CompoundContext {
             public server_owner4 getOwner() {
                 server_owner4 owner = new server_owner4();
                 owner.so_minor_id = new uint64_t(0);
-                owner.so_major_id = _callInfo.
-                        getTransport().
-                        getLocalSocketAddress().
-                        getAddress().
-                        getAddress();
+                owner.so_major_id = InetSocketAddresses.uaddrOf(_callInfo.
+                        getTransport()
+                        .getLocalSocketAddress())
+                        .getBytes(UTF_8);
+
                 return owner;
             }
 
             @Override
             public byte[] getScope() {
-                return "".getBytes(StandardCharsets.UTF_8);
+                return "".getBytes(UTF_8);
             }
         };
     }
