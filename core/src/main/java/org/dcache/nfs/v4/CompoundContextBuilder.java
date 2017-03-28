@@ -21,21 +21,20 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.nlm.LockManager;
-import org.dcache.nfs.v4.nlm.SimpleLm;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.xdr.*;
 
 import static java.util.Objects.requireNonNull;
+
 public class CompoundContextBuilder {
 
-    private final LockManager lm = new SimpleLm();
+    private LockManager lm;
     private RpcCall call = null;
     private int minorversion = 0;
     private VirtualFileSystem fs = null;
     private NFSv4StateHandler stateHandler = null;
     private NFSv41DeviceManager deviceManager = null;
     private ExportFile exportFile = null;
-    private int opCount = 0;
 
     public CompoundContextBuilder withCall(RpcCall call) {
         this.call = call;
@@ -67,18 +66,44 @@ public class CompoundContextBuilder {
         return this;
     }
 
+    public CompoundContextBuilder withLockManager(LockManager lm) {
+        this.lm = lm;
+        return this;
+    }
+
+    public LockManager getLm() {
+        return lm;
+    }
+
+    public RpcCall getCall() {
+        return call;
+    }
+
+    public int getMinorversion() {
+        return minorversion;
+    }
+
+    public VirtualFileSystem getFs() {
+        return fs;
+    }
+
+    public NFSv4StateHandler getStateHandler() {
+        return stateHandler;
+    }
+
+    public NFSv41DeviceManager getDeviceManager() {
+        return deviceManager;
+    }
+
+    public ExportFile getExportFile() {
+        return exportFile;
+    }
+
     public CompoundContext build() {
 
         requireNonNull(call);
 
-        return new CompoundContext(
-                minorversion,
-                fs,
-                stateHandler,
-                lm,
-                deviceManager,
-                call,
-                exportFile);
+        return new CompoundContext(this);
     }
 
 }

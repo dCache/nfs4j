@@ -123,9 +123,16 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             res.resarray = new ArrayList<>(arg1.argarray.length);
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
-            CompoundContext context = new CompoundContext(arg1.minorversion.value,
-                fs, _statHandler, _nlm, _deviceManager, call$,
-                    _exportFile);
+
+            CompoundContext context = new CompoundContextBuilder()
+                    .withMinorversion(arg1.minorversion.value)
+                    .withFs(fs)
+                    .withDeviceManager(_deviceManager)
+                    .withStateHandler(_statHandler)
+                    .withLockManager(_nlm)
+                    .withExportFile(_exportFile)
+                    .withCall(call$)
+                    .build();
 
             boolean retransmit = false;
             for (int position = 0; position <arg1.argarray.length; position++) {

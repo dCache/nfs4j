@@ -96,26 +96,19 @@ public class CompoundContext {
     /**
      * Create context of COUMPOUND request.
      *
-     * @param processedOps @{link List} where results of processed operations are stored.
-     * @param minorversion NFSv4 minor version number.
-     * @param fs backend file-system interface
-     * @param call RPC call
-     * @param exportFile list of servers exports.
+     * @param builder to build this {@code CompoundContext}
      */
-    public CompoundContext(int minorversion, VirtualFileSystem fs,
-            NFSv4StateHandler stateHandler,
-            LockManager nlm,
-            NFSv41DeviceManager deviceManager, RpcCall call,
-            ExportFile exportFile) {
-        _minorversion = minorversion;
-        _fs = fs;
-        _deviceManager = deviceManager;
-        _callInfo = call;
-        _exportFile = exportFile;
-        _subject = call.getCredential().getSubject();
-        _stateHandler = stateHandler;
-        _principal = principalOf(call);
-        _nlm = nlm;
+    public CompoundContext(CompoundContextBuilder builder) {
+        _minorversion = builder.getMinorversion();
+        _fs = builder.getFs();
+        _deviceManager = builder.getDeviceManager();
+        _callInfo = builder.getCall();
+        _exportFile = builder.getExportFile();
+        _stateHandler = builder.getStateHandler();
+        _nlm = builder.getLm();
+
+        _subject = _callInfo.getCredential().getSubject();
+        _principal = principalOf(_callInfo);
     }
 
     public RpcCall getRpcCall() {
