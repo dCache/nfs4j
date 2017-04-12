@@ -155,7 +155,7 @@
           <dependency>
               <groupId>org.dcache.chimera</groupId>
               <artifactId>chimera-core</artifactId>
-              <version>0.0.15-SNAPSHOT</version>
+              <version>0.0.15a-SNAPSHOT</version>
           </dependency>
 
           <dependency>
