@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -189,11 +189,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             dirList = fetchDirectoryListing(cacheKey, context.getFs(), dir);
         }
 
-        // the cookie==1,2 is reserved
-        if (startValue > dirList.size() + COOKIE_OFFSET) {
-            throw new BadCookieException("bad cookie : " + startValue + " " + dirList.size());
-        }
-
         if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
             throw new TooSmallException("maxcount too small");
         }
@@ -215,9 +210,15 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
          */
         res.resok4.reply.eof = true;
         int fcount = 0;
-        for (long i = startValue; i < dirList.size() + COOKIE_OFFSET; i++) { // chimera have . and ..
+        for (int i = 0; i < dirList.size(); i++) {
 
-            DirectoryEntry le = dirList.get((int) (i - COOKIE_OFFSET));
+            DirectoryEntry le = dirList.get(i);
+            // shift all cookies by OFFSET as 1 and 2 are reserved values
+            long cookie = le.getCookie() + COOKIE_OFFSET;
+            if (cookie < startValue) {
+                continue;
+            }
+
             String name = le.getName();
 
             // skip . and .. while nfsv4 do not care about them
@@ -233,8 +234,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             Inode ei = le.getInode();
 
             currentEntry.name = new component4(name);
-            // keep offset
-            currentEntry.cookie = new nfs_cookie4(i);
+            currentEntry.cookie = new nfs_cookie4(cookie);
 
             // TODO: catch here error from getattr and reply 'fattr4_rdattr_error' to the client
             currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei, le.getStat(), context);
@@ -244,22 +244,14 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length + currentEntry.attrs.attr_vals.value.length;
             int newDirSize = name.length() + 4; // name + sizeof(long)
             if ((currcount + newSize > _args.opreaddir.maxcount.value) || (dircount + newDirSize > _args.opreaddir.dircount.value)) {
-
                 res.resok4.reply.eof = false;
-
-                _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
-                            i - startValue, currcount,
-                            _args.opreaddir.maxcount.value,
-                            dircount,
-                            _args.opreaddir.dircount.value,
-                            startValue, dirList.size());
                 break;
             }
             dircount += newDirSize;
             currcount += newSize;
 
             lastEntry = currentEntry;
-            if (i + 1 < dirList.size() + COOKIE_OFFSET) {
+            if (i + 1 < dirList.size()) {
                 currentEntry.nextentry = new entry4();
                 currentEntry = currentEntry.nextentry;
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -468,7 +468,7 @@ public class PseudoFs extends ForwardingFileSystem {
         public DirectoryEntry apply(DirectoryEntry input) {
             return new DirectoryEntry(input.getName(),
                     pseudoIdToReal(input.getInode(), getIndexId(_node)),
-                    input.getStat());
+                    input.getStat(), input.getCookie());
         }
     }
 
@@ -483,7 +483,7 @@ public class PseudoFs extends ForwardingFileSystem {
         @Override
         public DirectoryEntry apply(DirectoryEntry input) {
             return new DirectoryEntry(input.getName(),
-                    pushExportIndex(_inode, input.getInode()), input.getStat());
+                    pushExportIndex(_inode, input.getInode()), input.getStat(), input.getCookie());
         }
     }
 
@@ -494,6 +494,7 @@ public class PseudoFs extends ForwardingFileSystem {
                 if (node.isMountPoint()) {
                     return Lists.transform(_inner.list(parent), new ConvertToRealInode(node));
                 } else {
+                    long cookie = 0; // artificial cookie
                     List<DirectoryEntry> pseudoLs = new ArrayList<>();
                     for (String s : node.getChildren()) {
                         PseudoFsNode subNode = node.getChild(s);
@@ -501,8 +502,9 @@ public class PseudoFs extends ForwardingFileSystem {
                         Stat stat = _inner.getattr(inode);
                         DirectoryEntry e = new DirectoryEntry(s,
                                 subNode.isMountPoint()
-                                ? pseudoIdToReal(inode, getIndexId(subNode)) : inode, stat);
+                                ? pseudoIdToReal(inode, getIndexId(subNode)) : inode, stat, cookie);
                         pseudoLs.add(e);
+                        cookie++;
                     }
                     return pseudoLs;
                 }

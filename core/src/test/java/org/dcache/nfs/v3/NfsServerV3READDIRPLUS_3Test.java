@@ -8,7 +8,6 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3res;
-import org.dcache.nfs.v3.xdr.cookieverf3;
 import org.dcache.nfs.v3.xdr.nfs3_prot;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.FileHandle;
@@ -75,8 +74,8 @@ public class NfsServerV3READDIRPLUS_3Test {
     public void testReadDirWithTinyLimit() throws Exception {
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         // set up and execute the 1st call - no cookie, but very tight size limit
@@ -92,8 +91,8 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         // set up and execute the 1st call - no cookie, but very tight size limit
@@ -105,14 +104,14 @@ public class NfsServerV3READDIRPLUS_3Test {
         Assert.assertTrue(result.resok.reply.eof); //eof
         AssertXdr.assertXdrEncodable(result);
 
-        // client violates spec - attempts to read more
-        // using cookie on last (2nd) entry and returned verifier
+        // re-read after EOF
         long cookie = result.resok.reply.entries.nextentry.cookie.value.value;
         byte[] cookieVerifier = result.resok.cookieverf.value;
         args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
         result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
-        Assert.assertEquals(nfsstat.NFSERR_BAD_COOKIE, result.status); //error response
+        Assert.assertEquals(nfsstat.NFS_OK, result.status); //response ok
+        Assert.assertTrue(result.resok.reply.eof); //eof
         AssertXdr.assertXdrEncodable(result);
     }
 
@@ -121,9 +120,9 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         long cookie = 1;
@@ -142,9 +141,9 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         long cookie = 1;

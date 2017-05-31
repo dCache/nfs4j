@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -776,10 +776,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 dirList = fetchDirectoryListing(cacheKey, fs, dir);
             }
 
-            if (startValue != 0 && startValue >= dirList.size()) {
-                throw new BadCookieException("invalid start value");
-            }
-
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIRPLUS3resok();
             res.resok.reply = new dirlistplus3();
@@ -797,20 +793,26 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             int currcount = READDIRPLUS3RESOK_SIZE;
             int dircount = 0;
+            int fcount = 0;
             res.resok.reply.entries = new entryplus3();
             entryplus3 currentEntry = res.resok.reply.entries;
             entryplus3 lastEntry = null;
 
-            for (long i = startValue; i < dirList.size(); i++) {
+            for (int i = 0; i < dirList.size(); i++) {
 
-                DirectoryEntry le = dirList.get((int) i);
+                DirectoryEntry le = dirList.get(i);
+                if (le.getCookie() < startValue) {
+                    continue;
+                }
+
+                fcount++;
                 String name = le.getName();
 
                 Inode ef = le.getInode();
 
                 currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
-                currentEntry.cookie = new cookie3(new uint64(i));
+                currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
                 currentEntry.name_handle = new post_op_fh3();
                 currentEntry.name_handle.handle_follows = true;
                 currentEntry.name_handle.handle = new nfs_fh3();
@@ -836,7 +838,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     res.resok.reply.eof = false;
 
                     _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
-                            (i - startValue), currcount,
+                            fcount, currcount,
                                 arg1.maxcount.value.value, dircount,
                                 arg1.dircount.value.value,
                                 startValue, dirList.size()
@@ -854,6 +856,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 }
             }
 
+            if (fcount == 0) {
+                // if there are no entries then null the list head to keep XDR encoder happy
+                res.resok.reply.entries = null;
+            }
             res.resok.reply.eof = true;
 
         } catch (ChimeraNFSException hne) {
@@ -923,10 +929,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 dirList = fetchDirectoryListing(cacheKey, fs, dir);
             }
 
-            if (startValue != 0 && startValue >= dirList.size()) {
-                throw new BadCookieException("invalid start value");
-            }
-
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIR3resok();
             res.resok.reply = new dirlist3();
@@ -943,18 +945,24 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             int currcount = READDIR3RESOK_SIZE;
+            int fcount = 0;
             res.resok.reply.entries = new entry3();
             entry3 currentEntry = res.resok.reply.entries;
             entry3 lastEntry = null;
 
-            for (long i = startValue; i < dirList.size(); i++) {
+            for (int i = 0; i < dirList.size(); i++) {
 
-                DirectoryEntry le = dirList.get((int) i);
+                DirectoryEntry le = dirList.get(i);
+                if(le.getCookie() < startValue) {
+                    continue;
+                }
+
+                fcount++;
                 String name = le.getName();
 
                 currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
-                currentEntry.cookie = new cookie3(new uint64(i));
+                currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
                 currentEntry.nextentry = null;
 
                 // check if writing this entry exceeds the count limit
@@ -971,7 +979,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     res.resok.reply.eof = false;
 
                     _log.debug("Sending {} entries ( {} bytes from {}) cookie = {} total {}",
-                            (i - startValue), currcount,
+                            fcount, currcount,
                                 arg1.count.value.value,
                                 startValue, dirList.size()
                             );
@@ -987,6 +995,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 }
             }
 
+            if (fcount == 0) {
+                // if there are no entries then null the list head to keep XDR encoder happy
+                res.resok.reply.entries = null;
+            }
             res.resok.reply.eof = true;
 
         } catch (ChimeraNFSException hne) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,11 +24,13 @@ public class DirectoryEntry {
     private final String _name;
     private final Stat _stat;
     private final Inode _inode;
+    private final long _cookie;
 
-    public DirectoryEntry(String name, Inode inode, Stat stat) {
+    public DirectoryEntry(String name, Inode inode, Stat stat, long cookie) {
         _inode = inode;
         _name = name;
         _stat = stat;
+        _cookie = cookie;
     }
 
     public Inode getInode() {
@@ -43,4 +45,7 @@ public class DirectoryEntry {
         return _stat;
     }
 
+    public long getCookie() {
+        return _cookie;
+    }
 }

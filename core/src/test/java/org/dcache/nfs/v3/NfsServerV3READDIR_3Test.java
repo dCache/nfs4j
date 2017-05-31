@@ -75,8 +75,8 @@ public class NfsServerV3READDIR_3Test {
     public void testReadDirWithTinyLimit() throws Exception {
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         // set up and execute the 1st call - no cookie, but very tight size limit
@@ -92,8 +92,8 @@ public class NfsServerV3READDIR_3Test {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         // set up and execute the 1st call - no cookie, but very tight size limit
@@ -105,14 +105,14 @@ public class NfsServerV3READDIR_3Test {
         Assert.assertTrue(result.resok.reply.eof); //eof
         AssertXdr.assertXdrEncodable(result);
 
-        // client violates spec - attempts to read more
-        // using cookie on last (2nd) entry and returned verifier
+        // reading after we got EOF
         long cookie = result.resok.reply.entries.nextentry.cookie.value.value;
         byte[] cookieVerifier = result.resok.cookieverf.value;
         args = NfsV3Ops.readDir(dirHandle, cookie, cookieVerifier);
         result = nfsServer.NFSPROC3_READDIR_3(call, args);
 
-        Assert.assertEquals(nfsstat.NFSERR_BAD_COOKIE, result.status); //error response
+        Assert.assertEquals(nfsstat.NFS_OK, result.status); //response ok
+        Assert.assertTrue(result.resok.reply.eof); //eof
         AssertXdr.assertXdrEncodable(result);
     }
 
@@ -121,9 +121,9 @@ public class NfsServerV3READDIR_3Test {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         long cookie = 1;
@@ -142,9 +142,9 @@ public class NfsServerV3READDIR_3Test {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         long cookie = 1;

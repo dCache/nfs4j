@@ -75,8 +75,8 @@ public class OperationREADDIRTest {
     public void testReadDirWithTinyLimit() throws Exception {
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         nfs_argop4 op = ReaddirStub.generateRequest(0, new verifier4(new byte[0]), 1024, 10);
@@ -90,9 +90,9 @@ public class OperationREADDIRTest {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat,3));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         long cookie = 4; // 3 is the first allowed non zero value
@@ -109,9 +109,9 @@ public class OperationREADDIRTest {
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat));
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+        dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
         Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
 
         long cookie = 4; // 3 is the first allowed non zero value
