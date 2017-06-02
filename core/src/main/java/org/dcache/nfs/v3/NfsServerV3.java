@@ -19,14 +19,10 @@
  */
 package org.dcache.nfs.v3;
 
-import com.google.common.base.Throwables;
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
-import org.dcache.nfs.InodeCacheEntry;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.ChimeraNFSException;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.dcache.nfs.v3.xdr.LOOKUP3res;
 import org.dcache.nfs.v3.xdr.WRITE3resfail;
 import org.dcache.nfs.v3.xdr.RMDIR3resok;
@@ -130,9 +126,7 @@ import org.dcache.nfs.v3.xdr.FSINFO3resfail;
 import org.dcache.nfs.v3.xdr.ACCESS3res;
 import org.dcache.nfs.v3.xdr.COMMIT3resok;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
 
 import org.dcache.nfs.v3.xdr.COMMIT3resfail;
 import org.dcache.nfs.v3.xdr.FSSTAT3resfail;
@@ -156,8 +150,7 @@ import static org.dcache.nfs.v3.NameUtils.checkFilename;
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
-import org.dcache.utils.GuavaCacheMXBean;
-import org.dcache.utils.GuavaCacheMXBeanImpl;
+import org.dcache.nfs.vfs.DirectoryStream;
 
 import javax.security.auth.Subject;
 
@@ -172,17 +165,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     private final VirtualFileSystem _vfs;
     private final ExportFile _exports;
-
-    private final Cache<InodeCacheEntry<cookieverf3>, List<DirectoryEntry>> _dlCacheFull =
-            CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .softValues()
-            .maximumSize(512)
-            .recordStats()
-            .build();
-
-    private final GuavaCacheMXBean CACHE_MXBEAN
-            = new GuavaCacheMXBeanImpl("READDIR3", _dlCacheFull);
 
     private final writeverf3 writeVerifier = generateInstanceWriteVerifier();
 
@@ -704,19 +686,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     }
 
-    /**
-     * Generate a {@link cookieverf3} for a directory.
-     *
-     * @param dirStat stat structure for the target directory
-     * @return a cookie verifier, based on mtime
-     * @throws IllegalArgumentException
-     */
-    private cookieverf3 generateDirectoryVerifier(Stat dirStat) throws IllegalArgumentException {
-        byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
-        Bytes.putLong(verifier, 0, dirStat.getGeneration());
-        return new cookieverf3(verifier);
-    }
-
     /*
      * to simulate snapshot-like list following trick is used:
      *
@@ -743,38 +712,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             long startValue = arg1.cookie.value.value;
-            List<DirectoryEntry> dirList = null;
-            cookieverf3 cookieverf;
-            boolean validateVerifier = false;
+            DirectoryStream directoryStream;
+            cookieverf3 cookieverf = arg1.cookieverf;
 
-            /*
-             * For fresh readdir requests, cookie == 0, generate a new verifier and check
-             * cache for an existing result.
-             *
-             * For requests with cookie != 0 provided verifier used for cache lookup.
-             */
-            // we will update verifier when new listing is generated
-            cookieverf = arg1.cookieverf;
-            if (startValue != 0) {
-                ++startValue;
-                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-                dirList = _dlCacheFull.getIfPresent(cacheKey);
-                if (dirList == null) {
-                    validateVerifier = true;
-                    _log.debug("Directory listing for expired cookie verifier");
-                }
-            }
-
-            if (dirList == null) {
-                cookieverf = generateDirectoryVerifier(dirStat);
-
-                if (validateVerifier && !cookieverf.equals(arg1.cookieverf)) {
-                    throw new BadCookieException("readdir verifier expired");
-                }
-
-                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-                dirList = fetchDirectoryListing(cacheKey, fs, dir);
-            }
+            directoryStream = fs.list(dir, cookieverf.value, startValue);
+            Iterator<DirectoryEntry> dirList = directoryStream.iterator();
 
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIRPLUS3resok();
@@ -782,26 +724,21 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
-            res.resok.reply.eof = true; // hope to send full listing in one go. will be changes if needed
-            res.resok.cookieverf = cookieverf;
+            res.resok.cookieverf = new cookieverf3(directoryStream.getVerifier());
 
             HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
+
 
             int currcount = READDIRPLUS3RESOK_SIZE;
             int dircount = 0;
             int fcount = 0;
             entryplus3 lastEntry = null;
 
-            for (int i = 0; i < dirList.size(); i++) {
-
-                DirectoryEntry le = dirList.get(i);
-                if (le.getCookie() < startValue) {
-                    continue;
-                }
+            while (dirList.hasNext()) {
 
                 fcount++;
+                DirectoryEntry le = dirList.next();
                 String name = le.getName();
-
                 Inode ef = le.getInode();
 
                 entryplus3 currentEntry = new entryplus3();
@@ -816,7 +753,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 currentEntry.name_attributes.attributes_follow = true;
                 currentEntry.name_attributes.attributes = new fattr3();
                 HimeraNfsUtils.fill_attributes(le.getStat(), currentEntry.name_attributes.attributes);
-                currentEntry.nextentry = null;
 
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRYPLUS3_SIZE + name.length() + currentEntry.name_handle.handle.data.length;
@@ -827,8 +763,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                         //write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
-
-                    res.resok.reply.eof = false;
                     break;
                 }
 
@@ -843,11 +777,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 lastEntry = currentEntry;
             }
 
-            _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
+            res.resok.reply.eof = !dirList.hasNext();
+            _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {}",
                     fcount, currcount,
                     arg1.maxcount.value.value, dircount,
                     arg1.dircount.value.value,
-                    startValue, dirList.size()
+                    startValue
             );
 
         } catch (ChimeraNFSException hne) {
@@ -884,38 +819,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
             }
 
             long startValue = arg1.cookie.value.value;
-            List<DirectoryEntry> dirList = null;
-            cookieverf3 cookieverf;
-            boolean validateVerifier = false;
+            DirectoryStream directoryStream;
+            cookieverf3 cookieverf = arg1.cookieverf;
 
-            /*
-             * For fresh readdir requests, cookie == 0, generate a new verifier and check
-             * cache for an existing result.
-             *
-             * For requests with cookie != 0 provided verifier used for cache lookup.
-             */
-            // we will update verifier when new listing is generated
-            cookieverf = arg1.cookieverf;
-            if (startValue != 0) {
-                ++startValue;
-                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-                dirList = _dlCacheFull.getIfPresent(cacheKey);
-                if (dirList == null) {
-                    validateVerifier = true;
-                    _log.debug("Directory listing for expired cookie verifier");
-                }
-            }
-
-            if (dirList == null) {
-                cookieverf = generateDirectoryVerifier(dirStat);
-
-                if (validateVerifier && !cookieverf.equals(arg1.cookieverf)) {
-                    throw new BadCookieException("readdir verifier expired");
-                }
-
-                InodeCacheEntry<cookieverf3> cacheKey = new InodeCacheEntry<>(dir, cookieverf);
-                dirList = fetchDirectoryListing(cacheKey, fs, dir);
-            }
+            directoryStream = fs.list(dir, cookieverf.value, startValue);
+            Iterator<DirectoryEntry> dirList = directoryStream.iterator();
 
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIR3resok();
@@ -923,30 +831,24 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
-            res.resok.reply.eof = true; // hope to send full listing in one go. will be changes if needed
             HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
-            res.resok.cookieverf = cookieverf;
+            res.resok.cookieverf = new cookieverf3(directoryStream.getVerifier());
 
             int currcount = READDIR3RESOK_SIZE;
             int fcount = 0;
             entry3 lastEntry = null;
 
-            for (int i = 0; i < dirList.size(); i++) {
-
-                DirectoryEntry le = dirList.get(i);
-                if (le.getCookie() < startValue) {
-                    continue;
-                }
+            while (dirList.hasNext()) {
 
                 fcount++;
+                DirectoryEntry le = dirList.next();
                 String name = le.getName();
 
                 entry3 currentEntry = new entry3();
                 currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
-                currentEntry.nextentry = null;
 
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRY3_SIZE + name.length();
@@ -956,9 +858,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                         //write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
-
-                    res.resok.reply.eof = false;
-
                     break;
                 }
                 currcount += newSize;
@@ -971,10 +870,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 lastEntry = currentEntry;
             }
 
-            _log.debug("Sending {} entries ( {} bytes from {}) cookie = {} total {}",
+            res.resok.reply.eof = !dirList.hasNext();
+            _log.debug("Sending {} entries ( {} bytes from {}) cookie = {}",
                     fcount, currcount,
                     arg1.count.value.value,
-                    startValue, dirList.size()
+                    startValue
             );
 
         } catch (ChimeraNFSException hne) {
@@ -990,16 +890,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
         }
 
         return res;
-    }
-
-    private List<DirectoryEntry> fetchDirectoryListing(InodeCacheEntry<cookieverf3> cacheKey, VirtualFileSystem fs, Inode dir)
-            throws ChimeraNFSException {
-        try {
-            return _dlCacheFull.get(cacheKey, () -> fs.list(dir));
-        } catch (ExecutionException e) {
-            Throwables.propagateIfPossible(e.getCause(), ChimeraNFSException.class);
-            throw new NfsIoException(e.getMessage());
-        }
     }
 
     @Override

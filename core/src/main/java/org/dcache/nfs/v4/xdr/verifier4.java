@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -71,6 +71,12 @@ public class verifier4 implements XdrAble {
         StringBuilder sb = new StringBuilder();
         sb.append('[').append(Bytes.toHexString(value)).append(']');
         return sb.toString();
+    }
+
+    public static verifier4 valueOf(long value) {
+        byte[] bytes = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        Bytes.putLong(bytes, 0, value);
+        return new verifier4(bytes);
     }
 }
 // End of verifier4.java

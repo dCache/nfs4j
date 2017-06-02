@@ -21,10 +21,11 @@ package org.dcache.nfs.vfs;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Collections2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -202,12 +203,13 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
-    public List<DirectoryEntry> list(Inode inode) throws IOException {
+    public DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException {
         Subject effectiveSubject = checkAccess(inode, ACE4_LIST_DIRECTORY);
         if (inode.isPesudoInode()) {
-            return listPseudoDirectory(inode);
+            return new DirectoryStream(listPseudoDirectory(inode));
         }
-        return Lists.transform(_inner.list(inode), new PushParentIndex(inode));
+        DirectoryStream innerStrem = _inner.list(inode, verifier, cookie);
+        return new DirectoryStream(innerStrem.getVerifier(), Collections2.transform(innerStrem.getEntries(), new PushParentIndex(inode)));
     }
 
     @Override
@@ -487,12 +489,12 @@ public class PseudoFs extends ForwardingFileSystem {
         }
     }
 
-    private List<DirectoryEntry> listPseudoDirectory(Inode parent) throws ChimeraNFSException, IOException {
+    private Collection<DirectoryEntry> listPseudoDirectory(Inode parent) throws ChimeraNFSException, IOException {
         Set<PseudoFsNode> nodes = prepareExportTree();
         for (PseudoFsNode node : nodes) {
             if (node.id().equals(parent)) {
                 if (node.isMountPoint()) {
-                    return Lists.transform(_inner.list(parent), new ConvertToRealInode(node));
+                    return Collections2.transform(_inner.list(parent, null, 0L).getEntries(), new ConvertToRealInode(node));
                 } else {
                     long cookie = 0; // artificial cookie
                     List<DirectoryEntry> pseudoLs = new ArrayList<>();

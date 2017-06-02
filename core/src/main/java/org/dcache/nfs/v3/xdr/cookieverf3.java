@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v3.xdr;
 import org.dcache.xdr.*;
+import org.dcache.utils.Bytes;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -63,5 +64,10 @@ public class cookieverf3 implements XdrAble {
         return Arrays.equals(this.value, ((cookieverf3)obj).value );
     }
 
+    public static cookieverf3 valueOf(long value) {
+        byte[] bytes = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
+        Bytes.putLong(bytes, 0, value);
+        return new cookieverf3(bytes);
+    }
 }
 // End of cookieverf3.java

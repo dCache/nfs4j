@@ -8,8 +8,9 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3res;
-import org.dcache.nfs.v3.xdr.nfs3_prot;
+import org.dcache.nfs.v3.xdr.cookieverf3;
 import org.dcache.nfs.vfs.DirectoryEntry;
+import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.FileHandle;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -17,12 +18,13 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.testutils.AssertXdr;
 import org.dcache.testutils.NfsV3Ops;
 import org.dcache.testutils.RpcCallBuilder;
-import org.dcache.utils.Bytes;
 import org.dcache.xdr.RpcCall;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import static org.mockito.Mockito.*;
 
 public class NfsServerV3READDIRPLUS_3Test {
     private FileHandle dirHandle;
@@ -56,8 +58,11 @@ public class NfsServerV3READDIRPLUS_3Test {
 
     @Test
     public void testReadDirWithNoResults() throws Exception {
+
+        byte[] cookieVerifier = cookieverf3.valueOf(0).value;
+
         // vfs will return an empty list from the vfs for dir (technically legal)
-        Mockito.when(vfs.list(Mockito.eq(new Inode(dirHandle)))).thenReturn(Collections.<DirectoryEntry> emptyList());
+        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, Collections.emptyList()));
 
         // set up and execute the call
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -72,11 +77,14 @@ public class NfsServerV3READDIRPLUS_3Test {
 
     @Test
     public void testReadDirWithTinyLimit() throws Exception {
+
+        byte[] cookieVerifier = cookieverf3.valueOf(0).value;
+
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
         dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
-        Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
+        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -89,11 +97,13 @@ public class NfsServerV3READDIRPLUS_3Test {
     @Test
     public void testContinueReadingAfterEOF() throws Exception {
 
+        byte[] cookieVerifier = cookieverf3.valueOf(dirStat.getGeneration()).value;
+
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
         dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
-        Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
+        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -106,7 +116,7 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         // re-read after EOF
         long cookie = result.resok.reply.entries.nextentry.cookie.value.value;
-        byte[] cookieVerifier = result.resok.cookieverf.value;
+        cookieVerifier = result.resok.cookieverf.value;
         args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
         result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
@@ -118,15 +128,16 @@ public class NfsServerV3READDIRPLUS_3Test {
     @Test
     public void testSemiValidVerifier() throws Exception {
 
+        byte[] cookieVerifier = cookieverf3.valueOf(dirStat.getGeneration()).value;
+
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
         dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
-        Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
+        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         long cookie = 1;
-        byte[] cookieVerifier = generateDirectoryVerifier(dirStat.getGeneration());
 
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
         READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
@@ -134,32 +145,5 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         Assert.assertEquals(nfsstat.NFS_OK, result.status); //error response
         AssertXdr.assertXdrEncodable(result);
-    }
-
-    @Test
-    public void testInValidVerifier() throws Exception {
-
-        // vfs will return only "." and ".." as contents, both leading to itself
-        List<DirectoryEntry> dirContents = new ArrayList<>();
-        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
-        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
-        dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
-        Mockito.when(vfs.list(Mockito.eq(dirInode))).thenReturn(dirContents);
-
-        long cookie = 1;
-        byte[] cookieVerifier = generateDirectoryVerifier(dirStat.getGeneration() - 1);
-
-        RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
-        READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
-
-        Assert.assertEquals(nfsstat.NFSERR_BAD_COOKIE, result.status); //error response
-        AssertXdr.assertXdrEncodable(result);
-    }
-
-    private byte[] generateDirectoryVerifier(long generation) throws IllegalArgumentException {
-        byte[] verifier = new byte[nfs3_prot.NFS3_COOKIEVERFSIZE];
-        Bytes.putLong(verifier, 0, generation);
-        return verifier;
     }
 }

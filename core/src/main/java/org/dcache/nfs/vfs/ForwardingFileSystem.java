@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 package org.dcache.nfs.vfs;
 
 import java.io.IOException;
-import java.util.List;
 import javax.security.auth.Subject;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -72,8 +71,8 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
-    public List<DirectoryEntry> list(Inode inode) throws IOException {
-        return delegate().list(inode);
+    public DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException {
+        return delegate().list(inode, verifier, cookie);
     }
 
     @Override
@@ -154,6 +153,11 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     @Override
     public NfsIdMapping getIdMapper() {
         return delegate().getIdMapper();
+    }
+
+    @Override
+    public byte[] directoryVerifier(Inode inode) throws IOException {
+        return delegate().directoryVerifier(inode);
     }
 
 }

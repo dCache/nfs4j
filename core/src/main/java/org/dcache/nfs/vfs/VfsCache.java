@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -34,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
 import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.utils.Opaque;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Caching decorator.
@@ -44,6 +47,8 @@ public class VfsCache extends ForwardingFileSystem {
     private final Cache<Opaque, Stat> _statCache;
     private final LoadingCache<Inode, Inode> _parentCache;
     private final Supplier<FsStat> _fsStatSupplier;
+
+    private final Cache<InodeCacheEntry, DirectoryStream> _readdirCache;
 
     private final VirtualFileSystem _inner;
 
@@ -70,6 +75,13 @@ public class VfsCache extends ForwardingFileSystem {
                 .recordStats()
                 .build(new ParentLoader());
 
+        _readdirCache = CacheBuilder.newBuilder()
+                .maximumSize(cacheConfig.getReaddirMaxEntries())
+                .expireAfterWrite(cacheConfig.getReaddirLifeTime(), cacheConfig.getReaddirLifeTimeUnit())
+                .softValues()
+                .recordStats()
+                .build();
+
         _fsStatSupplier = cacheConfig.getFsStatLifeTime() > 0 ?
                 Suppliers.memoizeWithExpiration(new FsStatSupplier(), cacheConfig.getFsStatLifeTime(), cacheConfig.getFsSataTimeUnit()) :
                 new FsStatSupplier();
@@ -77,6 +89,7 @@ public class VfsCache extends ForwardingFileSystem {
         new GuavaCacheMXBeanImpl("vfs-stat", _statCache);
         new GuavaCacheMXBeanImpl("vfs-parent", _parentCache);
         new GuavaCacheMXBeanImpl("vfs-lookup", _lookupCache);
+        new GuavaCacheMXBeanImpl("vfs-readdir", _readdirCache);
     }
 
     @Override
@@ -296,6 +309,39 @@ public class VfsCache extends ForwardingFileSystem {
         }
     }
 
+    private static class InodeCacheEntry {
+
+        private final Inode _inode;
+        private final byte[] _verifier;
+
+        public InodeCacheEntry(Inode inode, byte[] verifier) {
+            _inode = requireNonNull(inode);
+            _verifier = requireNonNull(verifier);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+
+            if (obj == null) {
+                return false;
+            }
+            if (obj == this) {
+                return true;
+            }
+
+            if (!obj.getClass().equals(this.getClass())) {
+                return false;
+            }
+            InodeCacheEntry other = (InodeCacheEntry) obj;
+            return _inode.equals(other._inode) && Arrays.equals(_verifier, other._verifier);
+        }
+
+        @Override
+        public int hashCode() {
+            return _inode.hashCode() ^ Arrays.hashCode(_verifier);
+        }
+    }
+
     private class FsStatSupplier implements Supplier<FsStat> {
 
         @Override
@@ -308,4 +354,30 @@ public class VfsCache extends ForwardingFileSystem {
             }
         }
     }
+
+    @Override
+    public DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException {
+
+        InodeCacheEntry cacheKey;
+        if (cookie == 0L && Arrays.equals(verifier, DirectoryStream.ZERO_VERIFIER)) {
+            /*
+             * Initial listing. Lets try cache first. Use the same key as if we had
+             * executed directory listing.
+             */
+            cacheKey = new InodeCacheEntry(inode, delegate().directoryVerifier(inode));
+        } else {
+            cacheKey = new InodeCacheEntry(inode, verifier);
+        }
+
+        DirectoryStream directoryStream = _readdirCache.getIfPresent(cacheKey);
+        if (directoryStream == null) {
+            // ask always for list from the beginning
+            directoryStream = delegate().list(inode, DirectoryStream.ZERO_VERIFIER, 0L);
+            cacheKey = new InodeCacheEntry(inode, directoryStream.getVerifier());
+            _readdirCache.put(cacheKey, directoryStream);
+        }
+
+        return directoryStream.tail(cookie);
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,6 +31,10 @@ public class VfsCacheConfig {
     private TimeUnit timeUnit = TimeUnit.SECONDS;
     private long fsStatLifeTime = 0;
     private TimeUnit fsStatTimeUnit = TimeUnit.HOURS;
+
+    private long readdirLifeTime;
+    private TimeUnit readdirLifeTimeUnit = TimeUnit.SECONDS;
+    private int readdirMaxEntries;
 
     /**
      * Get maximal number of entries in the cache.
@@ -72,6 +76,32 @@ public class VfsCacheConfig {
         return fsStatTimeUnit;
     }
 
+     /**
+     * Get directory listing cache validity time.
+     *
+     * @return cache validity time.
+     */
+    public long getReaddirLifeTime() {
+        return readdirLifeTime;
+    }
+
+    /**
+     * Get unit in which directory listing cache validity time is expressed.
+     * @return time unit.
+     */
+    public TimeUnit getReaddirLifeTimeUnit() {
+        return readdirLifeTimeUnit;
+    }
+
+    /**
+     * Get maximal number of directory listings in the cache.
+     * Note, that this number is independent from directory listing size.
+     * @return maximal number of directory listings.
+     */
+    public int getReaddirMaxEntries() {
+        return readdirMaxEntries;
+    }
+
     /**
      * Set maximal number of entries in the cache.
      * @param maxEntries
@@ -110,5 +140,29 @@ public class VfsCacheConfig {
      */
     public void setFsStatTimeUnit(TimeUnit timeUnit) {
         this.fsStatTimeUnit = timeUnit;
+    }
+
+    /**
+     * Set directory listing cache validity time.
+     * @param lifeTime
+     */
+    public void setReaddirLifeTime(long lifeTime) {
+        this.readdirLifeTime = lifeTime;
+    }
+
+    /**
+     * Set unit in which directory listing cache validity time is expressed.
+     * @param lifeTimeTimeUnit
+     */
+    public void setReaddirLifeTimeUnit(TimeUnit lifeTimeTimeUnit) {
+        this.readdirLifeTimeUnit = lifeTimeTimeUnit;
+    }
+
+    /**
+     * Set maximal number directory listings to cache.
+     * @param maxEntries
+     */
+    public void setReaddirMaxEntries(int maxEntries) {
+        readdirMaxEntries = maxEntries;
     }
 }

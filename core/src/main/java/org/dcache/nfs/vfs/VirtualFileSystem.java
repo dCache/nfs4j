@@ -20,7 +20,6 @@
 package org.dcache.nfs.vfs;
 
 import java.io.IOException;
-import java.util.List;
 import javax.security.auth.Subject;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -108,13 +107,30 @@ public interface VirtualFileSystem {
     Inode link(Inode parent, Inode link, String name, Subject subject) throws IOException;
 
     /**
-     * Get list of file system objects in the given directory.
+     * Get list of file system objects in the given directory. The provided
+     * {@code cookie} identifies a logical offset of the listing, if directory
+     * listing is processed in chunks. The {@code verifier} argument used to
+     * validate cookies as directory content can be changes and earlier generated
+     * cookie cannot be used any more. For initial listing a zero cookie and verifier
+     * is used. The returned listing will contain only entries with cookies
+     * greater than specified value.
      *
      * @param inode inode of the directory to list.
-     * @return list of file system objects.
+     * @param verifier opaque verifier to identify {@code snapshot} to list.
+     * @param cookie a logical offset in the listing.
+     * @return DirectoryStream containing directory listing.
      * @throws IOException
      */
-    List<DirectoryEntry> list(Inode inode) throws IOException;
+    DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException;
+
+    /**
+     * Generate a opaque directory verifier which is identified with can
+     * be used as identifier of directory's state snapshot.
+     * @param inode inode of the directory to create verifier.
+     * @return opaque verifier.
+     * @throws IOException
+     */
+    byte[] directoryVerifier(Inode inode) throws IOException;
 
     /**
      * Create a new sub-directory in a given directory.

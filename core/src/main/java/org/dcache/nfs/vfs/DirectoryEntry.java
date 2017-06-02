@@ -19,7 +19,7 @@
  */
 package org.dcache.nfs.vfs;
 
-public class DirectoryEntry {
+public class DirectoryEntry implements Comparable<DirectoryEntry>{
 
     private final String _name;
     private final Stat _stat;
@@ -47,5 +47,10 @@ public class DirectoryEntry {
 
     public long getCookie() {
         return _cookie;
+    }
+
+    @Override
+    public int compareTo(DirectoryEntry o) {
+        return Long.compare(this.getCookie(), o.getCookie());
     }
 }

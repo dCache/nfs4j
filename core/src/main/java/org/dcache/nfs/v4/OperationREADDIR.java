@@ -19,40 +19,28 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.entry4;
 import org.dcache.nfs.v4.xdr.dirlist4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.component4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.READDIR4resok;
 import org.dcache.nfs.v4.xdr.READDIR4res;
 import org.dcache.nfs.ChimeraNFSException;
 
-import org.dcache.nfs.InodeCacheEntry;
 import org.dcache.nfs.status.BadCookieException;
-import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotDirException;
-import org.dcache.nfs.status.NotSameException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.DirectoryEntry;
+import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.utils.Bytes;
-import org.dcache.utils.GuavaCacheMXBean;
-import org.dcache.utils.GuavaCacheMXBeanImpl;
 import org.dcache.xdr.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,29 +67,10 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      */
     private static final long COOKIE_OFFSET = 3;
 
-    private static final Cache<InodeCacheEntry<verifier4>,List<DirectoryEntry>> _dlCache =
-            CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .softValues()
-            .maximumSize(512)
-            .recordStats()
-            .build();
+    OperationREADDIR(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_READDIR);
+    }
 
-    private static final GuavaCacheMXBean CACHE_MXBEAN =
-            new GuavaCacheMXBeanImpl("READDIR4", _dlCache);
-
-	OperationREADDIR(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_READDIR);
-	}
-
-    /*
-     * to simulate snapshot-like list following trick is used:
-     *
-     * 1. for each mew readdir(plus) ( cookie == 0 ) generate new cookie
-     * verifier 2. list result stored in timed Map, where verifier used as a key
-     * 3. remove cached entry as soon as list sent
-     *
-     */
     @Override
     public void process(final CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
 
@@ -109,19 +78,9 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         final Inode dir = context.currentInode();
 
-        List<DirectoryEntry> dirList = null;
-        verifier4 verifier;
+        DirectoryStream directoryStream;
+        verifier4 verifier =_args.opreaddir.cookieverf;
         long startValue = _args.opreaddir.cookie.value;
-        boolean validateVerifier = false;
-
-
-        /*
-         * For fresh readdir requests, cookie == 0, generate a new verifier and
-         * check cache for an existing result.
-         *
-         * For requests with cookie != 0 provided verifier used for cache
-         * lookup.
-         */
 
         /*
          * we have to fake cookie values, while '0' and '1' is reserved so we
@@ -131,40 +90,18 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             throw new BadCookieException("bad cookie : " + startValue);
         }
 
-        // we will update verifier when new listing is generated
-        verifier = _args.opreaddir.cookieverf;
+        Stat stat = context.getFs().getattr(dir);
+        if (stat.type() != Stat.Type.DIRECTORY) {
+            throw new NotDirException();
+        }
+
         if (startValue != 0) {
-            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
-
-            dirList = _dlCache.getIfPresent(cacheKey);
-            if (dirList == null) {
-                // we accept new listing only if verifier will match
-                _log.info("Directory listing for expired cookie verifier");
-                validateVerifier = true;
-            }
-
-            // while client sends to us last cookie, we have to continue from the next one
-            ++startValue;
-        } else {
-            startValue = COOKIE_OFFSET;
+            // all cookies are shifted by OFFSET
+            startValue -= COOKIE_OFFSET;
         }
 
-        if (dirList == null) {
-            Stat stat = context.getFs().getattr(dir);
-
-            if (stat.type() != Stat.Type.DIRECTORY) {
-                throw new NotDirException();
-            }
-
-            verifier = generateDirectoryVerifier(stat);
-            if (validateVerifier && !verifier.equals(_args.opreaddir.cookieverf)) {
-                throw new NotSameException("Cookie expired. Directory content is changed.");
-            }
-
-            InodeCacheEntry<verifier4> cacheKey = new InodeCacheEntry<>(dir, verifier);
-            dirList = fetchDirectoryListing(cacheKey, context.getFs(), dir);
-        }
-
+        directoryStream = context.getFs().list(dir, verifier.value, startValue);
+        Iterator<DirectoryEntry> dirList = directoryStream.iterator();
         if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
             throw new TooSmallException("maxcount too small");
         }
@@ -172,23 +109,16 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         res.status = nfsstat.NFS_OK;
         res.resok4 = new READDIR4resok();
         res.resok4.reply = new dirlist4();
-        res.resok4.cookieverf = verifier;
-        res.resok4.reply.eof = true; // hope to send full listing in one go. will be changes if needed
+        res.resok4.cookieverf = new verifier4(directoryStream.getVerifier());
 
         int currcount = READDIR4RESOK_SIZE;
         int dircount = 0;
         entry4 lastEntry = null;
 
         int fcount = 0;
-        for (int i = 0; i < dirList.size(); i++) {
+        while (dirList.hasNext()) {
 
-            DirectoryEntry le = dirList.get(i);
-            // shift all cookies by OFFSET as 1 and 2 are reserved values
-            long cookie = le.getCookie() + COOKIE_OFFSET;
-            if (cookie < startValue) {
-                continue;
-            }
-
+            DirectoryEntry le = dirList.next();
             String name = le.getName();
 
             // skip . and .. while nfsv4 do not care about them
@@ -200,21 +130,25 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             }
 
             fcount++;
-
             Inode ei = le.getInode();
+
             entry4 currentEntry = new entry4();
             currentEntry.name = new component4(name);
-            currentEntry.cookie = new nfs_cookie4(cookie);
+            // shift all cookies by OFFSET, as 1 and 2 are reserved
+            currentEntry.cookie = new nfs_cookie4(le.getCookie() + COOKIE_OFFSET);
 
             // TODO: catch here error from getattr and reply 'fattr4_rdattr_error' to the client
             currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei, le.getStat(), context);
-            currentEntry.nextentry = null;
 
             // check if writing this entry exceeds the count limit
             int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length + currentEntry.attrs.attr_vals.value.length;
             int newDirSize = name.length() + 4; // name + sizeof(long)
             if ((currcount + newSize > _args.opreaddir.maxcount.value) || (dircount + newDirSize > _args.opreaddir.dircount.value)) {
-                res.resok4.reply.eof = false;
+                if (lastEntry == null) {
+                    //corner case - means we didnt have enough space to
+                    //write even a single entry.
+                    throw new TooSmallException("can't send even a single entry");
+                }
                 break;
             }
             dircount += newDirSize;
@@ -226,38 +160,14 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 lastEntry.nextentry = currentEntry;
             }
             lastEntry = currentEntry;
-
         }
 
-        _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {} EOF={}",
+        res.resok4.reply.eof = !dirList.hasNext();
+        _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} EOF={}",
                     fcount, currcount,
                     _args.opreaddir.maxcount.value,
                     startValue,
                     _args.opreaddir.dircount.value,
-                    dirList.size(), res.resok4.reply.eof);
-    }
-
-    private List<DirectoryEntry> fetchDirectoryListing(InodeCacheEntry<verifier4> cacheKey, VirtualFileSystem fs, Inode dir)
-            throws ChimeraNFSException {
-        try {
-            return _dlCache.get(cacheKey, () -> fs.list(dir));
-        } catch (ExecutionException e) {
-            Throwables.propagateIfPossible(e.getCause(), ChimeraNFSException.class);
-            throw new NfsIoException(e.getMessage());
-        }
-    }
-
-    /**
-     * Generate a {@link verifier4} for a directory.
-     *
-     * @param dir
-     * @return
-     * @throws IllegalArgumentException
-     * @throws IOException
-     */
-    private verifier4 generateDirectoryVerifier(Stat stat) throws IllegalArgumentException, IOException {
-        byte[] verifier = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
-        Bytes.putLong(verifier, 0, stat.getGeneration());
-        return new verifier4(verifier);
+                    res.resok4.reply.eof);
     }
 }
