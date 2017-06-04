@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2016 -2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -46,6 +46,8 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.glassfish.grizzly.Buffer;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * layout driver for Flexible File layout type as defined in
  * <a href="https://tools.ietf.org/id/draft-ietf-nfsv4-flex-files-06.txt">flex-files draft6</a>
@@ -62,13 +64,13 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     /**
      * User principal, which must be used by client when RPC packet sent to data server.
      */
-    private final utf8str_mixed userPrincipal;
+    private final fattr4_owner userPrincipal;
 
     /**
      * Group principal, which must be used by client when RPC packet sent to data
      * server.
      */
-    private final utf8str_mixed groupPrincipal;
+    private final fattr4_owner_group groupPrincipal;
 
     /**
      * Create new FlexFile layout driver with. The @code nfsVersion} and
@@ -84,8 +86,8 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal) {
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
-        this.userPrincipal = userPrincipal;
-        this.groupPrincipal = groupPrincipal;
+        this.userPrincipal = new fattr4_owner(userPrincipal);
+        this.groupPrincipal = new fattr4_owner_group(groupPrincipal);
     }
 
 
@@ -137,12 +139,14 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     }
 
     @Override
-    public layout_content4 getLayoutContent(deviceid4 deviceid, stateid4 stateid, int stripeSize, nfs_fh4 fh) throws ChimeraNFSException {
+    public layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4 ... deviceids) throws ChimeraNFSException {
+
+        checkArgument(deviceids.length > 0, "Layout driver supports need at least one (1) device.");
+
         ff_layout4 layout = new ff_layout4();
 
         layout.ffl_stripe_unit = new length4(0);
-        layout.ffl_mirrors = new ff_mirror4[1];
-        layout.ffl_mirrors[0] = createNewMirror(deviceid, 0, stateid, fh);
+        layout.ffl_mirrors = createMirrors(deviceids, 0, stateid, fh);
         layout.ffl_flags4 = new uint32_t(flex_files_prot.FF_FLAGS_NO_LAYOUTCOMMIT
                 | flex_files_prot.FF_FLAGS_NO_IO_THRU_MDS);
         layout.ffl_stats_collect_hint = new uint32_t(0);
@@ -174,16 +178,19 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         ds.ffds_efficiency = new uint32_t(efficiency);
         ds.ffds_stateid = stateid;
         ds.ffds_fh_vers = new nfs_fh4[]{fileHandle};
-        ds.ffds_user = new fattr4_owner(userPrincipal);
-        ds.ffds_group = new fattr4_owner_group(groupPrincipal);
+        ds.ffds_user = userPrincipal;
+        ds.ffds_group = groupPrincipal;
         return ds;
     }
 
-    private ff_mirror4 createNewMirror(deviceid4 deviceid, int efficiency, stateid4 stateid, nfs_fh4 fileHandle) {
-        ff_mirror4 mirror = new ff_mirror4();
-        mirror.ffm_data_servers = new ff_data_server4[1];
-        mirror.ffm_data_servers[0] = createDataserver(deviceid, efficiency, stateid, fileHandle);
-        return mirror;
+    private ff_mirror4[] createMirrors(deviceid4[] deviceids, int efficiency, stateid4 stateid, nfs_fh4 fileHandle) {
+        ff_mirror4[] mirrors = new ff_mirror4[deviceids.length];
+        for (int i = 0; i < deviceids.length; i++) {
+            mirrors[i] = new ff_mirror4();
+            mirrors[i].ffm_data_servers = new ff_data_server4[1];
+            mirrors[i].ffm_data_servers[0] = createDataserver(deviceids[i], efficiency, stateid, fileHandle);
+        }
+        return mirrors;
     }
 
 }

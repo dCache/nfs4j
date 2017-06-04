@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -40,13 +40,12 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBuffer;
 import org.glassfish.grizzly.Buffer;
 
+import static com.google.common.base.Preconditions.checkArgument;
 /**
  * layout driver for NFSv4.1 file layout type as defined in
  * <a href="https://www.ietf.org/rfc/rfc5661.txt">rfc5661</a>
  */
 public class NfsV41FileLayoutDriver implements LayoutDriver {
-
-    private final StripingPattern<InetSocketAddress> _stripingPattern = new RoundRobinStripingPattern<>();
 
     @Override
     public int getLayoutType() {
@@ -94,11 +93,13 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
     }
 
     @Override
-    public layout_content4 getLayoutContent(deviceid4 deviceid, stateid4 stateid, int stripeSize, nfs_fh4 fh) throws ServerFaultException {
+    public layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4 ... deviceids) throws ServerFaultException {
+
+        checkArgument(deviceids.length == 1, "Layout driver supports only one (1) device.");
 
         nfsv4_1_file_layout4 layout = new nfsv4_1_file_layout4();
 
-        layout.nfl_deviceid = deviceid;
+        layout.nfl_deviceid = deviceids[0];
 
         /*
          * The number of elements in nfl_fh_list MUST be one of three values:

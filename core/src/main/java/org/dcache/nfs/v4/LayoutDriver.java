@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2015 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -33,7 +33,8 @@ import org.dcache.nfs.v4.xdr.stateid4;
 public interface LayoutDriver {
 
     /**
-     * Returns layout type supported by this layout driver
+     * Returns layout type supported by this layout driver.
+     * @return layout type.
      */
     int getLayoutType();
 
@@ -43,17 +44,18 @@ public interface LayoutDriver {
      * pointing to the same data server.
      * @param deviceAddress array of multipath addresses.
      * @return device addresses.
+     * @throws ChimeraNFSException if fails
      */
     device_addr4 getDeviceAddress(InetSocketAddress ... deviceAddress) throws ChimeraNFSException;
 
     /**
      * Construct a layout type specific content.
-     * @param deviceid of the data server where segment is available.
      * @param stateid open stateid used for file.
      * @param stripeSize stripe unit size
      * @param fh file handle to use when IO requests sent to the data server
-     * @param ioMode
+     * @param deviceids ids of the data servers where segment is available.
      * @return layout content
+     * @throws ChimeraNFSException if fails
      */
-    layout_content4 getLayoutContent(deviceid4 deviceid, stateid4 stateid, int stripeSize, nfs_fh4 fh) throws ChimeraNFSException;
+    layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4 ... deviceids) throws ChimeraNFSException;
 }

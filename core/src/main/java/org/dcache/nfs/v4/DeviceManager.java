@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -127,7 +127,7 @@ public class DeviceManager implements NFSv41DeviceManager {
         layout.lo_iomode = ioMode;
         layout.lo_offset = new offset4(0);
         layout.lo_length = new length4(nfs4_prot.NFS4_UINT64_MAX);
-        layout.lo_content = layoutDriver.getLayoutContent(deviceId, stateid,  NFSv4Defaults.NFS4_STRIPE_SIZE, fh);
+        layout.lo_content = layoutDriver.getLayoutContent(stateid,  NFSv4Defaults.NFS4_STRIPE_SIZE, fh, deviceId);
 
         return  new Layout(true, stateid, new layout4[]{layout});
     }
