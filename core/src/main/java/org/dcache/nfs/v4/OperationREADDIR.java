@@ -61,42 +61,18 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationREADDIR.class);
 
-
-    // needed to calculate replay size for READDIR4
-    /*
-     * RFS4_MINLEN_ENTRY4: XDR-encoded size of smallest possible dirent.
-     *   This is used to return NFS4ERR_TOOSMALL when clients specify
-     *   maxcount that isn't large enough to hold the smallest possible
-     *   XDR encoded dirent.
-     *
-     *       sizeof cookie (8 bytes) +
-     *       sizeof name_len (4 bytes) +
-     *       sizeof smallest (padded) name (4 bytes) +
-     *       sizeof bitmap4_len (12 bytes) +   NOTE: we always encode len=2 bm4
-     *       sizeof attrlist4_len (4 bytes) +
-     *       sizeof next boolean (4 bytes)
-     *
-     * RFS4_MINLEN_RDDIR4: XDR-encoded size of READDIR op reply containing
-     * the smallest possible entry4 (assumes no attrs requested).
-     *   sizeof nfsstat4 (4 bytes) +
-     *   sizeof verifier4 (8 bytes) +
-     *   sizeof entsecond_to_ry4list bool (4 bytes) +
-     *   sizeof entry4   (36 bytes) +
-     *   sizeof eof bool  (4 bytes)
-     *
-     * RFS4_MINLEN_RDDIR_BUF: minimum length of buffer server will provide to
-     *   VOP_READDIR.  Its value is the size of the maximum possible dirent
-     *   for solaris.  The DIRENT64_RECLEN macro returns the size of dirent
-     *   required for a given name length.  MAXNAMELEN is the maximum
-     *   filename length allowed in Solaris.  The first two DIRENT64_RECLEN()
-     *   macros are to allow for . and .. entries -- just a minor tweak to try
-     *   and guarantee that buffer we give to VOP_READDIR will be large enough
-     *   to hold ., .., and the largest possible solaris dirent64.
+    /**
+     * Smallest possible entry size.
+     * 8 (cookie) + 4 (name len) + 4 (smallest padded name) + 4 (bitmap len, always '2')
+     *  + 2x4 (bitmap) + 4 (attr len) + 4 (boolean has next)
      */
-
     private static final int ENTRY4_SIZE = 36;
-    private static final int DIRLIST4_SIZE = 4 + nfs4_prot.NFS4_VERIFIER_SIZE + 4 + ENTRY4_SIZE + 4;
-    private static final int READDIR4RESOK_SIZE = DIRLIST4_SIZE + ENTRY4_SIZE;
+
+    /**
+     * Minimal readdir reply size for an empty directory.
+     * 8 (verifier) + 4 (bool has entry) + 4 (bool eol)
+     */
+    private static final int READDIR4RESOK_SIZE = 16;
 
     /**
      * The valid cookie values are zero, or >=3
