@@ -782,20 +782,14 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
-
+            res.resok.reply.eof = true; // hope to send full listing in one go. will be changes if needed
             res.resok.cookieverf = cookieverf;
 
-            if (dirList.isEmpty()) {
-                res.resok.reply.eof = true;
-                return res;
-            }
+            HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
             int currcount = READDIRPLUS3RESOK_SIZE;
             int dircount = 0;
             int fcount = 0;
-            res.resok.reply.entries = new entryplus3();
-            entryplus3 currentEntry = res.resok.reply.entries;
             entryplus3 lastEntry = null;
 
             for (int i = 0; i < dirList.size(); i++) {
@@ -810,6 +804,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
                 Inode ef = le.getInode();
 
+                entryplus3 currentEntry = new entryplus3();
                 currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
@@ -827,40 +822,33 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 int newSize = ENTRYPLUS3_SIZE + name.length() + currentEntry.name_handle.handle.data.length;
                 int newDirSize = name.length();
                 if ((currcount + newSize > arg1.maxcount.value.value) || (dircount + newDirSize > arg1.dircount.value.value)) {
-                    if (lastEntry != null) {
-                        lastEntry.nextentry = null;
-                    } else {
+                    if (lastEntry == null) {
                         //corner case - means we didnt have enough space to
                         //write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
 
                     res.resok.reply.eof = false;
-
-                    _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
-                            fcount, currcount,
-                                arg1.maxcount.value.value, dircount,
-                                arg1.dircount.value.value,
-                                startValue, dirList.size()
-                            );
-
-                    return res;
+                    break;
                 }
+
                 dircount += newDirSize;
                 currcount += newSize;
 
-                if (i + 1 < dirList.size()) {
-                    lastEntry = currentEntry;
-                    currentEntry.nextentry = new entryplus3();
-                    currentEntry = currentEntry.nextentry;
+                if (lastEntry == null) {
+                    res.resok.reply.entries = currentEntry;
+                } else {
+                    lastEntry.nextentry = currentEntry;
                 }
+                lastEntry = currentEntry;
             }
 
-            if (fcount == 0) {
-                // if there are no entries then null the list head to keep XDR encoder happy
-                res.resok.reply.entries = null;
-            }
-            res.resok.reply.eof = true;
+            _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {} total {}",
+                    fcount, currcount,
+                    arg1.maxcount.value.value, dircount,
+                    arg1.dircount.value.value,
+                    startValue, dirList.size()
+            );
 
         } catch (ChimeraNFSException hne) {
             _log.debug("READDIRPLUS3 status: {}", hne.toString());
@@ -935,31 +923,26 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
+            res.resok.reply.eof = true; // hope to send full listing in one go. will be changes if needed
             HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
             res.resok.cookieverf = cookieverf;
 
-            if (dirList.isEmpty()) {
-                res.resok.reply.eof = true;
-                return res;
-            }
-
             int currcount = READDIR3RESOK_SIZE;
             int fcount = 0;
-            res.resok.reply.entries = new entry3();
-            entry3 currentEntry = res.resok.reply.entries;
             entry3 lastEntry = null;
 
             for (int i = 0; i < dirList.size(); i++) {
 
                 DirectoryEntry le = dirList.get(i);
-                if(le.getCookie() < startValue) {
+                if (le.getCookie() < startValue) {
                     continue;
                 }
 
                 fcount++;
                 String name = le.getName();
 
+                entry3 currentEntry = new entry3();
                 currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
@@ -968,9 +951,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRY3_SIZE + name.length();
                 if (currcount + newSize > arg1.count.value.value) {
-                    if (lastEntry != null) {
-                        lastEntry.nextentry = null;
-                    } else {
+                    if (lastEntry == null) {
                         //corner case - means we didnt have enough space to
                         //write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
@@ -978,28 +959,23 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
                     res.resok.reply.eof = false;
 
-                    _log.debug("Sending {} entries ( {} bytes from {}) cookie = {} total {}",
-                            fcount, currcount,
-                                arg1.count.value.value,
-                                startValue, dirList.size()
-                            );
-
-                    return res;
+                    break;
                 }
                 currcount += newSize;
 
-                if (i + 1 < dirList.size()) {
-                    lastEntry = currentEntry;
-                    currentEntry.nextentry = new entry3();
-                    currentEntry = currentEntry.nextentry;
+                if (lastEntry == null) {
+                    res.resok.reply.entries = currentEntry;
+                } else {
+                    lastEntry.nextentry = currentEntry;
                 }
+                lastEntry = currentEntry;
             }
 
-            if (fcount == 0) {
-                // if there are no entries then null the list head to keep XDR encoder happy
-                res.resok.reply.entries = null;
-            }
-            res.resok.reply.eof = true;
+            _log.debug("Sending {} entries ( {} bytes from {}) cookie = {} total {}",
+                    fcount, currcount,
+                    arg1.count.value.value,
+                    startValue, dirList.size()
+            );
 
         } catch (ChimeraNFSException hne) {
             _log.error("READDIR: {}", hne.toString());

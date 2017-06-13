@@ -169,22 +169,16 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             throw new TooSmallException("maxcount too small");
         }
 
+        res.status = nfsstat.NFS_OK;
         res.resok4 = new READDIR4resok();
         res.resok4.reply = new dirlist4();
-
         res.resok4.cookieverf = verifier;
+        res.resok4.reply.eof = true; // hope to send full listing in one go. will be changes if needed
 
         int currcount = READDIR4RESOK_SIZE;
         int dircount = 0;
-        res.resok4.reply.entries = new entry4();
-        entry4 currentEntry = res.resok4.reply.entries;
         entry4 lastEntry = null;
 
-        /*
-         * hope to send all entries at once. if it's not the case, eof flag will
-         * be set to false
-         */
-        res.resok4.reply.eof = true;
         int fcount = 0;
         for (int i = 0; i < dirList.size(); i++) {
 
@@ -208,7 +202,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             fcount++;
 
             Inode ei = le.getInode();
-
+            entry4 currentEntry = new entry4();
             currentEntry.name = new component4(name);
             currentEntry.cookie = new nfs_cookie4(cookie);
 
@@ -226,22 +220,15 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             dircount += newDirSize;
             currcount += newSize;
 
-            lastEntry = currentEntry;
-            if (i + 1 < dirList.size()) {
-                currentEntry.nextentry = new entry4();
-                currentEntry = currentEntry.nextentry;
+            if (lastEntry == null) {
+                res.resok4.reply.entries = currentEntry;
+            } else {
+                lastEntry.nextentry = currentEntry;
             }
+            lastEntry = currentEntry;
 
         }
 
-        // empty directory
-        if (lastEntry == null) {
-            res.resok4.reply.entries = null;
-        } else {
-            lastEntry.nextentry = null;
-        }
-
-        res.status = nfsstat.NFS_OK;
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} total {} EOF={}",
                     fcount, currcount,
                     _args.opreaddir.maxcount.value,
