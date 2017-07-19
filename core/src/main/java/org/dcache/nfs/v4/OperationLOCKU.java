@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LockRangeException;
 import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.v4.nlm.LockException;
@@ -51,6 +52,11 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
         NFS4Client client;
         StateOwner lockOwner;
         NFS4State lock_state;
+
+        if (_args.oplocku.length.value == 0) {
+            throw new InvalException("zero lock len");
+        }
+
         try {
 
             if (context.getMinorversion() == 0) {
