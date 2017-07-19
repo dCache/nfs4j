@@ -303,6 +303,11 @@ public class PseudoFs extends ForwardingFileSystem {
         if (stat.isDefined(Stat.StatAttribute.OWNER)) {
             mask |= ACE4_WRITE_OWNER;
         }
+
+        if (stat.isDefined(Stat.StatAttribute.SIZE)) {
+            mask |= ACE4_WRITE_DATA | ACE4_APPEND_DATA;
+        }
+
         checkAccess(inode, mask);
         _inner.setattr(inode, stat);
     }

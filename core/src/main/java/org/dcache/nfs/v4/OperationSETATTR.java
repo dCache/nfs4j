@@ -35,6 +35,7 @@ import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETATTR4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.AttrNotSuppException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.InvalException;
@@ -80,9 +81,9 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         Inode inode = context.currentInode();
 
-        // Require a valid open state id before we can set file size
-        if (_args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_SIZE)) {
+        if (_args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_SIZE) && !Stateids.isStateLess(_args.opsetattr.stateid)) {
 
+            // TODO: check for DENY_WRITE for any existing opens. However, posix does not support deny masks.
             NFS4Client client;
             stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opsetattr.stateid);
             if (context.getMinorversion() > 0) {
