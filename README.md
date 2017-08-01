@@ -1,7 +1,8 @@
 NFS4J
 =====
 
-The pure java implementation of NFS server version 3, 4.0 and 4.1 including pNFS extension.
+The pure java implementation of NFS server version 3, 4.0 and 4.1 including pNFS extension
+with nfs4.1-files and flex-files layout types.
 
 
 Building from sources
