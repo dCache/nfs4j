@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.dcache.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.security.auth.Subject;
 import org.dcache.auth.GidPrincipal;
@@ -37,7 +38,7 @@ public class UnixUtils {
     public static Subject getCurrentUser() {
         try {
             Class<?> unixSystemClass = Class.forName("com.sun.security.auth.module.UnixSystem");
-            Object unixSystemInstance = unixSystemClass.newInstance();
+            Object unixSystemInstance = unixSystemClass.getDeclaredConstructor().newInstance();
             Method getUidMethod = unixSystemClass.getDeclaredMethod("getUid");
             Method getGidMethod = unixSystemClass.getDeclaredMethod("getGid");
             Method getGroupsMethod = unixSystemClass.getDeclaredMethod("getGroups");
@@ -53,7 +54,9 @@ public class UnixUtils {
             }
             return subject;
 
-        } catch (Exception e) {
+        } catch (IllegalAccessException |
+                ClassNotFoundException | InvocationTargetException |
+                NoSuchMethodException | InstantiationException e) {
             _log.debug("couldn't get current unix user",e);
             return null;
         }
