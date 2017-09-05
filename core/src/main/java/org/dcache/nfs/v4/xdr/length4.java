@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -33,6 +33,11 @@ public class length4 extends uint64_t {
     public length4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         super(xdr);
+    }
+
+    @Override
+    public String toString() {
+        return Long.toString(value);
     }
 
 }
