@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -57,5 +57,10 @@ public class settime4 implements XdrAble {
         }
     }
 
+    @Override
+    public String toString() {
+        return set_it == time_how4.SET_TO_CLIENT_TIME4 ?
+                time.toString() : "SET_TO_SERVER_TIME";
+    }
 }
 // End of settime4.java

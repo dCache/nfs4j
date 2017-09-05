@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -47,5 +47,9 @@ public class uint64_t implements XdrAble {
         value = xdr.xdrDecodeLong();
     }
 
+    @Override
+    public String toString() {
+        return Long.toString(value);
+    }
 }
 // End of uint64_t.java
