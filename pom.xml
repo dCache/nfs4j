@@ -8,7 +8,7 @@
 
   <groupId>org.dcache</groupId>
   <artifactId>nfs4j</artifactId>
-  <version>0.15.1</version>
+  <version>0.15.2-SNAPSHOT</version>
   <name>Java based NFSv4.1 implementation</name>
   <packaging>pom</packaging>
 
@@ -17,7 +17,7 @@
   <scm>
       <connection>scm:git:https://github.com/dCache/nfs4j.git</connection>
       <developerConnection>scm:git:ssh://git@github.com/dCache/nfs4j.git</developerConnection>
-    <tag>nfs4j-0.15.1</tag>
+    <tag>0.15</tag>
   </scm>
 
   <!--
