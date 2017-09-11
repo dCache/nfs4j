@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.dcache.nfs.v4.xdr.fattr4_numlinks;
 import org.dcache.nfs.v4.xdr.fattr4_aclsupport;
@@ -85,6 +86,8 @@ import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.fattr4_space_avail;
+import org.dcache.nfs.v4.xdr.fattr4_time_delta;
+import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
@@ -328,7 +331,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 fattr4_time_create ctime = new fattr4_time_create(stat.getCTime());
                 return Optional.of(ctime);
             case nfs4_prot.FATTR4_TIME_DELTA:
-                return Optional.empty();
+                // one (1) second is a common value for time delta across nfs4 servers
+                return Optional.of(new fattr4_time_delta( new nfstime4(TimeUnit.SECONDS.toMillis(1))));
             case nfs4_prot.FATTR4_TIME_METADATA:
                 fattr4_time_metadata mdtime = new fattr4_time_metadata(stat.getCTime());
                 return Optional.of(mdtime);
