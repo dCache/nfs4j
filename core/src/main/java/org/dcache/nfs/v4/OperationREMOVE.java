@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -47,6 +47,10 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
         final REMOVE4res res = result.opremove;
+        res.status = nfsstat.NFS_OK;
+        res.resok4 = new REMOVE4resok();
+        res.resok4.cinfo = new change_info4();
+        res.resok4.cinfo.atomic = true;
 
         Inode parentInode = context.currentInode();
         Stat stat = context.getFs().getattr(parentInode);
@@ -59,13 +63,9 @@ public class OperationREMOVE extends AbstractNFSv4Operation {
 
         _log.debug("REMOVE: {} : {}", parentInode, name);
 
+        res.resok4.cinfo.before = new changeid4(stat.getGeneration());
         context.getFs().remove(parentInode, name);
 
-        res.status = nfsstat.NFS_OK;
-        res.resok4 = new REMOVE4resok();
-        res.resok4.cinfo = new change_info4();
-        res.resok4.cinfo.atomic = true;
-        res.resok4.cinfo.before = new changeid4(stat.getMTime());
-        res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
+        res.resok4.cinfo.after = new changeid4(context.getFs().getattr(parentInode).getGeneration());
     }
 }
