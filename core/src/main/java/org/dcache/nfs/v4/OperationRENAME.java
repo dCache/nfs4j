@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -47,6 +47,13 @@ public class OperationRENAME extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final RENAME4res res = result.oprename;
 
+        res.resok4 = new RENAME4resok();
+        res.status = nfsstat.NFS_OK;
+        res.resok4.source_cinfo.atomic = true;
+        res.resok4.source_cinfo = new change_info4();
+        res.resok4.target_cinfo.atomic = true;
+        res.resok4.target_cinfo = new change_info4();
+
         Inode sourceDir = context.savedInode();
         Inode destDir = context.currentInode();
 
@@ -70,24 +77,18 @@ public class OperationRENAME extends AbstractNFSv4Operation {
                 destDir,
                 newName);
 
+        res.resok4.source_cinfo.before = new changeid4(sourceStat.getGeneration());
+        res.resok4.target_cinfo.before = new changeid4(destStat.getGeneration());
+
         boolean isChanged = context.getFs().move(sourceDir, oldName, destDir, newName);
-        long now = 0;
+
         if (isChanged) {
-            now = System.currentTimeMillis();
+            res.resok4.source_cinfo.after = new changeid4(context.getFs().getattr(sourceDir).getGeneration());
+            res.resok4.target_cinfo.after = new changeid4(context.getFs().getattr(destDir).getGeneration());
+        } else {
+            res.resok4.source_cinfo.after = res.resok4.source_cinfo.before;
+            res.resok4.target_cinfo.after = res.resok4.target_cinfo.before;
         }
 
-        res.resok4 = new RENAME4resok();
-
-        res.resok4.source_cinfo = new change_info4();
-        res.resok4.source_cinfo.atomic = true;
-        res.resok4.source_cinfo.before = new changeid4(sourceStat.getCTime());
-        res.resok4.source_cinfo.after = new changeid4(isChanged ? now : sourceStat.getCTime());
-
-        res.resok4.target_cinfo = new change_info4();
-        res.resok4.target_cinfo.atomic = true;
-        res.resok4.target_cinfo.before = new changeid4(destStat.getCTime());
-        res.resok4.target_cinfo.after = new changeid4(isChanged ? now : destStat.getCTime());
-
-        res.status = nfsstat.NFS_OK;
     }
 }
