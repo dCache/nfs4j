@@ -49,10 +49,10 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
         res.resok4 = new RENAME4resok();
         res.status = nfsstat.NFS_OK;
-        res.resok4.source_cinfo.atomic = true;
         res.resok4.source_cinfo = new change_info4();
-        res.resok4.target_cinfo.atomic = true;
+        res.resok4.source_cinfo.atomic = true;
         res.resok4.target_cinfo = new change_info4();
+        res.resok4.target_cinfo.atomic = true;
 
         Inode sourceDir = context.savedInode();
         Inode destDir = context.currentInode();
