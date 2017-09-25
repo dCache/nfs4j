@@ -590,8 +590,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_FS_CHARSET_CAP:
                 maskName="FATTR4_FS_CHARSET_CAP";
                 break;
+            case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
+                maskName = "FATTR4_SUPPATTR_EXCLCREAT";
+                break;
             default:
-            	maskName += "(" + offset + ")";
+                maskName += "(" + offset + ")";
         }
 
         return maskName;
