@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -139,13 +139,13 @@ public class CompoundBuilder {
         return this;
     }
 
-    public CompoundBuilder withReaddir(long cookie, verifier4 verifier) {
+    public CompoundBuilder withReaddir(long cookie, verifier4 verifier, int dirCount, int maxcount) {
 
         nfs_argop4 op = new nfs_argop4();
         op.opreaddir = new READDIR4args();
         op.opreaddir.cookie = new nfs_cookie4(cookie);
-        op.opreaddir.dircount = new count4(8192);
-        op.opreaddir.maxcount = new count4(256);
+        op.opreaddir.dircount = new count4(dirCount);
+        op.opreaddir.maxcount = new count4(maxcount);
         op.opreaddir.attr_request = new bitmap4(new int[]{0, 0});
         op.opreaddir.cookieverf = verifier;
 
@@ -408,10 +408,10 @@ public class CompoundBuilder {
         return this;
     }
 
-    public CompoundBuilder withClose(stateid4 stateid) {
+    public CompoundBuilder withClose(stateid4 stateid, int seq) {
         CLOSE4args args = new CLOSE4args();
 
-        args.seqid = new seqid4(0);
+        args.seqid = new seqid4(seq);
         args.open_stateid = stateid;
 
         nfs_argop4 op = new nfs_argop4();

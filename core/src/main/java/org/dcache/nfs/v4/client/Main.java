@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -637,7 +637,7 @@ public class Main {
             COMPOUND4args args = new CompoundBuilder()
                     .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(fh)
-                    .withReaddir(cookie, verifier)
+                    .withReaddir(cookie, verifier, 8192, 512)
                     .withTag("readdir")
                     .build();
 
@@ -671,7 +671,7 @@ public class Main {
                     .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(path.charAt(0) == '/' ? _rootFh : fh)
                     .withLookup(path)
-                    .withReaddir(cookie, verifier)
+                    .withReaddir(cookie, verifier, 8192, 512)
                     .withTag("readdir")
                     .build();
 
@@ -813,7 +813,7 @@ public class Main {
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
                 .withRead(4096, 0, Stateids.currentStateId())
-                .withClose(Stateids.currentStateId())
+                .withClose(Stateids.currentStateId(), 1)
                 .withTag("open+read+close")
                 .build();
 
@@ -925,7 +925,7 @@ public class Main {
         COMPOUND4args args = new CompoundBuilder()
                 .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
-                .withClose(stateid)
+                .withClose(stateid, 1)
                 .withTag("close")
                 .build();
         COMPOUND4res compound4res = sendCompound(args);

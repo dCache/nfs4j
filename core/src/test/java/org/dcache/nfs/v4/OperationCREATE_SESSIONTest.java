@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.sequenceid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.sessionid4;
@@ -30,10 +31,6 @@ import java.util.UUID;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.ConnNotBoundToSessionException;
-import org.dcache.nfs.v4.client.CreateSessionStub;
-import org.dcache.nfs.v4.client.DestroySessionStub;
-import org.dcache.nfs.v4.client.ExchangeIDStub;
-import org.dcache.nfs.v4.client.SequenceStub;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +54,10 @@ public class OperationCREATE_SESSIONTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -68,8 +68,11 @@ public class OperationCREATE_SESSIONTest {
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        result.opexchange_id.eir_resok4.eir_sequenceid)
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -86,8 +89,9 @@ public class OperationCREATE_SESSIONTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                new clientid4(0), new sequenceid4(0));
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(new clientid4(0), new sequenceid4(0))
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -104,7 +108,10 @@ public class OperationCREATE_SESSIONTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -116,8 +123,11 @@ public class OperationCREATE_SESSIONTest {
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
         sequenceid4 badSequence = new sequenceid4(result.opexchange_id.eir_resok4.eir_sequenceid.value + 1);
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, badSequence);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        badSequence)
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -134,7 +144,10 @@ public class OperationCREATE_SESSIONTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -145,8 +158,11 @@ public class OperationCREATE_SESSIONTest {
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        result.opexchange_id.eir_resok4.eir_sequenceid)
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -158,7 +174,10 @@ public class OperationCREATE_SESSIONTest {
         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
 
         sessionid4 session = result.opcreate_session.csr_resok4.csr_sessionid;
-        nfs_argop4 destroysession_args = DestroySessionStub.standard(result.opcreate_session.csr_resok4.csr_sessionid);
+        nfs_argop4 destroysession_args = new CompoundBuilder()
+                .withDestroysession(result.opcreate_session.csr_resok4.csr_sessionid)
+                .build().argarray[0];
+
         OperationDESTROY_SESSION DESTROY_SESSION = new OperationDESTROY_SESSION(destroysession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_DESTROY_SESSION);
         context = new CompoundContextBuilder()
@@ -178,19 +197,31 @@ public class OperationCREATE_SESSIONTest {
 
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = execute(contextBdr.build(), EXCHANGE_ID);
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        result.opexchange_id.eir_resok4.eir_sequenceid)
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = execute(contextBdr.build(), CREATE_SESSION);
         sessionid4 session = result.opcreate_session.csr_resok4.csr_sessionid;
 
-        nfs_argop4 sequence_args = SequenceStub.generateRequest(false, session, 0, 2, 2);
+        nfs_argop4 sequence_args = new CompoundBuilder()
+                .withSequence(
+                        false,
+                        session,
+                        0,
+                        2,
+                        2).build().argarray[0];
 
         // sequnce implicitly binds connection to session
         OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
@@ -201,7 +232,10 @@ public class OperationCREATE_SESSIONTest {
                 .withCall(generateRpcCall())
                 .withStateHandler(stateHandler);
 
-        nfs_argop4 destroysession_args = DestroySessionStub.standard(session);
+        nfs_argop4 destroysession_args = new CompoundBuilder()
+                .withDestroysession(session)
+                .build().argarray[0];
+
         OperationDESTROY_SESSION DESTROY_SESSION = new OperationDESTROY_SESSION(destroysession_args);
         result = execute(contextBdr.build(), DESTROY_SESSION);
 

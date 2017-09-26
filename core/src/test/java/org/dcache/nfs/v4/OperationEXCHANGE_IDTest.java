@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -26,9 +27,6 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.client.CreateSessionStub;
-import org.dcache.nfs.v4.client.ExchangeIDStub;
-import org.dcache.nfs.v4.client.SequenceStub;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +50,10 @@ public class OperationEXCHANGE_IDTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -69,7 +70,10 @@ public class OperationEXCHANGE_IDTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -87,7 +91,10 @@ public class OperationEXCHANGE_IDTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -98,8 +105,12 @@ public class OperationEXCHANGE_IDTest {
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        result.opexchange_id.eir_resok4.eir_sequenceid)
+                .build().argarray[0];
+
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -118,7 +129,10 @@ public class OperationEXCHANGE_IDTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -129,8 +143,11 @@ public class OperationEXCHANGE_IDTest {
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        result.opexchange_id.eir_resok4.eir_sequenceid)
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -141,7 +158,10 @@ public class OperationEXCHANGE_IDTest {
 
          AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
 
-         nfs_argop4 exchangeid_reboot_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+         nfs_argop4 exchangeid_reboot_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
          EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_reboot_args, 0);
          result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
          AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
@@ -152,7 +172,10 @@ public class OperationEXCHANGE_IDTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        nfs_argop4 exchangeid_args = ExchangeIDStub.normal(domain, name, clientId, 0, state_protect_how4.SP4_NONE);
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
         OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
@@ -163,8 +186,11 @@ public class OperationEXCHANGE_IDTest {
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
 
-        nfs_argop4 cretaesession_args = CreateSessionStub.standard(
-                result.opexchange_id.eir_resok4.eir_clientid, result.opexchange_id.eir_resok4.eir_sequenceid);
+        nfs_argop4 cretaesession_args = new CompoundBuilder()
+                .withCreatesession(
+                        result.opexchange_id.eir_resok4.eir_clientid,
+                        result.opexchange_id.eir_resok4.eir_sequenceid)
+                .build().argarray[0];
 
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
@@ -177,8 +203,13 @@ public class OperationEXCHANGE_IDTest {
 
          TimeUnit.SECONDS.sleep(3);
 
-         nfs_argop4 sequence_args = SequenceStub.generateRequest(false,
-                 result.opcreate_session.csr_resok4.csr_sessionid, 0, 0, 0);
+         nfs_argop4 sequence_args = new CompoundBuilder()
+                 .withSequence(
+                        false,
+                        result.opcreate_session.csr_resok4.csr_sessionid,
+                        0,
+                        0,
+                        0).build().argarray[0];
 
          OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
          result = nfs_resop4.resopFor(nfs_opnum4.OP_SEQUENCE);

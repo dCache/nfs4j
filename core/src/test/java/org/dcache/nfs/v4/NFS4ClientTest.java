@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.SeqMisorderedException;
-import org.dcache.nfs.v4.client.CloseStub;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -39,6 +38,7 @@ import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import org.dcache.nfs.v4.client.CompoundBuilder;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -65,7 +65,10 @@ public class NFS4ClientTest {
         NFSv41Session session = nfsClient.createSession(1, 2, 1, 8, 8);
         NFS4State state = nfsClient.createState(owner);
 
-        nfs_argop4 close_args = CloseStub.generateRequest(state.stateid(), 1);
+        nfs_argop4 close_args = new CompoundBuilder()
+                .withClose(state.stateid(), 1)
+                .build().argarray[0];
+
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
@@ -89,7 +92,10 @@ public class NFS4ClientTest {
 
         NFS4State state = nfsClient.createState(owner);
 
-        nfs_argop4 close_args = CloseStub.generateRequest(state.stateid(), 1);
+        nfs_argop4 close_args = new CompoundBuilder()
+                .withClose(state.stateid(), 1)
+                .build().argarray[0];
+
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()

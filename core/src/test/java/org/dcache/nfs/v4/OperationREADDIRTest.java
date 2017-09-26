@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.dcache.nfs.status.TooSmallException;
-import org.dcache.nfs.v4.client.ReaddirStub;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -20,6 +19,7 @@ import org.mockito.Mockito;
 import org.junit.Before;
 
 import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import org.dcache.nfs.v4.client.CompoundBuilder;
 import static org.mockito.Mockito.*;
 
 public class OperationREADDIRTest {
@@ -67,7 +67,9 @@ public class OperationREADDIRTest {
         // vfs will return an empty list from the vfs for dir (technically legal)
         Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier.value, Collections.emptyList()));
 
-        nfs_argop4 op = ReaddirStub.generateRequest(0, cookieVerifier, 1024, 512);
+        nfs_argop4 op = new CompoundBuilder()
+                .withReaddir(0, cookieVerifier, 1024, 512)
+                .build().argarray[0];
 
         OperationREADDIR readdirOp = new OperationREADDIR(op);
         readdirOp.process(context, result);
@@ -84,7 +86,10 @@ public class OperationREADDIRTest {
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier.value, dirContents));
 
-        nfs_argop4 op = ReaddirStub.generateRequest(0, cookieVerifier, 1024, 10);
+        nfs_argop4 op = new CompoundBuilder()
+                .withReaddir(0, cookieVerifier, 1024, 10)
+                .build()
+                .argarray[0];
 
         OperationREADDIR readdirOp = new OperationREADDIR(op);
         readdirOp.process(context, result);
@@ -104,7 +109,9 @@ public class OperationREADDIRTest {
 
         long cookie = 4; // 3 is the first allowed non zero value
 
-        nfs_argop4 op = ReaddirStub.generateRequest(cookie, cookieVerifier, 1024, 512);
+        nfs_argop4 op = new CompoundBuilder()
+                .withReaddir(cookie, cookieVerifier, 1024, 512)
+                .build().argarray[0];
 
         OperationREADDIR readdirOp = new OperationREADDIR(op);
         readdirOp.process(context, result);
