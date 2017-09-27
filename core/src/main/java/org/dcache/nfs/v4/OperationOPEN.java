@@ -112,48 +112,57 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4)
                             || (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
 
+                    /**
+                     * According to the spec. client MAY send all allowed
+                     * attributes. Nevertheless, in reality, clients send only
+                     * mode. We will accept only mode and client will send extra
+                     * SETATTR is required.
+                     *
+                     * REVISIT: we can apply all others as well to avoid extra
+                     * network round trip.
+                     */
+                    AttributeMap attributeMap;
+
+                    switch (_args.opopen.openhow.how.mode) {
+                        case createmode4.UNCHECKED4:
+                        case createmode4.GUARDED4:
+                            attributeMap = new AttributeMap(_args.opopen.openhow.how.createattrs);
+                            break;
+                        case createmode4.EXCLUSIVE4:
+                            attributeMap = new AttributeMap(null);
+                            break;
+                        case createmode4.EXCLUSIVE4_1:
+                            attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
+                            break;
+                        default:
+                            throw new BadXdrException("bad value: " + _args.opopen.openhow.how.mode);
+                    }
+
                     try {
 
-                        /**
-                         * according tho the spec. client MAY send all allowed
-                         * attributes. Nevertheless, in reality, clients send
-                         * only mode. We will accept only mode and client will
-                         * send extra SETATTR is required.
-                         *
-                         * REVISIT: we can apply all others as well to avoid
-                         * extra network roundtrip.
-                         */
                         int mode = 0600;
-                        AttributeMap attributeMap;
-                        switch (_args.opopen.openhow.how.mode) {
-                            case createmode4.UNCHECKED4:
-                            case createmode4.GUARDED4:
-                                attributeMap = new AttributeMap(_args.opopen.openhow.how.createattrs);
-                                break;
-                            case createmode4.EXCLUSIVE4:
-                                attributeMap = new AttributeMap(null);
-                                break;
-                            case createmode4.EXCLUSIVE4_1:
-                                attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
-                                break;
-                            default:
-                                throw new BadXdrException("bad value: " + _args.opopen.openhow.how.mode);
-                        }
 
                         Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
+                        Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
+
                         if (createMode.isPresent()) {
                             mode = createMode.get().value;
-                            res.resok4.attrset.set(nfs4_prot.FATTR4_MODE);
-                        }
-
-                        Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
-                        if (createSize.isPresent() && createSize.get().value == 0) {
-                            res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
                         }
 
                         _log.debug("Creating a new file: {}", name);
                         inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,
                                 name, context.getSubject(), mode);
+
+                        /*
+                         * Tell client which attributes was applied.
+                         */
+                        if (createMode.isPresent()) {
+                            res.resok4.attrset.set(nfs4_prot.FATTR4_MODE);
+                        }
+
+                        if (createSize.isPresent() && createSize.get().value == 0) {
+                            res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
+                        }
 
                         res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
                     } catch (ExistException e) {
@@ -176,6 +185,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                         if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
                             throw new AccessException();
+                        }
+
+                        Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
+                        if (createSize.isPresent() && createSize.get().value == 0) {
+                            Stat stat4size = new Stat();
+                            stat4size.setSize(0);
+                            context.getFs().setattr(inode, stat4size);
+                            res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
                         }
 
                     }
