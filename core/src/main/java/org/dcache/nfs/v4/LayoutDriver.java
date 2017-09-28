@@ -24,6 +24,7 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.device_addr4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layout_content4;
+import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.stateid4;
 
@@ -36,7 +37,7 @@ public interface LayoutDriver {
      * Returns layout type supported by this layout driver.
      * @return layout type.
      */
-    int getLayoutType();
+    layouttype4 getLayoutType();
 
     /**
      * Construct device address specific for layout type supported by the

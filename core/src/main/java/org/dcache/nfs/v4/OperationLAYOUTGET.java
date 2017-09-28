@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.BadIoModeException;
-import org.dcache.nfs.status.BadLayoutException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
 import org.dcache.nfs.status.NfsIoException;
@@ -76,10 +75,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
             throw new BadIoModeException("invalid loga_iomode");
         }
 
-        if (_args.oplayoutget.loga_layout_type > layouttype4.LAYOUT4_TYPE_MAX) {
-            throw new BadLayoutException("Invalid layout type requested(" + _args.oplayoutget.loga_layout_type + ")");
-        }
-
+        layouttype4 layoutType = layouttype4.valueOf(_args.oplayoutget.loga_layout_type);
         Inode inode = context.currentInode();
 
         if (!isPnfsAllowed(context, inode)) {
@@ -103,7 +99,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         Layout ioLayout;
         try {
             ioLayout = context.getDeviceManager().layoutGet(context, inode,
-                    _args.oplayoutget.loga_layout_type,
+                    layoutType,
                     _args.oplayoutget.loga_iomode,
                     _args.oplayoutget.loga_stateid);
         } catch (NfsIoException e) {

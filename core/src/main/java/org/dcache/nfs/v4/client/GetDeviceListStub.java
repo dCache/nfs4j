@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4.client;
 
 import java.io.IOException;
 
-import java.nio.ByteBuffer;
 import org.dcache.nfs.v4.xdr.GETDEVICELIST4args;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.layouttype4;
@@ -32,7 +31,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrBuffer;
 import org.dcache.xdr.XdrDecodingStream;
 
@@ -49,7 +47,7 @@ public class GetDeviceListStub {
         op.opgetdevicelist.gdla_cookieverf = new verifier4();
         op.opgetdevicelist.gdla_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
 
         op.opgetdevicelist.gdla_maxdevices = new count4(256);
 

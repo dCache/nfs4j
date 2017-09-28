@@ -360,7 +360,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
              */
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
-                fs_layout_type.value = context.getDeviceManager().getLayoutTypes();
+                fs_layout_type.value = context.getDeviceManager()
+			.getLayoutTypes(context).stream()
+			.mapToInt(t -> t.getValue())
+			.toArray();
+
                 return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
                 return Optional.of(new fattr4_supported_attrs(NFSv4FileAttributes.EXCLCREAT_ATTR));

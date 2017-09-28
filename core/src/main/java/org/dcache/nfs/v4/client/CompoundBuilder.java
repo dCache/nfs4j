@@ -365,7 +365,7 @@ public class CompoundBuilder {
         op.opgetdevicelist.gdla_cookieverf = new verifier4();
         op.opgetdevicelist.gdla_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         op.opgetdevicelist.gdla_maxdevices = new count4(256);
         ops.add(op);
         return this;
@@ -377,7 +377,7 @@ public class CompoundBuilder {
         op.opgetdeviceinfo = new GETDEVICEINFO4args();
 
         op.opgetdeviceinfo.gdia_device_id = devId;
-        op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
 
         op.opgetdeviceinfo.gdia_maxcount = new count4(1024);
         op.opgetdeviceinfo.gdia_notify_types = new bitmap4();
@@ -395,7 +395,7 @@ public class CompoundBuilder {
 
         op.oplayoutreturn.lora_reclaim = false;
         op.oplayoutreturn.lora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
-        op.oplayoutreturn.lora_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        op.oplayoutreturn.lora_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         op.oplayoutreturn.lora_layoutreturn = new layoutreturn4();
         op.oplayoutreturn.lora_layoutreturn.lr_returntype = layoutreturn_type4.LAYOUTRETURN4_FILE;
         op.oplayoutreturn.lora_layoutreturn.lr_layout = new layoutreturn_file4();
@@ -538,14 +538,14 @@ public class CompoundBuilder {
     }
 
     public CompoundBuilder withLayoutget(boolean signal_layout_avail,
-            int layout_type, int iomode, long offset, long length, long minlength,
+            layouttype4 layout_type, int iomode, long offset, long length, long minlength,
             int maxcount, stateid4 stateid) {
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_LAYOUTGET;
         op.oplayoutget = new LAYOUTGET4args();
 
         op.oplayoutget.loga_signal_layout_avail = signal_layout_avail;
-        op.oplayoutget.loga_layout_type = layout_type;
+        op.oplayoutget.loga_layout_type = layout_type.getValue();
         op.oplayoutget.loga_iomode = iomode;
 
         op.oplayoutget.loga_offset = new offset4(offset);

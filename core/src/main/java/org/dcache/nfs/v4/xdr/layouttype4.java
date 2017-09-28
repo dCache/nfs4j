@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,17 +18,49 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import org.dcache.nfs.status.BadLayoutException;
+
 /**
  * Enumeration (collection of constants).
  */
-public interface layouttype4 {
+public enum layouttype4 {
 
-    public static final int LAYOUT4_NFSV4_1_FILES = 0x1;
-    public static final int LAYOUT4_OSD2_OBJECTS = 0x2;
-    public static final int LAYOUT4_BLOCK_VOLUME = 0x3;
-    public static final int LAYOUT4_FLEX_FILES = 0x4;
+    LAYOUT4_NFSV4_1_FILES {
+        @Override
+        public int getValue() {
+            return 0x1;
+        }
+    },
+    LAYOUT4_OSD2_OBJECTS {
+        @Override
+        public int getValue() {
+            return 0x2;
+        }
+    },
+    LAYOUT4_BLOCK_VOLUME {
+        @Override
+        public int getValue() {
+            return 0x3;
+        }
+    },
+    LAYOUT4_FLEX_FILES {
+        @Override
+        public int getValue() {
+            return 0x4;
+        }
+    };
 
-    public static final int LAYOUT4_TYPE_MAX = LAYOUT4_FLEX_FILES;
+    public abstract int getValue();
 
+    public static layouttype4 valueOf(int value) throws BadLayoutException {
+        for (layouttype4 l : values()) {
+            if (l.getValue() == value) {
+                return l;
+            }
+        }
+
+        throw new BadLayoutException("Bad layouttype: " + value);
+    }
 }
 // End of layouttype4.java

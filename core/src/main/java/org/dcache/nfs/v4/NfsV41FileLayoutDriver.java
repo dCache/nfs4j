@@ -48,7 +48,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class NfsV41FileLayoutDriver implements LayoutDriver {
 
     @Override
-    public int getLayoutType() {
+    public layouttype4 getLayoutType() {
         return layouttype4.LAYOUT4_NFSV4_1_FILES;
     }
 
@@ -86,7 +86,7 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         body.get(retBytes);
 
         device_addr4 addr = new device_addr4();
-        addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         addr.da_addr_body = retBytes;
 
         return addr;
@@ -140,7 +140,7 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         xdrBody.get(body);
 
         layout_content4 content = new layout_content4();
-        content.loc_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        content.loc_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         content.loc_body = body;
 
         return content;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@ import org.dcache.nfs.v4.xdr.stateid4;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.vfs.Inode;
 
 public interface NFSv41DeviceManager {
@@ -44,7 +46,7 @@ public interface NFSv41DeviceManager {
      * @return
      * @throws IOException
      */
-    public Layout layoutGet(CompoundContext context, Inode inode, int layoutType, int ioMode, stateid4 stateid)
+    public Layout layoutGet(CompoundContext context, Inode inode, layouttype4 layoutType, int ioMode, stateid4 stateid)
             throws IOException;
 
     /**
@@ -55,7 +57,7 @@ public interface NFSv41DeviceManager {
      * @param layoutType
      * @return device address
      */
-    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId, int layoutType) throws IOException;
+    public device_addr4 getDeviceInfo(CompoundContext context, deviceid4 deviceId, layouttype4 layoutType) throws IOException;
 
     /**
      * Get list of all device IDs used by server.
@@ -77,5 +79,5 @@ public interface NFSv41DeviceManager {
      * Returns the array of layout types supported by this device manager.
      * @return supported layout types.
      */
-    public int[] getLayoutTypes();
+    public Set<layouttype4> getLayoutTypes();
 }

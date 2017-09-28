@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import org.dcache.nfs.v4.xdr.device_addr4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NoEntException;
+import org.dcache.nfs.v4.xdr.layouttype4;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,8 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         res.gdir_resok4 = new GETDEVICEINFO4resok();
 
-        device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId, _args.opgetdeviceinfo.gdia_layout_type);
+        layouttype4 layoutType = layouttype4.valueOf(_args.opgetdeviceinfo.gdia_layout_type);
+        device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId, layoutType);
 
         if (deviceInfo == null) {
             throw new NoEntException("invalid deviceInfo id [" + deviceId +"]");

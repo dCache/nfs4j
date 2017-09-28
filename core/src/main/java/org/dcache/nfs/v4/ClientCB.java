@@ -152,7 +152,7 @@ public class ClientCB {
 
         CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
         cbLayoutrecall.clora_changed = true;
-        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         cbLayoutrecall.clora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
         cbLayoutrecall.clora_recall = new layoutrecall4();
         cbLayoutrecall.clora_recall.lor_recalltype = layoutrecall_type4.LAYOUTRECALL4_FSID;
@@ -172,7 +172,7 @@ public class ClientCB {
 
         CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
         cbLayoutrecall.clora_changed = true;
-        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES;
+        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         cbLayoutrecall.clora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
         cbLayoutrecall.clora_recall = new layoutrecall4();
         cbLayoutrecall.clora_recall.lor_recalltype = layoutrecall_type4.LAYOUTRECALL4_FILE;

@@ -92,7 +92,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
 
 
     @Override
-    public int getLayoutType() {
+    public layouttype4 getLayoutType() {
         return layouttype4.LAYOUT4_FLEX_FILES;
     }
 
@@ -132,7 +132,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         body.get(retBytes);
 
         device_addr4 addr = new device_addr4();
-        addr.da_layout_type = layouttype4.LAYOUT4_FLEX_FILES;
+        addr.da_layout_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
         addr.da_addr_body = retBytes;
 
         return addr;
@@ -166,7 +166,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         xdrBody.get(body);
 
         layout_content4 content = new layout_content4();
-        content.loc_type = layouttype4.LAYOUT4_FLEX_FILES;
+        content.loc_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
         content.loc_body = body;
         return content;
     }
