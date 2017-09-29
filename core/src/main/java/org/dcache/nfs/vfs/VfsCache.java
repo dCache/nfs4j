@@ -236,13 +236,7 @@ public class VfsCache extends ForwardingFileSystem {
 
     private Stat statFromCacheOrLoad(final Inode inode) throws IOException {
 	try {
-	    return _statCache.get(new Opaque(inode.getFileId()), new Callable<Stat>() {
-
-		@Override
-		public Stat call() throws Exception {
-		    return _inner.getattr(inode);
-		}
-	    });
+	    return _statCache.get(new Opaque(inode.getFileId()), () -> _inner.getattr(inode));
 	} catch (ExecutionException e) {
 	    Throwable t = e.getCause();
 	    Throwables.throwIfInstanceOf(t, IOException.class);

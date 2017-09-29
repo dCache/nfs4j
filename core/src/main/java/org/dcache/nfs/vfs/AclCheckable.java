@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -38,36 +38,18 @@ public interface AclCheckable {
      * An implementation of {@link AclCheckable}, which all always grand the access
      * to an inode.
      */
-    public static final AclCheckable ALLOW_ALL = new AclCheckable() {
-
-        @Override
-        public Access checkAcl(Subject subject, Inode inode, int accessMask) throws ChimeraNFSException, IOException {
-            return Access.ALLOW;
-        }
-    };
+    public static final AclCheckable ALLOW_ALL = (Subject subject, Inode inode, int accessMask) -> Access.ALLOW;
 
     /**
      * An implementation of {@link AclCheckable}, which all always deny the access
      * to an inode.
      */
-    public static final AclCheckable DENY_ALL = new AclCheckable() {
-
-        @Override
-        public Access checkAcl(Subject subject, Inode inode, int accessMask) throws ChimeraNFSException, IOException {
-            return Access.DENY;
-        }
-    };
+    public static final AclCheckable DENY_ALL = (Subject subject, Inode inode, int accessMask) -> Access.DENY;
 
     /**
      * An implementation of {@link AclCheckable}, which all always return "no matching ACE".
      */
-    public static final AclCheckable UNDEFINED_ALL = new AclCheckable() {
-
-        @Override
-        public Access checkAcl(Subject subject, Inode inode, int accessMask) throws ChimeraNFSException, IOException {
-            return Access.UNDEFINED;
-        }
-    };
+    public static final AclCheckable UNDEFINED_ALL = (Subject subject, Inode inode, int accessMask) -> Access.UNDEFINED;
 
     /**
      * Validate requested {@code accessMask} mask for a given {@code subject} and {code inode}.

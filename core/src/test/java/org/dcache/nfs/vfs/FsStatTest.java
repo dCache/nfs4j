@@ -13,9 +13,9 @@ public class FsStatTest {
     public void testSerialization() throws Exception {
         FsStat fsStat = new FsStat(1, 2, 3, 4);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream);
-        os.writeObject(fsStat);
-        os.close();
+	try (ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream)) {
+	    os.writeObject(fsStat);
+	}
 
         byte[] serialized = byteArrayOutputStream.toByteArray();
         ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(serialized));

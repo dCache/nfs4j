@@ -67,9 +67,9 @@ public class StatTest {
         stat.setMode(0755 | Stat.S_IFDIR);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream);
-        os.writeObject(stat);
-        os.close();
+	try (ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream)) {
+	    os.writeObject(stat);
+	}
 
         byte[] serialized = byteArrayOutputStream.toByteArray();
         ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(serialized));
