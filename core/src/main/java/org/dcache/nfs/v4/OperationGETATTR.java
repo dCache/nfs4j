@@ -361,7 +361,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
                 fs_layout_type.value = context.getDeviceManager()
-			.getLayoutTypes(context).stream()
+			.getLayoutTypes().stream()
 			.mapToInt(t -> t.getValue())
 			.toArray();
 
