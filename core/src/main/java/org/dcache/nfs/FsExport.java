@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,11 +20,17 @@
 package org.dcache.nfs;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.dcache.nfs.v4.xdr.layouttype4;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -68,6 +74,7 @@ public class FsExport {
     private final boolean _allRoot;
     private final int _index;
     private final boolean _withPnfs;
+    private final List<layouttype4> _layoutTypes;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -119,6 +126,7 @@ public class FsExport {
         _allRoot = builder.isAllRoot();
         _withPnfs = builder.isWithPnfs();
         _index = getExportIndex(_path);
+	_layoutTypes = ImmutableList.copyOf(builder.getLayoutTypes());
     }
 
     public static int getExportIndex(String path) {
@@ -155,6 +163,15 @@ public class FsExport {
         if (_allSquash) {
             sb.append(",all_squash");
         }
+	if (!_layoutTypes.isEmpty()) {
+	    sb.append(
+		_layoutTypes.stream()
+		.map(Object::toString)
+		.map(s -> s.substring("LAYOUT4_".length()))
+		.map(String::toLowerCase)
+		.collect(Collectors.joining(":", ",lt=", ""))
+	    );
+	}
         sb.append(',')
             .append("anonuid=")
             .append(_anonUid);
@@ -223,6 +240,15 @@ public class FsExport {
     }
 
     /**
+     * Get an ordered list of layout types to be used by this export entry.
+     *
+     * @return an ordered list of layout types to be offerent to the client.
+     */
+    public List<layouttype4> getLayoutTypes() {
+	return _layoutTypes;
+    }
+
+    /**
      * Returns the given {@code path} without redundant elements.
      *
      * @param path
@@ -245,6 +271,7 @@ public class FsExport {
 	private boolean _withDcap = true;
         private boolean _allRoot = false;
         private boolean _withPnfs = true;
+	private final List<layouttype4> _layoutTypes = new ArrayList<>();
 
         public FsExportBuilder forClient(String client) {
             checkArgument(isValidHostSpecifier(client), "bad host specifier: " + client);
@@ -328,6 +355,11 @@ public class FsExport {
             return this;
         }
 
+	public FsExportBuilder withLayoutType(layouttype4 type) {
+	    _layoutTypes.add(type);
+	    return this;
+	}
+
         public String getClient() {
             return _client;
         }
@@ -371,6 +403,10 @@ public class FsExport {
         public boolean isWithPnfs() {
             return _withPnfs;
         }
+
+	public List<layouttype4> getLayoutTypes() {
+	    return _layoutTypes;
+	}
 
         public FsExport build(String path) throws UnknownHostException {
             return new FsExport(path, this);

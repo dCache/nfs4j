@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import org.dcache.nfs.v4.xdr.layouttype4;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -224,5 +225,31 @@ public class FsExportTest {
                 .toArray(String[]::new);
 
         assertArrayEquals("the export entries are not sorted as expected", sortedEntries, unsortedEntries);
+    }
+
+    @Test
+    public void testLyoutTypeOptions() throws Exception {
+	FsExport export = _exportFile.getExport("/layouttypes", InetAddress.getByName("172.16.1.1"));
+
+	assertEquals("invalid number of returned layouts", 1, export.getLayoutTypes().size());
+	assertEquals("wrong layout type", layouttype4.LAYOUT4_NFSV4_1_FILES, export.getLayoutTypes().get(0));
+    }
+
+    @Test
+    public void testLyoutTypeOrder1() throws Exception {
+	FsExport export = _exportFile.getExport("/layouttypes", InetAddress.getByName("172.16.2.1"));
+
+	assertEquals("invalid number of returned layouts", 2, export.getLayoutTypes().size());
+	assertEquals("wrong layout type", layouttype4.LAYOUT4_FLEX_FILES, export.getLayoutTypes().get(0));
+	assertEquals("wrong layout type", layouttype4.LAYOUT4_NFSV4_1_FILES, export.getLayoutTypes().get(1));
+    }
+
+    @Test
+    public void testLyoutTypeOrder2() throws Exception {
+	FsExport export = _exportFile.getExport("/layouttypes", InetAddress.getByName("172.16.3.1"));
+
+	assertEquals("invalid number of returned layouts", 2, export.getLayoutTypes().size());
+	assertEquals("wrong layout type", layouttype4.LAYOUT4_NFSV4_1_FILES, export.getLayoutTypes().get(0));
+	assertEquals("wrong layout type", layouttype4.LAYOUT4_FLEX_FILES, export.getLayoutTypes().get(1));
     }
 }

@@ -28,3 +28,4 @@ not/absolute/path
 /export_with_pnfs 192.168.1.1(rw,pnfs)
 /export_without_pnfs 192.168.1.1(rw,nopnfs)
 /export_default_pnfs 192.168.1.1(rw)
+/layouttypes 172.16.1.1(rw,lt=nfsv4_1_files) 172.16.2.1(rw,lt=flex_files:nfsv4_1_files) 172.16.3.1(rw,lt=nfsv4_1_files:flex_files)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,6 +39,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import org.dcache.nfs.v4.xdr.layouttype4;
 
 
 public class ExportFile {
@@ -206,6 +208,19 @@ public class ExportFile {
                             exportBuilder.withoutPnfs();
                             continue;
                         }
+
+			if (option.startsWith("lt=")) {
+			    Iterable<String> lt = Splitter.on(":")
+				.omitEmptyStrings()
+				.split(option.substring(3));
+
+			    StreamSupport.stream(lt.spliterator(), false)
+				.map(String::toUpperCase)
+				.map(t -> "LAYOUT4_" + t)
+				.map(layouttype4::valueOf)
+				.forEach(exportBuilder::withLayoutType);
+			    continue;
+			}
 
                         throw new IllegalArgumentException("Unsupported option: " + option);
                     }

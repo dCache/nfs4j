@@ -20,7 +20,9 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.nfs.v4.xdr.fattr4_numlinks;
@@ -71,6 +73,7 @@ import org.dcache.nfs.v4.xdr.fattr4_mode;
 import org.dcache.nfs.v4.xdr.fattr4_maxfilesize;
 import org.dcache.nfs.v4.xdr.fattr4_acl;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.v4.xdr.fattr4_fsid;
 import org.dcache.nfs.v4.xdr.fattr4_time_access;
 import org.dcache.nfs.v4.xdr.fattr4_supported_attrs;
@@ -79,6 +82,7 @@ import org.dcache.nfs.v4.xdr.fattr4_space_free;
 import org.dcache.nfs.v4.xdr.fattr4_cansettime;
 import org.dcache.nfs.v4.xdr.fattr4_type;
 import org.dcache.nfs.v4.xdr.fsid4;
+import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.nfs.v4.xdr.GETATTR4res;
 
@@ -360,11 +364,40 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
              */
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
-                fs_layout_type.value = context.getDeviceManager()
-			.getLayoutTypes().stream()
-			.mapToInt(t -> t.getValue())
-			.toArray();
+                /*
+                 * REVISIT: we pick the first entry only.
+                 *
+                 * In case on multiple exports to a single client, like
+                 *
+                 * /data *(rw,lt=nfsv4_1_files)
+                 * /home *(rw,lt=flex_files:nfsv4_1_files)
+                 *
+                 * we can't really find out which entry to pick, as GETARRT on
+                 * FATTR4_FS_LAYOUT_TYPES usually issued on the root (/) of the tree
+                 * and we don't know which entry is effective.
+                 */
 
+                List<layouttype4> exportLayouts = context
+                    .getExportFile()
+                    .exportsFor(context.getRemoteSocketAddress().getAddress())
+                    .findFirst()
+                    .orElseThrow(AccessException::new) // should never happen as handled by PseudoFS first
+                    .getLayoutTypes();
+
+		Set<layouttype4> supportedLayouts = context
+                    .getDeviceManager()
+                    .getLayoutTypes();
+
+                if (exportLayouts.isEmpty()) {
+                    fs_layout_type.value = supportedLayouts.stream()
+                        .mapToInt(layouttype4::getValue)
+                        .toArray();
+                } else {
+                    fs_layout_type.value = exportLayouts.stream()
+                        .filter(e -> supportedLayouts.contains(e))
+                        .mapToInt(layouttype4::getValue)
+                        .toArray();
+                }
                 return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
                 return Optional.of(new fattr4_supported_attrs(NFSv4FileAttributes.EXCLCREAT_ATTR));
