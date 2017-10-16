@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,13 +19,16 @@
  */
 package org.dcache.utils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * A helper class for opaque data manipulations.
  * Enabled opaque date to be used as a key in {@link java.util.Collection}
  */
-public class Opaque {
+public class Opaque implements Serializable {
+
+    private static final long serialVersionUID = 1532238396149112674L;
 
     private final byte[] _opaque;
 

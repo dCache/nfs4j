@@ -45,6 +45,14 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+                <executions>
+                    <!-- produce jar for unit test that is used by other mudules -->
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

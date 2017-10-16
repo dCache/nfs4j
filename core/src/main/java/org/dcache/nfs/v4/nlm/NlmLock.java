@@ -20,11 +20,14 @@
 package org.dcache.nfs.v4.nlm;
 
 import com.google.common.base.MoreObjects;
+import java.io.Serializable;
 import org.dcache.nfs.v4.StateOwner;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_lock_type4;
 
-public class NlmLock {
+public class NlmLock implements Serializable{
+
+    private static final long serialVersionUID = -839338915510175006L;
 
     /**
      * Opaque object that identifies the host or process that is holding the

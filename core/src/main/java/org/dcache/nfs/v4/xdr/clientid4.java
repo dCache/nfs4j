@@ -20,8 +20,11 @@
 package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import java.io.Serializable;
 
-public class clientid4 extends uint64_t {
+public class clientid4 extends uint64_t implements Serializable {
+
+    private static final long serialVersionUID = -1680592874479756784L;
 
     public clientid4() {
     }

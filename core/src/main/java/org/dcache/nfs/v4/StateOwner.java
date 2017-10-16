@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import com.google.common.base.MoreObjects;
+import java.io.Serializable;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
@@ -27,7 +28,9 @@ import org.dcache.nfs.v4.xdr.state_owner4;
 /**
  * Owner associated with the open/lock operations.
  */
-public class StateOwner {
+public class StateOwner implements Serializable {
+
+    private static final long serialVersionUID = -4712959403595550903L;
 
     /**
      * Per owner sequence to serialize opens with nfsv4.0

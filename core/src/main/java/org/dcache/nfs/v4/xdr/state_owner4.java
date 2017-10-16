@@ -25,13 +25,16 @@ import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.io.BaseEncoding;
+import java.io.Serializable;
 import org.dcache.xdr.OncRpcException;
 
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 
-public class state_owner4 implements XdrAble {
+public class state_owner4 implements XdrAble, Serializable {
+
+    private static final long serialVersionUID = -7146149387990285155L;
     public clientid4 clientid;
     public byte [] owner;
 

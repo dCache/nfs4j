@@ -319,7 +319,7 @@ public class SimpleLmTest {
         nlm.test(file1, lock3);
     }
 
-    private static class LockBuilder {
+    public static class LockBuilder {
 
         private long offset;
         private long length;

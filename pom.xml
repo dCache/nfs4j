@@ -39,6 +39,7 @@
       <module>core</module>
       <module>basic-client</module>
       <module>spring</module>
+      <module>dlm</module>
   </modules>
 
   <build>
@@ -134,6 +135,16 @@
               <groupId>org.dcache</groupId>
               <artifactId>oncrpc4j-core</artifactId>
               <version>2.7.0</version>
+          </dependency>
+          <dependency>
+              <groupId>com.hazelcast</groupId>
+              <artifactId>hazelcast</artifactId>
+              <version>3.9.2</version>
+          </dependency>
+          <dependency>
+              <groupId>com.hazelcast</groupId>
+              <artifactId>hazelcast-client</artifactId>
+              <version>3.9.2</version>
           </dependency>
       </dependencies>
   </dependencyManagement>
