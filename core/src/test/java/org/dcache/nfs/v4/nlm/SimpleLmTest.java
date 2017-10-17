@@ -14,7 +14,7 @@ import org.junit.Before;
  */
 public class SimpleLmTest {
 
-    private LockManager nlm;
+    protected LockManager nlm;
 
     @Before
     public void setUp() throws Exception {
