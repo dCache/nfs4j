@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,12 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
         String newName = NameFilter.convertName(_args.oplink.newname.value);
 
-        Stat parentDirStat = context.getFs().getattr(context.currentInode());
+        result.oplink.resok4 = new LINK4resok();
+        result.oplink.resok4.cinfo = new change_info4();
+        result.oplink.resok4.cinfo.atomic = true;
+
+        Inode parent = context.currentInode();
+        Stat parentDirStat = context.getFs().getattr(parent);
         Stat inodeStat = context.getFs().getattr(context.savedInode());
 
         if (parentDirStat.type() != Stat.Type.DIRECTORY) {
@@ -58,14 +64,11 @@ public class OperationLINK extends AbstractNFSv4Operation {
             throw new IsDirException("Can't hard-link a directory");
         }
 
+        result.oplink.resok4.cinfo.before = new changeid4(parentDirStat.getGeneration());
         context.getFs().link(context.currentInode(), context.savedInode(), newName,
                 context.getSubject());
 
-        result.oplink.resok4 = new LINK4resok();
-        result.oplink.resok4.cinfo = new change_info4();
-        result.oplink.resok4.cinfo.atomic = true;
-        result.oplink.resok4.cinfo.before = new changeid4(parentDirStat.getCTime());
-        result.oplink.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
+        result.oplink.resok4.cinfo.after = new changeid4(context.getFs().getattr(parent).getGeneration());
 
         result.oplink.status = nfsstat.NFS_OK;
     }
