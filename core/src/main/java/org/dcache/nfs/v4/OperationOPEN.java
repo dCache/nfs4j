@@ -98,11 +98,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     throw new GraceException();
                 }
 
-                Stat stat = context.getFs().getattr(context.currentInode());
+                Inode parent = context.currentInode();
+                Stat stat = context.getFs().getattr(parent);
                 if (stat.type() != Stat.Type.DIRECTORY) {
                     throw new NotDirException();
                 }
-                res.resok4.cinfo.before = new changeid4(stat.getCTime());
+                res.resok4.cinfo.before = new changeid4(stat.getGeneration());
                 String name = NameFilter.convertName(_args.opopen.claim.file.value);
                 _log.debug("regular open for : {}", name);
 
@@ -164,14 +165,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
                         }
 
-                        res.resok4.cinfo.after = new changeid4(System.currentTimeMillis());
+                        res.resok4.cinfo.after = new changeid4(context.getFs().getattr(parent).getGeneration());
                     } catch (ExistException e) {
 
                         if (exclusive) {
                             throw new ExistException();
                         }
                         // no changes from us, old stat info is still good enough
-                        res.resok4.cinfo.after = new changeid4(stat.getCTime());
+                        res.resok4.cinfo.after = new changeid4(stat.getGeneration());
 
                         inode = context.getFs().lookup(context.currentInode(), name);
                         if (_log.isDebugEnabled()) {
@@ -199,7 +200,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
                 } else {
                     // no changes from us, old stat info is still good enough
-                    res.resok4.cinfo.after = new changeid4(stat.getCTime());
+                    res.resok4.cinfo.after = new changeid4(stat.getGeneration());
 
                     inode = context.getFs().lookup(context.currentInode(), name);
                     checkCanAccess(context, inode, _args.opopen.share_access);
