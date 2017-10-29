@@ -62,25 +62,38 @@ import org.dcache.nfs.v4.nlm.SimpleLm;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
+    private static final Logger _log = LoggerFactory.getLogger(NFSServerV41.class);
+
+    private static final RequestExecutionTimeGauges<String> GAUGES
+            = new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
+
     private final VirtualFileSystem _fs;
     private final ExportFile _exportFile;
-    private static final Logger _log = LoggerFactory.getLogger(NFSServerV41.class);
     private final NFSv4OperationFactory _operationFactory;
     private final NFSv41DeviceManager _deviceManager;
-    private final NFSv4StateHandler _statHandler = new NFSv4StateHandler();
-    private final LockManager _nlm = new SimpleLm();
+    private final NFSv4StateHandler _statHandler;
+    private final LockManager _nlm;
 
-    private static final RequestExecutionTimeGauges<String> GAUGES =
-            new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
+    private NFSServerV41(Builder builder) {
+        _deviceManager = builder.deviceManager;
+        _fs = builder.vfs;
+        _exportFile = builder.exportFile;
+        _operationFactory = builder.operationFactory;
+        _nlm = builder.nlm == null ? new SimpleLm() : builder.nlm;
+        _statHandler = builder.stateHandler == null ? new NFSv4StateHandler() : builder.stateHandler;
+    }
 
+    @Deprecated
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, VirtualFileSystem fs,
-            ExportFile exportFile) throws OncRpcException {
+            ExportFile exportFile) {
 
         _deviceManager = deviceManager;
         _fs = fs;
         _exportFile = exportFile;
         _operationFactory = operationFactory;
+        _nlm = new SimpleLm();
+        _statHandler = new NFSv4StateHandler();
     }
 
     @Override
@@ -290,5 +303,49 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
     public RequestExecutionTimeGauges<String> getStatistics() {
         return GAUGES;
+    }
+
+    public static class Builder {
+
+        private NFSv4OperationFactory operationFactory;
+        private NFSv41DeviceManager deviceManager;
+        private VirtualFileSystem vfs;
+        private ExportFile exportFile;
+        private LockManager nlm;
+        private NFSv4StateHandler stateHandler;
+
+        public Builder withDeviceManager(NFSv41DeviceManager deviceManager) {
+            this.deviceManager = deviceManager;
+            return this;
+        }
+
+        public Builder withOperationFactory(NFSv4OperationFactory operationFactory) {
+            this.operationFactory = operationFactory;
+            return this;
+        }
+
+        public Builder withVfs(VirtualFileSystem vfs) {
+            this.vfs = vfs;
+            return this;
+        }
+
+        public Builder withLockManager(LockManager nlm) {
+            this.nlm = nlm;
+            return this;
+        }
+
+        public Builder withExportFile(ExportFile exportFile) {
+            this.exportFile = exportFile;
+            return this;
+        }
+
+        public Builder withStateHandler(NFSv4StateHandler stateHandler) {
+            this.stateHandler = stateHandler;
+            return this;
+        }
+
+        public NFSServerV41 build() {
+            return new NFSServerV41(this);
+        }
     }
 }
