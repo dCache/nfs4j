@@ -33,11 +33,11 @@ public class App {
         ExportFile exportFile = new ExportFile(....);
 
         // create NFS v4.1 server
-        NFSServerV41 nfs4 = new NFSServerV41(
-                new MDSOperationFactory(),
-                new DeviceManager(),
-                vfs,
-                exportFile);
+        NFSServerV41 nfs4 = new NFSServerV41.Builder()
+                .withExportFile(exportFile)
+                .withVfs(vfs)
+                .withOperationFactory(new MDSOperationFactory())
+                .build();
 
         // create NFS v3 and mountd servers
         NfsServerV3 nfs3 = new NfsServerV3(exportFile, vfs);
