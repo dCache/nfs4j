@@ -198,7 +198,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 if (context.getMinorversion() == 0) {
                     bitmap = SUPPORTED_ATTRS_V4_0;
                 } else {
-                    bitmap = context.getDeviceManager() == null? SUPPORTED_ATTRS_V4_1_NO_PNFS : SUPPORTED_ATTRS_V4_1;
+                    bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1_NO_PNFS : SUPPORTED_ATTRS_V4_1;
                 }
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
@@ -365,6 +365,13 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
              */
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
+
+                final Optional<NFSv41DeviceManager> pnfsDeviceManager = context
+                        .getDeviceManager();
+                if (!pnfsDeviceManager.isPresent()) {
+                    return Optional.empty();
+                }
+
                 /*
                  * REVISIT: we pick the first entry only.
                  *
@@ -385,9 +392,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                     .orElseThrow(AccessException::new) // should never happen as handled by PseudoFS first
                     .getLayoutTypes();
 
-		Set<layouttype4> supportedLayouts = context
-                    .getDeviceManager()
-                    .getLayoutTypes();
+		Set<layouttype4> supportedLayouts = pnfsDeviceManager.get().getLayoutTypes();
 
                 if (exportLayouts.isEmpty()) {
                     fs_layout_type.value = supportedLayouts.stream()

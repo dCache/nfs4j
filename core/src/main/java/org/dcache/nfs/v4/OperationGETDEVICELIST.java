@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.TooSmallException;
 
 public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
@@ -49,6 +50,9 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final GETDEVICELIST4res res = result.opgetdevicelist;
+        final NFSv41DeviceManager pnfsDeviceManager = context
+                .getDeviceManager()
+                .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
         /*
          * GETDEVICELIST This operation returns an array of items
@@ -71,7 +75,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         res.gdlr_resok4.gdlr_cookieverf = new verifier4();
         res.gdlr_resok4.gdlr_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        List<deviceid4> deviceIDs = context.getDeviceManager().getDeviceList(context);
+        List<deviceid4> deviceIDs = pnfsDeviceManager.getDeviceList(context);
 
         int deviceListSize = Math.min(deviceIDs.size(), _args.opgetdevicelist.gdla_maxdevices.value);
 

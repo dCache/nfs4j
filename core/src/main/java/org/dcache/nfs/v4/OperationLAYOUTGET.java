@@ -35,6 +35,7 @@ import org.dcache.nfs.status.BadIoModeException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.LayoutUnavailableException;
 import org.dcache.nfs.status.NfsIoException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.layout4;
@@ -56,6 +57,9 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final LAYOUTGET4res res = result.oplayoutget;
+        final NFSv41DeviceManager pnfsDeviceManager = context
+                .getDeviceManager()
+                .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
         if ((_args.oplayoutget.loga_length.value != nfs4_prot.NFS4_UINT64_MAX) &&
                 (_args.oplayoutget.loga_length.value < _args.oplayoutget.loga_minlength.value)) {
@@ -98,7 +102,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         Layout ioLayout;
         try {
-            ioLayout = context.getDeviceManager().layoutGet(context, inode,
+            ioLayout = pnfsDeviceManager.layoutGet(context, inode,
                     layoutType,
                     _args.oplayoutget.loga_iomode,
                     _args.oplayoutget.loga_stateid);

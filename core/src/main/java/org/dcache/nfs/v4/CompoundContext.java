@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
@@ -84,7 +85,7 @@ public class CompoundContext {
     private final RpcCall _callInfo;
     private final Subject _subject;
     private final ExportFile _exportFile;
-    private final NFSv41DeviceManager _deviceManager;
+    private final Optional<NFSv41DeviceManager> _deviceManager;
     private final NFSv4StateHandler _stateHandler;
     private SessionSlot _slot;
     private boolean _cacheThis;
@@ -102,7 +103,7 @@ public class CompoundContext {
     public CompoundContext(CompoundContextBuilder builder) {
         _minorversion = builder.getMinorversion();
         _fs = builder.getFs();
-        _deviceManager = builder.getDeviceManager();
+        _deviceManager = Optional.ofNullable(builder.getDeviceManager());
         _callInfo = builder.getCall();
         _exportFile = builder.getExportFile();
         _stateHandler = builder.getStateHandler();
@@ -125,7 +126,7 @@ public class CompoundContext {
         return _fs;
     }
 
-    public NFSv41DeviceManager getDeviceManager() {
+    public Optional<NFSv41DeviceManager> getDeviceManager() {
         return _deviceManager;
     }
 

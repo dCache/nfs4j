@@ -30,6 +30,7 @@ import org.dcache.nfs.v4.xdr.device_addr4;
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NoEntException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.layouttype4;
 
 import org.slf4j.Logger;
@@ -53,6 +54,9 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
          * address.
          */
         final GETDEVICEINFO4res res = result.opgetdeviceinfo;
+        final NFSv41DeviceManager pnfsDeviceManager = context
+                .getDeviceManager()
+                .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
         deviceid4 deviceId = _args.opgetdeviceinfo.gdia_device_id;
 
@@ -61,7 +65,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         res.gdir_resok4 = new GETDEVICEINFO4resok();
 
         layouttype4 layoutType = layouttype4.valueOf(_args.opgetdeviceinfo.gdia_layout_type);
-        device_addr4 deviceInfo = context.getDeviceManager().getDeviceInfo(context, deviceId, layoutType);
+        device_addr4 deviceInfo = pnfsDeviceManager.getDeviceInfo(context, deviceId, layoutType);
 
         if (deviceInfo == null) {
             throw new NoEntException("invalid deviceInfo id [" + deviceId +"]");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4resok;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
@@ -45,6 +46,9 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
         final LAYOUTCOMMIT4res res = result.oplayoutcommit;
+
+        context.getDeviceManager()
+                .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
         _log.debug("LAYOUTCOMMIT: inode=" + context.currentInode() + " length="
                 + _args.oplayoutcommit.loca_length.value + " offset="
