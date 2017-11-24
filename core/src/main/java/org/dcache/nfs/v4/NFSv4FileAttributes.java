@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -175,6 +175,12 @@ public interface NFSv4FileAttributes {
     public final static int[] SUPPORTED_ATTRS_V4_1 = new int[]{
         NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
         NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1,
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
+    };
+
+    public final static int[] SUPPORTED_ATTRS_V4_1_NO_PNFS = new int[]{
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+        NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1 ^ FATTR4_FS_LAYOUT_TYPE,
         NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
     };
 

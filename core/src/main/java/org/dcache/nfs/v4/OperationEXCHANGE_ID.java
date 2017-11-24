@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -63,7 +63,6 @@ import static org.dcache.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
 public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationEXCHANGE_ID.class);
-    private final int _flag;
 
     /**
      * Mask of valid flags.
@@ -79,13 +78,6 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             | nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID
             | nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A
             | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
-
-    /**
-     * Mask of supported server roles in the pNFS community.
-     */
-    private static final int EXCHGID4_FLAG_MASK_PNFS = (nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS
-            | nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS
-            | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS);
 
     /**
      * compile time
@@ -121,16 +113,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
     }
 
-    /**
-     * Indicates server role in pNFS community. <tt>true</tt> if run as
-     * a data server only.
-     */
-    private final boolean _isDsOnly;
-
-    public OperationEXCHANGE_ID(nfs_argop4 args, int flag) {
+    public OperationEXCHANGE_ID(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_EXCHANGE_ID);
-        _flag = flag;
-        _isDsOnly = (_flag & EXCHGID4_FLAG_MASK_PNFS) == nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS;
     }
 
     @Override
@@ -196,6 +180,10 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         final InetSocketAddress localSocketAddress = context.getLocalSocketAddress();
         final NFSv4StateHandler stateHandler = context.getStateHandler();
 
+        int exchangeIdFlags = context.getExchangeIdFlags();
+        // any v4.1 server needs callbacks, unless it's pNFS DS-only
+        boolean needCallBack = (exchangeIdFlags & nfs4_prot.EXCHGID4_FLAG_MASK_PNFS) != nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS;
+
         if (update) {
             if (client == null || !client.isConfirmed()) {
                 _log.debug("Update of no existing/confirmed Record (case 7)");
@@ -222,7 +210,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                         remoteSocketAddress, localSocketAddress,
                         context.getMinorversion(),
                         clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
-                        principal, !_isDsOnly);
+                        principal, needCallBack);
 
             } else {
 
@@ -237,7 +225,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                                 remoteSocketAddress, localSocketAddress,
                                 context.getMinorversion(),
                                 clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
-                                principal, !_isDsOnly);
+                                principal, needCallBack);
                     } else {
                         _log.debug("Case 3b: Client Collision");
                         if ((!client.hasState()) || !client.isLeaseValid()) {
@@ -246,7 +234,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                                     remoteSocketAddress, localSocketAddress,
                                     context.getMinorversion(),
                                     clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
-                                    principal, !_isDsOnly);
+                                    principal, needCallBack);
                         } else {
                             throw new ClidInUseException("Principal Missmatch");
                         }
@@ -259,7 +247,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                             context.getMinorversion(),
                             _args.opexchange_id.eia_clientowner.co_ownerid,
                             _args.opexchange_id.eia_clientowner.co_verifier,
-                            principal, !_isDsOnly);
+                            principal, needCallBack);
                 }
             }
         }
@@ -269,7 +257,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         res.eir_resok4 = new EXCHANGE_ID4resok();
         res.eir_resok4.eir_clientid = client.getId();
         res.eir_resok4.eir_sequenceid = new sequenceid4(client.currentSeqID());
-        res.eir_resok4.eir_flags = new uint32_t(_flag);
+        res.eir_resok4.eir_flags = new uint32_t(exchangeIdFlags);
 
         ServerIdProvider serverIdProvider = context.getServerIdProvider();
         res.eir_resok4.eir_server_owner = serverIdProvider.getOwner();

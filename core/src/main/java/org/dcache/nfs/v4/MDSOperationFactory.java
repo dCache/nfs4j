@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 
 public class MDSOperationFactory implements NFSv4OperationFactory {
@@ -125,8 +124,7 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
                  *
                  * indicate that we are a MDS and DS at the same time.
                  */
-            return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS|
-                        nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS);
+            return new OperationEXCHANGE_ID(op);
             case nfs_opnum4.OP_CREATE_SESSION:
                 return new OperationCREATE_SESSION(op);
             case nfs_opnum4.OP_DESTROY_SESSION:

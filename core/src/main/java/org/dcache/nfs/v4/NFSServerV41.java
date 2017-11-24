@@ -137,15 +137,26 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
 
-            CompoundContext context = new CompoundContextBuilder()
+            CompoundContextBuilder builder = new CompoundContextBuilder()
                     .withMinorversion(arg1.minorversion.value)
                     .withFs(fs)
                     .withDeviceManager(_deviceManager)
                     .withStateHandler(_statHandler)
                     .withLockManager(_nlm)
                     .withExportFile(_exportFile)
-                    .withCall(call$)
-                    .build();
+                    .withCall(call$);
+
+            if (_deviceManager != null) {
+                builder.withPnfsRoleMDS();
+                // we do proxy-io
+                builder.withPnfsRoleDS();
+            } else if (_exportFile == null) {
+                builder.withPnfsRoleDS();
+            } else {
+                builder.withoutPnfs();
+            }
+
+            CompoundContext context = builder.build();
 
             boolean retransmit = false;
             for (int position = 0; position <arg1.argarray.length; position++) {

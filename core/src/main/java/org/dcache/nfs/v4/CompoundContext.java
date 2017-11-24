@@ -92,6 +92,7 @@ public class CompoundContext {
     private stateid4 _savedStateid = null;
     private final Principal _principal;
     private final LockManager _nlm;
+    private final int _exchangeIdFlags;
 
     /**
      * Create context of COUMPOUND request.
@@ -109,6 +110,7 @@ public class CompoundContext {
 
         _subject = _callInfo.getCredential().getSubject();
         _principal = principalOf(_callInfo);
+        _exchangeIdFlags = builder.getExchangeIdFlags();
     }
 
     public RpcCall getRpcCall() {
@@ -313,6 +315,10 @@ public class CompoundContext {
 
     public Principal getPrincipal() {
         return _principal;
+    }
+
+    public int getExchangeIdFlags() {
+        return _exchangeIdFlags;
     }
 
     private Principal principalOf(final RpcCall call) {

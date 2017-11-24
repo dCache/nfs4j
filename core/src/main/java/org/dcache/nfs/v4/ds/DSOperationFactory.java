@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.dcache.nfs.v4.OperationCREATE_SESSION;
 import org.dcache.nfs.v4.OperationPUTFH;
 import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.OperationEXCHANGE_ID;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.vfs.FsCache;
@@ -62,7 +61,7 @@ public class DSOperationFactory implements NFSv4OperationFactory {
             case nfs_opnum4.OP_WRITE:
                 return new DSOperationWRITE(op, _fs);
             case nfs_opnum4.OP_EXCHANGE_ID:
-                return new OperationEXCHANGE_ID(op, nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS);
+                return new OperationEXCHANGE_ID(op);
             case nfs_opnum4.OP_CREATE_SESSION:
                 return new OperationCREATE_SESSION(op);
             case nfs_opnum4.OP_DESTROY_SESSION:

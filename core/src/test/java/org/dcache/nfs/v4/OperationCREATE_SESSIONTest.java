@@ -58,7 +58,7 @@ public class OperationCREATE_SESSIONTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -112,7 +112,7 @@ public class OperationCREATE_SESSIONTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -148,7 +148,7 @@ public class OperationCREATE_SESSIONTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -201,7 +201,7 @@ public class OperationCREATE_SESSIONTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args, 0);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
 
         result = execute(contextBdr.build(), EXCHANGE_ID);
 
