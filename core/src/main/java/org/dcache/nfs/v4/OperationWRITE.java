@@ -21,10 +21,8 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.WRITE4resok;
@@ -87,8 +85,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         res.resok4 = new WRITE4resok();
         res.resok4.count = new count4(writeResult.getBytesWritten());
         res.resok4.committed = stable_how4.FILE_SYNC4;
-        res.resok4.writeverf = new verifier4();
-        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        res.resok4.writeverf = context.getRebootVerifier();
 
     }
 }

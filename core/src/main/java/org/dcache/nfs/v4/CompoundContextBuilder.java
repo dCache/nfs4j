@@ -23,6 +23,7 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.xdr.*;
 
 import static java.util.Objects.requireNonNull;
@@ -37,6 +38,7 @@ public class CompoundContextBuilder {
     private NFSv41DeviceManager deviceManager = null;
     private ExportFile exportFile = null;
     private int exchangeIdFlags = nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS;
+    private verifier4 rebootVerifier;
 
     public CompoundContextBuilder withCall(RpcCall call) {
         this.call = call;
@@ -127,5 +129,14 @@ public class CompoundContextBuilder {
         exchangeIdFlags &= ~nfs4_prot.EXCHGID4_FLAG_MASK_PNFS;
         exchangeIdFlags |= nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS;
         return this;
+    }
+
+    public CompoundContextBuilder withRebootVerifier(verifier4 verifier) {
+        rebootVerifier = verifier;
+        return this;
+    }
+
+    public verifier4 getRebootVerifier() {
+        return rebootVerifier;
     }
 }

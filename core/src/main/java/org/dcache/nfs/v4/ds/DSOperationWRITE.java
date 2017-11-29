@@ -27,7 +27,6 @@ import org.dcache.nfs.v4.CompoundContext;
 import org.dcache.nfs.v4.xdr.WRITE4res;
 import org.dcache.nfs.v4.xdr.WRITE4resok;
 import org.dcache.nfs.v4.xdr.count4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -37,7 +36,6 @@ import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.stable_how4;
-import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -99,8 +97,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.resok4 = new WRITE4resok();
         res.resok4.count = new count4(bytesWritten);
         res.resok4.committed = _args.opwrite.stable;
-        res.resok4.writeverf = new verifier4();
-        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        res.resok4.writeverf = context.getRebootVerifier();
 
         synchronized(out) {
             if ((_args.opwrite.stable != stable_how4.UNSTABLE4) && (offset + bytesWritten > lastSize)) {

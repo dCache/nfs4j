@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,11 +26,9 @@ import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.CompoundContext;
 import org.dcache.nfs.v4.xdr.COMMIT4res;
 import org.dcache.nfs.v4.xdr.COMMIT4resok;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.FsCache;
 import java.nio.channels.FileChannel;
 import org.dcache.nfs.status.InvalException;
@@ -74,7 +72,6 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new COMMIT4resok();
-        res.resok4.writeverf = new verifier4();
-        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        res.resok4.writeverf = context.getRebootVerifier();
     }
 }

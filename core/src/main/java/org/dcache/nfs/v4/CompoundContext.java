@@ -42,6 +42,7 @@ import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.server_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
+import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.RpcAuthType;
@@ -94,6 +95,7 @@ public class CompoundContext {
     private final Principal _principal;
     private final LockManager _nlm;
     private final int _exchangeIdFlags;
+    private final verifier4 _rebootVerifier;
 
     /**
      * Create context of COUMPOUND request.
@@ -112,6 +114,7 @@ public class CompoundContext {
         _subject = _callInfo.getCredential().getSubject();
         _principal = principalOf(_callInfo);
         _exchangeIdFlags = builder.getExchangeIdFlags();
+        _rebootVerifier = builder.getRebootVerifier();
     }
 
     public RpcCall getRpcCall() {
@@ -351,5 +354,13 @@ public class CompoundContext {
      */
     public InetSocketAddress getLocalSocketAddress() {
         return getRpcCall().getTransport().getLocalSocketAddress();
+    }
+
+    /**
+     * Return verifier to indicate server reboot.
+     * @return reboot verifier.
+     */
+    public verifier4 getRebootVerifier() {
+        return _rebootVerifier;
     }
 }
