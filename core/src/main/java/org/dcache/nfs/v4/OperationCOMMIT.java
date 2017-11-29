@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,16 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.COMMIT4res;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.verifier4;
+import org.dcache.nfs.vfs.Inode;
 
 public class OperationCOMMIT extends AbstractNFSv4Operation {
 
@@ -31,7 +37,15 @@ public class OperationCOMMIT extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
-        result.opcommit.status = nfsstat.NFSERR_NOTSUPP;
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+
+        final COMMIT4res res =  result.opcommit;
+        Inode inode = context.currentInode();
+
+        context.getFs().commit(inode, _args.opcommit.offset.value, _args.opcommit.count.value);
+
+        res.resok4.writeverf = new verifier4();
+        res.resok4.writeverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+        result.opcommit.status = nfsstat.NFS_OK;
     }
 }
