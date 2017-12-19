@@ -109,6 +109,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         res.status = nfsstat.NFS_OK;
         res.resok4 = new READDIR4resok();
         res.resok4.reply = new dirlist4();
+        res.resok4.reply.eof = true;
         res.resok4.cookieverf = new verifier4(directoryStream.getVerifier());
 
         int currcount = READDIR4RESOK_SIZE;
@@ -129,7 +130,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 continue;
             }
 
-            fcount++;
             Inode ei = le.getInode();
 
             entry4 currentEntry = new entry4();
@@ -149,8 +149,10 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                     //write even a single entry.
                     throw new TooSmallException("can't send even a single entry");
                 }
+                res.resok4.reply.eof = false;
                 break;
             }
+            fcount++;
             dircount += newDirSize;
             currcount += newSize;
 
@@ -162,7 +164,6 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             lastEntry = currentEntry;
         }
 
-        res.resok4.reply.eof = !dirList.hasNext();
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} EOF={}",
                     fcount, currcount,
                     _args.opreaddir.maxcount.value,
