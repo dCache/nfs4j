@@ -149,6 +149,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                     //write even a single entry.
                     throw new TooSmallException("can't send even a single entry");
                 }
+                res.resok4.reply.eof = false;
                 break;
             }
             dircount += newDirSize;
@@ -160,9 +161,9 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 lastEntry.nextentry = currentEntry;
             }
             lastEntry = currentEntry;
+            res.resok4.reply.eof = !dirList.hasNext();
         }
 
-        res.resok4.reply.eof = !dirList.hasNext();
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} EOF={}",
                     fcount, currcount,
                     _args.opreaddir.maxcount.value,
