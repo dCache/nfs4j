@@ -721,6 +721,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIRPLUS3resok();
             res.resok.reply = new dirlistplus3();
+            res.resok.reply.eof = true;
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
@@ -736,7 +737,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             while (dirList.hasNext()) {
 
-                fcount++;
                 DirectoryEntry le = dirList.next();
                 String name = le.getName();
                 Inode ef = le.getInode();
@@ -763,9 +763,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
                         //write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
+                    res.resok.reply.eof = false;
                     break;
                 }
 
+                fcount++;
                 dircount += newDirSize;
                 currcount += newSize;
 
@@ -777,7 +779,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 lastEntry = currentEntry;
             }
 
-            res.resok.reply.eof = !dirList.hasNext();
             _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {}",
                     fcount, currcount,
                     arg1.maxcount.value.value, dircount,
@@ -828,6 +829,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.status = nfsstat.NFS_OK;
             res.resok = new READDIR3resok();
             res.resok.reply = new dirlist3();
+            res.resok.reply.eof = true;
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
@@ -841,7 +843,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             while (dirList.hasNext()) {
 
-                fcount++;
                 DirectoryEntry le = dirList.next();
                 String name = le.getName();
 
@@ -858,8 +859,10 @@ public class NfsServerV3 extends nfs3_protServerStub {
                         //write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
+                    res.resok.reply.eof = false;
                     break;
                 }
+                fcount++;
                 currcount += newSize;
 
                 if (lastEntry == null) {
@@ -870,7 +873,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 lastEntry = currentEntry;
             }
 
-            res.resok.reply.eof = !dirList.hasNext();
             _log.debug("Sending {} entries ( {} bytes from {}) cookie = {}",
                     fcount, currcount,
                     arg1.count.value.value,
