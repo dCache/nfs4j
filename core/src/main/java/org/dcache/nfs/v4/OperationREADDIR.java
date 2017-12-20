@@ -164,11 +164,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             lastEntry = currentEntry;
         }
 
-        _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} EOF={}",
-                    fcount, currcount,
-                    _args.opreaddir.maxcount.value,
-                    startValue,
-                    _args.opreaddir.dircount.value,
-                    res.resok4.reply.eof);
+        _log.debug("Sending {} entries ({} bytes from {}, dircount = {}) cookie = {} EOF={}",
+                fcount,
+                currcount,
+                _args.opreaddir.maxcount.value,
+                _args.opreaddir.dircount.value,
+                startValue,
+                res.resok4.reply.eof);
     }
 }

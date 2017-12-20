@@ -9,6 +9,7 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3res;
 import org.dcache.nfs.v3.xdr.cookieverf3;
+import org.dcache.nfs.v3.xdr.entryplus3;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.FileHandle;
@@ -25,6 +26,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class NfsServerV3READDIRPLUS_3Test {
     private FileHandle dirHandle;
@@ -145,5 +148,37 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         Assert.assertEquals(nfsstat.NFS_OK, result.status); //error response
         AssertXdr.assertXdrEncodable(result);
+    }
+
+    @Test
+    public void testEofIfLastEntryDoesNotFit() throws Exception {
+
+        byte[] cookieVerifier = DirectoryStream.ZERO_VERIFIER;
+
+        // vfs will return only "." and ".." as contents, both leading to itself
+        List<DirectoryEntry> dirContents = new ArrayList<>();
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+
+        for (int i = 0; i < 21; i++) {
+            dirContents.add(new DirectoryEntry("file" + i, dirInode, dirStat, 3 + i));
+        }
+
+        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
+
+        RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
+        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, 0, cookieVerifier, 3480, 1024); // only 22 entries will fit
+        READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
+
+        int n = 0;
+
+        entryplus3 entry = result.resok.reply.entries;
+        while (entry != null) {
+            entry = entry.nextentry;
+            n++;
+        }
+
+        assertEquals("Not all antries returned", dirContents.size() - 1, n);
+        assertFalse("The last entry is missed", result.resok.reply.eof);
     }
 }
