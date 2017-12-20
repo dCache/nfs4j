@@ -777,6 +777,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     lastEntry.nextentry = currentEntry;
                 }
                 lastEntry = currentEntry;
+                res.resok.reply.eof = !dirList.hasNext();
             }
 
             _log.debug("Sending {} entries ( {} bytes from {}, dircount = {} from {} ) cookie = {}",
@@ -871,6 +872,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     lastEntry.nextentry = currentEntry;
                 }
                 lastEntry = currentEntry;
+                res.resok.reply.eof = !dirList.hasNext();
             }
 
             _log.debug("Sending {} entries ( {} bytes from {}) cookie = {}",

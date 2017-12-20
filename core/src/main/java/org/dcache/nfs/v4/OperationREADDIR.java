@@ -162,6 +162,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 lastEntry.nextentry = currentEntry;
             }
             lastEntry = currentEntry;
+            res.resok4.reply.eof = !dirList.hasNext();
         }
 
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {} from {} ) cookie = {} EOF={}",
