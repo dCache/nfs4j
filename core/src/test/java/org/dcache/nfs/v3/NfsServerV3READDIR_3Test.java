@@ -9,6 +9,7 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v3.xdr.READDIR3args;
 import org.dcache.nfs.v3.xdr.READDIR3res;
 import org.dcache.nfs.v3.xdr.cookieverf3;
+import org.dcache.nfs.v3.xdr.entry3;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.FileHandle;
@@ -25,6 +26,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class NfsServerV3READDIR_3Test {
 
@@ -144,5 +147,37 @@ public class NfsServerV3READDIR_3Test {
 
         Assert.assertEquals(nfsstat.NFS_OK, result.status); //error response
         AssertXdr.assertXdrEncodable(result);
+    }
+
+    @Test
+    public void testEofIfLastEntryDoesNotFit() throws Exception {
+
+        byte[] cookieVerifier = DirectoryStream.ZERO_VERIFIER;
+
+        // vfs will return only "." and ".." as contents, both leading to itself
+        List<DirectoryEntry> dirContents = new ArrayList<>();
+        dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
+        dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
+
+        for (int i = 0; i < 21; i++) {
+            dirContents.add(new DirectoryEntry("file" + i, dirInode, dirStat, 3 + i));
+        }
+
+        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
+
+        RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
+        READDIR3args args = NfsV3Ops.readDir(dirHandle, 0, cookieVerifier, 770); // only 22 entries will fit
+        READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
+
+        int n = 0;
+
+        entry3 entry = result.resok.reply.entries;
+        while (entry != null) {
+            entry = entry.nextentry;
+            n++;
+        }
+
+        assertEquals("Not all antries returned", dirContents.size() - 1, n);
+        assertFalse("The last entry is missed", result.resok.reply.eof);
     }
 }
