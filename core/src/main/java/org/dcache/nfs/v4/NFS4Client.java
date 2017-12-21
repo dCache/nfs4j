@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -470,7 +469,6 @@ public class NFS4Client {
     }
 
     private void drainStates() {
-        Collection<NFS4State> states = new ArrayList<>(_clientStates.size());
         Iterator<NFS4State> i = _clientStates.values().iterator();
         while (i.hasNext()) {
             NFS4State state = i.next();
