@@ -42,7 +42,6 @@ import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
 import org.dcache.nfs.status.ExpiredException;
-import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.SeqMisorderedException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.clientid4;
@@ -119,9 +118,6 @@ public class NFS4Client {
     private int _sessionSequence = 1;
 
     private final Map<stateid4, NFS4State> _clientStates = new ConcurrentHashMap<>();
-
-    // FIXME: the max stateids have to be controlled by session
-    private final int MAX_OPEN_STATES = 16384;
 
     /**
      * sessions associated with the client
@@ -317,10 +313,6 @@ public class NFS4Client {
     }
 
     public NFS4State createState(StateOwner stateOwner, NFS4State openState) throws ChimeraNFSException {
-
-        if (_clientStates.size() >= MAX_OPEN_STATES) {
-            throw new ResourceException("Too many states.");
-        }
 
         NFS4State state = new NFS4State(openState, stateOwner, _stateHandler.createStateId(this, _stateIdCounter.incrementAndGet()));
         if (openState != null) {
