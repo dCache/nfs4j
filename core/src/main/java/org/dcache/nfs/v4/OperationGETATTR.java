@@ -198,7 +198,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 if (context.getMinorversion() == 0) {
                     bitmap = SUPPORTED_ATTRS_V4_0;
                 } else {
-                    bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1_NO_PNFS : SUPPORTED_ATTRS_V4_1;
+                    bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1 : SUPPORTED_ATTRS_V4_1_NO_PNFS;
                 }
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
