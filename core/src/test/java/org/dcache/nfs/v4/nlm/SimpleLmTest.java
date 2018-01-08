@@ -14,295 +14,319 @@ import org.junit.Before;
  */
 public class SimpleLmTest {
 
-    protected LockManager nlm;
+    private LockManager nlm;
+    private byte[] file1;
+    private byte[] file2;
 
     @Before
     public void setUp() throws Exception {
         nlm = new SimpleLm();
+        file1 = "file1".getBytes(StandardCharsets.UTF_8);
+        file2 = "file2".getBytes(StandardCharsets.UTF_8);
     }
 
     @Test
-    public void shouldAllowFreshLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testAllowFreshLock() throws LockException {
+        NlmLock lock = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+
+        nlm.lock(file1, lock);
     }
 
     @Test(expected = LockDeniedException.class)
-    public void shouldFailOnConflictingLockDifferentOwner() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testConflictingLockByDifferentOwner() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .read()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
     }
 
     @Test
-    public void shouldAllowConflictingLockSameOwner() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testConflictingLockSameOwner() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .read()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner1")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
     }
 
     @Test
-    public void shouldAllowNonConflictingLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testNonConflictingLock() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .read()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
                 .from(2)
                 .length(1)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
     }
 
     @Test
-    public void shouldAllowConflictingLocksOnDifferentFiles() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testOverlapingLocksOnDifferentFiles() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner2")
-                .on("file2")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file2, lock2);
     }
 
     @Test(expected = LockRangeUnavailabeException.class)
-    public void shouldFailOnNonMatchingLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testUnlockOfNonMatchingLock() throws LockException {
+        NlmLock lock = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .read()
-                .unlock();
+                .forRead()
+                .build();
+        nlm.unlock(file1, lock);
     }
 
     @Test
-    public void shouldAllowLockAfterUnlock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testLockAfterUnlock() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner1")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .unlock();
+                .forWrite()
+                .build();
+        nlm.unlock(file1, lock2);
 
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock3);
     }
 
     @Test
-    public void shouldAllowTestOnNonExinstingLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testTestOfNonExinstingLock() throws LockException {
+        NlmLock lock = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .test();
+                .forRead()
+                .build();
+        nlm.test(file1, lock);
     }
 
     @Test(expected = LockDeniedException.class)
-    public void shouldFailTestOnExinstingLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testTestOfExinstingLock() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .read()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
                 .from(0)
                 .length(1)
-                .write()
-                .test();
+                .forWrite()
+                .build();
+        nlm.test(file1, lock2);
     }
 
     @Test
-    public void shouldAllowNonOverlapingLocks() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testNonOverlapingLocks() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(1)
-                .write()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
                 .from(1)
-                .length(nfs4_prot.NFS4_UINT64_MAX) // up-to the end
-                .write()
-                .lock();
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
     }
 
     @Test(expected = LockDeniedException.class)
-    public void shouldFailWhenLockedUpToTheEnd() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testLockUpToTheEnd() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
-                .length(nfs4_prot.NFS4_UINT64_MAX) // up-to the end
-                .write()
-                .lock();
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
                 .from(1)
                 .length(1)
-                .read()
-                .lock();
-    }
-
-
-    @Test
-    public void shouldAllowTestAfterUnLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
-                .from(0)
-                .length(1)
-                .write()
-                .lock();
-
-        given().owner("owner1")
-                .on("file1")
-                .from(0)
-                .length(1)
-                .write()
-                .unlock();
-
-        given().owner("owner2")
-                .on("file1")
-                .from(0)
-                .length(1)
-                .write()
-                .test();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
     }
 
     @Test
-    public void shouldAllowTestInLockedRegion() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testTestAfterUnLock() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(1)
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
+
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(1)
+                .forRead()
+                .build();
+        nlm.unlock(file1, lock2);
+
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
+                .from(0)
+                .length(1)
+                .forRead()
+                .build();
+        nlm.test(file1, lock3);
+    }
+
+    @Test
+    public void testTestInLockedRegion() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(100)
                 .length(50)
-                .write()
-                .lock();
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner1")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
                 .from(75)
                 .length(50)
-                .write()
-                .test();
+                .forWrite()
+                .build();
+        nlm.test(file1, lock2);
     }
 
     @Test
-    public void shouldAllowSplitLock() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testSplitLock() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(0)
                 .length(3)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner1")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
                 .from(1)
                 .length(1)
-                .write()
-                .unlock();
+                .forRead()
+                .build();
+        nlm.unlock(file1, lock2);
 
-        given().owner("owner1")
-                .on("file1")
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
                 .from(1)
                 .length(1)
-                .write()
-                .test();
+                .forWrite()
+                .build();
+        nlm.test(file1, lock3);
     }
 
     @Test(expected = LockDeniedException.class)
-    public void shouldMergeOverlapingLocks() throws LockException {
-        given().owner("owner1")
-                .on("file1")
+    public void testMergeOfOverlapingLocks() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
                 .from(25)
                 .length(75)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock1);
 
-        given().owner("owner1")
-                .on("file1")
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
                 .from(50)
                 .length(100)
-                .write()
-                .lock();
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
 
-
-        given().owner("owner2")
-                .on("file1")
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
                 .from(0)
-                .length(-1)
-                .write()
-                .test();
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forWrite()
+                .build();
+        nlm.test(file1, lock3);
     }
 
-    private LockBuilder given() {
-        return new LockBuilder();
-    }
+    private static class LockBuilder {
 
-    private class LockBuilder {
-
-        private byte[] file;
         private long offset;
         private long length;
         private StateOwner owner;
         private int lockType;
 
-        LockBuilder on(String file) {
-            this.file = file.getBytes(StandardCharsets.UTF_8);
-            return this;
-        }
-
-        LockBuilder owner(String owner) {
+        LockBuilder withOwner(String owner) {
             state_owner4 so = new state_owner4();
 
             so.owner = owner.getBytes(StandardCharsets.UTF_8);
@@ -321,30 +345,18 @@ public class SimpleLmTest {
             return this;
         }
 
-        LockBuilder read() {
+        LockBuilder forRead() {
             this.lockType = nfs_lock_type4.READ_LT;
             return this;
         }
 
-        LockBuilder write() {
+        LockBuilder forWrite() {
             this.lockType = nfs_lock_type4.WRITE_LT;
             return this;
         }
 
-        void lock() throws LockException {
-            NlmLock lock = new NlmLock(owner, lockType, offset, length);
-            nlm.lock(file, lock);
+        NlmLock build() {
+           return new NlmLock(owner, lockType, offset, length);
         }
-
-        void unlock() throws LockException {
-            NlmLock lock = new NlmLock(owner, lockType, offset, length);
-            nlm.unlock(file, lock);
-        }
-
-        void test() throws LockException {
-            NlmLock lock = new NlmLock(owner, lockType, offset, length);
-            nlm.test(file, lock);
-        }
-
     }
 }
