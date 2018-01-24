@@ -17,7 +17,7 @@
   <scm>
       <connection>scm:git:https://github.com/dCache/nfs4j.git</connection>
       <developerConnection>scm:git:ssh://git@github.com/dCache/nfs4j.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>0.16</tag>
   </scm>
 
   <!--
