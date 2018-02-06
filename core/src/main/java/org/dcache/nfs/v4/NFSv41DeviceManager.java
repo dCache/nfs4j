@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -68,12 +68,16 @@ public interface NFSv41DeviceManager {
     public List<deviceid4> getDeviceList(CompoundContext context) throws IOException;
 
     /**
-     * Release layout associated with state id.
+     * Release layout associated with state id. The returned layout specific
+     * {@code body} used by client to report IO errors or layout usage statistic.
      *
      * @param context of the nfs request
-     * @param stateid
+     * @param stateid layout stateid as returned from previous layout operations.
+     * @param layoutType type of returned layout.
+     * @param body layout type specific data provided by the client.
+     * @throws IOException
      */
-    public void layoutReturn(CompoundContext context, stateid4 stateid) throws IOException;
+    public void layoutReturn(CompoundContext context, stateid4 stateid, layouttype4 layoutType, byte[] body) throws IOException;
 
     /**
      * Returns the array of layout types supported by this device manager.

@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.layoutreturn_type4;
 import org.dcache.nfs.v4.xdr.layoutreturn_stateid;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LAYOUTRETURN4res;
+import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,9 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
             pnfsDeviceManager.
                     layoutReturn(context,
-                    _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid);
+                    _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid,
+                            layouttype4.valueOf(_args.oplayoutreturn.lora_layout_type),
+                    _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_body);
         }
 
         res.lorr_stateid = new layoutreturn_stateid();
