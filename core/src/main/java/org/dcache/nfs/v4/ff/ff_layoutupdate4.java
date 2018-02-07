@@ -12,14 +12,12 @@ import java.io.IOException;
 import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfstime4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 
 public class ff_layoutupdate4 implements XdrAble, java.io.Serializable {
     public netaddr4 ffl_addr;
     public nfs_fh4 ffl_fhandle;
     public ff_io_latency4 ffl_read;
     public ff_io_latency4 ffl_write;
-    public uint32_t ffl_queue_depth;
     public nfstime4 ffl_duration;
     public boolean ffl_local;
 
@@ -39,7 +37,6 @@ public class ff_layoutupdate4 implements XdrAble, java.io.Serializable {
         ffl_fhandle.xdrEncode(xdr);
         ffl_read.xdrEncode(xdr);
         ffl_write.xdrEncode(xdr);
-        ffl_queue_depth.xdrEncode(xdr);
         ffl_duration.xdrEncode(xdr);
         xdr.xdrEncodeBoolean(ffl_local);
     }
@@ -50,7 +47,6 @@ public class ff_layoutupdate4 implements XdrAble, java.io.Serializable {
         ffl_fhandle = new nfs_fh4(xdr);
         ffl_read = new ff_io_latency4(xdr);
         ffl_write = new ff_io_latency4(xdr);
-        ffl_queue_depth = new uint32_t(xdr);
         ffl_duration = new nfstime4(xdr);
         ffl_local = xdr.xdrDecodeBoolean();
     }

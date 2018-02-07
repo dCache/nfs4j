@@ -10,15 +10,19 @@ package org.dcache.nfs.v4.ff;
 import org.dcache.xdr.*;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.nfstime4;
-import org.dcache.nfs.v4.xdr.uint32_t;
+import org.dcache.nfs.v4.xdr.uint64_t;
 
 public class ff_io_latency4 implements XdrAble, java.io.Serializable {
-    public nfstime4 ffil_min;
-    public nfstime4 ffil_max;
-    public nfstime4 ffil_avg;
-    public uint32_t ffil_count;
 
     private static final long serialVersionUID = 4758450970321975640L;
+
+    public uint64_t ffil_ops_requested;
+    public uint64_t ffil_bytes_requested;
+    public uint64_t ffil_ops_completed;
+    public uint64_t ffil_bytes_completed;
+    public uint64_t ffil_bytes_not_delivered;
+    public nfstime4 ffil_total_busy_time;
+    public nfstime4 ffil_aggregate_completion_time;
 
     public ff_io_latency4() {
     }
@@ -30,18 +34,23 @@ public class ff_io_latency4 implements XdrAble, java.io.Serializable {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        ffil_min.xdrEncode(xdr);
-        ffil_max.xdrEncode(xdr);
-        ffil_avg.xdrEncode(xdr);
-        ffil_count.xdrEncode(xdr);
+        ffil_ops_requested.xdrEncode(xdr);
+        ffil_bytes_requested.xdrEncode(xdr);
+        ffil_ops_completed.xdrEncode(xdr);
+        ffil_bytes_not_delivered.xdrEncode(xdr);
+        ffil_total_busy_time.xdrEncode(xdr);
+        ffil_aggregate_completion_time.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        ffil_min = new nfstime4(xdr);
-        ffil_max = new nfstime4(xdr);
-        ffil_avg = new nfstime4(xdr);
-        ffil_count = new uint32_t(xdr);
+        ffil_ops_requested = new uint64_t(xdr);
+        ffil_bytes_requested = new uint64_t(xdr);
+        ffil_ops_completed = new uint64_t(xdr);
+        ffil_bytes_completed = new uint64_t(xdr);
+        ffil_bytes_not_delivered = new uint64_t(xdr);
+        ffil_total_busy_time = new nfstime4(xdr);
+        ffil_aggregate_completion_time = new nfstime4(xdr);
     }
 
 }

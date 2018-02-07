@@ -9,11 +9,10 @@
 package org.dcache.nfs.v4.ff;
 import org.dcache.xdr.*;
 import java.io.IOException;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.uint64_t;
 
 public class io_info4 implements XdrAble, java.io.Serializable {
-    public uint32_t ii_count;
+    public uint64_t ii_count;
     public uint64_t ii_bytes;
 
     private static final long serialVersionUID = 7002990356778538437L;
@@ -34,7 +33,7 @@ public class io_info4 implements XdrAble, java.io.Serializable {
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        ii_count = new uint32_t(xdr);
+        ii_count = new uint64_t(xdr);
         ii_bytes = new uint64_t(xdr);
     }
 

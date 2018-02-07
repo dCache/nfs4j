@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 -2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2016 -2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -50,7 +50,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * layout driver for Flexible File layout type as defined in
- * <a href="https://tools.ietf.org/id/draft-ietf-nfsv4-flex-files-06.txt">flex-files draft6</a>
+ * <a href="https://www.ietf.org/id/draft-ietf-nfsv4-flex-files-16.txt">flex-files-draft16</a>
  */
 public class FlexFileLayoutDriver implements LayoutDriver {
 
