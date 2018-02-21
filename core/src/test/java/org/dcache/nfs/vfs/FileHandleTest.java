@@ -16,10 +16,10 @@
  */
 package org.dcache.nfs.vfs;
 
+import com.google.common.io.BaseEncoding;
 import java.nio.charset.Charset;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.dcache.utils.Bytes.fromHexString;
 
 /**
  *
@@ -35,19 +35,19 @@ public class FileHandleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadVersion() {
-        byte[] bytes = fromHexString("02caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
+        byte[] bytes = BaseEncoding.base16().lowerCase().decode("02caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         new FileHandle(bytes);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadMagic() {
-        byte[] bytes = fromHexString("0100000000000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
+        byte[] bytes = BaseEncoding.base16().lowerCase().decode("0100000000000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         new FileHandle(bytes);
     }
 
     @Test
     public void testValidHandleV1() {
-        byte[] bytes = fromHexString("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
+        byte[] bytes = BaseEncoding.base16().lowerCase().decode("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         FileHandle fh = new FileHandle(bytes);
 
         assertEquals(1, fh.getVersion());
@@ -67,7 +67,7 @@ public class FileHandleTest {
 
         assertEquals("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
                 fh.toString());
-        assertArrayEquals(fromHexString("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
+        assertArrayEquals(BaseEncoding.base16().lowerCase().decode("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
                 fh.bytes());
     }
 
