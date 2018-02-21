@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
+import org.dcache.utils.Bytes;
 
 public class nfs_fh4 implements XdrAble {
 
@@ -47,5 +48,9 @@ public class nfs_fh4 implements XdrAble {
         value = xdr.xdrDecodeDynamicOpaque();
     }
 
+    @Override
+    public String toString() {
+        return Bytes.toHexString(value);
+    }
 }
 // End of nfs_fh4.java

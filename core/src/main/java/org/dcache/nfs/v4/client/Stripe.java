@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,9 @@
  */
 package org.dcache.nfs.v4.client;
 
+import com.google.common.base.MoreObjects;
 import org.dcache.nfs.v4.xdr.deviceid4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 
 public class Stripe {
@@ -142,7 +144,15 @@ public class Stripe {
         return true;
     }
 
-
-
-
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this.getClass())
+                .add("offset", _offset)
+                .add("length", _len)
+                .add("deviceId", _deviceId)
+                .add("fh", _fh)
+                .add("commit", ((_unit & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) == 0 ? "ds" : "mds"))
+                .add("blocksize", _unit & nfs4_prot.NFL4_UFLG_STRIPE_UNIT_SIZE_MASK)
+                .toString();
+    }
 }
