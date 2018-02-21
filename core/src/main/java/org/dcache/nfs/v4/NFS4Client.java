@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.dcache.nfs.v4;
 /**
  *  with great help of William A.(Andy) Adamson
  */
+import com.google.common.io.BaseEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,6 @@ import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.utils.Bytes;
 import org.dcache.utils.Opaque;
 
 public class NFS4Client {
@@ -270,7 +270,7 @@ public class NFS4Client {
         long delta = curentTime - _cl_time;
         if (delta > _leaseTime) {
             drainStates();
-            throw new ExpiredException("lease time expired: (" + delta +"): " + Bytes.toHexString(_ownerId) +
+            throw new ExpiredException("lease time expired: (" + delta +"): " + BaseEncoding.base16().lowerCase().encode(_ownerId) +
                     " (" + _clientId + ").");
         }
         _cl_time = curentTime;
@@ -364,7 +364,7 @@ public class NFS4Client {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(_clientAddress).append(":")
-                .append(Bytes.toHexString(_ownerId))
+                .append(BaseEncoding.base16().lowerCase().encode(_ownerId))
                 .append("@")
                 .append(_clientId)
                 .append(":v4.").append(getMinorVersion());

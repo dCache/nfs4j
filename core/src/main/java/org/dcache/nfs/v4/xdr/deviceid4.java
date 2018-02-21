@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,10 +18,11 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import com.google.common.io.BaseEncoding;
 import org.dcache.xdr.*;
 import java.io.IOException;
 import java.util.Arrays;
-import org.dcache.utils.Bytes;
 
 public class deviceid4 implements XdrAble {
 
@@ -65,7 +66,7 @@ public class deviceid4 implements XdrAble {
 
     @Override
     public String toString() {
-        return Bytes.toHexString(value);
+        return BaseEncoding.base16().lowerCase().encode(value);
     }
 }
 // End of deviceid4.java

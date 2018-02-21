@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.io.BaseEncoding;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +27,6 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.status.BadSlotException;
-import org.dcache.utils.Bytes;
 
 public class NFSv41Session {
 
@@ -130,7 +130,7 @@ public class NFSv41Session {
 
     @Override
     public String toString() {
-        return _client.getRemoteAddress() + " : " + Bytes.toHexString(_session.value);
+        return _client.getRemoteAddress() + " : " + BaseEncoding.base16().lowerCase().encode(_session.value);
     }
 
     /**

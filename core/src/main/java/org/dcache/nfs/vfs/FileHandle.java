@@ -16,9 +16,9 @@
  */
 package org.dcache.nfs.vfs;
 
+import com.google.common.io.BaseEncoding;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import org.dcache.utils.Bytes;
 
 /**
  * NFS file handle on wire representation format v1.
@@ -149,7 +149,7 @@ public class FileHandle {
 
     @Override
     public String toString() {
-        return Bytes.toHexString(this.bytes());
+        return BaseEncoding.base16().lowerCase().encode(this.bytes());
     }
 
     private static boolean arrayEquals(byte[] a1, byte[] a2, int len) {

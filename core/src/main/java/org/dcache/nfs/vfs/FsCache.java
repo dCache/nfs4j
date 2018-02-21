@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,12 +20,12 @@
 package org.dcache.nfs.vfs;
 
 import com.google.common.cache.*;
+import com.google.common.io.BaseEncoding;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.TimeUnit;
-import org.dcache.utils.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class FsCache {
         @Override
         public FileChannel load(Inode inode) throws IOException {
             byte[] fid = inode.getFileId();
-            String id = Bytes.toHexString(fid);
+            String id = BaseEncoding.base16().lowerCase().encode(fid);
             File dir = getAndCreateDirectory(id);
             File f = new File(dir, id);
             return new RandomAccessFile(f, "rw").getChannel();

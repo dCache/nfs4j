@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.utils;
 
+import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -60,7 +61,7 @@ public class Opaque implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('[').append(Bytes.toHexString(_opaque)).append(']');
+        sb.append('[').append(BaseEncoding.base16().lowerCase().encode(_opaque)).append(']');
         return sb.toString();
     }
 }

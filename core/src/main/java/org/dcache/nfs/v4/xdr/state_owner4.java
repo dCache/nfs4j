@@ -91,7 +91,7 @@ public class state_owner4 implements XdrAble, Serializable {
     public String toString() {
         return MoreObjects.toStringHelper(this.getClass().getSimpleName())
                 .add("clientid", Long.toString(clientid.value, 16))
-                .add("ownerid", BaseEncoding.base16().encode(owner))
+                .add("ownerid", BaseEncoding.base16().lowerCase().encode(owner))
                 .toString();
     }
 }

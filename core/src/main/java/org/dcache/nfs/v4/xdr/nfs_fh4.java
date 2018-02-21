@@ -18,9 +18,10 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import com.google.common.io.BaseEncoding;
 import org.dcache.xdr.*;
 import java.io.IOException;
-import org.dcache.utils.Bytes;
 
 public class nfs_fh4 implements XdrAble {
 
@@ -50,7 +51,7 @@ public class nfs_fh4 implements XdrAble {
 
     @Override
     public String toString() {
-        return Bytes.toHexString(value);
+        return BaseEncoding.base16().lowerCase().encode(value);
     }
 }
 // End of nfs_fh4.java

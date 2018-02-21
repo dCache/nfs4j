@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.dcache.nfs.v4.client;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import java.io.File;
 import java.io.IOException;
@@ -74,7 +75,6 @@ import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.utils.Bytes;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 
@@ -610,7 +610,7 @@ public class Main {
 
         _rootFh = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
         _cwd = _rootFh;
-        System.out.println("root fh = " + Bytes.toHexString(_rootFh.value));
+        System.out.println("root fh = " + BaseEncoding.base16().lowerCase().encode(_rootFh.value));
     }
 
     public void readdir() throws OncRpcException, IOException {
@@ -743,7 +743,7 @@ public class Main {
         COMPOUND4res compound4res = sendCompound(args);
 
         _cwd = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
-        System.out.println("CWD fh = " + Bytes.toHexString(_cwd.value));
+        System.out.println("CWD fh = " + BaseEncoding.base16().lowerCase().encode(_cwd.value));
         return new nfs_fh4(_cwd.value);
     }
 
@@ -895,7 +895,7 @@ public class Main {
 
         nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
         stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
-        System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
+        System.out.println("open_read fh = " + BaseEncoding.base16().lowerCase().encode(fh.value));
 
         return new OpenReply(fh, stateid);
     }
@@ -915,7 +915,7 @@ public class Main {
         int opCount = compound4res.resarray.size();
         nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
         stateid4 stateid = compound4res.resarray.get(opCount - 2).opopen.resok4.stateid;
-        System.out.println("open_read fh = " + Bytes.toHexString(fh.value));
+        System.out.println("open_read fh = " + BaseEncoding.base16().lowerCase().encode(fh.value));
 
         return new OpenReply(fh, stateid);
     }
@@ -946,7 +946,7 @@ public class Main {
         COMPOUND4res compound4res = sendCompound(args);
 
         layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
-        System.out.println("Layoutget for fh: " + Bytes.toHexString(fh.value));
+        System.out.println("Layoutget for fh: " + BaseEncoding.base16().lowerCase().encode(fh.value));
         System.out.println("    roc   : " + compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_return_on_close);
 
         StripeMap stripeMap = new StripeMap(compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_stateid);
@@ -958,7 +958,7 @@ public class Main {
                     + fileDevice.nfl_deviceid.value.length);
 
             _ioFH = fileDevice.nfl_fh_list[0];
-            System.out.println("     io fh: " + Bytes.toHexString(_ioFH.value));
+            System.out.println("     io fh: " + BaseEncoding.base16().lowerCase().encode(_ioFH.value));
             System.out.println("    length: " + l.lo_length.value);
             System.out.println("    offset: " + l.lo_offset.value);
             System.out.println("    type  : " + l.lo_content.loc_type);
@@ -1170,7 +1170,7 @@ public class Main {
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
-        System.out.println("fh = " + Bytes.toHexString(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object.value));
+        System.out.println("fh = " + BaseEncoding.base16().lowerCase().encode(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object.value));
     }
 
     private void getattr(String path) throws OncRpcException, IOException {
