@@ -17,7 +17,7 @@ public class ff_ioerr4 implements XdrAble, java.io.Serializable {
     public offset4 ffie_offset;
     public length4 ffie_length;
     public stateid4 ffie_stateid;
-    public device_error4 ffie_errors;
+    public device_error4[] ffie_errors;
 
     private static final long serialVersionUID = 616611153944851361L;
 
@@ -34,7 +34,12 @@ public class ff_ioerr4 implements XdrAble, java.io.Serializable {
         ffie_offset.xdrEncode(xdr);
         ffie_length.xdrEncode(xdr);
         ffie_stateid.xdrEncode(xdr);
-        ffie_errors.xdrEncode(xdr);
+
+        int size = ffie_errors.length;
+        xdr.xdrEncodeInt(size);
+        for (int i = 0; i < size; i++) {
+            ffie_errors[i].xdrEncode(xdr);
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
@@ -42,7 +47,12 @@ public class ff_ioerr4 implements XdrAble, java.io.Serializable {
         ffie_offset = new offset4(xdr);
         ffie_length = new length4(xdr);
         ffie_stateid = new stateid4(xdr);
-        ffie_errors = new device_error4(xdr);
+        int size = xdr.xdrDecodeInt();
+
+        ffie_errors = new device_error4[size];
+        for(int i = 0; i < size; i++) {
+            ffie_errors[i] = new device_error4(xdr);
+        }
     }
 
 }
