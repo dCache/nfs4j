@@ -50,6 +50,7 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
         // FIXME: sync the data
 
+        _args.opcommit.offset.checkOverflow(_args.opcommit.count.value, "offset + length overflow");
         final COMMIT4res res = result.opcommit;
         if (context.getFs() != null) {
 	    Inode inode = context.currentInode();
