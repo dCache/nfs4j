@@ -9,6 +9,8 @@
 package org.dcache.nfs.v4.ff;
 import org.dcache.xdr.*;
 import java.io.IOException;
+
+import org.dcache.nfs.v4.xdr.device_error4;
 import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
