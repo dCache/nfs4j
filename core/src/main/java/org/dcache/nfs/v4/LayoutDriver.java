@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2015 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,9 @@
 package org.dcache.nfs.v4;
 
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.v4.xdr.device_addr4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layout_content4;
@@ -59,4 +61,12 @@ public interface LayoutDriver {
      * @throws ChimeraNFSException if fails
      */
     layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4 ... deviceids) throws ChimeraNFSException;
+
+
+    /**
+     * Consume the type-specific data provided on layout return.
+     * @param data layout type specific data
+     * @throws BadXdrException if provided data can't be decoded.
+     */
+    void acceptLayoutReturnData(byte[] data) throws BadXdrException;
 }

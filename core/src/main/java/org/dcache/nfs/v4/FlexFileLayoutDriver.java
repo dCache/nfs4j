@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 -2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2016 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,12 +21,14 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.v4.ff.ff_data_server4;
 import org.dcache.nfs.v4.ff.ff_device_addr4;
 import org.dcache.nfs.v4.ff.ff_device_versions4;
 import org.dcache.nfs.v4.ff.ff_layout4;
+import org.dcache.nfs.v4.ff.ff_layoutreturn4;
 import org.dcache.nfs.v4.ff.ff_mirror4;
 import org.dcache.nfs.v4.ff.flex_files_prot;
 import org.dcache.nfs.v4.xdr.device_addr4;
@@ -47,6 +49,10 @@ import org.dcache.xdr.XdrBuffer;
 import org.glassfish.grizzly.Buffer;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.v4.ff.ff_ioerr4;
+import org.dcache.nfs.v4.ff.ff_iostats4;
+import org.dcache.xdr.Xdr;
 
 /**
  * layout driver for Flexible File layout type as defined in
@@ -73,6 +79,11 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final fattr4_owner_group groupPrincipal;
 
     /**
+     * Consumer which accepts data provided on layout return.
+     */
+    private final Consumer<ff_layoutreturn4> layoutReturnConsumer;
+
+    /**
      * Create new FlexFile layout driver with. The @code nfsVersion} and
      * {@code nfsMinorVersion} represent the protocol to be used to access the
      * storage device. If client uses AUTH_SYS, then provided {@code userPrincipal}
@@ -82,12 +93,15 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      * @param nfsMinorVersion nfs minor version to use.
      * @param userPrincipal user principal to be used by client
      * @param groupPrincipal group principal to be used by client
+     * @param layoutReturnConsumer consumer which accepts data provided on layout return.
      */
-    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal) {
+    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion,
+            utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal, Consumer<ff_layoutreturn4> layoutReturnConsumer) {
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
         this.userPrincipal = new fattr4_owner(userPrincipal);
         this.groupPrincipal = new fattr4_owner_group(groupPrincipal);
+        this.layoutReturnConsumer = layoutReturnConsumer;
     }
 
 
@@ -193,4 +207,26 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         return mirrors;
     }
 
+    /**
+     * Consumes flexfiles specific data provided on layout return. The
+     * must be xdr encoded ff_layoutreturn4 object.
+     *
+     * See: https://www.ietf.org/id/draft-ietf-nfsv4-flex-files-17.txt#9
+     * REVISIT: update when flexfilie rfc is released as recommended standard.
+     *
+     * @throws org.dcache.nfs.status.BadXdrException if provided data cant be decoded.
+     */
+    @Override
+    public void acceptLayoutReturnData(byte[] data) throws BadXdrException {
+        try {
+            Xdr xdr = new XdrBuffer(data);
+            xdr.beginDecoding();
+            ff_layoutreturn4 lr = new ff_layoutreturn4(xdr);
+            xdr.endDecoding();
+
+            layoutReturnConsumer.accept(lr);
+        } catch (IOException e) {
+            throw new BadXdrException("invalid data", e);
+        }
+    }
 }

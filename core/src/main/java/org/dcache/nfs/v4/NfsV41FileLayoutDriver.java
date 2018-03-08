@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,6 +41,7 @@ import org.dcache.xdr.XdrBuffer;
 import org.glassfish.grizzly.Buffer;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import org.dcache.nfs.status.BadXdrException;
 /**
  * layout driver for NFSv4.1 file layout type as defined in
  * <a href="https://www.ietf.org/rfc/rfc5661.txt">rfc5661</a>
@@ -146,4 +147,19 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         return content;
     }
 
+    /**
+     * Returns consumer which accepts data provided on layout return.
+     * @throws org.dcache.nfs.status.BadXdrException
+     */
+    @Override
+    public void acceptLayoutReturnData(byte[] data) throws BadXdrException {
+
+        /*
+         * NFSv41 file layout driver doesn't expect any data on return.
+         */
+        if (data.length != 0) {
+            throw new BadXdrException("Unexpected data on layout return");
+        }
+
+    }
 }
