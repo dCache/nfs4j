@@ -187,7 +187,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
      */
 
     // read/read-write
-    private static Optional<? extends XdrAble> fattr2xdr(int fattr, VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context) throws IOException {
+    static Optional<? extends XdrAble> fattr2xdr(int fattr, VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context) throws IOException {
 
         FsStat fsStat = null;
 
@@ -395,9 +395,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 		Set<layouttype4> supportedLayouts = pnfsDeviceManager.get().getLayoutTypes();
 
                 if (exportLayouts.isEmpty()) {
-                    fs_layout_type.value = supportedLayouts.stream()
-                        .mapToInt(layouttype4::getValue)
-                        .toArray();
+                    // for backward compatibility, pick NFSv41_FILES layout if nothing is specified
+                    fs_layout_type.value = new int[] {layouttype4.LAYOUT4_NFSV4_1_FILES.getValue()};
                 } else {
                     fs_layout_type.value = exportLayouts.stream()
                         .filter(e -> supportedLayouts.contains(e))

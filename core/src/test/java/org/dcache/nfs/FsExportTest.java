@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -252,4 +252,12 @@ public class FsExportTest {
 	assertEquals("wrong layout type", layouttype4.LAYOUT4_NFSV4_1_FILES, export.getLayoutTypes().get(0));
 	assertEquals("wrong layout type", layouttype4.LAYOUT4_FLEX_FILES, export.getLayoutTypes().get(1));
     }
+
+    @Test
+    public void testNoLyoutTypes() throws Exception {
+        FsExport export = _exportFile.getExport("/layouttypes", InetAddress.getByName("172.16.4.1"));
+
+        assertTrue("No layout types expected", export.getLayoutTypes().isEmpty());
+    }
+
 }
