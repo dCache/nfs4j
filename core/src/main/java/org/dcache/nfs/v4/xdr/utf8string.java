@@ -20,19 +20,18 @@
 package org.dcache.nfs.v4.xdr;
 import org.dcache.xdr.*;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class utf8string implements XdrAble {
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
     public byte [] value;
 
     public utf8string() {
     }
 
     public utf8string(String s) {
-        this.value = s.getBytes(UTF8);
+        this.value = s.getBytes(StandardCharsets.UTF_8);
     }
 
     public utf8string(byte [] value) {
@@ -73,7 +72,7 @@ public class utf8string implements XdrAble {
 
     @Override
     public String toString() {
-        return new String(value, UTF8);
+        return new String(value, StandardCharsets.UTF_8);
     }
 }
 // End of utf8string.java
