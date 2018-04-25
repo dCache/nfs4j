@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.v4.ff.ff_data_server4;
 import org.dcache.nfs.v4.ff.ff_device_addr4;
@@ -44,15 +45,11 @@ import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.utf8str_mixed;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrBuffer;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.Xdr;
 import org.glassfish.grizzly.Buffer;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import org.dcache.nfs.status.BadXdrException;
-import org.dcache.nfs.v4.ff.ff_ioerr4;
-import org.dcache.nfs.v4.ff.ff_iostats4;
-import org.dcache.xdr.Xdr;
 
 /**
  * layout driver for Flexible File layout type as defined in
@@ -128,7 +125,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
             flexfile_type.ffda_netaddrs.value[i] = new netaddr4(deviceAddress[i]);
         }
 
-        XdrBuffer xdr = new XdrBuffer(128);
+        Xdr xdr = new Xdr(128);
         try {
             xdr.beginEncoding();
             flexfile_type.xdrEncode(xdr);
@@ -165,7 +162,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
                 | flex_files_prot.FF_FLAGS_NO_IO_THRU_MDS);
         layout.ffl_stats_collect_hint = new uint32_t(0);
 
-        XdrBuffer xdr = new XdrBuffer(512);
+        Xdr xdr = new Xdr(512);
         xdr.beginEncoding();
 
         try {
@@ -219,7 +216,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     @Override
     public void acceptLayoutReturnData(byte[] data) throws BadXdrException {
         try {
-            Xdr xdr = new XdrBuffer(data);
+            Xdr xdr = new Xdr(data);
             xdr.beginDecoding();
             ff_layoutreturn4 lr = new ff_layoutreturn4(xdr);
             xdr.endDecoding();

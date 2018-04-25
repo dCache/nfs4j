@@ -36,8 +36,8 @@ import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrBuffer;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.Xdr;
 import org.glassfish.grizzly.Buffer;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -69,7 +69,7 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         file_type.nflda_stripe_indices = new uint32_t[1];
         file_type.nflda_stripe_indices[0] = new uint32_t(0);
 
-        XdrBuffer xdr = new XdrBuffer(128);
+        Xdr xdr = new Xdr(128);
         try {
             xdr.beginEncoding();
             file_type.xdrEncode(xdr);
@@ -126,7 +126,7 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         //where the striping pattern starts
         layout.nfl_pattern_offset = new offset4(0);
 
-        XdrBuffer xdr = new XdrBuffer(512);
+        Xdr xdr = new Xdr(512);
         xdr.beginEncoding();
 
         try {

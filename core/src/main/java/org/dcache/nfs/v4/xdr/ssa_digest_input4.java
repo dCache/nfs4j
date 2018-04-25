@@ -18,8 +18,11 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import org.dcache.nfs.v4.xdr.SEQUENCE4args;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import java.io.IOException;
 
 public class ssa_digest_input4 implements XdrAble {

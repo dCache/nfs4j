@@ -26,11 +26,10 @@ import java.util.Objects;
 import com.google.common.base.MoreObjects;
 import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
-import org.dcache.xdr.OncRpcException;
-
-import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.XdrDecodingStream;
-import org.dcache.xdr.XdrEncodingStream;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
 public class state_owner4 implements XdrAble, Serializable {
 

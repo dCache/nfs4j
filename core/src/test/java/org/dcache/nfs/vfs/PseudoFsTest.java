@@ -27,12 +27,12 @@ import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.PermException;
-import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.XdrTransport;
-import org.dcache.xdr.gss.RpcAuthGss;
-import org.dcache.xdr.gss.RpcGssService;
+import org.dcache.oncrpc4j.rpc.RpcAuth;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
+import org.dcache.oncrpc4j.rpc.gss.RpcAuthGss;
+import org.dcache.oncrpc4j.rpc.gss.RpcGssService;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
@@ -50,7 +50,7 @@ public class PseudoFsTest {
     private VirtualFileSystem mockedFs;
     private ExportFile mockedExportFile;
     private FsExport mockedExport;
-    private XdrTransport mockedTransport;
+    private RpcTransport mockedTransport;
     private RpcCall mockedRpc;
     private RpcAuth mockedAuth;
     private PseudoFs pseudoFs;
@@ -61,7 +61,7 @@ public class PseudoFsTest {
 
         mockedFs = mock(VirtualFileSystem.class);
         mockedExportFile = mock(ExportFile.class);
-        mockedTransport = mock(XdrTransport.class);
+        mockedTransport = mock(RpcTransport.class);
         mockedRpc = mock(RpcCall.class);
         mockedAuth = mock(RpcAuth.class);
         mockedExport = mock(FsExport.class);

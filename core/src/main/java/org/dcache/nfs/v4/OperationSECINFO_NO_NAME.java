@@ -39,9 +39,9 @@ import org.dcache.nfs.v4.xdr.secinfo4;
 import org.dcache.nfs.v4.xdr.secinfo_style4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.vfs.Inode;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.gss.RpcGssService;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.gss.RpcGssService;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
 

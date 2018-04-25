@@ -67,7 +67,10 @@ import org.dcache.nfs.v4.xdr.CREATE_SESSION4args;
 import org.dcache.nfs.v4.xdr.BIND_CONN_TO_SESSION4args;
 import org.dcache.nfs.v4.xdr.BACKCHANNEL_CTL4args;
 import org.dcache.nfs.v4.xdr.ACCESS4args;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class nfs_argop4 implements XdrAble {

@@ -18,8 +18,11 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
-import org.dcache.xdr.*;
-import org.dcache.utils.Bytes;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+import org.dcache.oncrpc4j.util.Bytes;
 import java.io.IOException;
 import java.util.Arrays;
 

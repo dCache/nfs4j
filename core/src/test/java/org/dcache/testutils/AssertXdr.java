@@ -1,7 +1,8 @@
 package org.dcache.testutils;
 
-import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.XdrEncodingStream;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import org.mockito.Mockito;
 
 public class AssertXdr {

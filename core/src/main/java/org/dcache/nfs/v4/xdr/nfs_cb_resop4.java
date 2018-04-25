@@ -31,7 +31,10 @@ import org.dcache.nfs.v4.xdr.CB_ILLEGAL4res;
 import org.dcache.nfs.v4.xdr.CB_PUSH_DELEG4res;
 import org.dcache.nfs.v4.xdr.CB_NOTIFY4res;
 import org.dcache.nfs.v4.xdr.CB_RECALL_SLOT4res;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class nfs_cb_resop4 implements XdrAble {

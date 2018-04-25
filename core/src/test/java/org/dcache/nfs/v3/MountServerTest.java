@@ -13,9 +13,9 @@ import org.dcache.nfs.v3.xdr.mountstat3;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.XdrTransport;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
 import org.junit.Test;
 import org.junit.Before;
 
@@ -170,7 +170,7 @@ public class MountServerTest {
         MountServertestHelper accessedFrom(String client) {
             InetAddress address = InetAddresses.forString(client);
             this.call = mock(RpcCall.class);
-            XdrTransport transport = mock(XdrTransport.class);
+            RpcTransport transport = mock(RpcTransport.class);
 
             given(transport.getRemoteSocketAddress()).willReturn(new InetSocketAddress(address, 2222));
             given(call.getTransport()).willReturn(transport);

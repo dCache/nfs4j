@@ -21,7 +21,6 @@ package org.dcache.nfs.v4.client;
 
 import java.io.IOException;
 
-import java.nio.ByteBuffer;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4args;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.length4;
@@ -30,10 +29,9 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.Xdr;
-import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.Xdr;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 
 public class LayoutgetStub {
 
@@ -61,7 +59,7 @@ public class LayoutgetStub {
 
     static public nfsv4_1_file_layout4 decodeLayoutId(byte[] data) throws OncRpcException, IOException {
 
-        XdrDecodingStream xdr = new XdrBuffer(data);
+        XdrDecodingStream xdr = new Xdr(data);
         nfsv4_1_file_layout4 device = new nfsv4_1_file_layout4();
 
         xdr.beginDecoding();

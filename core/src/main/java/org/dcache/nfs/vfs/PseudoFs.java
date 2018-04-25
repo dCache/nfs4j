@@ -38,16 +38,16 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
-import org.dcache.xdr.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
 
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.utils.SubjectHolder;
-import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.gss.RpcAuthGss;
-import org.dcache.xdr.gss.RpcGssService;
+import org.dcache.oncrpc4j.rpc.RpcAuth;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.gss.RpcAuthGss;
+import org.dcache.oncrpc4j.rpc.gss.RpcGssService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

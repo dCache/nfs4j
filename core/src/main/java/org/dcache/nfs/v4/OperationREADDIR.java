@@ -41,7 +41,7 @@ import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

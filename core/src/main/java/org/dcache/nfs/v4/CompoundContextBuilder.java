@@ -24,7 +24,7 @@ import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 
 import static java.util.Objects.requireNonNull;
 

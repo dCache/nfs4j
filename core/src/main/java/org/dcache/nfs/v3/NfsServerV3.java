@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -137,9 +137,9 @@ import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.status.*;
-import org.dcache.utils.Bytes;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcCall;
+import org.dcache.oncrpc4j.util.Bytes;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

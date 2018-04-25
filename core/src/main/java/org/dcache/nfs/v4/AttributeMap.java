@@ -37,10 +37,10 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.settime4;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.Xdr;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 
 /**
  * A {@link Map} like container to store values of file attributes.
@@ -85,7 +85,7 @@ public class AttributeMap {
 	if (attributes != null) {
 	    int[] mask = attributes.attrmask.value;
 
-	    XdrDecodingStream xdr = new XdrBuffer(attributes.attr_vals.value);
+	    XdrDecodingStream xdr = new Xdr(attributes.attr_vals.value);
 	    xdr.beginDecoding();
 	    if (mask.length != 0) {
 		int maxAttr = Integer.SIZE * mask.length;

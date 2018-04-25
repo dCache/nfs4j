@@ -30,7 +30,10 @@ import org.dcache.nfs.v4.xdr.CB_RECALL4args;
 import org.dcache.nfs.v4.xdr.CB_PUSH_DELEG4args;
 import org.dcache.nfs.v4.xdr.CB_RECALL_SLOT4args;
 import org.dcache.nfs.v4.xdr.CB_GETATTR4args;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class nfs_cb_argop4 implements XdrAble {

@@ -23,7 +23,10 @@ import com.google.common.primitives.UnsignedLong;
 
 import java.io.IOException;
 
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import org.dcache.nfs.status.InvalException;
 
 public class offset4 extends uint64_t {

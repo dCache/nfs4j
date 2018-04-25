@@ -2,19 +2,16 @@ package org.dcache.nfs.v4;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Optional;
 import org.dcache.nfs.ExportFile;
-import org.dcache.nfs.FsExport;
 import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.XdrTransport;
+import org.dcache.oncrpc4j.rpc.RpcAuthTypeNone;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
 
 import org.junit.Test;
 
@@ -33,7 +30,7 @@ public class OperationGETATTRTest {
 
         NFSv41DeviceManager dm = mock(NFSv41DeviceManager.class);
         RpcCall call = mock(RpcCall.class);
-        XdrTransport transport = mock(XdrTransport.class);
+        RpcTransport transport = mock(RpcTransport.class);
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports").toURI());
 
         given(dm.getLayoutTypes()).willReturn(Sets.newHashSet(layouttype4.values()));

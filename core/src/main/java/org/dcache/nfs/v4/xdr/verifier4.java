@@ -20,10 +20,13 @@
 package org.dcache.nfs.v4.xdr;
 
 import com.google.common.io.BaseEncoding;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.util.Bytes;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 import java.util.Arrays;
-import org.dcache.utils.Bytes;
 
 public class verifier4 implements XdrAble {
 

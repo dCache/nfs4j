@@ -26,7 +26,7 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
-import org.dcache.xdr.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;

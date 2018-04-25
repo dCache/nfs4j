@@ -27,7 +27,7 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 /**
  * NFS operation FREE_STATEID, rfc5661#18.38

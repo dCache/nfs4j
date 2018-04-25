@@ -44,12 +44,12 @@ import org.dcache.nfs.v4.acl.Acls;
 
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.xdr.BadXdrOncRpcException;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrBuffer;
+import org.dcache.oncrpc4j.xdr.BadXdrOncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.Xdr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +109,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException, OncRpcException {
 
-        XdrBuffer xdr = new XdrBuffer(attributes.attr_vals.value);
+        Xdr xdr = new Xdr(attributes.attr_vals.value);
         xdr.beginDecoding();
 
         /*

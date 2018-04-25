@@ -48,7 +48,15 @@ import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.rpc.RpcAuth;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.RpcAuthTypeNone;
+import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrVoid;
 
 /**
  * A class to provide callbacks to the client.
@@ -89,7 +97,7 @@ public class ClientCB {
      * @param program RPC program number to use
      * @param sec_parms supported security flavors
      */
-    ClientCB(XdrTransport transport, int program, sessionid4 session, int highestSlotId,
+    ClientCB(RpcTransport transport, int program, sessionid4 session, int highestSlotId,
             callback_sec_parms4[] sec_parms) {
         _session = session;
 

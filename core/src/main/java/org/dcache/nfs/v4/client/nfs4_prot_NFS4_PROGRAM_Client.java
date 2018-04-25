@@ -27,14 +27,15 @@ import org.dcache.auth.Subjects;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.oncrpc4j.rpc.OncRpcClient;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.rpc.RpcAuth;
+import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
+import org.dcache.oncrpc4j.xdr.XdrVoid;
 import org.dcache.utils.UnixUtils;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.OncRpcClient;
-import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthTypeUnix;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.XdrTransport;
-import org.dcache.xdr.XdrVoid;
+
 
 /**
  * The class <code>nfs4_prot_NFS4_PROGRAM_Client</code> implements the client stub proxy
@@ -83,7 +84,7 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
         int[] gids = UnixUtils.toIntArray(Subjects.getGids(currentUser));
 
         rpcClient = new OncRpcClient(host, protocol, port);
-        XdrTransport transport;
+        RpcTransport transport;
         transport = rpcClient.connect();
 
         RpcAuth credential = new RpcAuthTypeUnix(uid, gid, gids,
@@ -107,7 +108,7 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
     public nfs4_prot_NFS4_PROGRAM_Client(InetAddress host, int port, int protocol, int uid, int gid)
             throws OncRpcException, IOException {
         rpcClient = new OncRpcClient(host, protocol, port);
-        XdrTransport transport;
+        RpcTransport transport;
         transport = rpcClient.connect();
         RpcAuth credential = new RpcAuthTypeUnix(
                 uid, gid, new int[]{gid},
@@ -191,7 +192,7 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
         return result$;
     }
 
-    public XdrTransport getTransport() {
+    public RpcTransport getTransport() {
         return client.getTransport();
     }
 

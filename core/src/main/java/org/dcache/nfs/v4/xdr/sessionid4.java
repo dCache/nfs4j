@@ -23,7 +23,10 @@ import com.google.common.io.BaseEncoding;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
 public class sessionid4 implements XdrAble {
 

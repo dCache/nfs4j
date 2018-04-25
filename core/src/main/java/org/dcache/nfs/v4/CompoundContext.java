@@ -24,7 +24,7 @@ import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.xdr.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +44,8 @@ import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.utils.net.InetSocketAddresses;
-import org.dcache.xdr.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.net.InetSocketAddresses;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

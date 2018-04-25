@@ -49,8 +49,8 @@ import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.xdr.RpcAuthType;
-import org.dcache.xdr.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 public class MountServer extends mount_protServerStub {

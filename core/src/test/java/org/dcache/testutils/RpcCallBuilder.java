@@ -4,10 +4,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.dcache.nfs.v3.xdr.nfs3_prot;
-import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.XdrTransport;
+import org.dcache.oncrpc4j.rpc.RpcAuth;
+import org.dcache.oncrpc4j.rpc.RpcAuthTypeNone;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
 import org.mockito.Mockito;
 
 public class RpcCallBuilder {
@@ -37,7 +37,7 @@ public class RpcCallBuilder {
     public RpcCall build() {
         InetAddress clientAddress = sourceAddressBuilder.build();
         InetSocketAddress socketAddress = new InetSocketAddress(clientAddress, sourcePort);
-        XdrTransport transport = Mockito.mock(XdrTransport.class);
+        RpcTransport transport = Mockito.mock(RpcTransport.class);
         Mockito.when(transport.getRemoteSocketAddress()).thenReturn(socketAddress);
         return new RpcCall(program, version, rpcAuth, transport);
     }

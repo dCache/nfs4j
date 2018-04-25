@@ -75,8 +75,8 @@ import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.net.IpProtocolType;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class Main {
 

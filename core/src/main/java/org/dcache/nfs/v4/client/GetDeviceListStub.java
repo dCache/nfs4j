@@ -30,9 +30,9 @@ import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.XdrBuffer;
-import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.Xdr;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 
 public class GetDeviceListStub {
 
@@ -56,7 +56,7 @@ public class GetDeviceListStub {
 
     public static nfsv4_1_file_layout_ds_addr4 decodeFileDevice(byte[] data)
             throws OncRpcException, IOException {
-        XdrDecodingStream xdr = new XdrBuffer(data);
+        XdrDecodingStream xdr = new Xdr(data);
 
         nfsv4_1_file_layout_ds_addr4 device = new nfsv4_1_file_layout_ds_addr4();
 

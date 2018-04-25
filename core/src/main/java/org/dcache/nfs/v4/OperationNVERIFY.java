@@ -29,7 +29,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.NVERIFY4res;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

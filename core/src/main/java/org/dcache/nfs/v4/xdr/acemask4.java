@@ -19,7 +19,10 @@
  */
 package org.dcache.nfs.v4.xdr;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class acemask4 implements XdrAble {

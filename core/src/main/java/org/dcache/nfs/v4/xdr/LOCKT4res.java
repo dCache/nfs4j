@@ -21,7 +21,10 @@ package org.dcache.nfs.v4.xdr;
 
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.LOCK4denied;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class LOCKT4res implements XdrAble {

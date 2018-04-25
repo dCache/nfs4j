@@ -93,8 +93,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
-import org.dcache.utils.Bytes;
-import org.dcache.xdr.XdrBuffer;
+import org.dcache.oncrpc4j.util.Bytes;
+import org.dcache.oncrpc4j.xdr.Xdr;
 import org.glassfish.grizzly.Buffer;
 
 public class CompoundBuilder {
@@ -619,7 +619,7 @@ public class CompoundBuilder {
 
     private static byte[] openAttrs() {
 
-        XdrBuffer xdr = new XdrBuffer(1024);
+        Xdr xdr = new Xdr(1024);
         try {
             xdr.beginEncoding();
 

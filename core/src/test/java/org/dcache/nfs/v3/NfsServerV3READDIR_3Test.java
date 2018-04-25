@@ -19,7 +19,7 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.testutils.AssertXdr;
 import org.dcache.testutils.NfsV3Ops;
 import org.dcache.testutils.RpcCallBuilder;
-import org.dcache.xdr.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

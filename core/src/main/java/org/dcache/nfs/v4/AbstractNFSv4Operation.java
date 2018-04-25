@@ -23,7 +23,7 @@ import java.io.IOException;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 /**
  *

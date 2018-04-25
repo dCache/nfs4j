@@ -30,11 +30,11 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.utils.Bytes;
-import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthTypeUnix;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.XdrTransport;
+import org.dcache.oncrpc4j.util.Bytes;
+import org.dcache.oncrpc4j.rpc.RpcAuth;
+import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcTransport;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.BDDMockito.given;
@@ -84,7 +84,7 @@ class NfsTestUtils {
 
         RpcAuth auth = new RpcAuthTypeUnix(1, 2, new int[] {3, 4}, 1, "localhost");
 
-        XdrTransport transport = mock(XdrTransport.class);
+        RpcTransport transport = mock(RpcTransport.class);
         given(transport.getLocalSocketAddress()).willReturn(new InetSocketAddress(2049));
         given(transport.getRemoteSocketAddress()).willReturn(new InetSocketAddress(RANDOM.nextInt(65535)));
 

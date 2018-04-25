@@ -86,8 +86,8 @@ import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.nfs.v4.xdr.GETATTR4res;
 
-import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.XdrBuffer;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.Xdr;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.fattr4_space_avail;
 import org.dcache.nfs.v4.xdr.fattr4_time_delta;
@@ -97,7 +97,7 @@ import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.glassfish.grizzly.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +136,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
          */
         bitmap4 processedAttributes = new bitmap4(new int[0]);
 
-        XdrBuffer xdr = new XdrBuffer(1024);
+        Xdr xdr = new Xdr(1024);
         xdr.beginEncoding();
 
         for (int i : bitmap) {

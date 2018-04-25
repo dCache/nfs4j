@@ -92,6 +92,7 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new READ4resok();
+        bb.flip();
         res.resok4.data = bb;
 
         if (offset + bytesReaded == stat.getSize()) {

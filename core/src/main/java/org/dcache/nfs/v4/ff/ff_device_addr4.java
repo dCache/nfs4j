@@ -7,7 +7,10 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
-import org.dcache.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.multipath_list4;
 

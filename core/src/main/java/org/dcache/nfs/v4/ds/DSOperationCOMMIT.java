@@ -35,7 +35,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.xdr.OncRpcException;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class DSOperationCOMMIT extends AbstractNFSv4Operation {
 
