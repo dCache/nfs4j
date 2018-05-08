@@ -109,28 +109,29 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException, OncRpcException {
 
-        Xdr xdr = new Xdr(attributes.attr_vals.value);
-        xdr.beginDecoding();
 
         /*
          * bitmap we send back. can't be uninitialized.
          */
         bitmap4 processedAttributes = new bitmap4();
         Stat stat = new Stat();
-        try {
-            for (int i : attributes.attrmask) {
-                xdr2fattr(i, stat, inode, context, xdr);
-                _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
-                processedAttributes.set(i);
+        try (Xdr xdr = new Xdr(attributes.attr_vals.value)) {
+            xdr.beginDecoding();
+            try {
+                for (int i : attributes.attrmask) {
+                    xdr2fattr(i, stat, inode, context, xdr);
+                    _log.debug("   setAttributes : {} ({}) OK", i, OperationGETATTR.attrMask2String(i));
+                    processedAttributes.set(i);
+                }
+            } catch (BadXdrOncRpcException e) {
+                throw new BadXdrException(e.getMessage());
             }
-        }catch (BadXdrOncRpcException e) {
-            throw new BadXdrException(e.getMessage());
-        }
 
-        if (xdr.hasMoreData()) {
-            throw new BadXdrException("garbage in attr bitmap");
+            if (xdr.hasMoreData()) {
+                throw new BadXdrException("garbage in attr bitmap");
+            }
+            xdr.endDecoding();
         }
-        xdr.endDecoding();
 
         context.getFs().setattr(inode, stat);
         return processedAttributes;

@@ -85,20 +85,21 @@ public class AttributeMap {
 	if (attributes != null) {
 	    int[] mask = attributes.attrmask.value;
 
-	    XdrDecodingStream xdr = new Xdr(attributes.attr_vals.value);
-	    xdr.beginDecoding();
-	    if (mask.length != 0) {
-		int maxAttr = Integer.SIZE * mask.length;
-		for (int i = 0; i < maxAttr; i++) {
-		    int bitmapIdx = i / Integer.SIZE;
-		    int newmask = mask[bitmapIdx] >> i % Integer.SIZE;
-		    if ((newmask & 1L) != 0) {
-			xdr2fattr(attrs, i, xdr);
-		    }
-		}
-	    }
-	    xdr.endDecoding();
-	    }
+            try (Xdr xdr = new Xdr(attributes.attr_vals.value)) {
+                xdr.beginDecoding();
+                if (mask.length != 0) {
+                    int maxAttr = Integer.SIZE * mask.length;
+                    for (int i = 0; i < maxAttr; i++) {
+                        int bitmapIdx = i / Integer.SIZE;
+                        int newmask = mask[bitmapIdx] >> i % Integer.SIZE;
+                        if ((newmask & 1L) != 0) {
+                            xdr2fattr(attrs, i, xdr);
+                        }
+                    }
+                }
+                xdr.endDecoding();
+            }
+	}
 	return attrs;
     }
 

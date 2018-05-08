@@ -98,7 +98,6 @@ import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
-import org.glassfish.grizzly.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,25 +135,25 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
          */
         bitmap4 processedAttributes = new bitmap4(new int[0]);
 
-        Xdr xdr = new Xdr(1024);
-        xdr.beginEncoding();
+        byte[] retBytes;
+        try (Xdr xdr = new Xdr(1024)) {
+            xdr.beginEncoding();
 
-        for (int i : bitmap) {
-            Optional<XdrAble> optionalAttr = (Optional<XdrAble>) fattr2xdr(i, fs, inode, stat, context);
-            if (optionalAttr.isPresent()) {
-                XdrAble attr = optionalAttr.get();
-                _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i));
-                attr.xdrEncode(xdr);
-                processedAttributes.set(i);
-            } else {
-                _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.", i, attrMask2String(i));
+            for (int i : bitmap) {
+                Optional<XdrAble> optionalAttr = (Optional<XdrAble>) fattr2xdr(i, fs, inode, stat, context);
+                if (optionalAttr.isPresent()) {
+                    XdrAble attr = optionalAttr.get();
+                    _log.debug("   getAttributes : {} ({}) OK.", i, attrMask2String(i));
+                    attr.xdrEncode(xdr);
+                    processedAttributes.set(i);
+                } else {
+                    _log.debug("   getAttributes : {} ({}) NOT SUPPORTED.", i, attrMask2String(i));
+                }
             }
-        }
 
-        xdr.endEncoding();
-        Buffer body = xdr.asBuffer();
-        byte[] retBytes = new byte[body.remaining()] ;
-        body.get(retBytes);
+            xdr.endEncoding();
+            retBytes = xdr.getBytes();
+        }
 
         fattr4 attributes = new fattr4();
         attributes.attrmask = processedAttributes;

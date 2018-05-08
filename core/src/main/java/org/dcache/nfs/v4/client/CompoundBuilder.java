@@ -95,7 +95,6 @@ import java.util.List;
 import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.Xdr;
-import org.glassfish.grizzly.Buffer;
 
 public class CompoundBuilder {
 
@@ -619,8 +618,8 @@ public class CompoundBuilder {
 
     private static byte[] openAttrs() {
 
-        Xdr xdr = new Xdr(1024);
-        try {
+        try (Xdr xdr = new Xdr(1024)) {
+
             xdr.beginEncoding();
 
             fattr4_mode mode = new fattr4_mode(0755);
@@ -629,15 +628,12 @@ public class CompoundBuilder {
             size.xdrEncode(xdr);
             mode.xdrEncode(xdr);
 
+            xdr.endEncoding();
+            return xdr.getBytes();
         } catch (IOException never_happens) {
             // ignore
         }
 
-        xdr.endEncoding();
-        Buffer b = xdr.asBuffer();
-        byte[] retBytes = new byte[b.remaining()];
-        b.get(retBytes);
-
-        return retBytes;
+        throw new RuntimeException("must never get here");
     }
 }

@@ -47,7 +47,6 @@ import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.utf8str_mixed;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.Xdr;
-import org.glassfish.grizzly.Buffer;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -125,11 +124,12 @@ public class FlexFileLayoutDriver implements LayoutDriver {
             flexfile_type.ffda_netaddrs.value[i] = new netaddr4(deviceAddress[i]);
         }
 
-        Xdr xdr = new Xdr(128);
-        try {
+        byte[] retBytes;
+        try(Xdr xdr = new Xdr(128)) {
             xdr.beginEncoding();
             flexfile_type.xdrEncode(xdr);
             xdr.endEncoding();
+            retBytes = xdr.getBytes();
         } catch (OncRpcException e) {
             /* forced by interface, should never happen. */
             throw new RuntimeException("Unexpected OncRpcException:" + e.getMessage(), e);
@@ -137,10 +137,6 @@ public class FlexFileLayoutDriver implements LayoutDriver {
             /* forced by interface, should never happen. */
             throw new RuntimeException("Unexpected IOException:"  + e.getMessage(), e);
         }
-
-        Buffer body = xdr.asBuffer();
-        byte[] retBytes = new byte[body.remaining()];
-        body.get(retBytes);
 
         device_addr4 addr = new device_addr4();
         addr.da_layout_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
@@ -162,19 +158,15 @@ public class FlexFileLayoutDriver implements LayoutDriver {
                 | flex_files_prot.FF_FLAGS_NO_IO_THRU_MDS);
         layout.ffl_stats_collect_hint = new uint32_t(0);
 
-        Xdr xdr = new Xdr(512);
-        xdr.beginEncoding();
-
-        try {
+        byte[] body;
+        try (Xdr xdr = new Xdr(512)) {
+            xdr.beginEncoding();
             layout.xdrEncode(xdr);
+            xdr.endEncoding();
+            body = xdr.getBytes();
         } catch (IOException e) {
             throw new ServerFaultException("failed to encode layout body", e);
         }
-        xdr.endEncoding();
-
-        Buffer xdrBody = xdr.asBuffer();
-        byte[] body = new byte[xdrBody.remaining()];
-        xdrBody.get(body);
 
         layout_content4 content = new layout_content4();
         content.loc_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
@@ -216,10 +208,13 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     @Override
     public void acceptLayoutReturnData(byte[] data) throws BadXdrException {
         try {
-            Xdr xdr = new Xdr(data);
-            xdr.beginDecoding();
-            ff_layoutreturn4 lr = new ff_layoutreturn4(xdr);
-            xdr.endDecoding();
+
+            ff_layoutreturn4 lr;
+            try (Xdr xdr = new Xdr(data)) {
+                xdr.beginDecoding();
+                lr = new ff_layoutreturn4(xdr);
+                xdr.endDecoding();
+            }
 
             layoutReturnConsumer.accept(lr);
         } catch (IOException e) {

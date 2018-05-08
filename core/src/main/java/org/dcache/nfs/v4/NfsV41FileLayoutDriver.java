@@ -38,7 +38,6 @@ import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.Xdr;
-import org.glassfish.grizzly.Buffer;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import org.dcache.nfs.status.BadXdrException;
@@ -69,11 +68,12 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         file_type.nflda_stripe_indices = new uint32_t[1];
         file_type.nflda_stripe_indices[0] = new uint32_t(0);
 
-        Xdr xdr = new Xdr(128);
-        try {
+        byte[] retBytes;
+        try(Xdr xdr = new Xdr(128)){
             xdr.beginEncoding();
             file_type.xdrEncode(xdr);
             xdr.endEncoding();
+            retBytes = xdr.getBytes();
         } catch (OncRpcException e) {
             /* forced by interface, should never happen. */
             throw new RuntimeException("Unexpected OncRpcException:", e);
@@ -81,10 +81,6 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
             /* forced by interface, should never happen. */
             throw new RuntimeException("Unexpected IOException:", e);
         }
-
-        Buffer body = xdr.asBuffer();
-        byte[] retBytes = new byte[body.remaining()];
-        body.get(retBytes);
 
         device_addr4 addr = new device_addr4();
         addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
@@ -126,19 +122,15 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         //where the striping pattern starts
         layout.nfl_pattern_offset = new offset4(0);
 
-        Xdr xdr = new Xdr(512);
-        xdr.beginEncoding();
-
-        try {
+        byte[] body;
+        try (Xdr xdr = new Xdr(512)) {
+            xdr.beginEncoding();
             layout.xdrEncode(xdr);
+            xdr.endEncoding();
+            body = xdr.getBytes();
         } catch (IOException e) {
             throw new ServerFaultException("failed to encode layout body");
         }
-        xdr.endEncoding();
-
-        Buffer xdrBody = xdr.asBuffer();
-        byte[] body = new byte[xdrBody.remaining()];
-        xdrBody.get(body);
 
         layout_content4 content = new layout_content4();
         content.loc_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
