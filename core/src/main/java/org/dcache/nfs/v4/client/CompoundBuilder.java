@@ -321,7 +321,6 @@ public class CompoundBuilder {
 
     public CompoundBuilder withWrite(long offset, byte[] data, stateid4 stateid) {
         ByteBuffer buf = ByteBuffer.wrap(data);
-        buf.position(data.length);
         return withWrite(offset, buf, stateid);
     }
 
