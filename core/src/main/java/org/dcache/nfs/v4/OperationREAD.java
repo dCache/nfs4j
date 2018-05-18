@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -79,10 +79,10 @@ public class OperationREAD extends AbstractNFSv4Operation {
         }
 
         /*
-         * While we have written directly into back-end byte array tell the byte
-         * buffer the actual position.
+         * As we have written directly into back-end byte array tell the byte
+         * buffer where the limit is.
          */
-        buf.position(bytesReaded);
+        buf.limit(bytesReaded);
 
         res.status = nfsstat.NFS_OK;
         res.resok4 = new READ4resok();
