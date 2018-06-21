@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@ package org.dcache.nfs;
 import org.dcache.nfs.status.*;
 
 /**
- * NFS errors defined for v2, v3 and v4
+ * NFS errors defined for v2, v3 and v4(0, 1, 2).
  */
 public final class nfsstat {
 
@@ -135,6 +135,14 @@ public final class nfsstat {
     public static final int NFSERR_DIRDELEG_UNAVAIL = 10084;
     public static final int NFSERR_REJECT_DELEG = 10085;
     public static final int NFSERR_RETURNCONFLICT = 10086;
+    public static final int NFS4ERR_DELEG_REVOKED = 10087;
+    public static final int NFS4ERR_PARTNER_NOTSUPP = 10088;
+    public static final int NFS4ERR_PARTNER_NO_AUTH = 10089;
+    public static final int NFS4ERR_UNION_NOTSUPP = 10090;
+    public static final int NFS4ERR_OFFLOAD_DENIED = 10091;
+    public static final int NFS4ERR_WRONG_LFS = 10092;
+    public static final int NFS4ERR_BADLABEL = 10093;
+    public static final int NFS4ERR_OFFLOAD_NO_REQS = 10094;
 
     private nfsstat() {/* no instance allowed */};
 
@@ -353,6 +361,22 @@ public final class nfsstat {
                 return "NFS4ERR_REJECT_DELEG";
             case nfsstat.NFSERR_RETURNCONFLICT:
                 return "NFS4ERR_RETURNCONFLICT";
+            case nfsstat.NFS4ERR_DELEG_REVOKED:
+                return "NFS4ERR_DELEG_REVOKED";
+            case nfsstat.NFS4ERR_PARTNER_NOTSUPP:
+                return "NFS4ERR_PARTNER_NOTSUPP";
+            case nfsstat.NFS4ERR_PARTNER_NO_AUTH:
+                return "NFS4ERR_PARTNER_NO_AUTH";
+            case nfsstat.NFS4ERR_UNION_NOTSUPP:
+                return "NFS4ERR_UNION_NOTSUPP";
+            case nfsstat.NFS4ERR_OFFLOAD_DENIED:
+                return "NFS4ERR_OFFLOAD_DENIED";
+            case nfsstat.NFS4ERR_WRONG_LFS:
+                return "NFS4ERR_WRONG_LFS";
+            case nfsstat.NFS4ERR_BADLABEL:
+                return "NFS4ERR_BADLABEL";
+            case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
+                return "NFS4ERR_OFFLOAD_NO_REQS";
             default:
                 return "NFSERR_UNKNON(" + errorCode + ")";
         }
