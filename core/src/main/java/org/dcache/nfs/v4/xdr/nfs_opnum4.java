@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -80,6 +80,19 @@ public final class nfs_opnum4 {
     public static final int OP_WANT_DELEGATION = 56;
     public static final int OP_DESTROY_CLIENTID = 57;
     public static final int OP_RECLAIM_COMPLETE = 58;
+    public static final int OP_ALLOCATE = 59;
+    public static final int OP_COPY = 60;
+    public static final int OP_COPY_NOTIFY = 61;
+    public static final int OP_DEALLOCATE = 62;
+    public static final int OP_IO_ADVISE = 63;
+    public static final int OP_LAYOUTERROR = 64;
+    public static final int OP_LAYOUTSTATS = 65;
+    public static final int OP_OFFLOAD_CANCEL = 66;
+    public static final int OP_OFFLOAD_STATUS = 67;
+    public static final int OP_READ_PLUS = 68;
+    public static final int OP_SEEK = 69;
+    public static final int OP_WRITE_SAME = 70;
+    public static final int OP_CLONE = 71;
     public static final int OP_ILLEGAL = 10044;
 
     private nfs_opnum4() {
@@ -200,6 +213,32 @@ public final class nfs_opnum4 {
                 return "DESTROY_CLIENTID";
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 return "RECLAIM_COMPLETE";
+            case nfs_opnum4.OP_ALLOCATE:
+                return "ALLOCATE";
+            case nfs_opnum4.OP_COPY:
+                return "COPY";
+            case nfs_opnum4.OP_COPY_NOTIFY:
+                return "COPY_NOTIFY";
+            case nfs_opnum4.OP_DEALLOCATE:
+                return "DEALLOCATE";
+            case nfs_opnum4.OP_IO_ADVISE:
+                return "IO_ADVISE";
+            case nfs_opnum4.OP_LAYOUTERROR:
+                return "LAYOUTERROR";
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                return "LAYOUTSTATS";
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+                return "OFFLOAD_CANCEL";
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+                return "OFFLOAD_STATUS";
+            case nfs_opnum4.OP_READ_PLUS:
+                return "READ_PLUS";
+            case nfs_opnum4.OP_SEEK:
+                return "SEEK";
+            case nfs_opnum4.OP_WRITE_SAME:
+                return "WRITE_SAME";
+            case nfs_opnum4.OP_CLONE:
+                return "CLONE";
             case nfs_opnum4.OP_ILLEGAL:
                 return "ILLEGAL";
             default:
