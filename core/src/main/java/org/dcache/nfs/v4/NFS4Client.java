@@ -122,7 +122,11 @@ public class NFS4Client {
      * sessions associated with the client
      */
     private final Map<sessionid4, NFSv41Session> _sessions = new HashMap<>();
-    private long _cl_time = System.currentTimeMillis();        // time of last lease renewal
+
+    /**
+     * The timestamp in millis of the last lease renewal.
+     */
+    private volatile long _lastLeaseUpdate = System.currentTimeMillis();
 
     /**
      * Open Owners associated with client.
@@ -254,8 +258,8 @@ public class NFS4Client {
         _isConfirmed = true;
     }
 
-    public synchronized boolean isLeaseValid() {
-        return (System.currentTimeMillis() - _cl_time) < _leaseTime;
+    public boolean isLeaseValid() {
+        return (System.currentTimeMillis() - _lastLeaseUpdate) < _leaseTime;
     }
 
     /**
@@ -264,23 +268,22 @@ public class NFS4Client {
      * @throws ExpiredException if difference between current time and last
      * lease more than max_lease_time
      */
-    public synchronized void updateLeaseTime() throws ChimeraNFSException {
+    public void updateLeaseTime() throws ChimeraNFSException {
 
         long curentTime = System.currentTimeMillis();
-        long delta = curentTime - _cl_time;
+        long delta = curentTime - _lastLeaseUpdate;
         if (delta > _leaseTime) {
-            drainStates();
             throw new ExpiredException("lease time expired: (" + delta +"): " + Bytes.toHexString(_ownerId) +
                     " (" + _clientId + ").");
         }
-        _cl_time = curentTime;
+        _lastLeaseUpdate = curentTime;
     }
 
     /**
      * sets client lease time with current time
      */
-    public synchronized void refreshLeaseTime() {
-        _cl_time = System.currentTimeMillis();
+    public void refreshLeaseTime() {
+        _lastLeaseUpdate = System.currentTimeMillis();
     }
 
     /**
@@ -468,7 +471,7 @@ public class NFS4Client {
         _clientStates.remove(state.stateid());
     }
 
-    private void drainStates() {
+    private synchronized void drainStates() {
         Iterator<NFS4State> i = _clientStates.values().iterator();
         while (i.hasNext()) {
             NFS4State state = i.next();
