@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
@@ -144,5 +145,16 @@ public class NFS4ClientTest {
         nfsClient.createSession(2, 0, 0, 0, 1);
     }
 
+    @Test
+    public void testClientDisposeCleansState() throws ChimeraNFSException {
+        AtomicBoolean isDisposed = new AtomicBoolean(false);
+
+        NFS4State state = nfsClient.createState(owner);
+        state.addDisposeListener(s -> isDisposed.set(true));
+
+        nfsClient.tryDispose();
+        assertTrue("client state is not disposed", isDisposed.get());
+        assertFalse("client claims to have a state after dispose", nfsClient.hasState());
+    }
 }
 
