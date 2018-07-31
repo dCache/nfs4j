@@ -86,17 +86,15 @@ public class NFS4Client {
      */
 
     /**
-     * The client identifier string, from the eia_clientowner structure
-     * of the EXCHANGE_ID4args structure
+     * Variable length string that uniquely defines the client.
      */
     private final byte[] _ownerId;
 
     /**
-     * A client-specific value used to indicate reboots, from
-     * the eia_clientowner structure of the EXCHANGE_ID4args structure
+     * Verifier that is used to detect client reboots.
      */
-
     private final verifier4 _verifier;
+
     /**
      * The RPCSEC_GSS principal sent via the RPC headers.
      */
@@ -192,7 +190,7 @@ public class NFS4Client {
             byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime, boolean calbackNeeded) {
 
         _stateHandler = stateHandler;
-        _ownerId = ownerID;
+        _ownerId = Arrays.copyOf(ownerID, ownerID.length);
         _verifier = verifier;
         _principal = principal;
         _clientId = clientId;
@@ -222,12 +220,11 @@ public class NFS4Client {
     }
 
     /**
-     * Check whatever client belongs to the provider owner.
-     * @param other client owner to test.
-     * @return <tt>true</tt> iff client belongs to the provider owner.
+     * Get client's long-hand unique identifier.
+     * @return client's unique identifier.
      */
-    public boolean isOwner(byte[] other) {
-        return Arrays.equals(_ownerId, other);
+    public byte[] getOwnerId() {
+        return _ownerId;
     }
 
     /**
