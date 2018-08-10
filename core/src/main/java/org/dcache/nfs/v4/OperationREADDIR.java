@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.primitives.Ints;
 import java.io.IOException;
 import java.util.Iterator;
 import org.dcache.nfs.nfsstat;
@@ -36,6 +37,10 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadCookieException;
 import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.status.TooSmallException;
+import org.dcache.nfs.v4.xdr.attrlist4;
+import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.fattr4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.DirectoryStream;
@@ -137,8 +142,18 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             // shift all cookies by OFFSET, as 1 and 2 are reserved
             currentEntry.cookie = new nfs_cookie4(le.getCookie() + COOKIE_OFFSET);
 
-            // TODO: catch here error from getattr and reply 'fattr4_rdattr_error' to the client
-            currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei, le.getStat(), context);
+            try {
+                currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei, le.getStat(), context);
+            } catch (ChimeraNFSException e) {
+                /*
+                 * If the client is not interested in error per file, fail the complete request.
+                 * @see: rfc7530#section-16.24.4
+                 */
+                if (!_args.opreaddir.attr_request.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
+                    throw e;
+                }
+                currentEntry.attrs = generateReaddirErrorAttribute(e.getStatus());
+            }
 
             // check if writing this entry exceeds the count limit
             int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length + currentEntry.attrs.attr_vals.value.length;
@@ -171,5 +186,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                 _args.opreaddir.dircount.value,
                 startValue,
                 res.resok4.reply.eof);
+    }
+
+    private fattr4 generateReaddirErrorAttribute(int status) {
+        fattr4 attrs = new fattr4();
+        attrs.attrmask = bitmap4.of(nfs4_prot.FATTR4_RDATTR_ERROR);
+        attrs.attr_vals = new attrlist4(Ints.toByteArray(status)); // java's big endian format matches xdr encoding
+        return attrs;
     }
 }

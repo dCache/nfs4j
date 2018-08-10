@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -231,8 +231,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_LEASE_TIME:
                 return Optional.of(new fattr4_lease_time(NFSv4Defaults.NFS4_LEASE_TIME));
             case nfs4_prot.FATTR4_RDATTR_ERROR:
-                //enum is an integer
-                return Optional.of(new fattr4_rdattr_error(0));
+                // this attribute provided by the readdir operation
+                return Optional.empty();
             case nfs4_prot.FATTR4_FILEHANDLE:
                 nfs_fh4 fh = new nfs_fh4();
                 fh.value = inode.toNfsHandle();
