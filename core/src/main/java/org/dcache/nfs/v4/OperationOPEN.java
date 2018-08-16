@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -94,7 +94,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             case open_claim_type4.CLAIM_NULL:
 
-                if (client.needReclaim() && !context.getStateHandler().hasGracePeriodExpired()) {
+                if (client.needReclaim() && context.getStateHandler().isGracePeriod()) {
                     throw new GraceException();
                 }
 
@@ -222,7 +222,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                  * Just check that we are still in the grace period and
                  * fall -through to CLAIM_FH.
                  */
-                if (context.getStateHandler().hasGracePeriodExpired()) {
+                if (!context.getStateHandler().isGracePeriod()) {
                     throw new NoGraceException("Server not in grace period");
                 }
                 if (!client.needReclaim()) {

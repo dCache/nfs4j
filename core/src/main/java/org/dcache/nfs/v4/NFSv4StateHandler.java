@@ -249,16 +249,16 @@ public class NFSv4StateHandler {
 
     /**
      * Check is the GRACE period expired.
-     * @return true, if grace period expired.
+     * @return true, if server in grace period.
      */
-    public boolean hasGracePeriodExpired() {
+    public boolean isGracePeriod() {
         checkState(_running, "NFS state handler not running");
 	/*
 	 * As we do not have a persistent storage for state information,
 	 * grace period makes no sense as it ends up as a simple delay
 	 * before first IO request can be processed.
 	 */
-	return true;
+        return false;
     }
 
     private synchronized void drainClients() {
