@@ -52,7 +52,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * layout driver for Flexible File layout type as defined in
- * <a href="https://www.ietf.org/id/draft-ietf-nfsv4-flex-files-16.txt">flex-files-draft16</a>
+ * <a href="https://www.rfc-editor.org/rfc/rfc8435.txt">rfc8435</a>
  */
 public class FlexFileLayoutDriver implements LayoutDriver {
 
@@ -200,8 +200,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      * Consumes flexfiles specific data provided on layout return. The
      * must be xdr encoded ff_layoutreturn4 object.
      *
-     * See: https://www.ietf.org/id/draft-ietf-nfsv4-flex-files-17.txt#9
-     * REVISIT: update when flexfilie rfc is released as recommended standard.
+     * See: https://www.rfc-editor.org/rfc/rfc8435.txt#9
      *
      * @throws org.dcache.nfs.status.BadXdrException if provided data cant be decoded.
      */
