@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -389,6 +389,16 @@ public class Stat implements Serializable, Cloneable {
      */
     public boolean isDefined(StatAttribute attr) {
         return _definedAttrs.contains(attr);
+    }
+
+    /**
+     * Undefine attribute this {@code stat} object. Accessing an attribute
+     * after it's undefined will throw {@link IllegalStateException}.
+     *
+     * @param attr attribute to undefine.
+     */
+    public void undefine(StatAttribute attr) {
+        _definedAttrs.remove(attr);
     }
 
     /** Throws IllegalStateException if attribute is not defined. */
