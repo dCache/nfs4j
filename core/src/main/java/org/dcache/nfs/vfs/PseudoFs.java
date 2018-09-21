@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -301,7 +301,21 @@ public class PseudoFs extends ForwardingFileSystem {
     public void setattr(Inode inode, Stat stat) throws IOException {
         int mask = ACE4_WRITE_ATTRIBUTES;
         if (stat.isDefined(Stat.StatAttribute.OWNER)) {
-            mask |= ACE4_WRITE_OWNER;
+            /*
+             *
+             * According POSIX changing of owner_group for non privileged
+             * process if owner is equal to the file's user ID or (uid_t)-1.
+             * (See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html)
+             *
+             * As we already enforce WRITE_ATTRIBUTES, e.g. file's owner matching subjects,
+             * remove required WRITE_OWNER only if new owner is different.
+             */
+            int currentOwner = getattr(inode).getUid();
+            if (currentOwner == stat.getUid() || stat.getUid() == -1) {
+                stat.undefine(Stat.StatAttribute.OWNER);
+            } else {
+                mask |= ACE4_WRITE_OWNER;
+            }
         }
 
         if (stat.isDefined(Stat.StatAttribute.SIZE)) {
