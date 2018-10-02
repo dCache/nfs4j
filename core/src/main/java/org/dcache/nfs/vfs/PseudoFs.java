@@ -19,9 +19,7 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Collections2;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ChimeraNFSException;
@@ -51,6 +50,7 @@ import org.dcache.oncrpc4j.rpc.gss.RpcGssService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.dcache.nfs.vfs.AclCheckable.Access;
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
@@ -209,7 +209,7 @@ public class PseudoFs extends ForwardingFileSystem {
             return new DirectoryStream(listPseudoDirectory(inode));
         }
         DirectoryStream innerStrem = _inner.list(inode, verifier, cookie);
-        return new DirectoryStream(innerStrem.getVerifier(), Collections2.transform(innerStrem.getEntries(), new PushParentIndex(inode)));
+        return innerStrem.transform(new PushParentIndex(inode));
     }
 
     @Override
@@ -513,7 +513,7 @@ public class PseudoFs extends ForwardingFileSystem {
         for (PseudoFsNode node : nodes) {
             if (node.id().equals(parent)) {
                 if (node.isMountPoint()) {
-                    return Collections2.transform(_inner.list(parent, null, 0L).getEntries(), new ConvertToRealInode(node));
+                    return newArrayList(_inner.list(parent, null, 0L).transform(new ConvertToRealInode(node)));
                 } else {
                     long cookie = 0; // artificial cookie
                     List<DirectoryEntry> pseudoLs = new ArrayList<>();
