@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,12 +19,13 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ForwardingNavigableSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NavigableSet;
-import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 
 /**
@@ -48,20 +49,11 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
 
     public DirectoryStream(byte[] verifier, NavigableSet<DirectoryEntry> entries) {
         this.verifier = verifier;
-        this.entries = Sets.unmodifiableNavigableSet(entries);
+        this.entries = Collections.unmodifiableNavigableSet(entries);
     }
 
     public byte[] getVerifier() {
         return verifier;
-    }
-
-    /**
-     * Get listing entries sorted by cookies.
-     *
-     * @return listing entries.
-     */
-    public SortedSet<DirectoryEntry> getEntries() {
-        return entries;
     }
 
     @Override
@@ -80,5 +72,68 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
     public DirectoryStream tail(long fromCookie) {
         final DirectoryEntry cookieEntry = new DirectoryEntry("", null, null, fromCookie);
         return new DirectoryStream(verifier, entries.tailSet(cookieEntry, false));
+    }
+
+    /**
+     * Returns a {@link DirectoryStream} that applies {@code function} to
+     * each entry in this stream.
+     *
+     * @param function a transformation function to apply.
+     * @return the new stream with transformed elements.
+     */
+    public DirectoryStream transform(Function<? super DirectoryEntry, DirectoryEntry> function) {
+        return new DirectoryStream(this.verifier, new TransformingNavigableSet(function, entries));
+    }
+
+    private static class TransformingNavigableSet extends ForwardingNavigableSet<DirectoryEntry> {
+
+        private final Function<? super DirectoryEntry, DirectoryEntry> transformation;
+        private final NavigableSet<DirectoryEntry> inner;
+
+        public TransformingNavigableSet(Function<? super DirectoryEntry, DirectoryEntry> transformation, NavigableSet<DirectoryEntry> inner) {
+            this.transformation = transformation;
+            this.inner = inner;
+        }
+
+        @Override
+        protected NavigableSet<DirectoryEntry> delegate() {
+            return inner;
+        }
+
+        @Override
+        public Iterator<DirectoryEntry> iterator() {
+            return new TransformingIterator(transformation, delegate().iterator());
+        }
+
+        /*
+         * the result of ForwardingNavigableSet#tailSet does not inherit
+         * overloaded iterator, thus we have to override it again.
+         */
+        @Override
+        public NavigableSet<DirectoryEntry> tailSet(DirectoryEntry fromElement, boolean inclusive) {
+            return new TransformingNavigableSet(transformation, super.tailSet(fromElement, inclusive));
+        }
+    }
+
+    // iterator decorator.
+    private static class TransformingIterator implements Iterator<DirectoryEntry> {
+
+        private final Function<? super DirectoryEntry, DirectoryEntry> transformation;
+        private final Iterator<DirectoryEntry> inner;
+
+        public TransformingIterator(Function<? super DirectoryEntry, DirectoryEntry> transformation, Iterator<DirectoryEntry> inner) {
+            this.transformation = transformation;
+            this.inner = inner;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return inner.hasNext();
+        }
+
+        @Override
+        public DirectoryEntry next() {
+            return transformation.apply(inner.next());
+        }
     }
 }
