@@ -1,0 +1,26 @@
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.10.xsd"
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <group>
+        <name>nfs-dlm-test</name>
+    </group>
+
+    <properties>
+        <property name="hazelcast.logging.type">slf4j</property>
+        <property name="hazelcast.discovery.enabled">false</property>
+        <property name="hazelcast.phone.home.enabled">false</property>
+    </properties>
+
+    <network>
+        <interfaces enabled="true">
+            <interface>127.0.0.1</interface>
+        </interfaces>
+        <join>
+            <multicast enabled="false" />
+            <tcp-ip enabled="false" />
+            <aws enabled="false" />
+        </join>
+    </network>
+
+</hazelcast>

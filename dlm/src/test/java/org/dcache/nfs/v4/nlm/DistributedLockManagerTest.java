@@ -30,10 +30,10 @@ public class DistributedLockManagerTest {
 
         ClientConfig config = new ClientConfig();
         config.getNetworkConfig().setAddresses(Arrays.asList(
+                "127.0.0.1:" + hzSerrver.getCluster().getLocalMember().getAddress().getPort())
+        );
 
-                hzSerrver.getCluster().getLocalMember().getAddress().getHost() +
-                        ":" + hzSerrver.getCluster().getLocalMember().getAddress().getPort()));
-
+        config.getGroupConfig().setName(hzSerrver.getConfig().getGroupConfig().getName());
         hzClient = HazelcastClient.newHazelcastClient(config);
         lm1 = new DistributedLockManager(hzClient, "distributed-byte-range-lock");
         lm2 = new DistributedLockManager(hzClient, "distributed-byte-range-lock");
@@ -94,11 +94,7 @@ public class DistributedLockManagerTest {
 
     @After
     public void tearDown() {
-        if (hzClient != null) {
-            hzClient.shutdown();
-        }
-        if (hzSerrver != null) {
-            hzSerrver.shutdown();
-        }
+        HazelcastClient.shutdownAll();
+        Hazelcast.shutdownAll();
     }
 }
