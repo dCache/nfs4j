@@ -45,7 +45,6 @@ import org.dcache.nfs.status.GraceException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NotDirException;
-import org.dcache.nfs.status.NoGraceException;
 import org.dcache.nfs.status.SymlinkException;
 import org.dcache.nfs.status.WrongTypeException;
 import org.dcache.nfs.v4.xdr.fattr4_size;
@@ -211,23 +210,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 break;
             case open_claim_type4.CLAIM_PREVIOUS:
                 /*
-                 * As we don't have persistent state store there are two oprions:
+                 * We must trust the client to reclaiming the valid opens. The only
+                 * think we can check is that client has a previous record in the
+                 * client db.
                  *
-                 *   1. fail with NFSERR_RECLAIM_BAD
-                 *   2. just do a regulat open by FH.
-                 *
-                 * Let take the second case as first one will endup with
-                 * it anyway.
-                 *
-                 * Just check that we are still in the grace period and
-                 * fall -through to CLAIM_FH.
+                 * See: https://tools.ietf.org/html/rfc5661#section-8.4.2.1
                  */
-                if (!context.getStateHandler().isGracePeriod()) {
-                    throw new NoGraceException("Server not in grace period");
-                }
-                if (!client.needReclaim()) {
-                    throw new NoGraceException("CLAIM open after 'reclaim complete'");
-                }
+                client.wantReclaim();
+                 // fallthrough to CLAIM_FH
             case open_claim_type4.CLAIM_FH:
 
                 _log.debug("open by Inode for : {}", context.currentInode());

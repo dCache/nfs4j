@@ -44,12 +44,12 @@ public class OperationEXCHANGE_IDTest {
 
     @Before
     public void setUp() {
-        stateHandler = new NFSv4StateHandler(2, 0);
+        stateHandler = new NFSv4StateHandler(2, 0, new EphemeralClientRecoveryStore());
         clientId = UUID.randomUUID().toString();
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         if (stateHandler.isRunning()) {
             stateHandler.shutdown();
         }

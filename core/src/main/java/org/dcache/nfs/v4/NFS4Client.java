@@ -42,6 +42,8 @@ import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
 import org.dcache.nfs.status.ExpiredException;
+import org.dcache.nfs.status.NoGraceException;
+import org.dcache.nfs.status.ReclaimBadException;
 import org.dcache.nfs.status.SeqMisorderedException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.clientid4;
@@ -485,11 +487,27 @@ public class NFS4Client {
         drainStates();
     }
 
+    /**
+     * Indicates that client have reclaimed all states held before server reboot.
+     * @throws ChimeraNFSException
+     */
     public synchronized void reclaimComplete() throws ChimeraNFSException {
 	if (_reclaim_completed) {
 	    throw new CompleteAlreadyException("Duplicating reclaim");
 	}
+        _stateHandler.reclaimComplete(getOwnerId());
 	_reclaim_completed = true;
+    }
+
+    /**
+     * Indicates that client wants to perfor state reclaim operation.
+     * @throws ChimeraNFSException
+     */
+    public synchronized void wantReclaim() throws ChimeraNFSException {
+        if (_reclaim_completed) {
+            throw new NoGraceException("Already complete");
+        }
+        _stateHandler.wantReclaim(getOwnerId());
     }
 
     public synchronized boolean needReclaim() {

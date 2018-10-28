@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -77,11 +77,13 @@ public class NFSv4StateHandler {
 
     private final FileTracker _openFileTracker = new FileTracker();
 
+    private final ClientRecoveryStore clientStore;
+
     public NFSv4StateHandler() {
-        this(NFSv4Defaults.NFS4_LEASE_TIME, 0);
+        this(NFSv4Defaults.NFS4_LEASE_TIME, 0, new EphemeralClientRecoveryStore());
     }
 
-    NFSv4StateHandler(long leaseTime, int instanceId) {
+    NFSv4StateHandler(long leaseTime, int instanceId, ClientRecoveryStore clientStore) {
         _leaseTime = TimeUnit.SECONDS.toMillis(leaseTime);
         _clientsByServerId = new Cache<>("NFSv41 clients", 5000, Long.MAX_VALUE,
                 _leaseTime * 2,
@@ -90,14 +92,16 @@ public class NFSv4StateHandler {
 
         _running = true;
         _instanceId = instanceId;
+        this.clientStore = clientStore;
     }
 
     public void removeClient(NFS4Client client) {
 
-	synchronized (this) {
-	    checkState(_running, "NFS state handler not running");
-	    _clientsByServerId.remove(client.getId());
-	}
+        synchronized (this) {
+            checkState(_running, "NFS state handler not running");
+            _clientsByServerId.remove(client.getId());
+            clientStore.removeClient(client.getOwnerId());
+        }
         client.tryDispose();
     }
 
@@ -105,6 +109,7 @@ public class NFSv4StateHandler {
 
         checkState(_running, "NFS state handler not running");
         _clientsByServerId.put(newClient.getId(), newClient);
+        clientStore.addClient(newClient.getOwnerId());
     }
 
     /**
@@ -253,12 +258,23 @@ public class NFSv4StateHandler {
      */
     public boolean isGracePeriod() {
         checkState(_running, "NFS state handler not running");
-	/*
-	 * As we do not have a persistent storage for state information,
-	 * grace period makes no sense as it ends up as a simple delay
-	 * before first IO request can be processed.
-	 */
-        return false;
+        return clientStore.waitingForReclaim();
+    }
+
+    /**
+     * Indicate that given client complete state reclaims.
+     * @param owner client
+     */
+    public synchronized void reclaimComplete(byte[] owner) {
+        clientStore.reclaimClient(owner);
+    }
+
+    /**
+     * Indicate that given client wants to reclaim states held before server reboot.
+     * @param owner client
+     */
+    public synchronized void wantReclaim(byte[] owner) throws ChimeraNFSException {
+        clientStore.wantReclaim(owner);
     }
 
     private synchronized void drainClients() {
@@ -273,11 +289,12 @@ public class NFSv4StateHandler {
     /**
      * Shutdown session lease time watchdog thread.
      */
-    public synchronized void shutdown() {
+    public synchronized void shutdown() throws Exception {
         checkState(_running, "NFS state handler not running");
         _running = false;
         drainClients();
         _clientsByServerId.shutdown();
+        clientStore.close();
     }
 
     /**

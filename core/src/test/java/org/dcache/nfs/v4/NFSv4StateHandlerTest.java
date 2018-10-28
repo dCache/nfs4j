@@ -51,7 +51,7 @@ public class NFSv4StateHandlerTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         if(_stateHandler.isRunning()) {
             _stateHandler.shutdown();
         }
@@ -106,9 +106,9 @@ public class NFSv4StateHandlerTest {
     }
 
     @Test
-    public void testInstanceId() {
+    public void testInstanceId() throws Exception {
         int instanceId = 18;
-        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId);
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId, new EphemeralClientRecoveryStore());
         try {
             assertEquals("Invalid instance id returned", instanceId, stateHandler.getInstanceId());
         } finally {
@@ -117,9 +117,9 @@ public class NFSv4StateHandlerTest {
     }
 
     @Test
-    public void testInstanceIdByStateid() throws UnknownHostException, ChimeraNFSException {
+    public void testInstanceIdByStateid() throws UnknownHostException, ChimeraNFSException, Exception {
         int instanceId = 117;
-        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId);
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId, new EphemeralClientRecoveryStore());
         try {
             NFS4State state = createClient(stateHandler).createState(_owner);
             assertEquals("Invalid instance id returned", instanceId, NFSv4StateHandler.getInstanceId(state.stateid()));
