@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,11 +19,11 @@
  */
 package org.dcache.nfs;
 
-import com.google.common.base.Predicate;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Inet6Address;
 import java.net.UnknownHostException;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -42,7 +42,7 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
     }
 
     public boolean match(InetAddress addr) {
-        return apply(addr);
+        return test(addr);
     }
 
     public String getPattern() {
@@ -113,7 +113,7 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
         }
 
         @Override
-        public boolean apply(InetAddress ip) {
+        public boolean test(InetAddress ip) {
 
             byte[] ipBytes = ip.getAddress();
             if (ipBytes.length != netBytes.length) {
@@ -170,7 +170,7 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
         }
 
         @Override
-        public boolean apply(InetAddress ip) {
+        public boolean test(InetAddress ip) {
             return regexpPattern.matcher(ip.getHostName()).matches();
         }
     }
@@ -182,7 +182,7 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
         }
 
         @Override
-        public boolean apply(InetAddress ip) {
+        public boolean test(InetAddress ip) {
             try {
                 // jvm caches DNS results. We are fine to query on each request
                 InetAddress[] addrs = InetAddress.getAllByName(getPattern());

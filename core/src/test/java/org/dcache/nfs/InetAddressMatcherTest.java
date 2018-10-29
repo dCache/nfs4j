@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -85,7 +85,7 @@ public class InetAddressMatcherTest {
 
         InetAddressMatcher ipMatcher = InetAddressMatcher.forPattern("fe80::0:0:0:0/70");
 
-        assertTrue("Failed to match host with netmask.", ipMatcher.apply(forString("fe80::3FF:F00D:BAD:F00D")));
+        assertTrue("Failed to match host with netmask.", ipMatcher.test(forString("fe80::3FF:F00D:BAD:F00D")));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class InetAddressMatcherTest {
 
         InetAddressMatcher ipMatcher = InetAddressMatcher.forPattern("1.1.1.1/16");
 
-        assertTrue("Failed to match host with netmask.", ipMatcher.apply(forString("1.1.2.3")));
+        assertTrue("Failed to match host with netmask.", ipMatcher.test(forString("1.1.2.3")));
     }
 
     @Test
