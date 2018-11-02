@@ -94,7 +94,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
             case open_claim_type4.CLAIM_NULL:
 
-                if (client.needReclaim() && context.getStateHandler().isGracePeriod()) {
+                if (client.needReclaim() || context.getStateHandler().isGracePeriod()) {
                     throw new GraceException();
                 }
 
