@@ -42,5 +42,8 @@ public class EphemeralClientRecoveryStore implements ClientRecoveryStore {
     public void wantReclaim(byte[] client) {}
 
     @Override
+    public void reclaimComplete() {}
+
+    @Override
     public void close() {}
 }

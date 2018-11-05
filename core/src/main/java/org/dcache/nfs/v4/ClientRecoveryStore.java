@@ -73,4 +73,10 @@ public interface ClientRecoveryStore extends AutoCloseable {
      */
     void wantReclaim(byte[] client) throws NoGraceException, ReclaimBadException;
 
+    /**
+     * Indicate the end of grace period. The records for client's that did not
+     * showed up during grace period will be removed.
+     */
+    void reclaimComplete();
+
 }
