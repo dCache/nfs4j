@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,6 +48,13 @@ public class NFSv4StateHandlerTest {
         _stateHandler = new NFSv4StateHandler();
         _client = createClient(_stateHandler);
         _owner =  _client.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+    }
+
+    @After
+    public void tearDown() {
+        if(_stateHandler.isRunning()) {
+            _stateHandler.shutdown();
+        }
     }
 
     @Test
@@ -101,15 +109,23 @@ public class NFSv4StateHandlerTest {
     public void testInstanceId() {
         int instanceId = 18;
         NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId);
-        assertEquals("Invalid instance id returned", instanceId, stateHandler.getInstanceId());
+        try {
+            assertEquals("Invalid instance id returned", instanceId, stateHandler.getInstanceId());
+        } finally {
+            stateHandler.shutdown();
+        }
     }
 
     @Test
     public void testInstanceIdByStateid() throws UnknownHostException, ChimeraNFSException {
         int instanceId = 117;
         NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId);
-        NFS4State state = createClient(stateHandler).createState(_owner);
-        assertEquals("Invalid instance id returned", instanceId, NFSv4StateHandler.getInstanceId(state.stateid()));
+        try {
+            NFS4State state = createClient(stateHandler).createState(_owner);
+            assertEquals("Invalid instance id returned", instanceId, NFSv4StateHandler.getInstanceId(state.stateid()));
+        } finally {
+            stateHandler.shutdown();
+        }
     }
 
 }

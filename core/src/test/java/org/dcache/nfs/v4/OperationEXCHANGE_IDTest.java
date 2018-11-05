@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.nfsstat;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,6 +46,13 @@ public class OperationEXCHANGE_IDTest {
     public void setUp() {
         stateHandler = new NFSv4StateHandler(2, 0);
         clientId = UUID.randomUUID().toString();
+    }
+
+    @After
+    public void tearDown() {
+        if (stateHandler.isRunning()) {
+            stateHandler.shutdown();
+        }
     }
 
     @Test

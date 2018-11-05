@@ -281,6 +281,14 @@ public class NFSv4StateHandler {
     }
 
     /**
+     * Returns {@code true} iff this state handler is running.
+     * @return true, it state handler is running.
+     */
+    public synchronized boolean isRunning() {
+        return _running;
+    }
+
+    /**
      * Get system wide unique id to identify this state handler.
      * @return system wide unique id
      */
