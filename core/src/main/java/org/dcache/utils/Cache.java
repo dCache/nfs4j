@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 package org.dcache.utils;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,16 +52,15 @@ import org.slf4j.LoggerFactory;
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of cached values
  */
-public class Cache<K, V> implements Runnable {
+public class Cache<K, V> {
 
     private static final Logger _log = LoggerFactory.getLogger(Cache.class);
     private final Clock _timeSource;
 
     /**
-     * {@link TimerTask} to periodically check and remove expired entries.
+     * Check and remove expired entries.
      */
-    @Override
-    public void run() {
+    public void cleanUp() {
         List<V> expiredEntries = new ArrayList<>();
 
         _accessLock.lock();
@@ -122,10 +117,6 @@ public class Cache<K, V> implements Runnable {
     private final Map<K, CacheElement<V>> _storage;
 
     /**
-     * 'Expire thread' used to detect and remove expired entries.
-     */
-    private final ScheduledExecutorService _cleanerScheduler;
-    /**
      * Internal storage access lock.
      */
     private final Lock _accessLock = new ReentrantLock();
@@ -155,8 +146,7 @@ public class Cache<K, V> implements Runnable {
      */
     public Cache(String name, int size, long entryLifeTime, long entryIdleTime) {
         this(name, size, entryLifeTime, entryIdleTime,
-                new NopCacheEventListener<K, V>(),
-                30, TimeUnit.SECONDS);
+                new NopCacheEventListener<K, V>());
     }
 
     /**
@@ -167,14 +157,10 @@ public class Cache<K, V> implements Runnable {
      * @param entryLifeTime maximal time in milliseconds.
      * @param entryIdleTime maximal idle time in milliseconds.
      * @param eventListener {@link CacheEventListener}
-     * @param timeValue how often cleaner thread have to check for invalidated
-     * entries.
-     * @param timeUnit a {@link TimeUnit} determining how to interpret the
-     * parameter.
      */
     public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
-            CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit) {
-        this(name, size, entryLifeTime, entryIdleTime, eventListener, timeValue, timeUnit, Clock.systemDefaultZone());
+            CacheEventListener<K, V> eventListener) {
+        this(name, size, entryLifeTime, entryIdleTime, eventListener, Clock.systemDefaultZone());
     }
 
     /**
@@ -185,13 +171,11 @@ public class Cache<K, V> implements Runnable {
      * @param entryLifeTime maximal time in milliseconds.
      * @param entryIdleTime maximal idle time in milliseconds.
      * @param eventListener {@link CacheEventListener}
-     * @param timeValue how often cleaner thread have to check for invalidated entries.
-     * @param timeUnit a {@link TimeUnit} determining how to interpret the
      * @param clock {@link Clock} to use
      * <code>timeValue</code> parameter.
      */
     public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
-            CacheEventListener<K, V> eventListener, long timeValue, TimeUnit timeUnit, Clock clock) {
+            CacheEventListener<K, V> eventListener, Clock clock) {
         _name = name;
         _size = size;
         _defaultEntryMaxLifeTime = entryLifeTime;
@@ -199,13 +183,6 @@ public class Cache<K, V> implements Runnable {
         _storage = new HashMap<>(_size);
         _eventListener = eventListener;
         _mxBean = new CacheMXBeanImpl<>(this);
-        _cleanerScheduler = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat(name + " periodic cleanup")
-                        .setDaemon(true)
-                        .build()
-        );
-        _cleanerScheduler.scheduleAtFixedRate(this, timeValue, timeValue, timeUnit);
         _timeSource = clock;
     }
 
@@ -396,15 +373,5 @@ public class Cache<K, V> implements Runnable {
 
     public long lastClean() {
         return _lastClean.get();
-    }
-
-    /**
-     * Shutdown cache cleanup thread.
-     *
-     * Note that cache still can be used, but there will be no automatic cleanup
-     * performed.
-     */
-    public void shutdown() {
-        _cleanerScheduler.shutdown();
     }
 }

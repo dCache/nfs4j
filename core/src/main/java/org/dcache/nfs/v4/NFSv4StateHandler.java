@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import org.dcache.nfs.ChimeraNFSException;
@@ -79,6 +82,11 @@ public class NFSv4StateHandler {
 
     private final ClientRecoveryStore clientStore;
 
+    /**
+     * 'Expire thread' used to detect and remove expired entries.
+     */
+    private final ScheduledExecutorService _cleanerScheduler;
+
     public NFSv4StateHandler() {
         this(NFSv4Defaults.NFS4_LEASE_TIME, 0, new EphemeralClientRecoveryStore());
     }
@@ -87,12 +95,26 @@ public class NFSv4StateHandler {
         _leaseTime = TimeUnit.SECONDS.toMillis(leaseTime);
         _clientsByServerId = new Cache<>("NFSv41 clients", 5000, Long.MAX_VALUE,
                 _leaseTime * 2,
-                new DeadClientCollector(),
-                _leaseTime * 4, TimeUnit.MILLISECONDS);
+                new DeadClientCollector());
 
         _running = true;
         _instanceId = instanceId;
         this.clientStore = clientStore;
+
+        _cleanerScheduler = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("NFSv41 client periodic cleanup")
+                        .setDaemon(true)
+                        .build()
+        );
+
+        // periodic dead client scan
+        _cleanerScheduler.scheduleAtFixedRate(() -> _clientsByServerId.cleanUp(),
+                _leaseTime * 4, _leaseTime * 4, TimeUnit.MILLISECONDS);
+
+        // one time action to close recovery window.
+        _cleanerScheduler.schedule(() -> clientStore.reclaimComplete(),
+                _leaseTime, TimeUnit.MILLISECONDS);
     }
 
     public void removeClient(NFS4Client client) {
@@ -293,8 +315,8 @@ public class NFSv4StateHandler {
         checkState(_running, "NFS state handler not running");
         _running = false;
         drainClients();
-        _clientsByServerId.shutdown();
         clientStore.close();
+        _cleanerScheduler.shutdown();
     }
 
     /**

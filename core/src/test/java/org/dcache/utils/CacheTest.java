@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,9 +39,7 @@ public class CacheTest {
         _clock = new ManualClock();
         _cache = new Cache<>("test cache", 10, TimeUnit.SECONDS.toMillis(5),
                 TimeUnit.SECONDS.toMillis(5),
-                new NopCacheEventListener(),
-                30, TimeUnit.SECONDS,
-                _clock);
+                new NopCacheEventListener(), _clock);
     }
 
     @Test
