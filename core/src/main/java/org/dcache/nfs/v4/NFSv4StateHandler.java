@@ -212,7 +212,7 @@ public class NFSv4StateHandler {
     public synchronized List<NFS4Client> getClients() {
         checkState(_running, "NFS state handler not running");
         return _clientsByServerId.entries().stream()
-                .map(CacheElement::getObject)
+                .map(CacheElement::peekObject)
                 .collect(Collectors.toList());
     }
 
