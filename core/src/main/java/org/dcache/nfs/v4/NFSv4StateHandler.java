@@ -315,8 +315,8 @@ public class NFSv4StateHandler {
         checkState(_running, "NFS state handler not running");
         _running = false;
         drainClients();
-        clientStore.close();
         _cleanerScheduler.shutdown();
+        clientStore.close();
     }
 
     /**
