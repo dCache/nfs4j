@@ -58,36 +58,6 @@ public class Cache<K, V> {
     private final Clock _timeSource;
 
     /**
-     * Check and remove expired entries.
-     */
-    public void cleanUp() {
-        List<V> expiredEntries = new ArrayList<>();
-
-        _accessLock.lock();
-        try {
-            long now = System.currentTimeMillis();
-            Iterator<Map.Entry<K, CacheElement<V>>> entries = _storage.entrySet().iterator();
-            while(entries.hasNext()) {
-                Map.Entry<K, CacheElement<V>> entry = entries.next();
-                CacheElement<V> cacheElement = entry.getValue();
-
-                if (!cacheElement.validAt(now)) {
-                    _log.debug("Cleaning expired entry key = [{}], value = [{}]",
-                            entry.getKey(), cacheElement.getObject());
-                    entries.remove();
-                    expiredEntries.add(cacheElement.getObject());
-                }
-            }
-            _lastClean.set(now);
-        } finally {
-            _accessLock.unlock();
-        }
-        for (V v : expiredEntries) {
-            _eventListener.notifyExpired(this, v);
-        }
-    }
-
-    /**
      * The name of this cache.
      */
     private final String _name;
@@ -352,6 +322,35 @@ public class Cache<K, V> {
         } finally {
             _accessLock.unlock();
         }
+    }
+
+    /**
+     * Check and remove expired entries.
+     */
+    public void cleanUp() {
+        List<V> expiredEntries = new ArrayList<>();
+
+        _accessLock.lock();
+        try {
+            long now = System.currentTimeMillis();
+            Iterator<Map.Entry<K, CacheElement<V>>> entries = _storage.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry<K, CacheElement<V>> entry = entries.next();
+                CacheElement<V> cacheElement = entry.getValue();
+
+                if (!cacheElement.validAt(now)) {
+                    _log.debug("Cleaning expired entry key = [{}], value = [{}]",
+                            entry.getKey(), cacheElement.getObject());
+                    entries.remove();
+                    expiredEntries.add(cacheElement.getObject());
+                }
+            }
+            _lastClean.set(now);
+        } finally {
+            _accessLock.unlock();
+        }
+
+        expiredEntries.forEach( v -> _eventListener.notifyExpired(this, v));
     }
 
     /**
