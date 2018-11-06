@@ -76,6 +76,16 @@ public class CacheElement<V> {
     }
 
     /**
+     * Get internal object stored in this element. In opposite to {@link #getObject}
+     * the last access time of the element will not be updated.
+     *
+     * @return internal object.
+     */
+    public V peekObject() {
+        return _inner;
+    }
+
+    /**
      * Check the entry's validity at the specified time.
      *
      * @param time in milliseconds since 1 of January 1970.
