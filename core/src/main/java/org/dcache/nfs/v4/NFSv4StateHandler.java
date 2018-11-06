@@ -271,6 +271,7 @@ public class NFSv4StateHandler {
         public void notifyExpired(Cache<clientid4, NFS4Client> cache, NFS4Client client) {
             _log.info("Removing expired client: {}", client);
             client.tryDispose();
+            clientStore.removeClient(client.getOwnerId());
         }
     }
 
