@@ -7,13 +7,43 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
 /**
  * A collection of constants used by the "flex_files_prot" ONC/RPC program.
  */
 public interface flex_files_prot {
 
-    public static final int FF_FLAGS_NO_LAYOUTCOMMIT  = 0x00000001;
-    public static final int FF_FLAGS_NO_IO_THRU_MDS   = 0x00000002;
+    /**
+     * Indicates that the client is not required to send LAYOUTCOMMIT to the
+     * metadata server.
+     */
+    public static final int FF_FLAGS_NO_LAYOUTCOMMIT = 0x00000001;
 
+    /**
+     * Indicates that the client should not send I/O operations to
+     * the metadata server. That is, even if the client could determine that
+     * there was a network disconnect to a storage device, the client should not
+     * try to proxy the I/O through the metadata server.
+     */
+    public static final int FF_FLAGS_NO_IO_THRU_MDS = 0x00000002;
+
+    /**
+     * Indicates that the client should not send READ requests with
+     * the layouts of iomode LAYOUTIOMODE4_RW. Instead, it should request a
+     * layout of iomode LAYOUTIOMODE4_READ from the metadata server.
+     */
+    public static final int FF_FLAGS_NO_READ_IO = 0x00000004;
+
+    /**
+     * Indicates that the client only needs to update one of the
+     * mirrors.
+     */
+    public static final int FF_FLAGS_WRITE_ONE_MIRROR = 0x00000008;
+
+    /**
+     * Combination of all flags.
+     */
+    public static final int FF_FLAGS_MASK = FF_FLAGS_NO_LAYOUTCOMMIT | FF_FLAGS_NO_IO_THRU_MDS
+            | FF_FLAGS_NO_READ_IO | FF_FLAGS_WRITE_ONE_MIRROR;
 }
 // End of flex_files_prot.java
