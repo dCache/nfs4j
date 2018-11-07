@@ -80,6 +80,12 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final Consumer<ff_layoutreturn4> layoutReturnConsumer;
 
     /**
+     * Layout flags, like no IO through MDS.
+     * See rfc8435#5.1
+     */
+    private final uint32_t layoutFlags;
+
+    /**
      * Create new FlexFile layout driver with. The @code nfsVersion} and
      * {@code nfsMinorVersion} represent the protocol to be used to access the
      * storage device. If client uses AUTH_SYS, then provided {@code userPrincipal}
@@ -87,17 +93,22 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      *
      * @param nfsVersion nfs version to use
      * @param nfsMinorVersion nfs minor version to use.
+     * @param flags layout flags.
      * @param userPrincipal user principal to be used by client
      * @param groupPrincipal group principal to be used by client
      * @param layoutReturnConsumer consumer which accepts data provided on layout return.
      */
-    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion,
-            utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal, Consumer<ff_layoutreturn4> layoutReturnConsumer) {
+    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, int flags,
+            utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal,
+            Consumer<ff_layoutreturn4> layoutReturnConsumer) {
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
         this.userPrincipal = new fattr4_owner(userPrincipal);
         this.groupPrincipal = new fattr4_owner_group(groupPrincipal);
         this.layoutReturnConsumer = layoutReturnConsumer;
+
+        checkArgument((flags & ~flex_files_prot.FF_FLAGS_MASK) == 0, "Invalid flex files layout flag");
+        this.layoutFlags = new uint32_t(flags);
     }
 
 
@@ -154,8 +165,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
 
         layout.ffl_stripe_unit = new length4(0);
         layout.ffl_mirrors = createMirrors(deviceids, 0, stateid, fh);
-        layout.ffl_flags4 = new uint32_t(flex_files_prot.FF_FLAGS_NO_LAYOUTCOMMIT
-                | flex_files_prot.FF_FLAGS_NO_IO_THRU_MDS);
+        layout.ffl_flags4 = layoutFlags;
         layout.ffl_stats_collect_hint = new uint32_t(0);
 
         byte[] body;
