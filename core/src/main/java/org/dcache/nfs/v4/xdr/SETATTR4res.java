@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,8 +25,11 @@ import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class SETATTR4res implements XdrAble {
+
+    private static final bitmap4 NOATTR = new bitmap4();
+
     public int status;
-    public bitmap4 attrsset;
+    public bitmap4 attrsset = NOATTR;
 
     public SETATTR4res() {
     }
