@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -35,7 +35,6 @@ import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.SETATTR4res;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.AttrNotSuppException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.InvalException;
@@ -59,7 +58,6 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSETATTR.class);
-    private static final bitmap4 EMPTY_BITMASK = new bitmap4();
 
     public OperationSETATTR(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_SETATTR);
@@ -70,14 +68,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         final SETATTR4res res = result.opsetattr;
 
-        /*
-         * on either success or failure of the operation, the server will return
-         * the attrsset bitmask to represent what (if any) attributes were
-         * successfully set.
-         *
-         * Initialize with an empty bitmask, which will be replaces on success.
-         */
-        res.attrsset = EMPTY_BITMASK;
+        assert res.attrsset != null;
 
         Inode inode = context.currentInode();
 
