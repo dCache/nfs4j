@@ -104,13 +104,31 @@ public class CacheTest {
           assertNotNull("Object expired", _cache.get("key1"));
     }
 
+    @Test
+    public void testCleanUp() {
+        _cache.put("key1", "value1", 1000, 1000);
+        _cache.put("key2", "value2", 600, 600);
+        _clock.advance(700, TimeUnit.MILLISECONDS);
+        _cache.cleanUp();
+        assertEquals("unexpected number of elements", 1, _cache.size());
+        assertNotNull("Expected Entry expired", _cache.get("key1"));
+    }
+
+    @Test
+    public void testClear() {
+        _cache.put("key1", "value1");
+        _cache.put("key2", "value2");
+        _cache.clear();
+        assertTrue("Not all entries are removed", _cache.entries().isEmpty());
+    }
+
     private static class ManualClock extends Clock {
 
         private final AtomicLong currentTime = new AtomicLong();
 
         @Override
         public Instant instant() {
-            return Instant.ofEpochSecond(currentTime.get());
+            return Instant.ofEpochMilli(currentTime.get());
         }
 
         void advance(long time, TimeUnit unit) {

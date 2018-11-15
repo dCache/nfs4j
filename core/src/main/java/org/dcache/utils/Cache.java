@@ -332,7 +332,7 @@ public class Cache<K, V> {
 
         _accessLock.lock();
         try {
-            long now = System.currentTimeMillis();
+            long now = _timeSource.millis();
             Iterator<Map.Entry<K, CacheElement<V>>> entries = _storage.entrySet().iterator();
             while (entries.hasNext()) {
                 Map.Entry<K, CacheElement<V>> entry = entries.next();
