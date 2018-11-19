@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.Closeable;
 import org.dcache.nfs.status.NoGraceException;
 import org.dcache.nfs.status.ReclaimBadException;
 
@@ -28,7 +29,7 @@ import org.dcache.nfs.status.ReclaimBadException;
  *
  * @see: https://tools.ietf.org/html/rfc5661#section-8.4.2.1
  */
-public interface ClientRecoveryStore extends AutoCloseable {
+public interface ClientRecoveryStore extends Closeable {
 
     /**
      * Add client record into recovery store. An existing record for provided
