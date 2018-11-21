@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -43,9 +43,16 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.CB_NOTIFY_DEVICEID4args;
+import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layoutrecall_file4;
 import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
+import org.dcache.nfs.v4.xdr.notify4;
+import org.dcache.nfs.v4.xdr.notify_deviceid_delete4;
+import org.dcache.nfs.v4.xdr.notify_deviceid_type4;
+import org.dcache.nfs.v4.xdr.notifylist4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
@@ -55,6 +62,7 @@ import org.dcache.oncrpc4j.rpc.RpcAuthTypeNone;
 import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
+import org.dcache.oncrpc4j.xdr.Xdr;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrVoid;
 
@@ -195,6 +203,39 @@ public class ClientCB {
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
         XdrAble args = generateCompound("cb_layout_recall_file", opArgs);
+
+        CB_COMPOUND4res res = new CB_COMPOUND4res();
+        _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
+        nfsstat.throwIfNeeded(res.status);
+    }
+
+    public void cbDeleteDevice(deviceid4 id) throws OncRpcException, IOException {
+
+        CB_NOTIFY_DEVICEID4args cbDeleteDeciveId = new CB_NOTIFY_DEVICEID4args();
+
+        cbDeleteDeciveId.cnda_changes = new notify4[1];
+        cbDeleteDeciveId.cnda_changes[0] = new notify4();
+        cbDeleteDeciveId.cnda_changes[0].notify_mask = bitmap4.of(notify_deviceid_type4.NOTIFY_DEVICEID4_DELETE);
+
+        notify_deviceid_delete4 deleteDevice = new notify_deviceid_delete4();
+        deleteDevice.ndd_layouttype = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
+        deleteDevice.ndd_deviceid = id;
+
+        try (Xdr xdr = new Xdr(32)) {
+
+            xdr.beginEncoding();
+            deleteDevice.xdrEncode(xdr);
+            xdr.endEncoding();
+            byte[] b = xdr.getBytes();
+
+            cbDeleteDeciveId.cnda_changes[0].notify_vals = new notifylist4(b);
+        }
+
+        nfs_cb_argop4 opArgs = new nfs_cb_argop4();
+        opArgs.argop = nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID;
+        opArgs.opcbnotify_deviceid = cbDeleteDeciveId;
+
+        XdrAble args = generateCompound("cb_delete_device", opArgs);
 
         CB_COMPOUND4res res = new CB_COMPOUND4res();
         _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
