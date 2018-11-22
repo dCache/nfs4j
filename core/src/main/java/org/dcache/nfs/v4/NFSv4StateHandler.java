@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.util.Arrays;
@@ -312,7 +313,7 @@ public class NFSv4StateHandler {
     /**
      * Shutdown session lease time watchdog thread.
      */
-    public synchronized void shutdown() throws Exception {
+    public synchronized void shutdown() throws IOException {
         checkState(_running, "NFS state handler not running");
         _running = false;
         drainClients();
