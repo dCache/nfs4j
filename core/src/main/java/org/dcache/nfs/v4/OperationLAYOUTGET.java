@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -41,6 +41,7 @@ import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.layout4;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,8 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         int ioMode = _args.oplayoutget.loga_iomode;
 
-        NFS4State state = context.getSession().getClient().state(_args.oplayoutget.loga_stateid);
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplayoutget.loga_stateid);
+        NFS4State state = context.getSession().getClient().state(stateid);
         // check open file mode
         int shareAccess = context
                 .getStateHandler()
@@ -105,7 +107,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
             ioLayout = pnfsDeviceManager.layoutGet(context, inode,
                     layoutType,
                     _args.oplayoutget.loga_iomode,
-                    _args.oplayoutget.loga_stateid);
+                    stateid);
         } catch (NfsIoException e) {
             // linux client can't handle EIO on layout get. force it to proxy IO to
             // hit a different code path.
