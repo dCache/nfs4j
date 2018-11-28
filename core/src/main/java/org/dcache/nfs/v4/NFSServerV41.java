@@ -210,11 +210,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 } catch (BadXdrException | OpIllegalException | InvalException e) {
                     _log.warn("Faulty NFS client: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
-                } catch (BadStateidException | StaleStateidException e) {
-                    _log.warn("Bad Stateid: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
-                    opResult.setStatus(e.getStatus());
-                } catch (ExpiredException | BadSessionException | StaleClientidException  e) {
-                    _log.warn("Bad client: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
+                } catch (BadStateidException | StaleStateidException | ExpiredException
+                        | BadSessionException | StaleClientidException  e) {
+                    _log.info("Lost client state: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
                     opResult.setStatus(e.getStatus());
                 } catch (ChimeraNFSException e) {
                     opResult.setStatus(e.getStatus());
