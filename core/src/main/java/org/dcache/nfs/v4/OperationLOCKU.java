@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -56,6 +56,8 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
         if (_args.oplocku.length.value == 0) {
             throw new InvalException("zero lock len");
         }
+
+        _args.oplocku.offset.checkOverflow(_args.oplocku.length, "offset + len overflow");
 
         try {
 

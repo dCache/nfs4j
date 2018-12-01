@@ -92,6 +92,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import org.dcache.nfs.v4.xdr.LOCKU4args;
 import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.Xdr;
@@ -572,6 +573,20 @@ public class CompoundBuilder {
         op.opreclaim_complete = new RECLAIM_COMPLETE4args();
 
         op.opreclaim_complete.rca_one_fs = true;
+        ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withLocku(int type, stateid4 stateid, int seqid,
+            long offset, long length) {
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_LOCKU;
+        op.oplocku = new LOCKU4args();
+        op.oplocku.lock_stateid = stateid;
+        op.oplocku.seqid = new seqid4(seqid);
+        op.oplocku.locktype = type;
+        op.oplocku.offset = new offset4(offset);
+        op.oplocku.length = new length4(length);
         ops.add(op);
         return this;
     }
