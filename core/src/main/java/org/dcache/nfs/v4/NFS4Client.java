@@ -43,7 +43,6 @@ import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
 import org.dcache.nfs.status.ExpiredException;
 import org.dcache.nfs.status.NoGraceException;
-import org.dcache.nfs.status.ReclaimBadException;
 import org.dcache.nfs.status.SeqMisorderedException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.clientid4;
@@ -200,9 +199,9 @@ public class NFS4Client {
         _clientAddress = clientAddress;
         _localAddress = localAddress;
         _leaseTime = leaseTime;
-	_reclaim_completed = false;
         _callbackNeeded = calbackNeeded;
         _minorVersion = minorVersion;
+	_reclaim_completed = _minorVersion == 0; // no reclaim for NFSv4.0 clients
         _log.debug("New client: {}", this);
     }
 

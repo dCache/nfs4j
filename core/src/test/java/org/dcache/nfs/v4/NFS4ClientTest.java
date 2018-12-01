@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -136,6 +136,16 @@ public class NFS4ClientTest {
     public void testCreateState() throws ChimeraNFSException {
         NFS4State state = nfsClient.createState(owner);
         assertTrue(nfsClient.hasState());
+    }
+
+    @Test
+    public void testFreshV41ClientNeedReclaim() {
+        assertTrue(nfsClient.needReclaim());
+    }
+
+    @Test
+    public void testFreshV40ClientDontNeedReclaim() throws UnknownHostException {
+        assertFalse(createClient(stateHandler, 0).needReclaim());
     }
 
     @Test

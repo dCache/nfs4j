@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -49,12 +49,20 @@ class NfsTestUtils {
     }
 
     static NFS4Client createClient(NFSv4StateHandler stateHandler) throws UnknownHostException {
+        return createClient(stateHandler, 1);
+    }
+
+    static NFS4Client createV40Client(NFSv4StateHandler stateHandler) throws UnknownHostException {
+        return createClient(stateHandler, 0);
+    }
+
+    static NFS4Client createClient(NFSv4StateHandler stateHandler, int minor) throws UnknownHostException {
         InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(null), 123);
         byte[] owner = new byte[8];
         byte[] bootTime = new byte[8];
         RANDOM.nextBytes(owner);
         Bytes.putLong(bootTime, 0, System.currentTimeMillis());
-        return stateHandler.createClient(address, address, 1, owner, new verifier4(bootTime), null, false);
+        return stateHandler.createClient(address, address, minor, owner, new verifier4(bootTime), null, false);
     }
 
     public static nfs_resop4 execute(CompoundContext context, AbstractNFSv4Operation op) throws ChimeraNFSException, IOException {
