@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -70,10 +70,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.open_owner.open_stateid);
 
             if(context.getMinorversion() == 0) {
-                client = context.getStateHandler().getClientIdByStateId(oldStateid);
-                context.getStateHandler().updateClientLeaseTime(oldStateid);
-                // poke lock owner to check it's validity
-                context.getStateHandler().getConfirmedClient(_args.oplock.locker.open_owner.lock_owner.clientid);
+                client = context.getStateHandler().getConfirmedClient(_args.oplock.locker.open_owner.lock_owner.clientid);
             } else {
                 client = context.getSession().getClient();
             }
@@ -82,6 +79,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             Stateids.checkStateId(openState.stateid(), oldStateid);
             if (context.getMinorversion() == 0) {
                 openState.getStateOwner().acceptAsNextSequence(_args.oplock.locker.open_owner.open_seqid);
+                client.updateLeaseTime();
             }
 
             lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner, _args.oplock.locker.open_owner.lock_seqid);
@@ -99,6 +97,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             lockOwner = lock_state.getStateOwner();
             if (context.getMinorversion() == 0) {
                 lockOwner.acceptAsNextSequence(_args.oplock.locker.lock_owner.lock_seqid);
+                client.updateLeaseTime();
             }
         }
 
