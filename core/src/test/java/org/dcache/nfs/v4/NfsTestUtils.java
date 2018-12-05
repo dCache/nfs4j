@@ -23,10 +23,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Random;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.COMPOUND4args;
+import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
@@ -65,21 +69,43 @@ class NfsTestUtils {
         return stateHandler.createClient(address, address, minor, owner, new verifier4(bootTime), null, false);
     }
 
-    public static nfs_resop4 execute(CompoundContext context, AbstractNFSv4Operation op) throws ChimeraNFSException, IOException {
-        nfs_resop4 result = nfs_resop4.resopFor(op._args.argop);
-        op.process(context, result);
-        return result;
+    public static COMPOUND4res executeWithStatus(CompoundContext context, COMPOUND4args args, int expectedStatus) throws IOException {
+
+        MDSOperationFactory opFactory = new MDSOperationFactory();
+        COMPOUND4res res = new COMPOUND4res();
+        res.resarray = new ArrayList<>();
+
+        for (nfs_argop4 arg : args.argarray) {
+            try {
+                AbstractNFSv4Operation op = opFactory.getOperation(arg);
+                nfs_resop4 opResult = nfs_resop4.resopFor(arg.argop);
+                op.process(context, opResult);
+                res.resarray.add(opResult);
+                res.status = opResult.getStatus();
+            } catch (ChimeraNFSException e) {
+                res.status = e.getStatus();
+                break;
+            }
+        }
+
+        AssertNFS.assertNFSStatus(expectedStatus, res.status);
+        return res;
     }
 
-    public void executeWithStatus(CompoundContext context, AbstractNFSv4Operation op, int status) throws ChimeraNFSException, IOException {
-        nfs_resop4 result = nfs_resop4.resopFor(op._args.argop);
-        int currentStatus = nfsstat.NFS_OK;
-        try {
-            op.process(context, result);
-        } catch (ChimeraNFSException e) {
-            currentStatus = e.getStatus();
+    public static COMPOUND4res execute(CompoundContext context, COMPOUND4args args) throws IOException {
+        MDSOperationFactory opFactory = new MDSOperationFactory();
+        COMPOUND4res res = new COMPOUND4res();
+        res.resarray = new ArrayList<>();
+
+        for (nfs_argop4 arg : args.argarray) {
+            AbstractNFSv4Operation op = opFactory.getOperation(arg);
+            nfs_resop4 opResult = nfs_resop4.resopFor(arg.argop);
+            op.process(context, opResult);
+            res.resarray.add(opResult);
+            nfsstat.throwIfNeeded(opResult.getStatus());
         }
-        AssertNFS.assertNFSStatus(status, currentStatus);
+
+        return res;
     }
 
     public static nfs_fh4 generateFileHandle() {
