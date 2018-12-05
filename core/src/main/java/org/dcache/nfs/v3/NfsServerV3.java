@@ -168,7 +168,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
     private final writeverf3 writeVerifier = generateInstanceWriteVerifier();
 
-    public NfsServerV3(ExportFile exports, VirtualFileSystem fs) throws OncRpcException, IOException {
+    public NfsServerV3(ExportFile exports, VirtualFileSystem fs) {
         _vfs = fs;
         _exports = exports;
     }
