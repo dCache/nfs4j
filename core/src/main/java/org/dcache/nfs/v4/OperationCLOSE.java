@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -59,10 +59,10 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         if (context.getMinorversion() == 0) {
             nfsState.getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
+            client.updateLeaseTime();
         }
 
         client.tryReleaseState(stateid);
-        client.updateLeaseTime();
 
         res.open_stateid = Stateids.invalidStateId();
         res.status = nfsstat.NFS_OK;

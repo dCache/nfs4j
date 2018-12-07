@@ -58,10 +58,11 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         if (context.getMinorversion() == 0) {
             /*
-             *  The NFSv4.0 spec requires to update lease time as long as client
-             * needs the file. This is done through READ, WRITE and RENEW
-             * opertations. With introduction of sessions in v4.1 update of the
-             * lease time done through SEQUENCE operation.
+             * The NFSv4.0 spec requires lease renewal on READ.
+             * See: https://tools.ietf.org/html/rfc7530#page-119
+             *
+             * With introduction of sessions in v4.1 update of the
+             * lease time done through SEQUENCE operations.
              */
             context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -63,9 +63,14 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             throw new InvalException("path is a symlink");
         }
 
-        if (context.getMinorversion() > 0) {
-            context.getSession().getClient().updateLeaseTime();
-        } else {
+        if (context.getMinorversion() == 0) {
+            /*
+             * The NFSv4.0 spec requires lease renewal on WRITE.
+             * See: https://tools.ietf.org/html/rfc7530#page-119
+             *
+             * With introduction of sessions in v4.1 update of the
+             * lease time done through SEQUENCE operations.
+             */
             context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
         }
 
