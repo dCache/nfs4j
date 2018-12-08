@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -74,7 +74,6 @@ public class CompoundContext {
             }
         };
 
-    private Inode _rootInode = null;
     private Inode _currentInode = null;
     private Inode _savedInode = null;
 
@@ -178,15 +177,6 @@ public class CompoundContext {
      */
     public void clearCurrentInode() throws ChimeraNFSException {
         _currentInode = null;
-    }
-
-    public Inode rootInode() {
-        return _rootInode;
-    }
-
-    public void rootInode(Inode inode) {
-        _rootInode = inode;
-        _log.debug("root Inode: {}", _rootInode );
     }
 
     /**
