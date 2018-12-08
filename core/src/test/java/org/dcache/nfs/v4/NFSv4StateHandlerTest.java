@@ -30,12 +30,14 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSeqidException;
+import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
 import org.dcache.nfs.v4.xdr.seqid4;
 
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import org.dcache.nfs.v4.xdr.clientid4;
+import org.dcache.nfs.v4.xdr.sessionid4;
 
 public class NFSv4StateHandlerTest {
 
@@ -126,6 +128,59 @@ public class NFSv4StateHandlerTest {
         } finally {
             stateHandler.shutdown();
         }
+    }
+
+    @Test
+    public void testGetClientByStateid() throws Exception {
+        NFS4State state = _client.createState(_owner);
+        stateid4 stateid = state.stateid();
+        state.confirm();
+
+        assertSame(_client, _stateHandler.getClientIdByStateId(stateid));
+    }
+
+    @Test(expected = BadStateidException.class)
+    public void testGetClientByBadStateid() throws Exception {
+        stateid4 stateid = new stateid4(new byte[12], 1);
+
+        _stateHandler.getClientIdByStateId(stateid);
+    }
+
+    @Test
+    public void testGetClientBySessionId() throws Exception {
+        NFSv41Session session = _client.createSession(1, 8192, 8192, 32, 32);
+
+        assertSame(_client, _stateHandler.getClient(session.id()));
+    }
+
+    @Test(expected = BadSessionException.class)
+    public void testGetClientByBadSession() throws Exception {
+        sessionid4 sesssion = new sessionid4(new byte[12]);
+
+        _stateHandler.getClient(sesssion);
+    }
+
+    @Test
+    public void testGetClients() throws Exception {
+        assertEquals(1, _stateHandler.getClients().size()); // created in setUp
+    }
+
+    @Test
+    public void testGetClientsAfterRemove() throws Exception {
+        // one client created in setUp
+        _stateHandler.removeClient(_client);
+        assertEquals(0, _stateHandler.getClients().size());
+    }
+
+    @Test
+    public void testGetConfirmedClientById() throws Exception {
+        _client.setConfirmed();
+        assertSame(_client, _stateHandler.getConfirmedClient(_client.getId()));
+    }
+
+    @Test(expected = StaleClientidException.class)
+    public void testGetUnconfirmedClientById() throws Exception {
+        _stateHandler.getConfirmedClient(_client.getId());
     }
 
 }
