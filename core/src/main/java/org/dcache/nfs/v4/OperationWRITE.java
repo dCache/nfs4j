@@ -89,7 +89,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         res.status = nfsstat.NFS_OK;
         res.resok4 = new WRITE4resok();
         res.resok4.count = new count4(writeResult.getBytesWritten());
-        res.resok4.committed = stable_how4.FILE_SYNC4;
+        res.resok4.committed = writeResult.getStabilityLevel().toStableHow();
         res.resok4.writeverf = context.getRebootVerifier();
 
     }
