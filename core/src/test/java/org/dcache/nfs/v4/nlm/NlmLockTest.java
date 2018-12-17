@@ -106,4 +106,49 @@ public class NlmLockTest {
         assertFalse("false conflicting lock range", lock.isOverlappingRange(lock1));
         assertFalse("false conflicting lock range", lock.isOverlappingRange(lock2));
     }
+
+    @Test
+    public void shouldEqual() {
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, 1);
+        NlmLock lock2 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, 1);
+
+        assertTrue("the same lock should be equal", lock1.equals(lock2));
+        assertTrue("equal objects must have the same hashcode", lock1.hashCode() == lock2.hashCode());
+    }
+
+    @Test
+    public void shouldNotBeEqualByOwner() {
+
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, nfs4_prot.NFS4_UINT64_MAX);
+        NlmLock lock2 = new NlmLock(lo2, nfs_lock_type4.WRITE_LT, 0, nfs4_prot.NFS4_UINT64_MAX);
+
+        assertFalse("lock with different owner can't be equal", lock1.equals(lock2));
+    }
+
+    @Test
+    public void shouldNotBeEqualByOffset() {
+
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, nfs4_prot.NFS4_UINT64_MAX);
+        NlmLock lock2 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 1, nfs4_prot.NFS4_UINT64_MAX);
+
+        assertFalse("lock with different offsets can't be equal", lock1.equals(lock2));
+    }
+
+    @Test
+    public void shouldNotBeEqualByType() {
+
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, nfs4_prot.NFS4_UINT64_MAX);
+        NlmLock lock2 = new NlmLock(lo1, nfs_lock_type4.READ_LT, 0, nfs4_prot.NFS4_UINT64_MAX);
+
+        assertFalse("lock with different types can't be equal", lock1.equals(lock2));
+    }
+
+    @Test
+    public void shouldNotBeEqualByLegth() {
+
+        NlmLock lock1 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, 1);
+        NlmLock lock2 = new NlmLock(lo1, nfs_lock_type4.WRITE_LT, 0, 2);
+
+        assertFalse("lock with different length can't be equal", lock1.equals(lock2));
+    }
 }

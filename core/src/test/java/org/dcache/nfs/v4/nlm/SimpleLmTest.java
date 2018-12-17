@@ -292,6 +292,33 @@ public class SimpleLmTest {
         nlm.test(file1, lock3);
     }
 
+    @Test
+    public void testSplitWholeFileLock() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock1);
+
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
+                .from(1)
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forRead()
+                .build();
+        nlm.unlock(file1, lock2);
+
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
+                .from(1)
+                .length(1)
+                .forWrite()
+                .build();
+        nlm.test(file1, lock3);
+    }
+
     @Test(expected = LockDeniedException.class)
     public void testMergeOfOverlapingLocks() throws LockException {
         NlmLock lock1 = new LockBuilder()
@@ -317,6 +344,93 @@ public class SimpleLmTest {
                 .forWrite()
                 .build();
         nlm.test(file1, lock3);
+    }
+
+    @Test(expected = LockDeniedException.class)
+    public void testMergeOfContinuesLocks() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
+                .from(74)
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock1);
+
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(75)
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
+
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
+                .from(1)
+                .length(100)
+                .forWrite()
+                .build();
+        nlm.test(file1, lock3);
+    }
+
+    @Test(expected = LockDeniedException.class)
+    public void testMergeOfWholeFileLocks() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock1);
+
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(nfs4_prot.NFS4_UINT64_MAX)
+                .forWrite()
+                .build();
+        nlm.lock(file1, lock2);
+
+        NlmLock lock3 = new LockBuilder()
+                .withOwner("owner2")
+                .from(1)
+                .length(100)
+                .forWrite()
+                .build();
+        nlm.test(file1, lock3);
+    }
+
+    @Test
+    public void testLocAfterUnlockIfExist() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(1)
+                .forRead()
+                .build();
+        nlm.lock(file1, lock1);
+
+        nlm.unlockIfExists(file1, lock1);
+
+        NlmLock lock2 = new LockBuilder()
+                .withOwner("owner2")
+                .from(0)
+                .length(1)
+                .forWrite()
+                .build();
+        nlm.test(file1, lock2);
+    }
+
+    @Test
+    public void testUnlockIfExistNonExisting() throws LockException {
+        NlmLock lock1 = new LockBuilder()
+                .withOwner("owner1")
+                .from(0)
+                .length(1)
+                .forRead()
+                .build();
+
+        nlm.unlockIfExists(file1, lock1);
     }
 
     public static class LockBuilder {
