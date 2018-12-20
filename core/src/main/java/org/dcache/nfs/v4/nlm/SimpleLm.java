@@ -19,11 +19,13 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.Striped;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -48,7 +50,7 @@ public class SimpleLm extends AbstractLockManager {
     /**
      * Exclusive lock on objects locks.
      */
-    private final Multimap<String, NlmLock> locks = ArrayListMultimap.create();
+    private final ConcurrentHashMap<String, List<NlmLock>> locks = new ConcurrentHashMap<>();
 
     @Override
     protected Lock getObjectLock(byte[] objId) {
@@ -59,31 +61,47 @@ public class SimpleLm extends AbstractLockManager {
     @Override
     protected Collection<NlmLock> getActiveLocks(byte[] objId) {
         String key = toKey(objId);
-        return locks.get(key);
+        return locks.getOrDefault(key, Collections.emptyList());
     }
 
     @Override
     protected void add(byte[] objId, NlmLock lock) {
         String key = toKey(objId);
-        locks.put(key, lock);
+        Collection<NlmLock> l = locks.computeIfAbsent(key, k -> new ArrayList<>());
+        l.add(lock);
     }
 
     @Override
     protected boolean remove(byte[] objId, NlmLock lock) {
         String key = toKey(objId);
-        return locks.remove(key, lock);
+        Collection<NlmLock> l = locks.get(key);
+        boolean isRemoved = false;
+        if (l != null) {
+            isRemoved = l.remove(lock);
+            if (l.isEmpty()) {
+                locks.remove(key);
+            }
+        }
+        return isRemoved;
     }
 
     @Override
     protected void addAll(byte[] objId, Collection<NlmLock> locks) {
         String key = toKey(objId);
-        locks.forEach(l -> this.locks.put(key, l));
+        Collection<NlmLock> l = this.locks.computeIfAbsent(key, k -> new ArrayList<>());
+        l.addAll(locks);
     }
 
     @Override
     protected void removeAll(byte[] objId, Collection<NlmLock> locks) {
         String key = toKey(objId);
-        locks.forEach(l -> this.locks.remove(key, l));
+        Collection<NlmLock> l = this.locks.get(key);
+        if (l != null) {
+            l.removeAll(locks);
+            if (l.isEmpty()) {
+                this.locks.remove(key);
+            }
+        }
     }
 
     private final String toKey(byte[] objId) {
