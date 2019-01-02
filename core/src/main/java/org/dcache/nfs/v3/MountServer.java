@@ -83,7 +83,9 @@ public class MountServer extends mount_protServerStub {
 
         mountres3 m = new mountres3();
 
-        String mountPoint = arg1.value;
+        java.io.File f = new java.io.File(arg1.value);
+        String mountPoint = f.getPath().replace("\\", "/");
+
         InetAddress remoteAddress = call$.getTransport().getRemoteSocketAddress().getAddress();
         _log.debug("Mount request for: {}", mountPoint);
 
