@@ -46,6 +46,11 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
+    public int access(Inode inode, int mode, Subject subject) throws IOException {
+        return delegate().access(inode, mode, subject);
+    }
+
+    @Override
     public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
         return delegate().create(parent, type, path, subject, mode);
     }

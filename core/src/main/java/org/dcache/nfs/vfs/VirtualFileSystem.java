@@ -52,8 +52,21 @@ public interface VirtualFileSystem {
      * @param mode a mask of permission bits to check.
      * @return an allowed subset of permissions from the given mask.
      * @throws IOException
+     * @deprecated Replaced by {@link #access(Inode, int, Subject)}
      */
+    @Deprecated
     int access(Inode inode, int mode) throws IOException;
+
+    /**
+     * Check access to file system object.
+     *
+     * @param inode inode of the object to check.
+     * @param mode a mask of permission bits to check.
+     * @param subject the user subject making the request.
+     * @return an allowed subset of permissions from the given mask.
+     * @throws IOException
+     */
+    int access(Inode inode, int mode, Subject subject) throws IOException;
 
     /**
      * Create a new object in a given directory with a specific name.
