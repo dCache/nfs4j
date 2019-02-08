@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -46,16 +46,16 @@ public class OperationNVERIFY extends AbstractNFSv4Operation {
 
         final NVERIFY4res res = result.opnverify;
 
+        if (_args.opnverify.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
+            throw new InvalException("RDATTR_ERROR can be used with readdir only");
+        }
+
         fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opnverify.obj_attributes.attrmask,
                 context.getFs(),
                 context.currentInode(), context);
 
         if (!_args.opnverify.obj_attributes.attrmask.equals(currentAttr.attrmask)) {
             throw new AttrNotSuppException("check for not supported attribute");
-        }
-
-        if (_args.opnverify.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
-            throw new InvalException("RDATTR_ERROR can be used with readdir only");
         }
 
         res.status = nfsstat.NFSERR_SAME;
