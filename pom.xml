@@ -40,6 +40,7 @@
       <module>basic-client</module>
       <module>spring</module>
       <module>dlm</module>
+      <module>benchmarks</module>
   </modules>
 
   <build>
@@ -188,6 +189,16 @@
               <groupId>com.sleepycat</groupId>
               <artifactId>je</artifactId>
               <version>7.3.7</version>
+          </dependency>
+          <dependency>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-core</artifactId>
+              <version>1.21</version>
+          </dependency>
+          <dependency>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-generator-annprocess</artifactId>
+              <version>1.21</version>
           </dependency>
       </dependencies>
   </dependencyManagement>

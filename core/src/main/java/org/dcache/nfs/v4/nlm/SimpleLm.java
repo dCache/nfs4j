@@ -45,7 +45,15 @@ public class SimpleLm extends AbstractLockManager {
      *
      * FIXME: get number of threads from RPC service.
      */
-    private final Striped<Lock> objLock = Striped.lock(Runtime.getRuntime().availableProcessors() * 4);
+    private final Striped<Lock> objLock;
+
+    public SimpleLm() {
+        this(Runtime.getRuntime().availableProcessors()*4);
+    }
+
+    public SimpleLm(int concurrency) {
+        objLock = Striped.lock(concurrency);
+    }
 
     /**
      * Exclusive lock on objects locks.
