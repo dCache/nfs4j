@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,10 @@
  */
 package org.dcache.nfs;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.dcache.nfs.HostEntryComparator.*;
@@ -37,12 +41,12 @@ public class HostEntryComparatorTest {
 
     @Test
     public void shouldBiggerMaskWin() {
-        assertEquals(1, compare("a.b.c.d/32", "d.e.f.g/24"));
+        assertEquals(-1, compare("a.b.c.d/32", "d.e.f.g/24"));
     }
 
     @Test
     public void shouldWithoutMaskSWin() {
-        assertEquals(1, compare("a.b.c.d", "d.e.f.g/24"));
+        assertEquals(-1, compare("a.b.c.d", "d.e.f.g/24"));
     }
 
     @Test
@@ -59,5 +63,29 @@ public class HostEntryComparatorTest {
     @Test
     public void shouldFullNameBeFirst() {
         assertEquals(-1, compare("a.somewhere.in.net", "*.somewhere.in.net"));
+    }
+
+    @Test
+    public void shouldReturnExpectedOrder() {
+
+        List<String> hosts = Arrays.asList(
+                "lab-*wn*.site.com",
+                "lab-cwn01.site.com",
+                "10.1.2.2",
+                "fe80::5e26:aff:fe78:4866",
+                "10.1.2.0/24"
+        );
+
+        List<String> expected = Arrays.asList(
+                "fe80::5e26:aff:fe78:4866",
+                "10.1.2.2",
+                "lab-cwn01.site.com",
+                "10.1.2.0/24",
+                "lab-*wn*.site.com"
+        );
+
+        Comparator<String> hostComparator = (a,b) -> compare(a, b);
+        Collections.sort(hosts, hostComparator);
+        assertEquals(expected, hosts);
     }
 }
