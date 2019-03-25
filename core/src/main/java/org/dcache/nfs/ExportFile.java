@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -136,7 +136,7 @@ public class ExportFile {
          * sort in reverse order to get smallest network first
          */
         return exportsBuilder
-                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client).reverse())
+                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client))
                 .build();
     }
 
@@ -295,7 +295,7 @@ public class ExportFile {
          * sort in reverse order to get smallest network first
          */
         return exportsBuilder
-                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client).reverse())
+                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client))
                 .build();
     }
 
@@ -314,7 +314,9 @@ public class ExportFile {
     }
 
     public Stream<FsExport> exportsFor(InetAddress client) {
-        return _exports.values().stream().filter(e -> e.isAllowed(client));
+        return _exports.values().stream()
+                .filter(e -> e.isAllowed(client))
+                .sorted(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client));
     }
 
     public final void rescan() throws IOException {
