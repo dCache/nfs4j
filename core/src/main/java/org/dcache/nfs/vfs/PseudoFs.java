@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@ import java.util.function.Function;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
@@ -64,19 +64,19 @@ public class PseudoFs extends ForwardingFileSystem {
     private final Subject _subject;
     private final InetAddress _inetAddress;
     private final VirtualFileSystem _inner;
-    private final ExportFile _exportFile;
+    private final ExportTable _exportTable;
     private final RpcAuth _auth;
 
     private final static int ACCESS4_MASK =
             ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
             | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ;
 
-    public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportFile exportFile) {
+    public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable) {
         _inner = inner;
         _subject = call.getCredential().getSubject();
         _auth = call.getCredential();
         _inetAddress = call.getTransport().getRemoteSocketAddress().getAddress();
-        _exportFile = exportFile;
+        _exportTable = exportTable;
     }
 
     @Override
@@ -161,13 +161,13 @@ public class PseudoFs extends ForwardingFileSystem {
         /*
          * reject if there are no exports for this client at all
          */
-        if (!_exportFile.exportsFor(_inetAddress).findAny().isPresent()) {
+        if (!_exportTable.exports(_inetAddress).findAny().isPresent()) {
             _log.warn("Access denied: (no export) fs root for client {}", _inetAddress);
             throw new AccessException("no exports");
         }
 
         Inode inode = _inner.getRootInode();
-        FsExport export = _exportFile.getExport("/", _inetAddress);
+        FsExport export = _exportTable.getExport("/", _inetAddress);
         return export == null? realToPseudo(inode) :
                 pushExportIndex(inode, export.getIndex());
     }
@@ -183,7 +183,7 @@ public class PseudoFs extends ForwardingFileSystem {
 	/*
 	 * REVISIT: this is not the best place to do it, but the simples one.
 	 */
-	FsExport export = _exportFile.getExport(parent.exportIndex(), _inetAddress);
+	FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress);
 	if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
 	    throw new NoEntException("the dcap magic file is blocked");
 	}
@@ -359,7 +359,7 @@ public class PseudoFs extends ForwardingFileSystem {
 
         if (!inode.isPesudoInode()) {
             int exportIdx = getExportIndex(inode);
-            FsExport export = _exportFile.getExport(exportIdx, _inetAddress);
+            FsExport export = _exportTable.getExport(exportIdx, _inetAddress);
             if (exportIdx != 0 && export == null) {
                 if (shouldLog) {
                     _log.warn("Access denied: (no export) to inode {} for client {}", inode, _inetAddress);
@@ -553,7 +553,7 @@ public class PseudoFs extends ForwardingFileSystem {
          * This can be wrong, e.g. RO vs. RW.
          */
         if (inode.handleVersion() == 0) {
-            FsExport export = _exportFile.exportsFor(_inetAddress)
+            FsExport export = _exportTable.exports(_inetAddress)
                     .findFirst()
                     .orElse(null);
             return export == null? -1 : export.getIndex();
@@ -612,7 +612,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Inode rootInode = realToPseudo(_inner.getRootInode());
         PseudoFsNode root = new PseudoFsNode(rootInode);
 
-        _exportFile.exportsFor(_inetAddress).forEach(e -> pathToPseudoFs(root, nodes, e));
+        _exportTable.exports(_inetAddress).forEach(e -> pathToPseudoFs(root, nodes, e));
 
         if (nodes.isEmpty()) {
             _log.warn("No exports found for: {}", _inetAddress);
@@ -660,6 +660,6 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private boolean inheritUidGid(Inode inode) {
-        return _exportFile.getExport(inode.exportIndex(), _inetAddress).isAllRoot();
+        return _exportTable.getExport(inode.exportIndex(), _inetAddress).isAllRoot();
     }
 }

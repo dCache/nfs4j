@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -82,7 +82,7 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
         //final sec_oid4 k5Oid = new sec_oid4
 
         final InetAddress remote = context.getRemoteSocketAddress().getAddress();
-        final FsExport.Sec[] exports = context.getExportFile().exportsFor(remote)
+        final FsExport.Sec[] exports = context.getExportTable().exports(remote)
                 .map(FsExport::getSec)
                 .sorted(Comparator.reverseOrder())
                 .toArray(FsExport.Sec[]::new);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -385,8 +385,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                  */
 
                 List<layouttype4> exportLayouts = context
-                    .getExportFile()
-                    .exportsFor(context.getRemoteSocketAddress().getAddress())
+                    .getExportTable()
+                    .exports(context.getRemoteSocketAddress().getAddress())
                     .findFirst()
                     .orElseThrow(AccessException::new) // should never happen as handled by PseudoFS first
                     .getLayoutTypes();

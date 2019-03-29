@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.vfs.VirtualFileSystem;
@@ -36,7 +37,7 @@ public class CompoundContextBuilder {
     private VirtualFileSystem fs = null;
     private NFSv4StateHandler stateHandler = null;
     private NFSv41DeviceManager deviceManager = null;
-    private ExportFile exportFile = null;
+    private ExportTable exportTable = null;
     private int exchangeIdFlags = nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS;
     private verifier4 rebootVerifier;
 
@@ -50,8 +51,16 @@ public class CompoundContextBuilder {
         return this;
     }
 
+    /**
+     * @deprecated Use {@link #withExportTable}
+     */
+    @Deprecated
     public CompoundContextBuilder withExportFile(ExportFile exportFile) {
-        this.exportFile = exportFile;
+        return withExportTable(exportFile);
+    }
+
+    public CompoundContextBuilder withExportTable(ExportTable exportTable) {
+        this.exportTable = exportTable;
         return this;
     }
 
@@ -99,8 +108,8 @@ public class CompoundContextBuilder {
         return deviceManager;
     }
 
-    public ExportFile getExportFile() {
-        return exportFile;
+    public ExportTable getExportTable() {
+        return exportTable;
     }
 
     public CompoundContext build() {

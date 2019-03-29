@@ -49,9 +49,10 @@ import static com.google.common.base.Throwables.throwIfInstanceOf;
 import static com.google.common.base.Throwables.throwIfUnchecked;
 
 /**
- * NFS server export table.
+ * An implementation of {@link ExportTable} that backed with file. The
+ * export file format matches one that used by Linux nfsd server.
  */
-public class ExportFile {
+public class ExportFile implements ExportTable {
 
     private static final Logger _log = LoggerFactory.getLogger(ExportFile.class);
 
@@ -112,7 +113,8 @@ public class ExportFile {
         _exports = parse(reader);
     }
 
-    public Stream<FsExport> getExports() {
+    @Override
+    public Stream<FsExport> exports() {
         return _exports.values().stream();
     }
 
@@ -299,11 +301,13 @@ public class ExportFile {
                 .build();
     }
 
+    @Override
     public FsExport getExport(String path, InetAddress client) {
         String normalizedPath = FsExport.normalize(path);
         return getExport(FsExport.getExportIndex(normalizedPath), client);
     }
 
+    @Override
     public FsExport getExport(int index, InetAddress client) {
         for (FsExport export : _exports.get(index)) {
             if (export.isAllowed(client)) {
@@ -313,7 +317,8 @@ public class ExportFile {
         return null;
     }
 
-    public Stream<FsExport> exportsFor(InetAddress client) {
+    @Override
+    public Stream<FsExport> exports(InetAddress client) {
         return _exports.values().stream()
                 .filter(e -> e.isAllowed(client))
                 .sorted(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@ package org.dcache.nfs.v4;
 import java.net.InetSocketAddress;
 import java.security.Principal;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
@@ -84,7 +84,7 @@ public class CompoundContext {
     private final VirtualFileSystem _fs;
     private final RpcCall _callInfo;
     private final Subject _subject;
-    private final ExportFile _exportFile;
+    private final ExportTable _exportTable;
     private final Optional<NFSv41DeviceManager> _deviceManager;
     private final NFSv4StateHandler _stateHandler;
     private SessionSlot _slot;
@@ -106,7 +106,7 @@ public class CompoundContext {
         _fs = builder.getFs();
         _deviceManager = Optional.ofNullable(builder.getDeviceManager());
         _callInfo = builder.getCall();
-        _exportFile = builder.getExportFile();
+        _exportTable = builder.getExportTable();
         _stateHandler = builder.getStateHandler();
         _nlm = builder.getLm();
 
@@ -280,8 +280,8 @@ public class CompoundContext {
         _currentStateid = currentStateid;
     }
 
-    public ExportFile getExportFile() {
-        return _exportFile;
+    public ExportTable getExportTable() {
+        return _exportTable;
     }
 
     public ServerIdProvider getServerIdProvider() {

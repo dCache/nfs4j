@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
@@ -69,7 +70,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             = new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
 
     private final VirtualFileSystem _fs;
-    private final ExportFile _exportFile;
+    private final ExportTable _exportTable;
     private final NFSv4OperationFactory _operationFactory;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _statHandler;
@@ -83,7 +84,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private NFSServerV41(Builder builder) {
         _deviceManager = builder.deviceManager;
         _fs = builder.vfs;
-        _exportFile = builder.exportFile;
+        _exportTable = builder.exportTable;
         _operationFactory = builder.operationFactory;
         _nlm = builder.nlm == null ? new SimpleLm() : builder.nlm;
         _statHandler = builder.stateHandler == null ? new NFSv4StateHandler() : builder.stateHandler;
@@ -92,11 +93,11 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     @Deprecated
     public NFSServerV41(NFSv4OperationFactory operationFactory,
             NFSv41DeviceManager deviceManager, VirtualFileSystem fs,
-            ExportFile exportFile) {
+            ExportTable exportTable) {
 
         _deviceManager = deviceManager;
         _fs = fs;
-        _exportFile = exportFile;
+        _exportTable = exportTable;
         _operationFactory = operationFactory;
         _nlm = new SimpleLm();
         _statHandler = new NFSv4StateHandler();
@@ -141,7 +142,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 	    }
             res.resarray = new ArrayList<>(arg1.argarray.length);
 
-            VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportFile);
+            VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportTable);
 
             CompoundContextBuilder builder = new CompoundContextBuilder()
                     .withMinorversion(arg1.minorversion.value)
@@ -149,7 +150,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     .withDeviceManager(_deviceManager)
                     .withStateHandler(_statHandler)
                     .withLockManager(_nlm)
-                    .withExportFile(_exportFile)
+                    .withExportTable(_exportTable)
                     .withRebootVerifier(_rebootVerifier)
                     .withCall(call$);
 
@@ -157,7 +158,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 builder.withPnfsRoleMDS();
                 // we do proxy-io
                 builder.withPnfsRoleDS();
-            } else if (_exportFile == null) {
+            } else if (_exportTable == null) {
                 builder.withPnfsRoleDS();
             } else {
                 builder.withoutPnfs();
@@ -326,7 +327,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         private NFSv4OperationFactory operationFactory;
         private NFSv41DeviceManager deviceManager;
         private VirtualFileSystem vfs;
-        private ExportFile exportFile;
+        private ExportTable exportTable;
         private LockManager nlm;
         private NFSv4StateHandler stateHandler;
 
@@ -350,9 +351,17 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             return this;
         }
 
-        public Builder withExportFile(ExportFile exportFile) {
-            this.exportFile = exportFile;
+        public Builder withExportTable(ExportTable exportTable) {
+            this.exportTable = exportTable;
             return this;
+        }
+
+        /**
+         * @deprecated Use {@link #withExportTable}
+         */
+        @Deprecated
+        public Builder withExportFile(ExportFile exportFile) {
+            return withExportTable(exportTable);
         }
 
         public Builder withStateHandler(NFSv4StateHandler stateHandler) {

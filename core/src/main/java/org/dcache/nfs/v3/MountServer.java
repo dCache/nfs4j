@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -177,7 +177,7 @@ public class MountServer extends mount_protServerStub {
         eList.value = null;
 
         Map<String, List<FsExport>> exports = _exportFile
-                .getExports()
+                .exports()
                 .collect(Collectors.groupingBy(FsExport::getPath));
 
         for (String path : exports.keySet()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -96,7 +96,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
 
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
@@ -120,7 +120,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn(mock(Inode.class));
@@ -144,7 +144,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
                 .willReturn(mock(Inode.class));
@@ -167,7 +167,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(inode);
@@ -192,7 +192,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(inode);
@@ -217,7 +217,7 @@ public class PseudoFsTest {
         given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exportsFor(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
 
         pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(inode);

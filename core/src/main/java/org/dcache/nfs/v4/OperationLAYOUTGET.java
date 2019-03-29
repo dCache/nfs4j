@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -151,7 +151,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
     private boolean isPnfsAllowed(CompoundContext context, Inode inode) throws ChimeraNFSException {
         FsExport export = context
-                .getExportFile()
+                .getExportTable()
                 .getExport(inode.exportIndex(), context.getRemoteSocketAddress().getAddress());
         if (export == null) {
             throw new AccessException("no export");

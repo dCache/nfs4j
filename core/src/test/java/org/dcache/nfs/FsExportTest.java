@@ -42,7 +42,7 @@ public class FsExportTest {
 
     @Test
     public void testIsEmpty() {
-        assertTrue("Export file should not produce empty export list", _exportFile.getExports().count() > 0);
+        assertTrue("Export file should not produce empty export list", _exportFile.exports().count() > 0);
     }
 
     @Test
@@ -221,7 +221,7 @@ public class FsExportTest {
             "10.0.0.1", "10.0.0.0/24", "10.0.0.0/16", "10.0.0.0/8"
         };
 
-        String[] unsortedEntries = exportFile.exportsFor(InetAddress.getByName("10.0.0.1"))
+        String[] unsortedEntries = exportFile.exports(InetAddress.getByName("10.0.0.1"))
                 .map(FsExport::client)
                 .toArray(String[]::new);
 
@@ -264,12 +264,12 @@ public class FsExportTest {
     @Test
     public void testMultipleMatchOrder() throws IOException {
 
-        Stream<FsExport> exports = _exportFile.exportsFor(InetAddress.getByName("192.168.17.1"));
+        Stream<FsExport> exports = _exportFile.exports(InetAddress.getByName("192.168.17.1"));
 
         FsExport.IO iomode = exports.findFirst().orElseThrow(AssertionError::new).ioMode();
         assertEquals(FsExport.IO.RW, iomode);
 
-        exports = _exportFile.exportsFor(InetAddress.getByName("192.168.17.2"));
+        exports = _exportFile.exports(InetAddress.getByName("192.168.17.2"));
         iomode = exports.findFirst().orElseThrow(AssertionError::new).ioMode();
         assertEquals(FsExport.IO.RO, iomode);
     }
