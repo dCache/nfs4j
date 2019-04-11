@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.dcache.nfs.v4.xdr.layouttype4;
@@ -257,6 +258,84 @@ public class FsExport {
     public static String normalize(String path) {
         return Files.simplifyPath(path);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 83 * hash + Objects.hashCode(this._path);
+        hash = 83 * hash + Objects.hashCode(this._clientMatcher);
+        hash = 83 * hash + Objects.hashCode(this._isTrusted);
+        hash = 83 * hash + Objects.hashCode(this._rw);
+        hash = 83 * hash + (this._withAcl ? 1 : 0);
+        hash = 83 * hash + Objects.hashCode(this._sec);
+        hash = 83 * hash + (this._allSquash ? 1 : 0);
+        hash = 83 * hash + this._anonUid;
+        hash = 83 * hash + this._anonGid;
+        hash = 83 * hash + (this._withDcap ? 1 : 0);
+        hash = 83 * hash + (this._allRoot ? 1 : 0);
+        hash = 83 * hash + this._index;
+        hash = 83 * hash + (this._withPnfs ? 1 : 0);
+        hash = 83 * hash + Objects.hashCode(this._layoutTypes);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FsExport other = (FsExport) obj;
+        if (this._withAcl != other._withAcl) {
+            return false;
+        }
+        if (this._allSquash != other._allSquash) {
+            return false;
+        }
+        if (this._anonUid != other._anonUid) {
+            return false;
+        }
+        if (this._anonGid != other._anonGid) {
+            return false;
+        }
+        if (this._withDcap != other._withDcap) {
+            return false;
+        }
+        if (this._allRoot != other._allRoot) {
+            return false;
+        }
+        if (this._index != other._index) {
+            return false;
+        }
+        if (this._withPnfs != other._withPnfs) {
+            return false;
+        }
+        if (!Objects.equals(this._path, other._path)) {
+            return false;
+        }
+        if (!Objects.equals(this._clientMatcher, other._clientMatcher)) {
+            return false;
+        }
+        if (this._isTrusted != other._isTrusted) {
+            return false;
+        }
+        if (this._rw != other._rw) {
+            return false;
+        }
+        if (this._sec != other._sec) {
+            return false;
+        }
+        if (!Objects.equals(this._layoutTypes, other._layoutTypes)) {
+            return false;
+        }
+        return true;
+    }
+
 
     public static class FsExportBuilder {
 

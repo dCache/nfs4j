@@ -23,6 +23,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Inet6Address;
 import java.net.UnknownHostException;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -47,6 +48,31 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
 
     public String getPattern() {
         return pattern;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + Objects.hashCode(this.pattern);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final InetAddressMatcher other = (InetAddressMatcher) obj;
+        if (!Objects.equals(this.pattern, other.pattern)) {
+            return false;
+        }
+        return true;
     }
 
     public static InetAddressMatcher forPattern(String s) throws UnknownHostException {
