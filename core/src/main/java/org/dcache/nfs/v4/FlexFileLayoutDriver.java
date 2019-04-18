@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2016 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ServerFaultException;
@@ -77,7 +77,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     /**
      * Consumer which accepts data provided on layout return.
      */
-    private final Consumer<ff_layoutreturn4> layoutReturnConsumer;
+    private final BiConsumer<CompoundContext, ff_layoutreturn4> layoutReturnConsumer;
 
     /**
      * Layout flags, like no IO through MDS.
@@ -100,7 +100,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      */
     public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, int flags,
             utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal,
-            Consumer<ff_layoutreturn4> layoutReturnConsumer) {
+            BiConsumer<CompoundContext, ff_layoutreturn4> layoutReturnConsumer) {
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
         this.userPrincipal = new fattr4_owner(userPrincipal);
@@ -215,7 +215,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      * @throws org.dcache.nfs.status.BadXdrException if provided data cant be decoded.
      */
     @Override
-    public void acceptLayoutReturnData(byte[] data) throws BadXdrException {
+    public void acceptLayoutReturnData(CompoundContext context, byte[] data) throws BadXdrException {
         try {
 
             ff_layoutreturn4 lr;
@@ -225,7 +225,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
                 xdr.endDecoding();
             }
 
-            layoutReturnConsumer.accept(lr);
+            layoutReturnConsumer.accept(context, lr);
         } catch (IOException e) {
             throw new BadXdrException("invalid data", e);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2015 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4;
 
 import java.net.InetSocketAddress;
-import java.util.function.Consumer;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.v4.xdr.device_addr4;
@@ -65,8 +64,9 @@ public interface LayoutDriver {
 
     /**
      * Consume the type-specific data provided on layout return.
+     * @param context compound context associated with the client request.
      * @param data layout type specific data
      * @throws BadXdrException if provided data can't be decoded.
      */
-    void acceptLayoutReturnData(byte[] data) throws BadXdrException;
+    void acceptLayoutReturnData(CompoundContext context, byte[] data) throws BadXdrException;
 }

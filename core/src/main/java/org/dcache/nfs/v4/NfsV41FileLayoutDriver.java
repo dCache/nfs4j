@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.v4.xdr.device_addr4;
 import org.dcache.nfs.v4.xdr.deviceid4;
@@ -40,7 +41,7 @@ import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.Xdr;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import org.dcache.nfs.status.BadXdrException;
+
 /**
  * layout driver for NFSv4.1 file layout type as defined in
  * <a href="https://www.ietf.org/rfc/rfc5661.txt">rfc5661</a>
@@ -144,13 +145,14 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
      * @throws org.dcache.nfs.status.BadXdrException
      */
     @Override
-    public void acceptLayoutReturnData(byte[] data) throws BadXdrException {
+    public void acceptLayoutReturnData(CompoundContext context, byte[] data) throws BadXdrException {
 
         /*
          * NFSv41 file layout driver doesn't expect any data on return.
          */
         if (data.length != 0) {
-            throw new BadXdrException("Unexpected data on layout return");
+            throw new BadXdrException("Unexpected data on layout return from: "
+                    + context.getRemoteSocketAddress().getAddress().getHostAddress());
         }
 
     }
