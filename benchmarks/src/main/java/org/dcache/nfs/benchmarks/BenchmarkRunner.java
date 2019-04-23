@@ -15,6 +15,7 @@ public class BenchmarkRunner {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(ConcurrentLockManagerBenchmark.class.getSimpleName())
+                .include(IpMatcherBenchmark.class.getSimpleName())
                 .resultFormat(ResultFormatType.JSON)
                 .build();
 
