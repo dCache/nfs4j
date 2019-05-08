@@ -361,7 +361,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
          */
         @Deprecated
         public Builder withExportFile(ExportFile exportFile) {
-            return withExportTable(exportTable);
+            return withExportTable(exportFile);
         }
 
         public Builder withStateHandler(NFSv4StateHandler stateHandler) {
