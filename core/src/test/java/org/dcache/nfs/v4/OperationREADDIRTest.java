@@ -4,6 +4,7 @@ import com.google.common.primitives.Ints;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.dcache.nfs.nfsstat;
@@ -138,6 +139,25 @@ public class OperationREADDIRTest {
         assertEquals("Invalid error code returned", nfsstat.NFSERR_MOVED, rderror.value);
     }
 
+    @Test
+    public void testReaddirBehindCookie() throws Exception {
+
+        givenDirectory(dir("dir"));
+        fromCookie(0);
+        listed();
+
+        // discover nfs server cookie as it may be different.
+        long highestCookie = 0;
+        while(entries != null) {
+            highestCookie = entries.cookie.value;
+            entries = entries.nextentry;
+        }
+
+        fromCookie(highestCookie);
+        listed();
+        assertNull(entries);
+    }
+
     private DirectoryEntry dir(String name) {
 
         int cookie = ino++;
@@ -203,7 +223,21 @@ public class OperationREADDIRTest {
         dirContents.add(dir("."));
         dirContents.add(dir(".."));
         dirContents.addAll(Arrays.asList(enties));
-        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier.value, dirContents));
+
+        long highestCooke = ino;
+        // cookie is zero
+        when(vfs.list(eq(dirInode), any(), longThat(l -> l == 0)))
+                .thenReturn(new DirectoryStream(cookieVerifier.value, dirContents));
+
+        // empty when behind last cookie
+        when(vfs.list(eq(dirInode), any(), longThat(l -> l > highestCooke)))
+                .thenReturn(new DirectoryStream(cookieVerifier.value, Collections.emptyList()));
+
+        // sublist cookie based
+        for(DirectoryEntry e: dirContents) {
+            when(vfs.list(eq(dirInode), any(), eq(e.getCookie())))
+                    .thenReturn(new DirectoryStream(cookieVerifier.value, dirContents).tail(e.getCookie()));
+        }
     }
 
     public void fromCookie(long start) {
