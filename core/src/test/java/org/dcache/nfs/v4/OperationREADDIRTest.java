@@ -203,7 +203,7 @@ public class OperationREADDIRTest {
         dirContents.add(dir("."));
         dirContents.add(dir(".."));
         dirContents.addAll(Arrays.asList(enties));
-        when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier.value, dirContents));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier.value, dirContents));
     }
 
     public void fromCookie(long start) {

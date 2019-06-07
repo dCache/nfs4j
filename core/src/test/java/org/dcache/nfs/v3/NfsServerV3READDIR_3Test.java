@@ -23,9 +23,8 @@ import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -54,8 +53,8 @@ public class NfsServerV3READDIR_3Test {
         dirStat.setDev(1);
         dirStat.setFileid(1);
         dirStat.setSize(512);
-        vfs = Mockito.mock(VirtualFileSystem.class); // the vfs serving it
-        Mockito.when(vfs.getattr(Mockito.eq(dirInode))).thenReturn(dirStat);
+        vfs = mock(VirtualFileSystem.class); // the vfs serving it
+        when(vfs.getattr(eq(dirInode))).thenReturn(dirStat);
         ExportFile exportFile = new ExportFile(this.getClass().getResource("simpleExports").toURI()); // same package as us
         nfsServer = new NfsServerV3(exportFile, vfs);
     }
@@ -66,7 +65,7 @@ public class NfsServerV3READDIR_3Test {
         byte[] cookieVerifier = cookieverf3.valueOf(0).value;
 
         // vfs will return an empty list from the vfs for dir (technically legal)
-        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, Collections.emptyList()));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, Collections.emptyList()));
 
         // set up and execute the call
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -86,7 +85,7 @@ public class NfsServerV3READDIR_3Test {
         List<DirectoryEntry> dirContents = new ArrayList<>();
         dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
-        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -105,7 +104,7 @@ public class NfsServerV3READDIR_3Test {
         List<DirectoryEntry> dirContents = new ArrayList<>();
         dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
-        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -137,7 +136,7 @@ public class NfsServerV3READDIR_3Test {
         dirContents.add(new DirectoryEntry(".", dirInode, dirStat, 1));
         dirContents.add(new DirectoryEntry("..", dirInode, dirStat, 2));
         dirContents.add(new DirectoryEntry("file", dirInode, dirStat, 3));
-        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         long cookie = 1;
 
@@ -163,7 +162,7 @@ public class NfsServerV3READDIR_3Test {
             dirContents.add(new DirectoryEntry("file" + i, dirInode, dirStat, 3 + i));
         }
 
-        Mockito.when(vfs.list(eq(dirInode), anyObject(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
         READDIR3args args = NfsV3Ops.readDir(dirHandle, 0, cookieVerifier, 770); // only 22 entries will fit
