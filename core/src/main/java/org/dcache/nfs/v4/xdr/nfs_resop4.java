@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -74,8 +74,10 @@ public class nfs_resop4 implements XdrAble {
     public GETDEVICEINFO4res opgetdeviceinfo;
     public GETDEVICELIST4res opgetdevicelist;
     public LAYOUTCOMMIT4res oplayoutcommit;
+    public LAYOUTERROR4res oplayouterror;
     public LAYOUTGET4res oplayoutget;
     public LAYOUTRETURN4res oplayoutreturn;
+    public LAYOUTSTATS4res oplayoutstats;
     public SECINFO_NO_NAME4res opsecinfo_no_name;
     public SEQUENCE4res opsequence;
     public SET_SSV4res opset_ssv;
@@ -238,11 +240,17 @@ public class nfs_resop4 implements XdrAble {
         case nfs_opnum4.OP_LAYOUTCOMMIT:
             oplayoutcommit.xdrEncode(xdr);
             break;
+        case nfs_opnum4.OP_LAYOUTERROR:
+            oplayouterror.xdrEncode(xdr);
+            break;
         case nfs_opnum4.OP_LAYOUTGET:
             oplayoutget.xdrEncode(xdr);
             break;
         case nfs_opnum4.OP_LAYOUTRETURN:
             oplayoutreturn.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_LAYOUTSTATS:
+            oplayoutstats.xdrEncode(xdr);
             break;
         case nfs_opnum4.OP_SECINFO_NO_NAME:
             opsecinfo_no_name.xdrEncode(xdr);
@@ -416,8 +424,14 @@ public class nfs_resop4 implements XdrAble {
         case nfs_opnum4.OP_LAYOUTCOMMIT:
             oplayoutcommit = new LAYOUTCOMMIT4res(xdr);
             break;
+        case nfs_opnum4.OP_LAYOUTERROR:
+            oplayouterror = new LAYOUTERROR4res();
+            break;
         case nfs_opnum4.OP_LAYOUTGET:
             oplayoutget = new LAYOUTGET4res(xdr);
+            break;
+        case nfs_opnum4.OP_LAYOUTSTATS:
+            oplayoutstats = new LAYOUTSTATS4res(xdr);
             break;
         case nfs_opnum4.OP_LAYOUTRETURN:
             oplayoutreturn = new LAYOUTRETURN4res(xdr);
@@ -595,11 +609,17 @@ public class nfs_resop4 implements XdrAble {
             case nfs_opnum4.OP_LAYOUTCOMMIT:
                 status = oplayoutcommit.locr_status;
                 break;
+            case nfs_opnum4.OP_LAYOUTERROR:
+                status = oplayouterror.status;
+                break;
             case nfs_opnum4.OP_LAYOUTGET:
                 status = oplayoutget.logr_status;
                 break;
             case nfs_opnum4.OP_LAYOUTRETURN:
                 status = oplayoutreturn.lorr_status;
+                break;
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                status = oplayoutstats.status;
                 break;
             case nfs_opnum4.OP_SECINFO_NO_NAME:
                 status = opsecinfo_no_name.status;
@@ -773,11 +793,17 @@ public class nfs_resop4 implements XdrAble {
             case nfs_opnum4.OP_LAYOUTCOMMIT:
                 oplayoutcommit.locr_status = status;
                 break;
+            case nfs_opnum4.OP_LAYOUTERROR:
+                oplayouterror.status = status;
+                break;
             case nfs_opnum4.OP_LAYOUTGET:
                 oplayoutget.logr_status = status;
                 break;
             case nfs_opnum4.OP_LAYOUTRETURN:
                 oplayoutreturn.lorr_status = status;
+                break;
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                oplayoutstats.status = status;
                 break;
             case nfs_opnum4.OP_SECINFO_NO_NAME:
                 opsecinfo_no_name.status = status;
@@ -952,11 +978,17 @@ public class nfs_resop4 implements XdrAble {
             case nfs_opnum4.OP_LAYOUTCOMMIT:
                 resop.oplayoutcommit = new LAYOUTCOMMIT4res();
                 break;
+            case nfs_opnum4.OP_LAYOUTERROR:
+                resop.oplayouterror = new LAYOUTERROR4res();
+                break;
             case nfs_opnum4.OP_LAYOUTGET:
                 resop.oplayoutget = new LAYOUTGET4res();
                 break;
             case nfs_opnum4.OP_LAYOUTRETURN:
                 resop.oplayoutreturn = new LAYOUTRETURN4res();
+                break;
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                resop.oplayoutstats = new LAYOUTSTATS4res();
                 break;
             case nfs_opnum4.OP_SECINFO_NO_NAME:
                 resop.opsecinfo_no_name = new SECINFO_NO_NAME4res();

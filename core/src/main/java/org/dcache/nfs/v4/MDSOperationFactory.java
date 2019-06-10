@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -108,12 +108,16 @@ public class MDSOperationFactory implements NFSv4OperationFactory {
              */
             case nfs_opnum4.OP_GETDEVICELIST:
                 return new OperationGETDEVICELIST(op);
+            case nfs_opnum4.OP_LAYOUTERROR:
+                return new OperationLAYOUTERROR(op);
             case nfs_opnum4.OP_LAYOUTGET:
                 return new OperationLAYOUTGET(op);
             case nfs_opnum4.OP_LAYOUTCOMMIT:
                 return new OperationLAYOUTCOMMIT(op);
             case nfs_opnum4.OP_LAYOUTRETURN:
                 return new OperationLAYOUTRETURN(op);
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                return new OperationLAYOUTSTATS(op);
             case nfs_opnum4.OP_GETDEVICEINFO:
                 return new OperationGETDEVICEINFO(op);
             case nfs_opnum4.OP_EXCHANGE_ID:

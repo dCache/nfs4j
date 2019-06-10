@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -115,8 +115,10 @@ public class nfs_argop4 implements XdrAble {
     public GETDEVICEINFO4args opgetdeviceinfo;
     public GETDEVICELIST4args opgetdevicelist;
     public LAYOUTCOMMIT4args oplayoutcommit;
+    public LAYOUTERROR4args oplayouterror;
     public LAYOUTGET4args oplayoutget;
     public LAYOUTRETURN4args oplayoutreturn;
+    public LAYOUTSTATS4args oplayoutstats;
     public SECINFO_NO_NAME4args opsecinfo_no_name;
     public SEQUENCE4args opsequence;
     public SET_SSV4args opset_ssv;
@@ -271,11 +273,17 @@ public class nfs_argop4 implements XdrAble {
         case nfs_opnum4.OP_LAYOUTCOMMIT:
             oplayoutcommit.xdrEncode(xdr);
             break;
+        case nfs_opnum4.OP_LAYOUTERROR:
+            oplayouterror.xdrEncode(xdr);
+            break;
         case nfs_opnum4.OP_LAYOUTGET:
             oplayoutget.xdrEncode(xdr);
             break;
         case nfs_opnum4.OP_LAYOUTRETURN:
             oplayoutreturn.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_LAYOUTSTATS:
+            oplayoutstats.xdrEncode(xdr);
             break;
         case nfs_opnum4.OP_SECINFO_NO_NAME:
             opsecinfo_no_name.xdrEncode(xdr);
@@ -441,11 +449,17 @@ public class nfs_argop4 implements XdrAble {
         case nfs_opnum4.OP_LAYOUTCOMMIT:
             oplayoutcommit = new LAYOUTCOMMIT4args(xdr);
             break;
+        case nfs_opnum4.OP_LAYOUTERROR:
+            oplayouterror = new LAYOUTERROR4args(xdr);
+            break;
         case nfs_opnum4.OP_LAYOUTGET:
             oplayoutget = new LAYOUTGET4args(xdr);
             break;
         case nfs_opnum4.OP_LAYOUTRETURN:
             oplayoutreturn = new LAYOUTRETURN4args(xdr);
+            break;
+        case nfs_opnum4.OP_LAYOUTSTATS:
+            oplayoutstats = new LAYOUTSTATS4args(xdr);
             break;
         case nfs_opnum4.OP_SECINFO_NO_NAME:
             opsecinfo_no_name = new SECINFO_NO_NAME4args(xdr);
