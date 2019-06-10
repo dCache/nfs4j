@@ -22,6 +22,7 @@ package org.dcache.nfs.vfs;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.stream.Stream;
+import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
@@ -37,6 +38,7 @@ import org.junit.Test;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.BDDMockito.given;
+import static org.junit.Assert.*;
 
 import org.junit.Before;
 
@@ -47,19 +49,21 @@ import org.junit.Before;
 public class PseudoFsTest {
 
     private final static InetSocketAddress localAddress = new InetSocketAddress(0);
-    private VirtualFileSystem mockedFs;
+    private VirtualFileSystem vfs;
     private ExportFile mockedExportFile;
     private FsExport mockedExport;
     private RpcTransport mockedTransport;
     private RpcCall mockedRpc;
     private RpcAuth mockedAuth;
     private PseudoFs pseudoFs;
-    private Inode inode;
+    private Inode fsRoot;
 
     @Before
     public void setUp() throws IOException {
 
-        mockedFs = mock(VirtualFileSystem.class);
+        vfs = new DummyVFS();
+        fsRoot = vfs.getRootInode();
+
         mockedExportFile = mock(ExportFile.class);
         mockedTransport = mock(RpcTransport.class);
         mockedRpc = mock(RpcCall.class);
@@ -68,18 +72,6 @@ public class PseudoFsTest {
         given(mockedExport.getAnonUid()).willReturn(FsExport.DEFAULT_ANON_UID);
         given(mockedExport.getAnonGid()).willReturn(FsExport.DEFAULT_ANON_GID);
 
-        // prepare file system
-        inode = mock(Inode.class);
-        given(inode.isPesudoInode()).willReturn(false);
-        given(inode.exportIndex()).willReturn(1);
-        given(inode.handleVersion()).willReturn(1);
-
-        Stat stat = new Stat();
-        stat.setMode(0700 | Stat.S_IFREG);
-        stat.setUid(1);
-        stat.setGid(1);
-
-        given(mockedFs.getattr(inode)).willReturn(stat, stat);
     }
 
     @Test(expected = AccessException.class)
@@ -90,20 +82,18 @@ public class PseudoFsTest {
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
-        given(mockedExport.isTrusted()).willReturn(false);
-        given(mockedExport.checkAcls()).willReturn(false);
-        given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .notTrusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
 
-        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-
-        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
-                .willReturn( mock(Inode.class));
-
-        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644);
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
     }
 
     @Test
@@ -114,19 +104,18 @@ public class PseudoFsTest {
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
-        given(mockedExport.isTrusted()).willReturn(true);
-        given(mockedExport.checkAcls()).willReturn(false);
-        given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
 
-        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
-                .willReturn(mock(Inode.class));
-
-        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644);
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
     }
 
     @Test(expected = AccessException.class)
@@ -143,14 +132,19 @@ public class PseudoFsTest {
         given(mockedExport.hasAllSquash()).willReturn(true);
         given(mockedExport.getSec()).willReturn(FsExport.Sec.NONE);
 
-        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .allSquash()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
 
-        given(mockedFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644))
-                .willReturn(mock(Inode.class));
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.create(inode, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 644);
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
     }
 
     @Test(expected = PermException.class)
@@ -161,16 +155,18 @@ public class PseudoFsTest {
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
-        given(mockedExport.isTrusted()).willReturn(true);
-        given(mockedExport.checkAcls()).willReturn(false);
-        given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.KRB5)
+                .build("/");
 
-        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.getattr(inode);
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
     }
 
     @Test
@@ -186,16 +182,18 @@ public class PseudoFsTest {
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuthGss);
 
-        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
-        given(mockedExport.isTrusted()).willReturn(true);
-        given(mockedExport.checkAcls()).willReturn(false);
-        given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.KRB5)
+                .build("/");
 
-        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.getattr(inode);
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
     }
 
     @Test
@@ -211,15 +209,17 @@ public class PseudoFsTest {
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuthGss);
 
-        given(mockedExport.ioMode()).willReturn(FsExport.IO.RW);
-        given(mockedExport.isTrusted()).willReturn(true);
-        given(mockedExport.checkAcls()).willReturn(false);
-        given(mockedExport.getSec()).willReturn(FsExport.Sec.KRB5);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.KRB5)
+                .build("/");
 
-        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(mockedExport);
-        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(mockedExport));
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-        pseudoFs = new PseudoFs(mockedFs, mockedRpc, mockedExportFile);
-        pseudoFs.getattr(inode);
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
     }
 }
