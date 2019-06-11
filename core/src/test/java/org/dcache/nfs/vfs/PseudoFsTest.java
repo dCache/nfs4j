@@ -222,4 +222,35 @@ public class PseudoFsTest {
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(fsRoot);
     }
+
+    @Test
+    public void testAllRoot() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withAllRoot()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
+
+        Subject subject = Subjects.of(17, 17);
+
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        Inode fileInode = pseudoFs.create(parent, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
+        Stat stat = pseudoFs.getattr(fileInode);
+
+        assertEquals("file's owner no propagated", 17, stat.getUid());
+        assertEquals("file's group no propagated", 17, stat.getGid());
+    }
 }
