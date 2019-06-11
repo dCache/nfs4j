@@ -206,7 +206,7 @@ public class PseudoFs extends ForwardingFileSystem {
     public DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException {
         Subject effectiveSubject = checkAccess(inode, ACE4_LIST_DIRECTORY);
         if (inode.isPesudoInode()) {
-            return new DirectoryStream(listPseudoDirectory(inode));
+            return new DirectoryStream(listPseudoDirectory(inode)).tail(cookie);
         }
         DirectoryStream innerStrem = _inner.list(inode, verifier, cookie);
         return innerStrem.transform(new PushParentIndex(inode));
@@ -515,7 +515,7 @@ public class PseudoFs extends ForwardingFileSystem {
                 if (node.isMountPoint()) {
                     return newArrayList(_inner.list(parent, null, 0L).transform(new ConvertToRealInode(node)));
                 } else {
-                    long cookie = 0; // artificial cookie
+                    long cookie = 3; // artificial cookie. Values 0, 1 and 2 are reserved.
                     List<DirectoryEntry> pseudoLs = new ArrayList<>();
                     for (String s : node.getChildren()) {
                         PseudoFsNode subNode = node.getChild(s);
