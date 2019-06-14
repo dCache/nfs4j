@@ -103,6 +103,7 @@ public class DummyVFS implements VirtualFileSystem {
         fs = Jimfs.newFileSystem(Configuration
                 .unix()
                 .toBuilder()
+                .setWorkingDirectory("/")
                 .setAttributeViews("posix", "owner")
                 .setDefaultAttributeValue("owner:owner", "0")
                 .setDefaultAttributeValue("posix:group", "0")

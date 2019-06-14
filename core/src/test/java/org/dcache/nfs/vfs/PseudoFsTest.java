@@ -39,6 +39,9 @@ import org.junit.Test;
 import static org.mockito.Mockito.*;
 import static org.mockito.BDDMockito.given;
 import static org.junit.Assert.*;
+import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 import org.junit.Before;
 
@@ -252,5 +255,76 @@ public class PseudoFsTest {
 
         assertEquals("file's owner no propagated", 17, stat.getUid());
         assertEquals("file's group no propagated", 17, stat.getGid());
+    }
+
+    @Test
+    public void testReaddirWithSingleExport() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "bar", Subjects.ROOT, 0755);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withAllRoot()
+                .withSec(FsExport.Sec.NONE)
+                .build("/foo");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+
+        DirectoryStream directoryStream = pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, 0);
+        assertThat("Empty directory listing", directoryStream, not(emptyIterable()));
+
+        long size = 0;
+        for (DirectoryEntry e : directoryStream) {
+            assertEquals("Unexpected directory entry", "foo", e.getName());
+            size++;
+        }
+        assertEquals("Unexpected number of directory entries", 1, size);
+    }
+
+    @Test
+    public void testReaddirBehind() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withAllRoot()
+                .withSec(FsExport.Sec.NONE)
+                .build("/foo");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+
+        DirectoryStream directoryStream = pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, 0);
+        assertThat("Empty directory listing", directoryStream, not(emptyIterable()));
+
+
+        long lastCookie = 0;
+        for(DirectoryEntry e: directoryStream) {
+            lastCookie = e.getCookie();
+        }
+
+        directoryStream = pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, lastCookie);
+        assertThat("Entry beyond last cookie", directoryStream, is(emptyIterable()));
     }
 }
