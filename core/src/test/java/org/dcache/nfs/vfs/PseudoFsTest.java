@@ -27,7 +27,9 @@ import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.AccessException;
+import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.status.PermException;
+import org.dcache.nfs.status.RoFsException;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.RpcCall;
@@ -292,6 +294,33 @@ public class PseudoFsTest {
         assertEquals("Unexpected number of directory entries", 1, size);
     }
 
+    @Test(expected = NoEntException.class)
+    public void testLookupOfUnexportedDirectory() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "bar", Subjects.ROOT, 0755);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withAllRoot()
+                .withSec(FsExport.Sec.NONE)
+                .build("/foo");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+
+        pseudoFs.lookup(pseudoRoot, "bar");
+    }
+
     @Test
     public void testReaddirBehind() throws IOException {
 
@@ -326,5 +355,91 @@ public class PseudoFsTest {
 
         directoryStream = pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, lastCookie);
         assertThat("Entry beyond last cookie", directoryStream, is(emptyIterable()));
+    }
+
+    @Test(expected = AccessException.class)
+    public void testAccessDenyOnNoExport() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getRootInode();
+    }
+
+    @Test(expected = AccessException.class)
+    public void testAccessDenyOnHighjackedInode() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Inode inode = new Inode(
+                new FileHandle.FileHandleBuilder()
+                    .setExportIdx(1)
+                    .build(new byte[] {0x1})
+            );
+
+        given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(null);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(inode);
+    }
+
+    @Test(expected = RoFsException.class)
+    public void testRejectPseudofsModification() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .build("/foo");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+
+        pseudoFs.mkdir(pseudoRoot, "bar", Subjects.ROOT, 0755);
+    }
+
+    @Test(expected = AccessException.class)
+    public void testRejectRoExportModification() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        FsExport export = new FsExport.FsExportBuilder()
+                .ro()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/foo");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode exportDir = pseudoFs.lookup(pseudoRoot, "foo");
+
+        pseudoFs.mkdir(exportDir, "bar", Subjects.ROOT, 0755);
     }
 }
