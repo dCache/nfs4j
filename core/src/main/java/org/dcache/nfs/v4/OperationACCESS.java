@@ -46,7 +46,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
         final ACCESS4res res = result.opaccess;
         int requestedAccess = _args.opaccess.access.value;
 
-        int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
+        int realAccess = context.getFs().access(context.currentInode(), requestedAccess, context.getSubject());
 
         _log.debug("NFS Request ACCESS uid: {} {} {}",
                     context.getSubject(), requestedAccess, realAccess );
