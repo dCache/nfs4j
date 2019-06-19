@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.*;
 import org.dcache.nfs.vfs.Inode;
@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 public class MountServer extends mount_protServerStub {
 
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
-    private final ExportFile _exportFile;
+    private final ExportTable _exports;
     private final Multimap<String, InetAddress> _mounts = HashMultimap.create();
     private final VirtualFileSystem _vfs;
 
@@ -69,9 +69,9 @@ public class MountServer extends mount_protServerStub {
     public final static int RPC_AUTH_GSS_KRB5I = 390004;
     public final static int RPC_AUTH_GSS_KRB5P = 390005;
 
-    public MountServer(ExportFile exportFile, VirtualFileSystem fs) {
+    public MountServer(ExportTable exports, VirtualFileSystem fs) {
         super();
-        _exportFile = exportFile;
+        _exports = exports;
         _vfs = fs;
     }
 
@@ -91,7 +91,7 @@ public class MountServer extends mount_protServerStub {
         InetAddress remoteAddress = call$.getTransport().getRemoteSocketAddress().getAddress();
         _log.debug("Mount request for: {}", mountPoint);
 
-        FsExport export = _exportFile.getExport(mountPoint, remoteAddress);
+        FsExport export = _exports.getExport(mountPoint, remoteAddress);
         if (export == null) {
             m.fhs_status = mountstat3.MNT3ERR_ACCES;
             _log.info("Mount deny for: {}:{}", remoteAddress, mountPoint);
@@ -176,7 +176,7 @@ public class MountServer extends mount_protServerStub {
 
         eList.value = null;
 
-        Map<String, List<FsExport>> exports = _exportFile
+        Map<String, List<FsExport>> exports = _exports
                 .exports()
                 .collect(Collectors.groupingBy(FsExport::getPath));
 
