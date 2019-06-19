@@ -21,6 +21,7 @@ package org.dcache.nfs.v3;
 
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v3.xdr.LOOKUP3res;
@@ -164,11 +165,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private static final Logger _log = LoggerFactory.getLogger(NfsServerV3.class);
 
     private final VirtualFileSystem _vfs;
-    private final ExportFile _exports;
+    private final ExportTable _exports;
 
     private final writeverf3 writeVerifier = generateInstanceWriteVerifier();
 
-    public NfsServerV3(ExportFile exports, VirtualFileSystem fs) {
+    public NfsServerV3(ExportTable exports, VirtualFileSystem fs) {
         _vfs = fs;
         _exports = exports;
     }
