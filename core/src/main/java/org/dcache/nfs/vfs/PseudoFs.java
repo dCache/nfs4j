@@ -176,7 +176,7 @@ public class PseudoFs extends ForwardingFileSystem {
     public Inode lookup(Inode parent, String path) throws IOException {
         checkAccess(parent, ACE4_EXECUTE);
 
-        if (parent.isPesudoInode()) {
+        if (parent.isPseudoInode()) {
             return lookupInPseudoDirectory(parent, path);
         }
 
@@ -205,7 +205,7 @@ public class PseudoFs extends ForwardingFileSystem {
     @Override
     public DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException {
         Subject effectiveSubject = checkAccess(inode, ACE4_LIST_DIRECTORY);
-        if (inode.isPesudoInode()) {
+        if (inode.isPseudoInode()) {
             return new DirectoryStream(listPseudoDirectory(inode)).tail(cookie);
         }
         DirectoryStream innerStrem = _inner.list(inode, verifier, cookie);
@@ -347,7 +347,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Subject effectiveSubject = _subject;
         Access aclMatched = Access.UNDEFINED;
 
-        if (inode.isPesudoInode() && Acls.wantModify(requestedMask)) {
+        if (inode.isPseudoInode()&& Acls.wantModify(requestedMask)) {
             if (shouldLog) {
                 _log.warn("Access denied: pseudo Inode {} {} {} {}",
                             inode, _inetAddress,
@@ -357,7 +357,7 @@ public class PseudoFs extends ForwardingFileSystem {
             throw new RoFsException("attempt to modify pseudofs");
         }
 
-        if (!inode.isPesudoInode()) {
+        if (!inode.isPseudoInode()) {
             int exportIdx = getExportIndex(inode);
             FsExport export = _exportTable.getExport(exportIdx, _inetAddress);
             if (exportIdx != 0 && export == null) {

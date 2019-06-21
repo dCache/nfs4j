@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -62,7 +62,7 @@ public class Inode {
         return Arrays.equals(fh.bytes(), other.fh.bytes());
     }
 
-    public boolean isPesudoInode() {
+    public boolean isPseudoInode() {
         return fh.getType() == 1;
     }
 
