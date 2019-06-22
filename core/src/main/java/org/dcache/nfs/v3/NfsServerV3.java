@@ -20,7 +20,6 @@
 package org.dcache.nfs.v3;
 
 import org.dcache.auth.Subjects;
-import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.ChimeraNFSException;
@@ -126,7 +125,6 @@ import org.dcache.nfs.v3.xdr.CREATE3resfail;
 import org.dcache.nfs.v3.xdr.FSINFO3resfail;
 import org.dcache.nfs.v3.xdr.ACCESS3res;
 import org.dcache.nfs.v3.xdr.COMMIT3resok;
-import java.io.IOException;
 import java.util.Iterator;
 
 import org.dcache.nfs.v3.xdr.COMMIT3resfail;
@@ -139,7 +137,6 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.status.*;
 import org.dcache.oncrpc4j.util.Bytes;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
