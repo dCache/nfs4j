@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.springframework.beans.factory.FactoryBean;
@@ -62,8 +63,16 @@ public class NFSServerV41Factory implements FactoryBean<NFSServerV41> {
         builder.withLockManager(nlm);
     }
 
+    @Deprecated
+    /**
+     * Use {@link #setExportTable}
+     */
     public void setExportFile(ExportFile exportFile) {
-        builder.withExportFile(exportFile);
+        builder.withExportTable(exportFile);
+    }
+
+    public void setExportTable(ExportTable exportTable) {
+        builder.withExportTable(exportTable);
     }
 
     public void setStateHandler(NFSv4StateHandler stateHandler) {
