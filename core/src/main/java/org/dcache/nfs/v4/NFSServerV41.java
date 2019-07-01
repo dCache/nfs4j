@@ -28,7 +28,6 @@ import org.dcache.nfs.v4.xdr.nfs4_prot_NFS4_PROGRAM_ServerStub;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.nfsstat;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,23 +39,12 @@ import java.util.List;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.commons.stats.RequestExecutionTimeGauges;
-import org.dcache.nfs.status.BadSessionException;
-import org.dcache.nfs.status.BadStateidException;
-import org.dcache.nfs.status.BadXdrException;
-import org.dcache.nfs.status.ExpiredException;
-import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.MinorVersMismatchException;
-import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotOnlyOpException;
-import org.dcache.nfs.status.OpIllegalException;
 import org.dcache.nfs.status.OpNotInSessionException;
 import org.dcache.nfs.status.ResourceException;
 import org.dcache.nfs.status.RetryUncacheRepException;
 import org.dcache.nfs.status.SequencePosException;
-import org.dcache.nfs.status.ServerFaultException;
-import org.dcache.nfs.status.StaleClientidException;
-import org.dcache.nfs.status.StaleStateidException;
 import org.dcache.nfs.status.TooManyOpsException;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.nlm.SimpleLm;
@@ -66,12 +54,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
     private static final Logger _log = LoggerFactory.getLogger(NFSServerV41.class);
 
-    private static final RequestExecutionTimeGauges<String> GAUGES
-            = new RequestExecutionTimeGauges<>(NFSServerV41.class.getName());
-
     private final VirtualFileSystem _fs;
     private final ExportTable _exportTable;
-    private final NFSv4OperationFactory _operationFactory;
+    private final OperationExecutor _operationExecutor;
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _statHandler;
     private final LockManager _nlm;
@@ -85,20 +70,20 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         _deviceManager = builder.deviceManager;
         _fs = builder.vfs;
         _exportTable = builder.exportTable;
-        _operationFactory = builder.operationFactory;
+        _operationExecutor = builder.operationExecutor;
         _nlm = builder.nlm == null ? new SimpleLm() : builder.nlm;
         _statHandler = builder.stateHandler == null ? new NFSv4StateHandler() : builder.stateHandler;
     }
 
     @Deprecated
-    public NFSServerV41(NFSv4OperationFactory operationFactory,
+    public NFSServerV41(OperationExecutor operationExecutor,
             NFSv41DeviceManager deviceManager, VirtualFileSystem fs,
             ExportTable exportTable) {
 
         _deviceManager = deviceManager;
         _fs = fs;
         _exportTable = exportTable;
-        _operationFactory = operationFactory;
+        _operationExecutor = operationExecutor;
         _nlm = new SimpleLm();
         _statHandler = new NFSv4StateHandler();
     }
@@ -110,7 +95,6 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
     @Override
     public COMPOUND4res NFSPROC4_COMPOUND_4(RpcCall call$, COMPOUND4args arg1) {
-
 
         COMPOUND4res res = new COMPOUND4res();
 
@@ -130,16 +114,16 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     tag);
 
             int minorversion = arg1.minorversion.value;
-            if ( minorversion > 1) {
-                throw new MinorVersMismatchException(String.format("Unsupported minor version [%d]",arg1.minorversion.value) );
+            if (minorversion > 1) {
+                throw new MinorVersMismatchException(String.format("Unsupported minor version [%d]", arg1.minorversion.value));
             }
 
-	    if (arg1.argarray.length >= NFSv4Defaults.NFS4_MAX_OPS && minorversion == 0) {
-		/*
+            if (arg1.argarray.length >= NFSv4Defaults.NFS4_MAX_OPS && minorversion == 0) {
+                /*
 		   in 4.1 maxops handled per session
-		*/
-		throw new ResourceException(String.format("Too many ops [%d]", arg1.argarray.length));
-	    }
+                 */
+                throw new ResourceException(String.format("Too many ops [%d]", arg1.argarray.length));
+            }
             res.resarray = new ArrayList<>(arg1.argarray.length);
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportTable);
@@ -167,60 +151,41 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             CompoundContext context = builder.build();
 
             boolean retransmit = false;
-            for (int position = 0; position <arg1.argarray.length; position++) {
+            for (int position = 0; position < arg1.argarray.length; position++) {
 
                 nfs_argop4 op = arg1.argarray[position];
-                nfs_resop4 opResult = nfs_resop4.resopFor(op.argop);
-                try {
-                    if (minorversion != 0) {
-                        checkOpPosition(op.argop, position, arg1.argarray.length);
-                        if (position == 1) {
-                            /*
+
+                if (minorversion != 0) {
+                    checkOpPosition(op.argop, position, arg1.argarray.length);
+                    if (position == 1) {
+                        /*
                              * at this point we already have to have a session
-                             */
-			    if (arg1.argarray.length > context.getSession().getMaxOps()) {
-				throw new TooManyOpsException(String.format("Too many ops [%d]", arg1.argarray.length));
-			    }
+                         */
+                        if (arg1.argarray.length > context.getSession().getMaxOps()) {
+                            throw new TooManyOpsException(String.format("Too many ops [%d]", arg1.argarray.length));
+                        }
 
-                            List<nfs_resop4> cache = context.getCache();
-                            if (cache != null) {
+                        List<nfs_resop4> cache = context.getCache();
+                        if (cache != null) {
 
-                                if (cache.isEmpty()) {
-                                    /*
-                                     * we got a duplicated request, but there
-                                     * is nothing in the cache, though must be
-                                     * as we are the second op in the compound.
-                                     */
-                                    throw new RetryUncacheRepException();
-                                }
-
-                                res.resarray.addAll(cache.subList(position, cache.size()));
-                                res.status = statusOfLastOperation(cache);
-                                retransmit = true;
-                                break;
+                            if (cache.isEmpty()) {
+                                /*
+                                 * we got a duplicated request, but there
+                                 * is nothing in the cache, though must be
+                                 * as we are the second op in the compound.
+                                 */
+                                throw new RetryUncacheRepException();
                             }
+
+                            res.resarray.addAll(cache.subList(position, cache.size()));
+                            res.status = statusOfLastOperation(cache);
+                            retransmit = true;
+                            break;
                         }
                     }
-                    long t0 = System.nanoTime();
-                    _operationFactory.getOperation(op).process(context, opResult);
-                    GAUGES.update(nfs_opnum4.toString(op.argop), System.nanoTime() - t0);
-
-                } catch (NfsIoException | ResourceException | ServerFaultException e) {
-                    _log.error("NFS server fault: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
-                    opResult.setStatus(e.getStatus());
-                } catch (BadXdrException | OpIllegalException | InvalException e) {
-                    _log.warn("Faulty NFS client: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
-                    opResult.setStatus(e.getStatus());
-                } catch (BadStateidException | StaleStateidException | ExpiredException
-                        | BadSessionException | StaleClientidException  e) {
-                    _log.info("Lost client state: op: {} : {}", nfs_opnum4.toString(op.argop), e.getMessage());
-                    opResult.setStatus(e.getStatus());
-                } catch (ChimeraNFSException e) {
-                    opResult.setStatus(e.getStatus());
-                } catch (OncRpcException e) {
-                    opResult.setStatus(nfsstat.NFSERR_BADXDR);
-                    _log.warn("Bad xdr: {}: ", e.getMessage());
                 }
+
+                nfs_resop4 opResult = _operationExecutor.execute(context, op);
 
                 res.resarray.add(opResult);
                 res.status = opResult.getStatus();
@@ -233,7 +198,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                 context.getSessionSlot().update(res.resarray);
             }
 
-            _log.debug( "OP: [{}] status: {}", res.tag, res.status);
+            _log.debug("OP: [{}] status: {}", res.tag, res.status);
 
         } catch (ChimeraNFSException e) {
             _log.info("NFS operation failed: {}", e.getMessage());
@@ -243,7 +208,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             _log.error("Unhandled exception:", e);
             res.resarray = Collections.emptyList();
             res.status = nfsstat.NFSERR_SERVERFAULT;
-        }finally{
+        } finally {
             MDC.remove(NfsMdc.TAG);
             MDC.remove(NfsMdc.CLIENT);
             MDC.remove(NfsMdc.SESSION);
@@ -318,13 +283,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         return ops.get(ops.size() -1).getStatus();
     }
 
-    public RequestExecutionTimeGauges<String> getStatistics() {
-        return GAUGES;
-    }
-
     public static class Builder {
 
-        private NFSv4OperationFactory operationFactory;
+        private OperationExecutor operationExecutor;
         private NFSv41DeviceManager deviceManager;
         private VirtualFileSystem vfs;
         private ExportTable exportTable;
@@ -336,8 +297,8 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             return this;
         }
 
-        public Builder withOperationFactory(NFSv4OperationFactory operationFactory) {
-            this.operationFactory = operationFactory;
+        public Builder withOperationExecutor(OperationExecutor operationFactory) {
+            this.operationExecutor = operationFactory;
             return this;
         }
 

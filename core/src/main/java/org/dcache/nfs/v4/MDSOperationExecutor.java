@@ -22,11 +22,11 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 
-public class MDSOperationFactory implements NFSv4OperationFactory {
+public class MDSOperationExecutor extends AbstractOperationExecutor {
 
 
     @Override
-    public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
+    protected AbstractNFSv4Operation getOperation(nfs_argop4 op) {
 
         switch (op.argop) {
             case nfs_opnum4.OP_ACCESS:

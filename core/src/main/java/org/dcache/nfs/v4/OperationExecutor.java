@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,36 +19,27 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.ds.DSOperationCOMMIT;
-import org.dcache.nfs.v4.ds.DSOperationREAD;
-import org.dcache.nfs.v4.ds.DSOperationWRITE;
+import java.io.IOException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.vfs.FsCache;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 /**
- * NFS operation factory which uses Proxy IO adapter for read requests
+ * NFSv4 operation executor.
+ *
+ * @since 0.19
  */
-public class LocalIoOperationFactory extends MDSOperationFactory {
+public interface OperationExecutor {
 
-    private final FsCache _fs;
-
-    public LocalIoOperationFactory(FsCache fs) {
-	_fs = fs;
-    }
-
-    @Override
-    public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
-	switch (op.argop) {
-	    case nfs_opnum4.OP_READ:
-		return new DSOperationREAD(op, _fs);
-	    case nfs_opnum4.OP_COMMIT:
-		return new DSOperationCOMMIT(op, _fs);
-	    case nfs_opnum4.OP_WRITE:
-		return new DSOperationWRITE(op, _fs);
-	    default:
-		return super.getOperation(op);
-	}
-    }
+    /**
+     * Execute NFS operation for given context and operation arguments.
+     * @param context the context of NFS compound request.
+     * @param args the NFS operation argument.
+     * @return the result of NFS operation.
+     * @throws IOException if request execution failed.
+     * @throws OncRpcException if request arguments can't be decoded.
+     */
+    nfs_resop4 execute(CompoundContext context, nfs_argop4 args)
+            throws IOException, OncRpcException;
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -71,15 +71,13 @@ class NfsTestUtils {
 
     public static COMPOUND4res executeWithStatus(CompoundContext context, COMPOUND4args args, int expectedStatus) throws IOException {
 
-        MDSOperationFactory opFactory = new MDSOperationFactory();
+        MDSOperationExecutor opFactory = new MDSOperationExecutor();
         COMPOUND4res res = new COMPOUND4res();
         res.resarray = new ArrayList<>();
 
         for (nfs_argop4 arg : args.argarray) {
             try {
-                AbstractNFSv4Operation op = opFactory.getOperation(arg);
-                nfs_resop4 opResult = nfs_resop4.resopFor(arg.argop);
-                op.process(context, opResult);
+                nfs_resop4 opResult = opFactory.execute(context, arg);
                 res.resarray.add(opResult);
                 res.status = opResult.getStatus();
             } catch (ChimeraNFSException e) {
@@ -93,14 +91,12 @@ class NfsTestUtils {
     }
 
     public static COMPOUND4res execute(CompoundContext context, COMPOUND4args args) throws IOException {
-        MDSOperationFactory opFactory = new MDSOperationFactory();
+        MDSOperationExecutor opFactory = new MDSOperationExecutor();
         COMPOUND4res res = new COMPOUND4res();
         res.resarray = new ArrayList<>();
 
         for (nfs_argop4 arg : args.argarray) {
-            AbstractNFSv4Operation op = opFactory.getOperation(arg);
-            nfs_resop4 opResult = nfs_resop4.resopFor(arg.argop);
-            op.process(context, opResult);
+            nfs_resop4 opResult = opFactory.execute(context, arg);
             res.resarray.add(opResult);
             nfsstat.throwIfNeeded(opResult.getStatus());
         }

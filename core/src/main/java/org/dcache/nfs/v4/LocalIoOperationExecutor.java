@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,36 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.v4.ds.DSOperationCOMMIT;
+import org.dcache.nfs.v4.ds.DSOperationREAD;
+import org.dcache.nfs.v4.ds.DSOperationWRITE;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.vfs.FsCache;
 
-public interface NFSv4OperationFactory {
+/**
+ * NFS operation factory which uses Proxy IO adapter for read requests
+ */
+public class LocalIoOperationExecutor extends MDSOperationExecutor {
 
-    AbstractNFSv4Operation getOperation(nfs_argop4 op);
+    private final FsCache _fs;
+
+    public LocalIoOperationExecutor(FsCache fs) {
+	_fs = fs;
+    }
+
+    @Override
+    public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
+	switch (op.argop) {
+	    case nfs_opnum4.OP_READ:
+		return new DSOperationREAD(op, _fs);
+	    case nfs_opnum4.OP_COMMIT:
+		return new DSOperationCOMMIT(op, _fs);
+	    case nfs_opnum4.OP_WRITE:
+		return new DSOperationWRITE(op, _fs);
+	    default:
+		return super.getOperation(op);
+	}
+    }
 
 }

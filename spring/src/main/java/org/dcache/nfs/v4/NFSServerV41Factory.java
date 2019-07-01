@@ -51,8 +51,8 @@ public class NFSServerV41Factory implements FactoryBean<NFSServerV41> {
         builder.withDeviceManager(deviceManager);
     }
 
-    public void setOperationFactory(NFSv4OperationFactory operationFactory) {
-        builder.withOperationFactory(operationFactory);
+    public void setOperationFactory(OperationExecutor operationFactory) {
+        builder.withOperationExecutor(operationFactory);
     }
 
     public void setVfs(VirtualFileSystem vfs) {
