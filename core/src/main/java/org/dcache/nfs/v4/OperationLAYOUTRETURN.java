@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.v4.xdr.layoutreturn_type4;
 import org.dcache.nfs.v4.xdr.layoutreturn_stateid;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LAYOUTRETURN4res;
-import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +53,7 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
         _log.debug("LAYOUTRETURN4args :     reclaim: {}", _args.oplayoutreturn.lora_reclaim);
 
         if (_args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
-
-            pnfsDeviceManager.
-                    layoutReturn(context,
-                    _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_stateid,
-                            layouttype4.valueOf(_args.oplayoutreturn.lora_layout_type),
-                    _args.oplayoutreturn.lora_layoutreturn.lr_layout.lrf_body);
+            pnfsDeviceManager.layoutReturn(context, _args.oplayoutreturn);
         }
 
         res.lorr_stateid = new layoutreturn_stateid();
