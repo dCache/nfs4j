@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -50,10 +50,10 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
         context.getDeviceManager()
                 .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
-        _log.debug("LAYOUTCOMMIT: inode=" + context.currentInode() + " length="
-                + _args.oplayoutcommit.loca_length.value + " offset="
-                + _args.oplayoutcommit.loca_offset.value + " loca_last_write_offset="
-                + (_args.oplayoutcommit.loca_last_write_offset.no_newoffset
+        _log.debug("LAYOUTCOMMIT: inode={} length={} offset={} loca_last_write_offset={}",
+                context.currentInode(), _args.oplayoutcommit.loca_length.value,
+                _args.oplayoutcommit.loca_offset.value,
+                (_args.oplayoutcommit.loca_last_write_offset.no_newoffset
                 ? _args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset"));
 
         res.locr_resok4 = new LAYOUTCOMMIT4resok();
