@@ -82,6 +82,16 @@ public interface NFSv41DeviceManager {
     public void layoutReturn(CompoundContext context, LAYOUTRETURN4args args) throws IOException;
 
     /**
+     * Commit changes in the layout.
+     *
+     * @param context the context of the nfs request.
+     * @param args layout commit operation arguments.
+     * @return optional new file size if it was changed as a result of layout commit.
+     * @throws IOException if NFS error or some other I/O error occurs.
+     */
+    public OptionalLong layoutCommit(CompoundContext context, LAYOUTCOMMIT4args args) throws IOException;
+
+    /**
      * Returns the array of layout types supported by this device manager.
      * @return supported layout types.
      */
