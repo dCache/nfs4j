@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -864,7 +865,14 @@ public class Main {
 
                     dsClient.nfsWrite(stripe.getFh(), data, offset, or.stateid());
                     offset += n;
+
+                    // offset points to current file size
+                    if (stripe.isCommitThroughMDS()) {
+                        layoutCommit(stripe.getFh(), or.stateid(), 0, offset,
+                            OptionalLong.of(offset - 1), new byte[0]);
+                    }
                 }
+
 
             } catch (IOException ie) {
                 System.out.println("Write failed: " + ie.getMessage());
@@ -1000,6 +1008,19 @@ public class Main {
                 .withPutfh(fh)
                 .withLayoutreturn(offset, len, body, stateid)
                 .withTag("layoutreturn")
+                .build();
+
+        COMPOUND4res compound4res = sendCompound(args);
+    }
+
+    private void layoutCommit(nfs_fh4 fh, stateid4 stateid, long offset, long len,
+            OptionalLong newOffset, byte[] body) throws OncRpcException, IOException {
+
+        COMPOUND4args args = new CompoundBuilder()
+                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
+                .withPutfh(fh)
+                .withLayoutcommit(offset, len, false, stateid, newOffset, layouttype4.LAYOUT4_NFSV4_1_FILES, body)
+                .withTag("layoutcommit")
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);

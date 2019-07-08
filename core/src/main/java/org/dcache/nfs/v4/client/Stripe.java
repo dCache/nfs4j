@@ -112,6 +112,10 @@ public class Stripe {
         return _fh;
     }
 
+    public boolean isCommitThroughMDS() {
+        return (_unit & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) != 0;
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -92,8 +92,13 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
+import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4args;
 import org.dcache.nfs.v4.xdr.LOCKU4args;
 import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
+import org.dcache.nfs.v4.xdr.layoutupdate4;
+import org.dcache.nfs.v4.xdr.newoffset4;
+import org.dcache.nfs.v4.xdr.newtime4;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.Xdr;
 
@@ -587,6 +592,33 @@ public class CompoundBuilder {
         op.oplocku.locktype = type;
         op.oplocku.offset = new offset4(offset);
         op.oplocku.length = new length4(length);
+        ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withLayoutcommit(long offset, long length,
+            boolean reclaim, stateid4 stateid, OptionalLong lastWriteOffset,
+            layouttype4 layoutType, byte[] body) {
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_LAYOUTCOMMIT;
+        op.oplayoutcommit = new LAYOUTCOMMIT4args();
+
+        op.oplayoutcommit.loca_time_modify = new newtime4();
+        op.oplayoutcommit.loca_time_modify.nt_timechanged = false;
+
+        op.oplayoutcommit.loca_offset = new offset4(offset);
+        op.oplayoutcommit.loca_length = new length4(length);
+        op.oplayoutcommit.loca_reclaim = reclaim;
+        op.oplayoutcommit.loca_stateid = stateid;
+        op.oplayoutcommit.loca_last_write_offset = new newoffset4();
+        op.oplayoutcommit.loca_last_write_offset.no_newoffset = lastWriteOffset.isPresent();
+        if (lastWriteOffset.isPresent()) {
+            op.oplayoutcommit.loca_last_write_offset.no_offset = new offset4(lastWriteOffset.getAsLong());
+        }
+        op.oplayoutcommit.loca_layoutupdate = new layoutupdate4();
+        op.oplayoutcommit.loca_layoutupdate.lou_type = layoutType.getValue();
+        op.oplayoutcommit.loca_layoutupdate.lou_body = body;
+
         ops.add(op);
         return this;
     }
