@@ -90,6 +90,27 @@ public class DummyVFS implements VirtualFileSystem {
     public static final int S_IWOTH = 00002; // others have write permission
     public static final int S_IXOTH = 00001; // others have execute
 
+    /**
+     * Unix domain socket
+     */
+    public static final int S_IFSOCK = 0140000;
+    /**
+     * Symbolic link
+     */
+    public static final int S_IFLNK = 0120000;
+    /**
+     * Regular file
+     */
+    public static final int S_IFREG = 0100000;
+    /**
+     * BLock device
+     */
+    public static final int S_IFBLK = 0060000;
+    /**
+     * Directory
+     */
+    public static final int S_IFDIR = 0040000;
+
     private final Path _root;
     private final ConcurrentMap<Long, Path> inodeToPath = new ConcurrentHashMap<>();
     private final ConcurrentMap<Path, Long> pathToInode = new ConcurrentHashMap<>();
@@ -449,7 +470,7 @@ public class DummyVFS implements VirtualFileSystem {
         stat.setUid(Integer.parseInt(((Principal) Files.getAttribute(p, "owner:owner", NOFOLLOW_LINKS)).getName()));
 
         Set<PosixFilePermission> permissions = (Set<PosixFilePermission>) Files.getAttribute(p, "posix:permissions", NOFOLLOW_LINKS);
-        stat.setMode(permissionsToMode(permissions));
+        stat.setMode(permissionsToMode(permissions, attrs));
 //        stat.setNlink((Integer) Files.getAttribute(p, "nlink", NOFOLLOW_LINKS));
         stat.setDev(17);
         stat.setIno((int) inodeNumber);
@@ -617,7 +638,8 @@ public class DummyVFS implements VirtualFileSystem {
         return perms;
     }
 
-    private static int permissionsToMode(Set<PosixFilePermission> permissions) {
+    private static int permissionsToMode(Set<PosixFilePermission> permissions,
+            BasicFileAttributes attrs) {
 
         int mode = 0;
         for (PosixFilePermission p : permissions) {
@@ -651,6 +673,17 @@ public class DummyVFS implements VirtualFileSystem {
                     break;
             }
         }
+
+        if (attrs.isDirectory()) {
+            mode |= S_IFDIR;
+        } else if (attrs.isRegularFile()) {
+            mode |= S_IFREG;
+        } else if (attrs.isSymbolicLink()) {
+            mode |= S_IFLNK;
+        } else {
+            mode |= S_IFSOCK;
+        }
+
         return mode;
     }
 }
