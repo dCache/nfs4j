@@ -94,8 +94,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalLong;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4args;
+import org.dcache.nfs.v4.xdr.LAYOUTERROR4args;
+import org.dcache.nfs.v4.xdr.LAYOUTSTATS4args;
 import org.dcache.nfs.v4.xdr.LOCKU4args;
 import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
+import org.dcache.nfs.v4.xdr.device_error4;
+import org.dcache.nfs.v4.xdr.io_info4;
 import org.dcache.nfs.v4.xdr.layoutupdate4;
 import org.dcache.nfs.v4.xdr.newoffset4;
 import org.dcache.nfs.v4.xdr.newtime4;
@@ -618,6 +622,42 @@ public class CompoundBuilder {
         op.oplayoutcommit.loca_layoutupdate = new layoutupdate4();
         op.oplayoutcommit.loca_layoutupdate.lou_type = layoutType.getValue();
         op.oplayoutcommit.loca_layoutupdate.lou_body = body;
+
+        ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withLayoutStats(long offset, long length, stateid4 stateid,
+            io_info4 readInfo, io_info4 writeInfo, deviceid4 deviceid,
+            layoutupdate4 layoutupdate) {
+
+        nfs_argop4 op  = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_LAYOUTSTATS;
+        op.oplayoutstats = new LAYOUTSTATS4args();
+
+        op.oplayoutstats.lsa_offset = new offset4(offset);
+        op.oplayoutstats.lsa_length = new length4(length);
+        op.oplayoutstats.lsa_stateid = stateid;
+        op.oplayoutstats.lsa_read = readInfo;
+        op.oplayoutstats.lsa_write = writeInfo;
+        op.oplayoutstats.lsa_deviceid = deviceid;
+        op.oplayoutstats.lsa_layoutupdate = layoutupdate;
+
+        ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withLayoutError(long offset, long length, stateid4 stateid,
+            device_error4[] errors) {
+
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_LAYOUTERROR;
+        op.oplayouterror = new LAYOUTERROR4args();
+
+        op.oplayouterror.lea_offset = new offset4(offset);
+        op.oplayouterror.lea_length = new length4(length);
+        op.oplayouterror.lea_stateid = stateid;
+        op.oplayouterror.lea_errors = errors;
 
         ops.add(op);
         return this;

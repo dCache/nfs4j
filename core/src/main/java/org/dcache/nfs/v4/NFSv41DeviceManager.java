@@ -27,8 +27,10 @@ import java.util.Set;
 import org.dcache.nfs.v4.xdr.GETDEVICEINFO4args;
 import org.dcache.nfs.v4.xdr.GETDEVICELIST4args;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4args;
+import org.dcache.nfs.v4.xdr.LAYOUTERROR4args;
 import org.dcache.nfs.v4.xdr.LAYOUTGET4args;
 import org.dcache.nfs.v4.xdr.LAYOUTRETURN4args;
+import org.dcache.nfs.v4.xdr.LAYOUTSTATS4args;
 import org.dcache.nfs.v4.xdr.device_addr4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layouttype4;
@@ -90,6 +92,24 @@ public interface NFSv41DeviceManager {
      * @throws IOException if NFS error or some other I/O error occurs.
      */
     public OptionalLong layoutCommit(CompoundContext context, LAYOUTCOMMIT4args args) throws IOException;
+
+    /**
+     * Inform about layout usage.
+     *
+     * @param contex the context of the nfs request.
+     * @param args layout stats operation arguments.
+     * @throws IOException if NFS error or some other I/O error occurs.
+     */
+    public void layoutStats(CompoundContext contex, LAYOUTSTATS4args args) throws IOException;
+
+    /**
+     * Inform about errors in interactions with the layout.
+     *
+     * @param contex the context of the nfs request.
+     * @param args layout error operation arguments.
+     * @throws IOException if NFS error or some other I/O error occurs.
+     */
+    public void layoutError(CompoundContext contex, LAYOUTERROR4args args) throws IOException;
 
     /**
      * Returns the array of layout types supported by this device manager.

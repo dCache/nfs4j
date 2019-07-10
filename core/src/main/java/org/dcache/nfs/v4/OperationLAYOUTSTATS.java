@@ -19,7 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -34,8 +36,15 @@ public class OperationLAYOUTSTATS extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
-        result.oplayoutstats.status = nfsstat.NFSERR_NOTSUPP;
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+
+        final NFSv41DeviceManager pnfsDeviceManager = context
+                .getDeviceManager()
+                .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
+
+        pnfsDeviceManager.layoutStats(context, _args.oplayoutstats);
+
+        result.oplayoutstats.status = nfsstat.NFS_OK;
     }
 
 }
