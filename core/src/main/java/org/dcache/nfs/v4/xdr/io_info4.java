@@ -14,8 +14,9 @@ import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
 public class io_info4 implements XdrAble, java.io.Serializable {
-    public uint64_t ii_count;
-    public uint64_t ii_bytes;
+
+    public long ii_count;
+    public long ii_bytes;
 
     private static final long serialVersionUID = 7002990356778538437L;
 
@@ -29,14 +30,14 @@ public class io_info4 implements XdrAble, java.io.Serializable {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        ii_count.xdrEncode(xdr);
-        ii_bytes.xdrEncode(xdr);
+        xdr.xdrEncodeLong(ii_count);
+        xdr.xdrEncodeLong(ii_bytes);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        ii_count = new uint64_t(xdr);
-        ii_bytes = new uint64_t(xdr);
+        ii_count = xdr.xdrDecodeLong();
+        ii_bytes = xdr.xdrDecodeLong();
     }
 
 }
