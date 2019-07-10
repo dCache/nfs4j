@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,8 +39,13 @@ public abstract class AbstractNFSv4Operation {
     }
 
     /**
-     * Process current operation.
-     * @return result of operation
+     * Process current operation. The {@code result} object is used to store
+     * result of the operation execution.
+     * @param context the context of compound request of this operation.
+     * @param result the operation result object to use.
+     * @throws ChimeraNFSException when a specific NFS error is returned
+     * @throws IOException when NFS non specific errors occur
+     * @throws OncRpcException if requests arguments can't be decoded.
      */
     public abstract void  process(CompoundContext context, nfs_resop4 result)
             throws ChimeraNFSException, IOException, OncRpcException;
