@@ -4,14 +4,14 @@ NFS4J
 The pure java implementation of NFS server version 3, 4.0 and 4.1 including pNFS extension
 with nfs4.1-files and flex-files layout types.
 
-
 Building from sources
 ---------------------
 
 To build nfs4j from source code Java8 and Maven3 are required.
 
 To run benchmarks:
-```
+
+```sh
 mvn verify -Pbenchmark
 ```
 
@@ -81,14 +81,13 @@ Use NFS4J in your project
 </repositories>
 ```
 
-License:
+License
 --------
 
 licensed under [LGPLv2](http://www.gnu.org/licenses/lgpl-2.0.txt "LGPLv2") (or later)
 
 How to contribute
-=================
-
+-----------------
 
 **NFS4J** uses the linux kernel model where git is not only source repository,
 but also the way to track contributions and copyrights.
@@ -100,8 +99,8 @@ The sign-off is a simple line at the end of the explanation for the
 patch, which certifies that you wrote it or otherwise have the right to
 pass it on as an open-source patch.  The rules are pretty simple: if you
 can certify the below:
-```
 
+```txt
     Developer's Certificate of Origin 1.1
 
     By making a contribution to this project, I certify that:
@@ -127,15 +126,17 @@ can certify the below:
         personal information I submit with it, including my sign-off) is
         maintained indefinitely and may be redistributed consistent with
         this project or the open source license(s) involved.
-
 ```
+
 then you just add a line saying ( git commit -s )
 
-    Signed-off-by: Random J Developer <random@developer.example.org>
+```txt
+Signed-off-by: Random J Developer <random@developer.example.org>
+```
 
 using your real name (sorry, no pseudonyms or anonymous contributions.)
 
 Contact Us
 ---------
-For help and development related discussions please contact us: *dev (@) dcache (.) org* 
 
+For help and development related discussions please contact us: *dev (@) dcache (.) org*
