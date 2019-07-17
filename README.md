@@ -81,6 +81,16 @@ Use NFS4J in your project
 </repositories>
 ```
 
+IMPORTANT WARNINGS
+------------------
+
+Though **NFS4J** is used by the [dCache](https://dcache.org) and other projects in production,
+the public API is still _unstable_ and subject to change (indicated by leading zero in the
+version number). Thus, is should be considered as `beta`.
+
+Please consult the [API changes](API-changes.md) document when switching between version numbers.
+The patch level releases are not affected by API changes, of course.
+
 License
 --------
 
