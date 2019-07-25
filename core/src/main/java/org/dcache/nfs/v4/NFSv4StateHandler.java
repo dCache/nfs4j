@@ -57,7 +57,7 @@ public class NFSv4StateHandler {
     /**
      * initial value of new state's sequence number.
      */
-    private final static int STATE_INITIAL_SEQUENCE = 1;
+    private final static int STATE_INITIAL_SEQUENCE = 0;
 
     /**
      * client id generator.

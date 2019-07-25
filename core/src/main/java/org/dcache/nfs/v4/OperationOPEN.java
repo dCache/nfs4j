@@ -271,6 +271,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 _args.opopen.share_access.value,
                 _args.opopen.share_deny.value);
 
+        stateid.seqid.value++;
         context.currentStateid(stateid);
         res.resok4.stateid = stateid;
         res.status = nfsstat.NFS_OK;
