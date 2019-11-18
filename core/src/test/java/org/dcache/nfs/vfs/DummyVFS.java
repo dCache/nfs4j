@@ -520,7 +520,7 @@ public class DummyVFS implements VirtualFileSystem {
         }
         if (stat.isDefined(Stat.StatAttribute.MODE)) {
             try {
-                Files.setAttribute(path, "posix:mode", stat.getMode(), NOFOLLOW_LINKS);
+                Files.setAttribute(path, "posix:permissions", modeToPermissions(stat.getMode()), NOFOLLOW_LINKS);
             } catch (IOException e) {
                 throw new UnsupportedOperationException("set mode unsupported: " + e.getMessage(), e);
             }
