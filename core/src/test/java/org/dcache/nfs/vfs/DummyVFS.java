@@ -626,13 +626,13 @@ public class DummyVFS implements VirtualFileSystem {
 
         // OTHERS
         if ((mode & S_IROTH) == S_IROTH) {
-            perms.add(PosixFilePermission.OWNER_READ);
+            perms.add(PosixFilePermission.OTHERS_READ);
         }
         if ((mode & S_IWOTH) == S_IWOTH) {
-            perms.add(PosixFilePermission.OWNER_WRITE);
+            perms.add(PosixFilePermission.OTHERS_WRITE);
         }
         if ((mode & S_IXOTH) == S_IXOTH) {
-            perms.add(PosixFilePermission.OWNER_EXECUTE);
+            perms.add(PosixFilePermission.OTHERS_EXECUTE);
         }
 
         return perms;
