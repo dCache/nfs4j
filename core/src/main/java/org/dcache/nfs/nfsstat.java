@@ -143,6 +143,8 @@ public final class nfsstat {
     public static final int NFS4ERR_WRONG_LFS = 10092;
     public static final int NFS4ERR_BADLABEL = 10093;
     public static final int NFS4ERR_OFFLOAD_NO_REQS = 10094;
+    public static final int NFSERR_NOXATTR = 10095;
+    public static final int NFSERR_XATTR2BIG = 10096;
 
     private nfsstat() {/* no instance allowed */};
 
@@ -377,6 +379,10 @@ public final class nfsstat {
                 return "NFS4ERR_BADLABEL";
             case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
                 return "NFS4ERR_OFFLOAD_NO_REQS";
+            case nfsstat.NFSERR_NOXATTR:
+                return "NFSERR_NOXATTR";
+            case nfsstat.NFSERR_XATTR2BIG:
+                return "NFSERR_XATTR2BIG";
             default:
                 return "NFSERR_UNKNON(" + errorCode + ")";
         }
@@ -601,6 +607,10 @@ public final class nfsstat {
                 throw new RejectDelegException();
             case nfsstat.NFSERR_RETURNCONFLICT:
                 throw new ReturnConflictException();
+            case nfsstat.NFSERR_NOXATTR:
+                throw new NoXattrException();
+            case nfsstat.NFSERR_XATTR2BIG:
+                throw new XattrTooBigException();
             default:
                 throw new BadXdrException();
         }
