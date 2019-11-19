@@ -128,6 +128,7 @@ public class DummyVFS implements VirtualFileSystem {
                 .setAttributeViews("posix", "owner")
                 .setDefaultAttributeValue("owner:owner", "0")
                 .setDefaultAttributeValue("posix:group", "0")
+                .setDefaultAttributeValue("posix:permissions", "rwxr-xr-x")
                 .build()
         );
 
