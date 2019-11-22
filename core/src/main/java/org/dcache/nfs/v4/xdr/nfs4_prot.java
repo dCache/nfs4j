@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -272,5 +272,9 @@ public interface nfs4_prot {
     public static final int FATTR4_LAYOUT_TYPE = 64;
     public static final int FSLI4TF_RDMA = 0x01;
     public static final int NFSPROC4_COMPOUND_4 = 1;
+    public static final int ACCESS4_XAREAD = 0x00000040;
+    public static final int ACCESS4_XALIST = 0x00000100;
+    public static final int ACCESS4_XAWRITE = 0x00000080;
+
 }
 // End of nfs4_prot.java

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import javax.security.auth.Subject;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
@@ -379,4 +380,71 @@ public interface VirtualFileSystem {
             return ordinal();
         }
     }
+
+    /**
+     * The modes of setXattr.
+     */
+    public enum SetXattrMode {
+        /**
+         * Create a new extended attribute.
+         */
+        CREATE,
+
+        /**
+         * Replace an existing extended attribute.
+         */
+        REPLACE,
+
+        /**
+         * Create a new extended attribute or replace the value, if the attribute
+         * exists.
+         */
+        EITHER
+    }
+
+    /**
+     * Get an Extended Attribute of a inode.
+     * @param inode file system object.
+     * @param attr extended attribute name.
+     * @return value of the attribute.
+     * @throws IOException
+     */
+    default byte[] getXattr(Inode inode, String attr) throws IOException {
+        throw new NotSuppException();
+    }
+
+    /**
+     * Set or change extended attribute of a given file system object.
+     * @param inode file system object.
+     * @param attr extended attribute name.
+     * @param value of the attribute.
+     * @param mode the update mode
+     * @throws IOException
+     */
+    default void setXattr(Inode inode, String attr, byte[] value, SetXattrMode mode) throws IOException {
+        throw new NotSuppException();
+    }
+
+    /**
+     * Retrieve an array of extended attribute names for a given file system object.
+     *
+     * @param inode file system object.
+     * @return an array of extended attribute names.
+     * @throws IOException
+     */
+    default String[] listXattrs(Inode inode) throws IOException {
+        throw new NotSuppException();
+    }
+
+    /**
+     * Remove specified extended attribute for a given file system object.
+     *
+     * @param inode file system object.
+     * @param attr extended attribute name.
+     * @throws IOException
+     */
+    default void removeXattr(Inode inode, String attr) throws IOException {
+        throw new NotSuppException();
+    }
+
 }

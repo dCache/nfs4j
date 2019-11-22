@@ -21,6 +21,7 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 import javax.security.auth.Subject;
 import org.dcache.auth.Subjects;
@@ -442,4 +443,258 @@ public class PseudoFsTest {
 
         pseudoFs.mkdir(exportDir, "bar", Subjects.ROOT, 0755);
     }
+
+    @Test
+    public void testAllowOwnerReadXattr() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(1, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        Inode file = vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+        vfs.setXattr(file, "xattr1", "value1".getBytes(StandardCharsets.UTF_8),
+                VirtualFileSystem.SetXattrMode.CREATE);
+        FsExport export = new FsExport.FsExportBuilder()
+                .ro()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+
+        pseudoFs.getXattr(inode, "xattr1");
+    }
+
+    @Test(expected = AccessException.class)
+    public void testRejectReadXattr() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(17, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .ro()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+        pseudoFs.getXattr(inode, "xattr1");
+    }
+
+    @Test
+    public void testAllowOwnerListXattrs() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(1, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .ro()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+
+        pseudoFs.listXattrs(inode);
+    }
+
+    @Test(expected = AccessException.class)
+    public void testRejectListXattrs() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(17, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .ro()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+        pseudoFs.listXattrs(inode);
+    }
+
+    @Test
+    public void testAllowOwnerRemoveXattr() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(1, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+
+        pseudoFs.removeXattr(inode, "xattr1");
+    }
+
+    @Test(expected = AccessException.class)
+    public void testRejectRemoveXattr() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(17, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+        pseudoFs.removeXattr(inode, "xattr1");
+    }
+
+    @Test
+    public void testAllowOwnerWriteXattr() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(1, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+
+        pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8), VirtualFileSystem.SetXattrMode.CREATE);
+    }
+
+    @Test(expected = AccessException.class)
+    public void testRejectWriteXattr() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        Subject subject = Subjects.of(17, 17);
+        Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
+        vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .build("/dir");
+
+        given(mockedExportFile.getExport(export.getIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willAnswer(x -> Stream.of(export));
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
+        Inode inode = pseudoFs.lookup(dir, "aFile");
+        pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8), VirtualFileSystem.SetXattrMode.CREATE);
+    }
+
 }

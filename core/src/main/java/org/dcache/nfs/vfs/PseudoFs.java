@@ -137,6 +137,31 @@ public class PseudoFs extends ForwardingFileSystem {
             }
         }
 
+        /**
+         * rfc8276 specifies only 'user' attributes. Thus access to access to them is controlled
+         * as access to the file:
+         *  - to read or list xattrs file read permission is required
+         *  - to set or delete xattrs file write permission is required
+         */
+
+        if ((mode & ACCESS4_XAREAD) != 0) {
+            if (canAccess(inode, ACE4_READ_DATA)) {
+                accessmask |= ACCESS4_XAREAD;
+            }
+        }
+
+        if ((mode & ACCESS4_XALIST) != 0) {
+            if (canAccess(inode, ACE4_READ_DATA)) {
+                accessmask |= ACCESS4_XALIST;
+            }
+        }
+
+        if ((mode & ACCESS4_XAWRITE) != 0) {
+            if (canAccess(inode, ACE4_WRITE_DATA)) {
+                accessmask |= ACCESS4_XAWRITE;
+            }
+        }
+
         return accessmask & _inner.access(inode, accessmask);
     }
 
@@ -336,6 +361,30 @@ public class PseudoFs extends ForwardingFileSystem {
     public void setAcl(Inode inode, nfsace4[] acl) throws IOException {
         checkAccess(inode, ACE4_WRITE_ACL);
         _inner.setAcl(inode, acl);
+    }
+
+    @Override
+    public byte[] getXattr(Inode inode, String attr) throws IOException {
+        checkAccess(inode, ACE4_READ_DATA);
+        return _inner.getXattr(inode, attr);
+    }
+
+    @Override
+    public void setXattr(Inode inode, String attr, byte[] value, SetXattrMode mode) throws IOException {
+        checkAccess(inode, ACE4_WRITE_DATA);
+        _inner.setXattr(inode, attr, value, mode);
+    }
+
+    @Override
+    public String[] listXattrs(Inode inode) throws IOException {
+        checkAccess(inode, ACE4_READ_DATA);
+        return _inner.listXattrs(inode);
+    }
+
+    @Override
+    public void removeXattr(Inode inode, String attr) throws IOException {
+        checkAccess(inode, ACE4_WRITE_DATA);
+        _inner.removeXattr(inode, attr);
     }
 
     private Subject checkAccess(Inode inode, int requestedMask) throws IOException {

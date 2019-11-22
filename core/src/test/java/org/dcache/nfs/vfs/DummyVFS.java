@@ -53,10 +53,12 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,7 +72,6 @@ import org.dcache.nfs.status.PermException;
 import org.dcache.nfs.status.ServerFaultException;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
-import java.util.EnumSet;
 
 /**
  * Stolen from https://github.com/kofemann/simple-nfs/blob/master/src/main/java/org/dcache/simplenfs/LocalFileSystem.java
@@ -125,7 +126,7 @@ public class DummyVFS implements VirtualFileSystem {
                 .unix()
                 .toBuilder()
                 .setWorkingDirectory("/")
-                .setAttributeViews("posix", "owner")
+                .setAttributeViews("posix", "owner", "user")
                 .setDefaultAttributeValue("owner:owner", "0")
                 .setDefaultAttributeValue("posix:group", "0")
                 .setDefaultAttributeValue("posix:permissions", "rwxr-xr-x")
@@ -581,6 +582,55 @@ public class DummyVFS implements VirtualFileSystem {
     public NfsIdMapping getIdMapper() {
         return _idMapper;
     }
+
+    @Override
+    public byte[] getXattr(Inode inode, String attr) throws IOException {
+        long inodeNumber = toInodeNumber(inode);
+        Path path = resolveInode(inodeNumber);
+
+        UserDefinedFileAttributeView view
+                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+
+        ByteBuffer buf = ByteBuffer.allocate(view.size(attr));
+        view.read(attr, buf);
+        return buf.array();
+    }
+
+    @Override
+    public void setXattr(Inode inode, String attr, byte[] value, SetXattrMode mode) throws IOException {
+        long inodeNumber = toInodeNumber(inode);
+        Path path = resolveInode(inodeNumber);
+
+        UserDefinedFileAttributeView view
+                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+
+        ByteBuffer buf = ByteBuffer.wrap(value);
+        view.write(attr, buf);
+    }
+
+    @Override
+    public String[] listXattrs(Inode inode) throws IOException {
+        long inodeNumber = toInodeNumber(inode);
+        Path path = resolveInode(inodeNumber);
+
+        UserDefinedFileAttributeView view
+                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+
+        return view.list().toArray(new String[0]);
+    }
+
+    @Override
+    public void removeXattr(Inode inode, String attr) throws IOException {
+
+        long inodeNumber = toInodeNumber(inode);
+        Path path = resolveInode(inodeNumber);
+
+        UserDefinedFileAttributeView view
+                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+
+        view.delete(attr);
+    }
+
 
     private static Principal asUserPrincipal(int uid) {
         return new UserPrincipal() {
