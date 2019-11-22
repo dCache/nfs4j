@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -92,6 +92,7 @@ public interface NFSv4FileAttributes {
 
     // word3
     static final int FATTR4_SUPPATTR_EXCLCREAT  =  (1 << 11) ;
+    static final int FATTR4_XATTR_SUPPORT  =  (1 << 18) ;
 
 
     /**
@@ -158,7 +159,8 @@ public interface NFSv4FileAttributes {
         FATTR4_FS_LAYOUT_TYPE      ; // want to be a 4.1 server
 
     public final static int NFS4_SUPPORTED_ATTRS_MASK3 =
-            FATTR4_SUPPATTR_EXCLCREAT;
+        FATTR4_SUPPATTR_EXCLCREAT   |
+        FATTR4_XATTR_SUPPORT;
 
     // all writable attributes of word0 and word1
     public final static int[] EXCLCREAT_ATTR = new int[] {

@@ -275,6 +275,6 @@ public interface nfs4_prot {
     public static final int ACCESS4_XAREAD = 0x00000040;
     public static final int ACCESS4_XALIST = 0x00000100;
     public static final int ACCESS4_XAWRITE = 0x00000080;
-
+    public static final int FATTR4_XATTR_SUPPORT = 82;
 }
 // End of nfs4_prot.java

@@ -37,6 +37,7 @@ import org.dcache.nfs.v4.xdr.fattr4_owner;
 import org.dcache.nfs.v4.xdr.fattr4_space_used;
 import org.dcache.nfs.v4.xdr.fattr4_maxlink;
 import org.dcache.nfs.v4.xdr.fattr4_unique_handles;
+import org.dcache.nfs.v4.xdr.fattr4_xattr_support;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.fattr4_fh_expire_type;
@@ -405,6 +406,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
                 return Optional.of(new fattr4_supported_attrs(NFSv4FileAttributes.EXCLCREAT_ATTR));
+            case nfs4_prot.FATTR4_XATTR_SUPPORT:
+                return Optional.of(new fattr4_xattr_support(false));
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
                 throw new InvalException("getattr of write-only attributes");
