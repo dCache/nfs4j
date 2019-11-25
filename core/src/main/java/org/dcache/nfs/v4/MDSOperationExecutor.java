@@ -147,6 +147,14 @@ public class MDSOperationExecutor extends AbstractOperationExecutor {
                 return new OperationFREE_STATEID(op);
             case nfs_opnum4.OP_TEST_STATEID:
                 return new OperationTEST_STATEID(op);
+            case nfs_opnum4.OP_GETXATTR:
+                return new OperationGETXATTR(op);
+            case nfs_opnum4.OP_SETXATTR:
+                return new OperationSETXATTR(op);
+            case nfs_opnum4.OP_LISTXATTRS:
+                return new OperationLISTXATTRS(op);
+            case nfs_opnum4.OP_REMOVEXATTR:
+                return new OperationREMOVEXATTR(op);
             case nfs_opnum4.OP_ILLEGAL:
 
         }

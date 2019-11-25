@@ -85,6 +85,11 @@ public class nfs_resop4 implements XdrAble {
     public WANT_DELEGATION4res opwant_delegation;
     public DESTROY_CLIENTID4res opdestroy_clientid;
     public RECLAIM_COMPLETE4res opreclaim_complete;
+    public GETXATTR4res opgetxattr;
+    public SETXATTR4res opsetxattr;
+    public LISTXATTRS4res oplistxattrs;
+    public REMOVEXATTR4res opremovexattr;
+
     public ILLEGAL4res opillegal;
 
     public nfs_resop4() {
@@ -273,6 +278,18 @@ public class nfs_resop4 implements XdrAble {
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete.xdrEncode(xdr);
             break;
+        case nfs_opnum4.OP_GETXATTR:
+            opgetxattr.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_SETXATTR:
+            opsetxattr.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_LISTXATTRS:
+            oplistxattrs.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_REMOVEXATTR:
+            opremovexattr.xdrEncode(xdr);
+            break;
         case nfs_opnum4.OP_ILLEGAL:
             opillegal.xdrEncode(xdr);
             break;
@@ -456,6 +473,18 @@ public class nfs_resop4 implements XdrAble {
             break;
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete = new RECLAIM_COMPLETE4res(xdr);
+            break;
+        case nfs_opnum4.OP_GETXATTR:
+            opgetxattr = new GETXATTR4res(xdr);
+            break;
+        case nfs_opnum4.OP_SETXATTR:
+            opsetxattr = new SETXATTR4res(xdr);
+            break;
+        case nfs_opnum4.OP_LISTXATTRS:
+            oplistxattrs = new LISTXATTRS4res(xdr);
+            break;
+        case nfs_opnum4.OP_REMOVEXATTR:
+            opremovexattr = new REMOVEXATTR4res(xdr);
             break;
         case nfs_opnum4.OP_ILLEGAL:
             opillegal = new ILLEGAL4res(xdr);
@@ -642,6 +671,18 @@ public class nfs_resop4 implements XdrAble {
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 status = opreclaim_complete.rcr_status;
                 break;
+            case nfs_opnum4.OP_GETXATTR:
+                status = opgetxattr.gxr_status;
+                break;
+            case nfs_opnum4.OP_SETXATTR:
+                status = opsetxattr.sxr_status;
+                break;
+            case nfs_opnum4.OP_LISTXATTRS:
+                status = oplistxattrs.lxr_status;
+                break;
+            case nfs_opnum4.OP_REMOVEXATTR:
+                status = opremovexattr.rxr_status;
+                break;
             case nfs_opnum4.OP_ILLEGAL:
                 status = opillegal.status;
                 break;
@@ -825,6 +866,18 @@ public class nfs_resop4 implements XdrAble {
                 break;
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 opreclaim_complete.rcr_status = status;
+                break;
+            case nfs_opnum4.OP_GETXATTR:
+                opgetxattr.gxr_status = status;
+                break;
+            case nfs_opnum4.OP_SETXATTR:
+                opsetxattr.sxr_status = status;
+                break;
+            case nfs_opnum4.OP_LISTXATTRS:
+                oplistxattrs.lxr_status = status;
+                break;
+            case nfs_opnum4.OP_REMOVEXATTR:
+                opremovexattr.rxr_status = status;
                 break;
             case nfs_opnum4.OP_ILLEGAL:
                 opillegal.status = status;
@@ -1010,6 +1063,18 @@ public class nfs_resop4 implements XdrAble {
                 break;
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 resop.opreclaim_complete = new RECLAIM_COMPLETE4res();
+                break;
+            case nfs_opnum4.OP_GETXATTR:
+                resop.opgetxattr = new GETXATTR4res();
+                break;
+            case nfs_opnum4.OP_SETXATTR:
+                resop.opsetxattr = new SETXATTR4res();
+                break;
+            case nfs_opnum4.OP_LISTXATTRS:
+                resop.oplistxattrs = new LISTXATTRS4res();
+                break;
+            case nfs_opnum4.OP_REMOVEXATTR:
+                resop.opremovexattr = new REMOVEXATTR4res();
                 break;
             case nfs_opnum4.OP_ILLEGAL:
                 resop.opillegal = new ILLEGAL4res();

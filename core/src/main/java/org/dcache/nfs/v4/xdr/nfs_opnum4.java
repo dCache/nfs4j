@@ -93,6 +93,10 @@ public final class nfs_opnum4 {
     public static final int OP_SEEK = 69;
     public static final int OP_WRITE_SAME = 70;
     public static final int OP_CLONE = 71;
+    public static final int OP_GETXATTR = 72;
+    public static final int OP_SETXATTR = 73;
+    public static final int OP_LISTXATTRS = 74;
+    public static final int OP_REMOVEXATTR = 75;
     public static final int OP_ILLEGAL = 10044;
 
     private nfs_opnum4() {
@@ -239,6 +243,14 @@ public final class nfs_opnum4 {
                 return "WRITE_SAME";
             case nfs_opnum4.OP_CLONE:
                 return "CLONE";
+            case nfs_opnum4.OP_GETXATTR:
+                return "GETXATTR";
+            case nfs_opnum4.OP_SETXATTR:
+                return "SETXATTR";
+            case nfs_opnum4.OP_LISTXATTRS:
+                return "LISTXATTRS";
+            case nfs_opnum4.OP_REMOVEXATTR:
+                return "REMOVEXATTR";
             case nfs_opnum4.OP_ILLEGAL:
                 return "ILLEGAL";
             default:

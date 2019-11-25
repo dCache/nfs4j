@@ -126,6 +126,10 @@ public class nfs_argop4 implements XdrAble {
     public WANT_DELEGATION4args opwant_delegation;
     public DESTROY_CLIENTID4args opdestroy_clientid;
     public RECLAIM_COMPLETE4args opreclaim_complete;
+    public GETXATTR4args opgetxattr;
+    public SETXATTR4args opsetxattr;
+    public LISTXATTRS4args oplistxattrs;
+    public REMOVEXATTR4args opremovexattr;
 
     public nfs_argop4() {
     }
@@ -306,6 +310,18 @@ public class nfs_argop4 implements XdrAble {
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete.xdrEncode(xdr);
             break;
+        case nfs_opnum4.OP_GETXATTR:
+            opgetxattr.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_SETXATTR:
+            opsetxattr.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_LISTXATTRS:
+            oplistxattrs.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_REMOVEXATTR:
+            opremovexattr.xdrEncode(xdr);
+            break;
         case nfs_opnum4.OP_ILLEGAL:
             break;
         }
@@ -481,6 +497,18 @@ public class nfs_argop4 implements XdrAble {
             break;
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete = new RECLAIM_COMPLETE4args(xdr);
+            break;
+        case nfs_opnum4.OP_GETXATTR:
+            opgetxattr = new GETXATTR4args(xdr);
+            break;
+        case nfs_opnum4.OP_SETXATTR:
+            opsetxattr = new SETXATTR4args(xdr);
+            break;
+        case nfs_opnum4.OP_LISTXATTRS:
+            oplistxattrs = new LISTXATTRS4args(xdr);
+            break;
+        case nfs_opnum4.OP_REMOVEXATTR:
+            opremovexattr = new REMOVEXATTR4args(xdr);
             break;
         case nfs_opnum4.OP_ILLEGAL:
             break;
