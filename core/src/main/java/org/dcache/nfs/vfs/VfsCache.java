@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -374,4 +374,15 @@ public class VfsCache extends ForwardingFileSystem {
         return directoryStream.tail(cookie);
     }
 
+    @Override
+    public void removeXattr(Inode inode, String attr) throws IOException {
+        _inner.removeXattr(inode, attr);
+        invalidateStatCache(inode);
+    }
+
+    @Override
+    public void setXattr(Inode inode, String attr, byte[] value, SetXattrMode mode) throws IOException {
+        _inner.setXattr(inode, attr, value, mode);
+        invalidateStatCache(inode);
+    }
 }
