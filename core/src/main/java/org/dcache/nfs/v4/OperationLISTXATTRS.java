@@ -21,10 +21,13 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.LISTXATTRS4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class OperationLISTXATTRS extends AbstractNFSv4Operation {
@@ -35,7 +38,16 @@ public class OperationLISTXATTRS extends AbstractNFSv4Operation {
 
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
-        throw new NotSuppException("Not implemented yet.");
+
+        Inode inode = context.currentInode();
+        String[] attrs = context.getFs().listXattrs(inode);
+
+        result.oplistxattrs.lxr_value = new LISTXATTRS4resok();
+        // FIXME: for now send all in one go.
+        result.oplistxattrs.lxr_value.lxr_eof = true;
+        result.oplistxattrs.lxr_value.lxr_cookie = new nfs_cookie4(0);
+        result.oplistxattrs.lxr_value.lxr_names = attrs;
+        result.setStatus(nfsstat.NFS_OK);
     }
 
 }

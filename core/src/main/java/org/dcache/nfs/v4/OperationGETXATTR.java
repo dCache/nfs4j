@@ -21,10 +21,14 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.NoXattrException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.xattrvalue4;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class OperationGETXATTR extends AbstractNFSv4Operation {
@@ -35,7 +39,16 @@ public class OperationGETXATTR extends AbstractNFSv4Operation {
 
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
-        throw new NotSuppException("Not implemented yet.");
-    }
 
+        try {
+            Inode inode = context.currentInode();
+            byte[] value = context.getFs().getXattr(inode, _args.opgetxattr.gxa_name);
+            result.opgetxattr.gxr_value = new xattrvalue4(value);
+            result.setStatus(nfsstat.NFS_OK);
+        } catch (NotSuppException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new NoXattrException();
+        }
+    }
 }

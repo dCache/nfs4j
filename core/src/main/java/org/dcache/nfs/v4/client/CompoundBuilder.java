@@ -93,16 +93,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalLong;
+import org.dcache.nfs.v4.xdr.GETXATTR4args;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4args;
 import org.dcache.nfs.v4.xdr.LAYOUTERROR4args;
 import org.dcache.nfs.v4.xdr.LAYOUTSTATS4args;
+import org.dcache.nfs.v4.xdr.LISTXATTRS4args;
 import org.dcache.nfs.v4.xdr.LOCKU4args;
 import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
+import org.dcache.nfs.v4.xdr.REMOVEXATTR4args;
+import org.dcache.nfs.v4.xdr.SETXATTR4args;
 import org.dcache.nfs.v4.xdr.device_error4;
 import org.dcache.nfs.v4.xdr.io_info4;
 import org.dcache.nfs.v4.xdr.layoutupdate4;
 import org.dcache.nfs.v4.xdr.newoffset4;
 import org.dcache.nfs.v4.xdr.newtime4;
+import org.dcache.nfs.v4.xdr.xattrvalue4;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.Xdr;
 
@@ -660,6 +665,51 @@ public class CompoundBuilder {
         op.oplayouterror.lea_errors = errors;
 
         ops.add(op);
+        return this;
+    }
+
+    public CompoundBuilder withGetXattr(String name) {
+
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_GETXATTR;
+        op.opgetxattr = new GETXATTR4args();
+        op.opgetxattr.gxa_name = name;
+        ops.add(op);
+
+        return this;
+    }
+
+    public CompoundBuilder withSetXattr(String name, byte[] value, int mode) {
+
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_SETXATTR;
+        op.opsetxattr = new SETXATTR4args();
+        op.opsetxattr.sxa_name = name;
+        op.opsetxattr.sxa_value = new xattrvalue4(value);
+        op.opsetxattr.sxa_option = mode;
+        ops.add(op);
+
+        return this;
+    }
+
+    public CompoundBuilder withListXattrs(int cookie, int count) {
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_LISTXATTRS;
+        op.oplistxattrs = new LISTXATTRS4args();
+        op.oplistxattrs.lxa_cookie = new nfs_cookie4(cookie);
+        op.oplistxattrs.lxa_maxcount = new count4(count);
+        ops.add(op);
+
+        return this;
+    }
+
+    public CompoundBuilder withRemoveXattr(String name) {
+        nfs_argop4 op = new nfs_argop4();
+        op.argop = nfs_opnum4.OP_REMOVEXATTR;
+        op.opremovexattr = new REMOVEXATTR4args();
+        op.opremovexattr.rxa_name = name;
+        ops.add(op);
+
         return this;
     }
 

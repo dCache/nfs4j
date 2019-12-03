@@ -407,7 +407,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
                 return Optional.of(new fattr4_supported_attrs(NFSv4FileAttributes.EXCLCREAT_ATTR));
             case nfs4_prot.FATTR4_XATTR_SUPPORT:
-                return Optional.of(new fattr4_xattr_support(false));
+                // REVISIT: we should query file system for corresponding capability
+                return Optional.of(new fattr4_xattr_support(true));
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
                 throw new InvalException("getattr of write-only attributes");

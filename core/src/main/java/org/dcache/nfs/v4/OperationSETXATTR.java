@@ -21,10 +21,16 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.BadXdrException;
+import org.dcache.nfs.v4.xdr.change_info4;
+import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class OperationSETXATTR extends AbstractNFSv4Operation {
@@ -35,7 +41,35 @@ public class OperationSETXATTR extends AbstractNFSv4Operation {
 
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
-        throw new NotSuppException("Not implemented yet.");
+
+        Inode inode = context.currentInode();
+
+        result.opsetxattr.sxr_info = new change_info4();
+        result.opsetxattr.sxr_info.atomic = true;
+        Stat stat = context.getFs().getattr(inode);
+        result.opsetxattr.sxr_info.before = new changeid4(stat.getGeneration());
+
+        context.getFs().setXattr(inode, _args.opsetxattr.sxa_name,
+                _args.opsetxattr.sxa_value.value,
+                toXatterSetMode(_args.opsetxattr.sxa_option));
+
+        stat = context.getFs().getattr(inode);
+        result.opsetxattr.sxr_info.after = new changeid4(stat.getGeneration());
+
+        result.setStatus(nfsstat.NFS_OK);
+    }
+
+    private final VirtualFileSystem.SetXattrMode toXatterSetMode(int i) throws BadXdrException {
+        switch(i) {
+            case 0:
+                return VirtualFileSystem.SetXattrMode.EITHER;
+            case 1:
+                return VirtualFileSystem.SetXattrMode.CREATE;
+            case 2:
+                return VirtualFileSystem.SetXattrMode.REPLACE;
+            default:
+                throw new BadXdrException("Unknown setxattr mode " + i);
+        }
     }
 
 }
