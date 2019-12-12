@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.v3.xdr.dirpath;
+import org.dcache.nfs.v3.xdr.mountlist;
 import org.dcache.nfs.v3.xdr.mountres3;
 import org.dcache.nfs.v3.xdr.mountstat3;
 import org.dcache.nfs.vfs.Inode;
@@ -87,6 +88,43 @@ public class MountServerTest {
                 toMount(symlink);
 
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
+    }
+
+    @Test
+    public void testDumpNoClients() throws IOException {
+        assertFalse(mountServer().hasMounts());
+    }
+
+    @Test
+    public void testMountAddsClient() throws IOException {
+        String path = "/some/export";
+        mountres3 res = mountServer()
+                .withPath(path)
+                .exportedTo("192.168.178.33")
+                .withSecurity(FsExport.Sec.SYS).
+                accessedFrom("192.168.178.33").
+                toMount(path);
+
+        assertTrue(mountServer().hasMounts());
+    }
+
+    @Test
+    public void testUnmountRemovesClient() throws IOException {
+        String path = "/some/export";
+        mountres3 res = mountServer()
+                .withPath(path)
+                .exportedTo("192.168.178.33")
+                .withSecurity(FsExport.Sec.SYS).
+                accessedFrom("192.168.178.33").
+                toMount(path);
+
+        assertTrue(mountServer().hasMounts());
+
+        mountServer()
+                .accessedFrom("192.168.178.33")
+                .unmount(path);
+
+        assertFalse(mountServer().hasMounts());
     }
 
     MountServertestHelper mountServer() throws IOException {
@@ -180,5 +218,15 @@ public class MountServerTest {
         mountres3 toMount(String path) {
             return _mountServer.MOUNTPROC3_MNT_3(call, new dirpath(path));
         }
+
+        void unmount(String path) {
+            _mountServer.MOUNTPROC3_UMNT_3(call, new dirpath(path));
+        }
+
+        boolean hasMounts() {
+            mountlist mounts = _mountServer.MOUNTPROC3_DUMP_3(call);
+            return mounts.value != null;
+        }
+
     }
 }
