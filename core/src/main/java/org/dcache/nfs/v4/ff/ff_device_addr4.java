@@ -14,11 +14,9 @@ import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.multipath_list4;
 
-public class ff_device_addr4 implements XdrAble, java.io.Serializable {
+public class ff_device_addr4 implements XdrAble {
     public multipath_list4 ffda_netaddrs;
     public ff_device_versions4 [] ffda_versions;
-
-    private static final long serialVersionUID = 6386983171819598143L;
 
     public ff_device_addr4() {
     }

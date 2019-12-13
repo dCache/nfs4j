@@ -16,15 +16,13 @@ import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfstime4;
 
-public class ff_layoutupdate4 implements XdrAble, java.io.Serializable {
+public class ff_layoutupdate4 implements XdrAble {
     public netaddr4 ffl_addr;
     public nfs_fh4 ffl_fhandle;
     public ff_io_latency4 ffl_read;
     public ff_io_latency4 ffl_write;
     public nfstime4 ffl_duration;
     public boolean ffl_local;
-
-    private static final long serialVersionUID = 7916998994578483964L;
 
     public ff_layoutupdate4() {
     }

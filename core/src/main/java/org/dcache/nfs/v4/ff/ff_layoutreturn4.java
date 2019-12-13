@@ -13,11 +13,9 @@ import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
-public class ff_layoutreturn4 implements XdrAble, java.io.Serializable {
+public class ff_layoutreturn4 implements XdrAble {
     public ff_ioerr4 [] fflr_ioerr_report;
     public ff_iostats4 [] fflr_iostats_report;
-
-    private static final long serialVersionUID = -1266201700985015117L;
 
     public ff_layoutreturn4() {
     }

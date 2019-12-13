@@ -19,15 +19,13 @@ import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 
-public class ff_data_server4 implements XdrAble, java.io.Serializable {
+public class ff_data_server4 implements XdrAble {
     public deviceid4 ffds_deviceid;
     public uint32_t ffds_efficiency;
     public stateid4 ffds_stateid;
     public nfs_fh4[] ffds_fh_vers;
     public fattr4_owner ffds_user;
     public fattr4_owner_group ffds_group;
-
-    private static final long serialVersionUID = -8092922682977140250L;
 
     public ff_data_server4() {
     }

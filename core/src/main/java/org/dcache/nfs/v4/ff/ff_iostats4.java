@@ -19,7 +19,7 @@ import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
 
-public class ff_iostats4 implements XdrAble, java.io.Serializable {
+public class ff_iostats4 implements XdrAble {
     public offset4 ffis_offset;
     public length4 ffis_length;
     public stateid4 ffis_stateid;
@@ -27,8 +27,6 @@ public class ff_iostats4 implements XdrAble, java.io.Serializable {
     public io_info4 ffis_write;
     public deviceid4 ffis_deviceid;
     public ff_layoutupdate4 ffis_layoutupdate;
-
-    private static final long serialVersionUID = 1687051831434791943L;
 
     public ff_iostats4() {
     }

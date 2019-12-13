@@ -13,10 +13,8 @@ import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
-public class ff_mirror4 implements XdrAble, java.io.Serializable {
+public class ff_mirror4 implements XdrAble {
     public ff_data_server4 [] ffm_data_servers;
-
-    private static final long serialVersionUID = 3815279288438096533L;
 
     public ff_mirror4() {
     }

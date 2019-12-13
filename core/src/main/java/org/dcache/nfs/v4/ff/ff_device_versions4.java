@@ -14,14 +14,12 @@ import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.uint32_t;
 
-public class ff_device_versions4 implements XdrAble, java.io.Serializable {
+public class ff_device_versions4 implements XdrAble {
     public uint32_t ffdv_version;
     public uint32_t ffdv_minorversion;
     public uint32_t ffdv_rsize;
     public uint32_t ffdv_wsize;
     public boolean ffdv_tightly_coupled;
-
-    private static final long serialVersionUID = 8550127182986622481L;
 
     public ff_device_versions4() {
     }

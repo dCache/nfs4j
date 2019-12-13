@@ -15,9 +15,7 @@ import java.io.IOException;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.uint64_t;
 
-public class ff_io_latency4 implements XdrAble, java.io.Serializable {
-
-    private static final long serialVersionUID = 4758450970321975640L;
+public class ff_io_latency4 implements XdrAble {
 
     public uint64_t ffil_ops_requested;
     public uint64_t ffil_bytes_requested;

@@ -13,10 +13,8 @@ import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 
-public class ff_layouthint4 implements XdrAble, java.io.Serializable {
+public class ff_layouthint4 implements XdrAble {
     public ff_mirrors_hint fflh_mirrors_hint;
-
-    private static final long serialVersionUID = 5904359426929067786L;
 
     public ff_layouthint4() {
     }

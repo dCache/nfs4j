@@ -15,13 +15,11 @@ import java.io.IOException;
 import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 
-public class ff_layout4 implements XdrAble, java.io.Serializable {
+public class ff_layout4 implements XdrAble {
     public length4 ffl_stripe_unit;
     public ff_mirror4 [] ffl_mirrors;
     public uint32_t ffl_flags4;
     public uint32_t ffl_stats_collect_hint;
-
-    private static final long serialVersionUID = 9097043134498097746L;
 
     public ff_layout4() {
     }

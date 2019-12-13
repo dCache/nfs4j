@@ -14,11 +14,9 @@ import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
 import org.dcache.nfs.v4.xdr.uint32_t;
 
-public class ff_mirrors_hint implements XdrAble, java.io.Serializable {
+public class ff_mirrors_hint implements XdrAble {
     public boolean ffmc_valid;
     public uint32_t ffmc_mirrors;
-
-    private static final long serialVersionUID = 2356648982057016891L;
 
     public ff_mirrors_hint() {
     }

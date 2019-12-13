@@ -18,13 +18,11 @@ import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
 
-public class ff_ioerr4 implements XdrAble, java.io.Serializable {
+public class ff_ioerr4 implements XdrAble {
     public offset4 ffie_offset;
     public length4 ffie_length;
     public stateid4 ffie_stateid;
     public device_error4[] ffie_errors;
-
-    private static final long serialVersionUID = 616611153944851361L;
 
     public ff_ioerr4() {
     }
