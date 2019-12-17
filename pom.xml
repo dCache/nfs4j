@@ -85,6 +85,9 @@
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
             <version>3.1.12</version>
+            <configuration>
+               <excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
         </plugin>
         <plugin>
             <groupId>org.jacoco</groupId>
