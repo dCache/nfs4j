@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -17,24 +17,20 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.utils;
+package org.dcache.nfs.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+/**
+ * NOP implementation of {@link CacheEventListener}.
+ *
+ * @param <T>
+ */
+public class NopCacheEventListener<K, V> implements CacheEventListener<K,V> {
 
-import java.util.Locale;
-import javax.security.auth.Subject;
+    public void notifyPut(Cache<K,V> cache, V v) {}
 
-public class UnixUtilsTest {
-    @Test
-    public void testGetCurrentUser() {
-        String osName = System.getProperty("os.name");
-        boolean isWindows = osName.toLowerCase(Locale.ROOT).contains("windows");
-        Subject currentUser = UnixUtils.getCurrentUser();
-        if (isWindows) {
-            Assert.assertNull(currentUser);
-        } else {
-            Assert.assertNotNull(currentUser);
-        }
-    }
+    public void notifyGet(Cache<K,V> cache, V v) {}
+
+    public void notifyRemove(Cache<K,V> cache, V v) {}
+
+    public void notifyExpired(Cache<K,V> cache, V v) {}
 }

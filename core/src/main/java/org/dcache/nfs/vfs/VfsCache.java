@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,12 +29,11 @@ import com.google.common.cache.LoadingCache;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
-import org.dcache.utils.GuavaCacheMXBeanImpl;
-import org.dcache.utils.Opaque;
+import org.dcache.nfs.util.GuavaCacheMXBeanImpl;
+import org.dcache.nfs.util.Opaque;
 
 import static java.util.Objects.requireNonNull;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.utils.Opaque;
+import org.dcache.nfs.util.Opaque;
 
 public class NFS4Client {
 

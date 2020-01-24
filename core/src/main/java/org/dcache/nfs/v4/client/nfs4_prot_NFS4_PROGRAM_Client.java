@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
 import org.dcache.oncrpc4j.xdr.XdrVoid;
-import org.dcache.utils.UnixUtils;
+import org.dcache.nfs.util.UnixUtils;
 
 
 /**

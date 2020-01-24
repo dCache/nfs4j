@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -17,21 +17,31 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.utils;
+package org.dcache.nfs.util;
 
+import java.security.Principal;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.security.auth.Subject;
 
 /**
- * Interface CacheMXBeanImplMXBean
- *
+ * A helper class to provide log-friendly {@link Subject#toString()}.
  */
-public interface CacheMXBean<V> {
+public class SubjectHolder {
 
-    void clear();
-    long getEntryIdleTime();
-    long getEntryLiveTime();
-    int getSize();
-    String[] getEntries();
-    long getLastClean();
+    private final Subject _subject;
+
+    public SubjectHolder(Subject subject) {
+        _subject = subject;
+    }
+
+    @Override
+    public String toString() {
+        Set<Principal> principals = _subject.getPrincipals();
+        synchronized (principals) {
+            return principals.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(",", "Subject: < ", ">"));
+        }
+    }
 }
-
-

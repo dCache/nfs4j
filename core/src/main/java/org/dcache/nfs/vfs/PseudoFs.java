@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ import org.dcache.oncrpc4j.rpc.RpcCall;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
 
 import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.utils.SubjectHolder;
+import org.dcache.nfs.util.SubjectHolder;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.gss.RpcAuthGss;
