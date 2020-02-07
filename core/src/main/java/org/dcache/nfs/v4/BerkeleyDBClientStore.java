@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -118,7 +118,7 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
             DatabaseEntry key = new DatabaseEntry();
             DatabaseEntry data = new DatabaseEntry();
 
-            while (cursor.getNext(key, data, null) == OperationStatus.KEYEMPTY.SUCCESS) {
+            while (cursor.getNext(key, data, null) == OperationStatus.SUCCESS) {
                 clientRecoveryDatabase.putNoOverwrite(tx, key, data);
                 cursor.delete();
             }
