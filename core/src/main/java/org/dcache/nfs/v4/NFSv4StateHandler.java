@@ -92,7 +92,15 @@ public class NFSv4StateHandler {
         this(NFSv4Defaults.NFS4_LEASE_TIME, 0, new EphemeralClientRecoveryStore());
     }
 
-    NFSv4StateHandler(long leaseTime, int instanceId, ClientRecoveryStore clientStore) {
+    /**
+     * Create NFSv4 state handler with given lease time, instance id and client store.
+     * The {@code instanceId} should uniquely identify this state handler.
+     *
+     * @param leaseTime state lease time in seconds.
+     * @param instanceId the nfs server instance id within deployment.
+     * @param clientStore store used by state handler to keep track of valid clients.
+     */
+    public NFSv4StateHandler(long leaseTime, int instanceId, ClientRecoveryStore clientStore) {
         _leaseTime = TimeUnit.SECONDS.toMillis(leaseTime);
         _clientsByServerId = new Cache<>("NFSv41 clients", 5000, Long.MAX_VALUE,
                 _leaseTime * 2,
