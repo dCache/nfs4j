@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -127,7 +127,7 @@ public class MountServer extends mount_protServerStub {
             _mounts.put(mountPoint, remoteAddress);
 
         } catch (ChimeraNFSException e) {
-            _log.warn("mount request failed: ", e.getMessage());
+            _log.warn("mount request failed: {}", e.getMessage());
             m.fhs_status = e.getStatus();
         } catch (IOException e) {
             m.fhs_status = mountstat3.MNT3ERR_SERVERFAULT;
