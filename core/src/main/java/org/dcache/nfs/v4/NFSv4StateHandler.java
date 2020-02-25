@@ -408,4 +408,12 @@ public class NFSv4StateHandler {
         return new sessionid4(id);
     }
 
+    /**
+     * Get lease time value in seconds used by this state handler.
+     * @return lease time value in seconds.
+     */
+    public int getLeaseTime() {
+	return _leaseTime;
+    }
+
 }
