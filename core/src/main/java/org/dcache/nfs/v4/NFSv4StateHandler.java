@@ -68,9 +68,9 @@ public class NFSv4StateHandler {
     private final Cache<clientid4, NFS4Client> _clientsByServerId;
 
     /**
-     * Client's lease expiration time in milliseconds.
+     * Client's lease expiration time in seconds.
      */
-    private final long _leaseTime;
+    private final int _leaseTime;
 
     private boolean _running;
 
@@ -100,10 +100,10 @@ public class NFSv4StateHandler {
      * @param instanceId the nfs server instance id within deployment.
      * @param clientStore store used by state handler to keep track of valid clients.
      */
-    public NFSv4StateHandler(long leaseTime, int instanceId, ClientRecoveryStore clientStore) {
-        _leaseTime = TimeUnit.SECONDS.toMillis(leaseTime);
+    public NFSv4StateHandler(int leaseTime, int instanceId, ClientRecoveryStore clientStore) {
+        _leaseTime = leaseTime;
         _clientsByServerId = new Cache<>("NFSv41 clients", 5000, Long.MAX_VALUE,
-                _leaseTime * 2,
+                TimeUnit.SECONDS.toMillis(_leaseTime * 2),
                 new DeadClientCollector());
 
         _running = true;
@@ -119,11 +119,11 @@ public class NFSv4StateHandler {
 
         // periodic dead client scan
         _cleanerScheduler.scheduleAtFixedRate(() -> _clientsByServerId.cleanUp(),
-                _leaseTime * 4, _leaseTime * 4, TimeUnit.MILLISECONDS);
+                _leaseTime * 4, _leaseTime * 4, TimeUnit.SECONDS);
 
         // one time action to close recovery window.
         _cleanerScheduler.schedule(() -> clientStore.reclaimComplete(),
-                _leaseTime, TimeUnit.MILLISECONDS);
+                _leaseTime, TimeUnit.SECONDS);
     }
 
     public void removeClient(NFS4Client client) {
@@ -261,7 +261,9 @@ public class NFSv4StateHandler {
 
     public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress, int minorVersion,
             byte[] ownerID, verifier4 verifier, Principal principal, boolean callbackNeeded) {
-        NFS4Client client = new NFS4Client(this, nextClientId(), minorVersion, clientAddress, localAddress, ownerID, verifier, principal, _leaseTime, callbackNeeded);
+        NFS4Client client = new NFS4Client(this, nextClientId(),
+		minorVersion, clientAddress, localAddress, ownerID, verifier,
+		principal, TimeUnit.SECONDS.toMillis(_leaseTime), callbackNeeded);
         addClient(client);
         return client;
     }
