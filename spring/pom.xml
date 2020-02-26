@@ -5,7 +5,7 @@
     <parent>
       <groupId>org.dcache</groupId>
       <artifactId>nfs4j</artifactId>
-      <version>0.20.0-SNAPSHOT</version>
+      <version>0.21.0-SNAPSHOT</version>
     </parent>
 
     <name>Spring integarion for nfs4j</name>
