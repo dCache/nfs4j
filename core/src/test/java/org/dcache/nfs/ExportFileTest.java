@@ -126,15 +126,11 @@ public class ExportFileTest {
 
     private void assertExportExists(String path, ExportFile exportFile) {
         assertTrue("export " + path + " doesn't exists", exportFile.exports()
-                .filter(e -> e.getPath().equals(path))
-                .findAny()
-                .isPresent());
+                .anyMatch(e -> e.getPath().equals(path)));
     }
 
     private void assertExportNotExists(String path, ExportFile exportFile) {
         assertFalse("export " + path + " exist, but shouldn't", exportFile.exports()
-                .filter(e -> e.getPath().equals(path))
-                .findAny()
-                .isPresent());
+                .anyMatch(e -> e.getPath().equals(path)));
     }
 }
