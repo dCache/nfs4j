@@ -17,16 +17,16 @@
 package org.dcache.nfs.vfs;
 
 import com.google.common.io.BaseEncoding;
-import java.nio.charset.Charset;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.junit.Assert.*;
+
 
 /**
  *
  */
 public class FileHandleTest {
-
-    private final static Charset ACSII = Charset.forName("ASCII");
 
     @Test(expected = IllegalArgumentException.class)
     public void testEmptyHandle() {
@@ -55,7 +55,7 @@ public class FileHandleTest {
         assertEquals(0, fh.getGeneration());
         byte[] opaque = fh.getFsOpaque();
         assertEquals("/export/data".hashCode(), fh.getExportIdx());
-        assertEquals("0:INODE:0000C37233174392456EB83E44844E8D28D6:0", new String(opaque, ACSII));
+        assertEquals("0:INODE:0000C37233174392456EB83E44844E8D28D6:0", new String(opaque, US_ASCII));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class FileHandleTest {
 
         FileHandle fh = new FileHandle.FileHandleBuilder()
                 .setExportIdx("/export/data".hashCode())
-                .build("0:INODE:0000C37233174392456EB83E44844E8D28D6:0".getBytes(ACSII));
+                .build("0:INODE:0000C37233174392456EB83E44844E8D28D6:0".getBytes(US_ASCII));
 
         assertEquals("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
                 fh.toString());
@@ -75,7 +75,7 @@ public class FileHandleTest {
     public void testValidHandleV0Regular() {
         String oldId = "0:INODE:0000C37233174392456EB83E44844E8D28D6:0";
 
-        byte[] bytes = oldId.getBytes(ACSII);
+        byte[] bytes = oldId.getBytes(US_ASCII);
         FileHandle fh = new FileHandle(bytes);
 
         assertEquals(0, fh.getVersion());
@@ -84,7 +84,7 @@ public class FileHandleTest {
         byte[] opaque = fh.getFsOpaque();
         assertEquals(-1, fh.getExportIdx());
         assertEquals(0, fh.getType());
-        assertEquals(oldId, new String(opaque, ACSII));
+        assertEquals(oldId, new String(opaque, US_ASCII));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class FileHandleTest {
         String oldIdPseudo = "255:INODE:0000C37233174392456EB83E44844E8D28D6:0";
         String oldIdReg = "0:INODE:0000C37233174392456EB83E44844E8D28D6:0";
 
-        byte[] bytes = oldIdPseudo.getBytes(ACSII);
+        byte[] bytes = oldIdPseudo.getBytes(US_ASCII);
         FileHandle fh = new FileHandle(bytes);
 
         assertEquals(1, fh.getVersion());
@@ -101,6 +101,6 @@ public class FileHandleTest {
         byte[] opaque = fh.getFsOpaque();
         assertEquals(0, fh.getExportIdx());
         assertEquals(1, fh.getType());
-        assertEquals(oldIdReg, new String(opaque, ACSII));
+        assertEquals(oldIdReg, new String(opaque, US_ASCII));
     }
 }
