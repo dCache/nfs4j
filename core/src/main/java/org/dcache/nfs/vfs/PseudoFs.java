@@ -69,7 +69,8 @@ public class PseudoFs extends ForwardingFileSystem {
 
     private final static int ACCESS4_MASK =
             ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
-            | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ;
+            | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ
+            | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
 
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable) {
         _inner = inner;
