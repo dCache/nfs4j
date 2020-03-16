@@ -7,6 +7,7 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
@@ -27,11 +28,17 @@ public class REMOVEXATTR4res implements XdrAble {
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(rxr_status);
+        if (rxr_status == nfsstat.NFS_OK) {
+            rxr_info.xdrEncode(xdr);
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         rxr_status = xdr.xdrDecodeInt();
+        if (rxr_status == nfsstat.NFS_OK) {
+            rxr_info = new change_info4(xdr);
+        }
     }
 
 }

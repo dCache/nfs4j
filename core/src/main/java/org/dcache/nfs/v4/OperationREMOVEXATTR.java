@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2019 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,10 +22,13 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.change_info4;
+import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.vfs.Stat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class OperationREMOVEXATTR extends AbstractNFSv4Operation {
@@ -38,8 +41,18 @@ public class OperationREMOVEXATTR extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
 
         Inode inode = context.currentInode();
+
+        result.opremovexattr.rxr_info = new change_info4();
+        result.opremovexattr.rxr_info.atomic = true;
+
+        Stat stat = context.getFs().getattr(inode);
+        result.opremovexattr.rxr_info.before = new changeid4(stat.getGeneration());
+
         context.getFs().removeXattr(inode, _args.opremovexattr.rxa_name);
+        stat = context.getFs().getattr(inode);
+        result.opremovexattr.rxr_info.after = new changeid4(stat.getGeneration());
         result.setStatus(nfsstat.NFS_OK);
+
     }
 
 }
