@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -160,4 +160,23 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
         return delegate().directoryVerifier(inode);
     }
 
+    @Override
+    public byte[] getXattr(Inode inode, String attr) throws IOException {
+        return delegate().getXattr(inode, attr);
+    }
+
+    @Override
+    public void setXattr(Inode inode, String attr, byte[] value, SetXattrMode mode) throws IOException {
+        delegate().setXattr(inode, attr, value, mode);
+    }
+
+    @Override
+    public String[] listXattrs(Inode inode) throws IOException {
+        return delegate().listXattrs(inode);
+    }
+
+    @Override
+    public void removeXattr(Inode inode, String attr) throws IOException {
+        delegate().removeXattr(inode, attr);
+    }
 }
