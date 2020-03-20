@@ -156,233 +156,239 @@ public class Main {
                 String[] commandArgs = line.split("[ \t]+");
 
                 try {
-
-                    if (commandArgs[0].equals("mount")) {
-
-                        String host = commandArgs.length > 1 ? commandArgs[1]
-                                : "localhost";
-                        String root = commandArgs.length > 2 ? commandArgs[2]
-                                : "/";
-                        nfsClient = new Main(InetAddress.getByName(host));
-                        nfsClient.mount(root);
-
-                    } else if (commandArgs[0].equals("umount")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                    switch (commandArgs[0]) {
+                        case "mount": {
+                            String host = commandArgs.length > 1 ? commandArgs[1]
+                                    : "localhost";
+                            String root = commandArgs.length > 2 ? commandArgs[2]
+                                    : "/";
+                            nfsClient = new Main(InetAddress.getByName(host));
+                            nfsClient.mount(root);
+                            break;
                         }
+                        case "umount": {
 
-                        nfsClient.umount();
-                        nfsClient = null;
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                    } else if (commandArgs[0].equals("ls")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            nfsClient.umount();
+                            nfsClient = null;
+                            break;
                         }
+                        case "ls": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length == 2) {
-                            nfsClient.readdir(commandArgs[1]);
-                        } else {
-                            nfsClient.readdir();
+                            if (commandArgs.length == 2) {
+                                nfsClient.readdir(commandArgs[1]);
+                            } else {
+                                nfsClient.readdir();
+                            }
+                            break;
                         }
+                        case "cd": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                    } else if (commandArgs[0].equals("cd")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: cd <path>");
+                                continue;
+                            }
+                            nfsClient.cwd(commandArgs[1]);
+                            break;
                         }
+                        case "lookup": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: cd <path>");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: lookup <path>");
+                                continue;
+                            }
+                            nfsClient.lookup(commandArgs[1]);
+                            break;
                         }
-                        nfsClient.cwd(commandArgs[1]);
+                        case "lookup-fh": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                    } else if (commandArgs[0].equals("lookup")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            if (commandArgs.length != 3) {
+                                System.out.println("usage: lookup-fh <fh> <path>");
+                                continue;
+                            }
+                            nfsClient.lookup(commandArgs[1], commandArgs[2]);
+                            break;
                         }
+                        case "getattr": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: lookup <path>");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: getattr <path>");
+                                continue;
+                            }
+                            nfsClient.getattr(commandArgs[1]);
+                            break;
                         }
-                        nfsClient.lookup(commandArgs[1]);
+                        case "mkdir": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                    } else if (commandArgs[0].equals("lookup-fh")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: mkdir <path>");
+                                continue;
+                            }
+                            nfsClient.mkdir(commandArgs[1]);
+                            break;
                         }
+                        case "read": {
 
-                        if (commandArgs.length != 3) {
-                            System.out.println("usage: lookup-fh <fh> <path>");
-                            continue;
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
+
+                            if (commandArgs.length < 2 || commandArgs.length > 3) {
+                                System.out.println("usage: read <file> [-nopnfs]");
+                                continue;
+                            }
+                            boolean usePNFS = commandArgs.length == 2 || !commandArgs[2].equals("-nopnfs");
+                            nfsClient.read(commandArgs[1], usePNFS);
+                            break;
                         }
-                        nfsClient.lookup(commandArgs[1], commandArgs[2]);
+                        case "readatonce": {
 
-                    } else if (commandArgs[0].equals("getattr")) {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: readatonce <file>");
+                                continue;
+                            }
+                            nfsClient.readatonce(commandArgs[1]);
+                            break;
                         }
+                        case "read-nostate": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: getattr <path>");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: read-nostate <file>");
+                                continue;
+                            }
+                            nfsClient.readNoState(commandArgs[1]);
+                            break;
                         }
-                        nfsClient.getattr(commandArgs[1]);
+                        case "fs_locations": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                    } else if (commandArgs[0].equals("mkdir")) {
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: fs_locations <file>");
+                                continue;
+                            }
 
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            nfsClient.get_fs_locations(commandArgs[1]);
+                            break;
                         }
+                        case "remove": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: mkdir <path>");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: remove <file>");
+                                continue;
+                            }
+                            nfsClient.remove(commandArgs[1]);
+                            break;
                         }
-                        nfsClient.mkdir(commandArgs[1]);
-                    } else if (commandArgs[0].equals("read")) {
+                        case "write": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            if (commandArgs.length < 3 || commandArgs.length > 4) {
+                                System.out.println("usage: write <src> <dest> [-nopnfs]");
+                                continue;
+                            }
+                            boolean usePNFS = commandArgs.length == 3 || !commandArgs[3].equals("-nopnfs");
+                            nfsClient.write(commandArgs[1], commandArgs[2], usePNFS);
+                            break;
                         }
+                        case "filebomb": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length < 2 || commandArgs.length > 3) {
-                            System.out.println("usage: read <file> [-nopnfs]");
-                            continue;
+                            if (commandArgs.length != 2) {
+                                System.out.println("usage: filebomb <num>");
+                                continue;
+                            }
+                            nfsClient.filebomb(Integer.parseInt(commandArgs[1]));
+                            break;
                         }
-                        boolean usePNFS = commandArgs.length == 2 || !commandArgs[2].equals("-nopnfs");
-                        nfsClient.read(commandArgs[1], usePNFS);
+                        case "openbomb": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                    } else if (commandArgs[0].equals("readatonce")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                            if (commandArgs.length != 3) {
+                                System.out.println("usage: openbomb <file> <count>");
+                                continue;
+                            }
+                            nfsClient.openbomb(commandArgs[1], Integer.parseInt(commandArgs[2]));
+                            break;
                         }
+                        case "gc": {
+                            if (nfsClient == null) {
+                                System.out.println("Not mounted");
+                                continue;
+                            }
 
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: readatonce <file>");
-                            continue;
+                            nfsClient.gc();
+                            break;
                         }
-                        nfsClient.readatonce(commandArgs[1]);
-
-                    } else if (commandArgs[0].equals("read-nostate")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
+                        case "quit":
+                        case "exit": {
+                            if (nfsClient != null) {
+                                nfsClient.destroy_session();
+                                nfsClient.destroy_clientid();
+                            }
+                            System.exit(0);
                         }
-
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: read-nostate <file>");
-                            continue;
-                        }
-                        nfsClient.readNoState(commandArgs[1]);
-
-                    } else if (commandArgs[0].equals("fs_locations")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
-                        }
-
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: fs_locations <file>");
-                            continue;
-                        }
-
-                        nfsClient.get_fs_locations(commandArgs[1]);
-
-                    } else if (commandArgs[0].equals("remove")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
-                        }
-
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: remove <file>");
-                            continue;
-                        }
-                        nfsClient.remove(commandArgs[1]);
-
-                    } else if (commandArgs[0].equals("write")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
-                        }
-
-                        if (commandArgs.length < 3 || commandArgs.length > 4) {
-                            System.out.println("usage: write <src> <dest> [-nopnfs]");
-                            continue;
-                        }
-                        boolean usePNFS = commandArgs.length == 3 || !commandArgs[3].equals("-nopnfs");
-                        nfsClient.write(commandArgs[1], commandArgs[2], usePNFS);
-
-                    } else if (commandArgs[0].equals("filebomb")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
-                        }
-
-                        if (commandArgs.length != 2) {
-                            System.out.println("usage: filebomb <num>");
-                            continue;
-                        }
-                        nfsClient.filebomb(Integer.parseInt(commandArgs[1]));
-
-                    } else if (commandArgs[0].equals("openbomb")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
-                        }
-
-                        if (commandArgs.length != 3) {
-                            System.out.println("usage: openbomb <file> <count>");
-                            continue;
-                        }
-                        nfsClient.openbomb(commandArgs[1], Integer.parseInt(commandArgs[2]));
-
-                    } else if (commandArgs[0].equals("gc")) {
-
-                        if (nfsClient == null) {
-                            System.out.println("Not mounted");
-                            continue;
-                        }
-
-                        nfsClient.gc();
-
-                    } else if (line.equalsIgnoreCase("quit")
-                            || line.equalsIgnoreCase("exit")) {
-
-                        if (nfsClient != null) {
-                            nfsClient.destroy_session();
-                            nfsClient.destroy_clientid();
-                        }
-                        System.exit(0);
-                    } else {
-                        out.println("Supported commands: ");
-                        for (String command : commands) {
-                            out.println("    " + command);
+                        default: {
+                            out.println("Supported commands: ");
+                            for (String command : commands) {
+                                out.println("    " + command);
+                            }
                         }
                     }
+
                     out.flush();
                 } catch (ChimeraNFSException e) {
                     out.printf("%s failed: %s(%d) \n", commandArgs[0],
