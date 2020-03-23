@@ -147,7 +147,7 @@ public class Main {
 
         try (PrintWriter out = new PrintWriter(terminal.output())) {
 
-            while ((line = reader.readLine(PROMPT)) != null) {
+ cloop: while ((line = reader.readLine(PROMPT)) != null) {
                 line = line.trim();
                 if (line.length() == 0) {
                     continue;
@@ -375,11 +375,7 @@ public class Main {
                         }
                         case "quit":
                         case "exit": {
-                            if (nfsClient != null) {
-                                nfsClient.destroy_session();
-                                nfsClient.destroy_clientid();
-                            }
-                            System.exit(0);
+                            break cloop;
                         }
                         default: {
                             out.println("Supported commands: ");
@@ -398,7 +394,9 @@ public class Main {
         } catch (UserInterruptException | EndOfFileException e) {
             terminal.flush();
             terminal.close();
-            nfsClient.umount();
+            if (nfsClient != null) {
+                nfsClient.umount();
+            }
         }
     }
 
