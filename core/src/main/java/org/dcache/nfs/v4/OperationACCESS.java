@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -31,9 +32,18 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
+
 public class OperationACCESS extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationACCESS.class);
+
+    private final static int ACCESS4_MASK_v40 =
+            ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
+            | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ;
+
+    private final static int ACCESS4_MASK_v42 =
+            ACCESS4_MASK_v40 | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
 
     public OperationACCESS(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_ACCESS);
@@ -44,9 +54,14 @@ public class OperationACCESS extends AbstractNFSv4Operation {
             throws ChimeraNFSException, IOException {
 
         final ACCESS4res res = result.opaccess;
-        int requestedAccess = _args.opaccess.access.value;
+        final int requestedAccess = _args.opaccess.access.value;
 
-        int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
+        final int validationMask = context.getMinorversion() > 1 ? ACCESS4_MASK_v42 : ACCESS4_MASK_v40;
+        if ((requestedAccess & ~validationMask) != 0) {
+            throw new InvalException("invalid access mask");
+        }
+
+        final int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
 
         _log.debug("NFS Request ACCESS uid: {} {} {}",
                     context.getSubject(), requestedAccess, realAccess );
