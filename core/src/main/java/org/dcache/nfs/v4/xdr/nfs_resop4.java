@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import java.io.IOException;
 
 public class nfs_resop4 implements XdrAble {
@@ -85,6 +87,17 @@ public class nfs_resop4 implements XdrAble {
     public WANT_DELEGATION4res opwant_delegation;
     public DESTROY_CLIENTID4res opdestroy_clientid;
     public RECLAIM_COMPLETE4res opreclaim_complete;
+    public ALLOCATE4res opallocate;
+    public COPY4res opcopy;
+    public COPY_NOTIFY4res opcopy_notify;
+    public DEALLOCATE4res opdeallocate;
+    public IO_ADVISE4res opio_advise;
+    public OFFLOAD_CANCEL4res opoffload_cancel;
+    public OFFLOAD_STATUS4res opoffload_status;
+    public READ_PLUS4res opread_plus;
+    public SEEK4res opseek;
+    public WRITE_SAME4res opwrite_same;
+    public CLONE4res opclone;
     public GETXATTR4res opgetxattr;
     public SETXATTR4res opsetxattr;
     public LISTXATTRS4res oplistxattrs;
@@ -277,6 +290,39 @@ public class nfs_resop4 implements XdrAble {
             break;
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_ALLOCATE:
+            opallocate.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_COPY:
+            opcopy.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_COPY_NOTIFY:
+            opcopy_notify.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_DEALLOCATE:
+            opdeallocate.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_IO_ADVISE:
+            opio_advise.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_CANCEL:
+            opoffload_cancel.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_STATUS:
+            opoffload_status.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_READ_PLUS:
+            opread_plus.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_SEEK:
+            opseek.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_WRITE_SAME:
+            opwrite_same.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_CLONE:
+            opclone.xdrEncode(xdr);
             break;
         case nfs_opnum4.OP_GETXATTR:
             opgetxattr.xdrEncode(xdr);
@@ -486,6 +532,39 @@ public class nfs_resop4 implements XdrAble {
         case nfs_opnum4.OP_REMOVEXATTR:
             opremovexattr = new REMOVEXATTR4res(xdr);
             break;
+        case nfs_opnum4.OP_ALLOCATE:
+            opallocate = new ALLOCATE4res(xdr);
+            break;
+        case nfs_opnum4.OP_COPY:
+            opcopy = new COPY4res(xdr);
+            break;
+        case nfs_opnum4.OP_COPY_NOTIFY:
+            opcopy_notify = new COPY_NOTIFY4res(xdr);
+            break;
+        case nfs_opnum4.OP_DEALLOCATE:
+            opdeallocate = new DEALLOCATE4res(xdr);
+            break;
+        case nfs_opnum4.OP_IO_ADVISE:
+            opio_advise = new IO_ADVISE4res(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_CANCEL:
+            opoffload_cancel = new OFFLOAD_CANCEL4res(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_STATUS:
+            opoffload_status = new OFFLOAD_STATUS4res(xdr);
+            break;
+        case nfs_opnum4.OP_READ_PLUS:
+            opread_plus = new READ_PLUS4res(xdr);
+            break;
+        case nfs_opnum4.OP_SEEK:
+            opseek = new SEEK4res(xdr);
+            break;
+        case nfs_opnum4.OP_WRITE_SAME:
+            opwrite_same = new WRITE_SAME4res(xdr);
+            break;
+        case nfs_opnum4.OP_CLONE:
+            opclone = new CLONE4res(xdr);
+            break;
         case nfs_opnum4.OP_ILLEGAL:
             opillegal = new ILLEGAL4res(xdr);
             break;
@@ -670,6 +749,39 @@ public class nfs_resop4 implements XdrAble {
                 break;
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 status = opreclaim_complete.rcr_status;
+                break;
+            case nfs_opnum4.OP_ALLOCATE:
+                status = opallocate.ar_status;
+                break;
+            case nfs_opnum4.OP_CLONE:
+                status = opclone.cl_status;
+                break;
+            case nfs_opnum4.OP_COPY:
+                status = opcopy.cr_status;
+                break;
+            case nfs_opnum4.OP_COPY_NOTIFY:
+                status = opcopy_notify.cnr_status;
+                break;
+            case nfs_opnum4.OP_DEALLOCATE:
+                status = opdeallocate.dr_status;
+                break;
+            case nfs_opnum4.OP_IO_ADVISE:
+                status = opio_advise.ior_status;
+                break;
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+                status = opoffload_cancel.ocr_status;
+                break;
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+                status = opoffload_status.osr_status;
+                break;
+            case nfs_opnum4.OP_READ_PLUS:
+                status = opread_plus.rp_status;
+                break;
+            case nfs_opnum4.OP_SEEK:
+                status = opseek.sa_status;
+                break;
+            case nfs_opnum4.OP_WRITE_SAME:
+                status = opwrite_same.wsr_status;
                 break;
             case nfs_opnum4.OP_GETXATTR:
                 status = opgetxattr.gxr_status;
@@ -867,6 +979,39 @@ public class nfs_resop4 implements XdrAble {
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 opreclaim_complete.rcr_status = status;
                 break;
+            case nfs_opnum4.OP_ALLOCATE:
+                opallocate.ar_status = status;
+                break;
+            case nfs_opnum4.OP_CLONE:
+                opclone.cl_status = status;
+                break;
+            case nfs_opnum4.OP_COPY:
+                opcopy.cr_status = status;
+                break;
+            case nfs_opnum4.OP_COPY_NOTIFY:
+                opcopy_notify.cnr_status = status;
+                break;
+            case nfs_opnum4.OP_DEALLOCATE:
+                opdeallocate.dr_status = status;
+                break;
+            case nfs_opnum4.OP_IO_ADVISE:
+                opio_advise.ior_status = status;
+                break;
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+                opoffload_cancel.ocr_status = status;
+                break;
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+                opoffload_status.osr_status = status;
+                break;
+            case nfs_opnum4.OP_READ_PLUS:
+                opread_plus.rp_status = status;
+                break;
+            case nfs_opnum4.OP_SEEK:
+                opseek.sa_status = status;
+                break;
+            case nfs_opnum4.OP_WRITE_SAME:
+                opwrite_same.wsr_status = status;
+                break;
             case nfs_opnum4.OP_GETXATTR:
                 opgetxattr.gxr_status = status;
                 break;
@@ -1063,6 +1208,39 @@ public class nfs_resop4 implements XdrAble {
                 break;
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
                 resop.opreclaim_complete = new RECLAIM_COMPLETE4res();
+                break;
+            case nfs_opnum4.OP_ALLOCATE:
+                resop.opallocate = new ALLOCATE4res();
+                break;
+            case nfs_opnum4.OP_CLONE:
+                resop.opclone = new CLONE4res();
+                break;
+            case nfs_opnum4.OP_COPY:
+                resop.opcopy = new COPY4res();
+                break;
+            case nfs_opnum4.OP_COPY_NOTIFY:
+                resop.opcopy_notify = new COPY_NOTIFY4res();
+                break;
+            case nfs_opnum4.OP_DEALLOCATE:
+                resop.opdeallocate = new DEALLOCATE4res();
+                break;
+            case nfs_opnum4.OP_IO_ADVISE:
+                resop.opio_advise = new IO_ADVISE4res();
+                break;
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+                resop.opoffload_cancel = new OFFLOAD_CANCEL4res();
+                break;
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+                resop.opoffload_status = new OFFLOAD_STATUS4res();
+                break;
+            case nfs_opnum4.OP_READ_PLUS:
+                resop.opread_plus = new READ_PLUS4res();
+                break;
+            case nfs_opnum4.OP_SEEK:
+                resop.opseek = new SEEK4res();
+                break;
+            case nfs_opnum4.OP_WRITE_SAME:
+                resop.opwrite_same = new WRITE_SAME4res();
                 break;
             case nfs_opnum4.OP_GETXATTR:
                 resop.opgetxattr = new GETXATTR4res();

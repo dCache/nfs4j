@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,23 +18,12 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import org.dcache.nfs.v4.xdr.CB_NOTIFY_DEVICEID4res;
-import org.dcache.nfs.v4.xdr.CB_WANTS_CANCELLED4res;
-import org.dcache.nfs.v4.xdr.CB_SEQUENCE4res;
-import org.dcache.nfs.v4.xdr.CB_RECALLABLE_OBJ_AVAIL4res;
-import org.dcache.nfs.v4.xdr.CB_RECALL_ANY4res;
-import org.dcache.nfs.v4.xdr.CB_GETATTR4res;
-import org.dcache.nfs.v4.xdr.CB_RECALL4res;
-import org.dcache.nfs.v4.xdr.CB_LAYOUTRECALL4res;
-import org.dcache.nfs.v4.xdr.CB_NOTIFY_LOCK4res;
-import org.dcache.nfs.v4.xdr.CB_ILLEGAL4res;
-import org.dcache.nfs.v4.xdr.CB_PUSH_DELEG4res;
-import org.dcache.nfs.v4.xdr.CB_NOTIFY4res;
-import org.dcache.nfs.v4.xdr.CB_RECALL_SLOT4res;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import java.io.IOException;
 
 public class nfs_cb_resop4 implements XdrAble {
@@ -51,6 +40,7 @@ public class nfs_cb_resop4 implements XdrAble {
     public CB_WANTS_CANCELLED4res opcbwants_cancelled;
     public CB_NOTIFY_LOCK4res opcbnotify_lock;
     public CB_NOTIFY_DEVICEID4res opcbnotify_deviceid;
+    public CB_OFFLOAD4res opcboffload;
     public CB_ILLEGAL4res opcbillegal;
 
     public nfs_cb_resop4() {
@@ -101,6 +91,9 @@ public class nfs_cb_resop4 implements XdrAble {
         case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
             opcbnotify_deviceid.xdrEncode(xdr);
             break;
+        case nfs_cb_opnum4.OP_CB_OFFLOAD:
+            opcboffload.xdrEncode(xdr);
+            break;
         case nfs_cb_opnum4.OP_CB_ILLEGAL:
             opcbillegal.xdrEncode(xdr);
             break;
@@ -146,6 +139,9 @@ public class nfs_cb_resop4 implements XdrAble {
             break;
         case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
             opcbnotify_deviceid = new CB_NOTIFY_DEVICEID4res(xdr);
+            break;
+        case nfs_cb_opnum4.OP_CB_OFFLOAD:
+            opcboffload = new CB_OFFLOAD4res(xdr);
             break;
         case nfs_cb_opnum4.OP_CB_ILLEGAL:
             opcbillegal = new CB_ILLEGAL4res(xdr);

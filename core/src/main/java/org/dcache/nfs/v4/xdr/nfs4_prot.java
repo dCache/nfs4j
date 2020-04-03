@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -175,6 +175,10 @@ public interface nfs4_prot {
     public static final int FATTR4_MODE_SET_MASKED = 74;
     public static final int FATTR4_SUPPATTR_EXCLCREAT = 75;
     public static final int FATTR4_FS_CHARSET_CAP = 76;
+    public static final int FATTR4_CLONE_BLKSIZE = 77;
+    public static final int FATTR4_SPACE_FREED = 78;
+    public static final int FATTR4_CHANGE_ATTR_TYPE = 79;
+    public static final int FATTR4_SEC_LABEL = 80;
     public static final int FATTR4_XATTR_SUPPORT = 82;
 
     public static final int FH4_PERSISTENT = 0x00000000;

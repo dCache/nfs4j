@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -126,6 +126,17 @@ public class nfs_argop4 implements XdrAble {
     public WANT_DELEGATION4args opwant_delegation;
     public DESTROY_CLIENTID4args opdestroy_clientid;
     public RECLAIM_COMPLETE4args opreclaim_complete;
+    public ALLOCATE4args opallocate;
+    public COPY4args opcopy;
+    public COPY_NOTIFY4args opoffload_notify;
+    public DEALLOCATE4args opdeallocate;
+    public IO_ADVISE4args opio_advise;
+    public OFFLOAD_CANCEL4args opoffload_cancel;
+    public OFFLOAD_STATUS4args opoffload_status;
+    public READ_PLUS4args opread_plus;
+    public SEEK4args opseek;
+    public WRITE_SAME4args opwrite_same;
+    public CLONE4args opclone;
     public GETXATTR4args opgetxattr;
     public SETXATTR4args opsetxattr;
     public LISTXATTRS4args oplistxattrs;
@@ -309,6 +320,39 @@ public class nfs_argop4 implements XdrAble {
             break;
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_ALLOCATE:
+            opallocate.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_COPY:
+            opcopy.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_COPY_NOTIFY:
+            opoffload_notify.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_DEALLOCATE:
+            opdeallocate.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_IO_ADVISE:
+            opio_advise.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_CANCEL:
+            opoffload_cancel.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_STATUS:
+            opoffload_status.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_READ_PLUS:
+            opread_plus.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_SEEK:
+            opseek.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_WRITE_SAME:
+            opwrite_same.xdrEncode(xdr);
+            break;
+        case nfs_opnum4.OP_CLONE:
+            opclone.xdrEncode(xdr);
             break;
         case nfs_opnum4.OP_GETXATTR:
             opgetxattr.xdrEncode(xdr);
@@ -497,6 +541,39 @@ public class nfs_argop4 implements XdrAble {
             break;
         case nfs_opnum4.OP_RECLAIM_COMPLETE:
             opreclaim_complete = new RECLAIM_COMPLETE4args(xdr);
+            break;
+        case nfs_opnum4.OP_ALLOCATE:
+            opallocate = new ALLOCATE4args(xdr);
+            break;
+        case nfs_opnum4.OP_COPY:
+            opcopy = new COPY4args(xdr);
+            break;
+        case nfs_opnum4.OP_COPY_NOTIFY:
+            opoffload_notify = new COPY_NOTIFY4args(xdr);
+            break;
+        case nfs_opnum4.OP_DEALLOCATE:
+            opdeallocate = new DEALLOCATE4args(xdr);
+            break;
+        case nfs_opnum4.OP_IO_ADVISE:
+            opio_advise = new IO_ADVISE4args(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_CANCEL:
+            opoffload_cancel = new OFFLOAD_CANCEL4args(xdr);
+            break;
+        case nfs_opnum4.OP_OFFLOAD_STATUS:
+            opoffload_status = new OFFLOAD_STATUS4args(xdr);
+            break;
+        case nfs_opnum4.OP_READ_PLUS:
+            opread_plus = new READ_PLUS4args(xdr);
+            break;
+        case nfs_opnum4.OP_SEEK:
+            opseek = new SEEK4args(xdr);
+            break;
+        case nfs_opnum4.OP_WRITE_SAME:
+            opwrite_same = new WRITE_SAME4args(xdr);
+            break;
+        case nfs_opnum4.OP_CLONE:
+            opclone = new CLONE4args(xdr);
             break;
         case nfs_opnum4.OP_GETXATTR:
             opgetxattr = new GETXATTR4args(xdr);

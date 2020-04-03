@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@ public interface nfs_cb_opnum4 {
     public static final int OP_CB_WANTS_CANCELLED = 12;
     public static final int OP_CB_NOTIFY_LOCK = 13;
     public static final int OP_CB_NOTIFY_DEVICEID = 14;
+    public static final int OP_CB_OFFLOAD = 15;
     public static final int OP_CB_ILLEGAL = 10044;
 
 }

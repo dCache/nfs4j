@@ -18,22 +18,12 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import org.dcache.nfs.v4.xdr.CB_WANTS_CANCELLED4args;
-import org.dcache.nfs.v4.xdr.CB_RECALL_ANY4args;
-import org.dcache.nfs.v4.xdr.CB_RECALLABLE_OBJ_AVAIL4args;
-import org.dcache.nfs.v4.xdr.CB_NOTIFY4args;
-import org.dcache.nfs.v4.xdr.CB_SEQUENCE4args;
-import org.dcache.nfs.v4.xdr.CB_LAYOUTRECALL4args;
-import org.dcache.nfs.v4.xdr.CB_NOTIFY_LOCK4args;
-import org.dcache.nfs.v4.xdr.CB_NOTIFY_DEVICEID4args;
-import org.dcache.nfs.v4.xdr.CB_RECALL4args;
-import org.dcache.nfs.v4.xdr.CB_PUSH_DELEG4args;
-import org.dcache.nfs.v4.xdr.CB_RECALL_SLOT4args;
-import org.dcache.nfs.v4.xdr.CB_GETATTR4args;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import java.io.IOException;
 
 public class nfs_cb_argop4 implements XdrAble {
@@ -50,6 +40,7 @@ public class nfs_cb_argop4 implements XdrAble {
     public CB_WANTS_CANCELLED4args opcbwants_cancelled;
     public CB_NOTIFY_LOCK4args opcbnotify_lock;
     public CB_NOTIFY_DEVICEID4args opcbnotify_deviceid;
+    public CB_OFFLOAD4args opcboffload;
 
     public nfs_cb_argop4() {
     }
@@ -99,6 +90,9 @@ public class nfs_cb_argop4 implements XdrAble {
         case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
             opcbnotify_deviceid.xdrEncode(xdr);
             break;
+        case nfs_cb_opnum4.OP_CB_OFFLOAD:
+            opcboffload.xdrEncode(xdr);
+            break;
         case nfs_cb_opnum4.OP_CB_ILLEGAL:
             break;
         }
@@ -143,6 +137,9 @@ public class nfs_cb_argop4 implements XdrAble {
             break;
         case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
             opcbnotify_deviceid = new CB_NOTIFY_DEVICEID4args(xdr);
+            break;
+        case nfs_cb_opnum4.OP_CB_OFFLOAD:
+            opcboffload = new CB_OFFLOAD4args(xdr);
             break;
         case nfs_cb_opnum4.OP_CB_ILLEGAL:
             break;
