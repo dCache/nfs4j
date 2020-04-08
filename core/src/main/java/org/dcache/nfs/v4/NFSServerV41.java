@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -114,7 +114,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     tag);
 
             int minorversion = arg1.minorversion.value;
-            if (minorversion > 1) {
+            if (minorversion > 2) {
                 throw new MinorVersMismatchException(String.format("Unsupported minor version [%d]", arg1.minorversion.value));
             }
 

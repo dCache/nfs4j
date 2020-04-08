@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,8 +19,12 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.*;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+
+import java.io.IOException;
 
 public class MDSOperationExecutor extends AbstractOperationExecutor {
 
@@ -155,8 +159,25 @@ public class MDSOperationExecutor extends AbstractOperationExecutor {
                 return new OperationLISTXATTRS(op);
             case nfs_opnum4.OP_REMOVEXATTR:
                 return new OperationREMOVEXATTR(op);
+            case nfs_opnum4.OP_ALLOCATE:
+            case nfs_opnum4.OP_COPY:
+            case nfs_opnum4.OP_COPY_NOTIFY:
+            case nfs_opnum4.OP_DEALLOCATE:
+            case nfs_opnum4.OP_IO_ADVISE:
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+            case nfs_opnum4.OP_READ_PLUS:
+            case nfs_opnum4.OP_SEEK:
+            case nfs_opnum4.OP_WRITE_SAME:
+            case nfs_opnum4.OP_CLONE:
+                // in V4.2 all operations are optional.
+                return new AbstractNFSv4Operation(op, op.argop) {
+                    @Override
+                    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+                        result.setStatus(nfsstat.NFSERR_NOTSUPP);
+                    }
+                };
             case nfs_opnum4.OP_ILLEGAL:
-
         }
 
         return new OperationILLEGAL(op);
