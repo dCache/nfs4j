@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Instant;
+import java.util.Properties;
 
 import org.dcache.nfs.status.NoGraceException;
 import org.dcache.nfs.status.ReclaimBadException;
@@ -84,9 +85,24 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
 
     private final Instant bootTime = Instant.now();
 
+    /**
+     * Create a BerkeleyDBClientStore with db file located in the given directory.
+     * @param dir the directory where berkeley DB files are stored.
+     */
     public BerkeleyDBClientStore(File dir) {
+        this(dir, new Properties());
+    }
 
-        EnvironmentConfig envConfig = new EnvironmentConfig();
+    /**
+     * Create a BerkeleyDBClientStore with db file located in the given directory and configuration is specified by the
+     * specified properties.
+     * @param dir the directory where berkeley DB files are stored.
+     * @param properties database configuration properties.
+     */
+    public BerkeleyDBClientStore(File dir, Properties properties) {
+
+        EnvironmentConfig envConfig = new EnvironmentConfig(properties);
+
         envConfig.setTransactional(true);
         envConfig.setAllowCreate(true);
         envConfig.setReadOnly(false);
