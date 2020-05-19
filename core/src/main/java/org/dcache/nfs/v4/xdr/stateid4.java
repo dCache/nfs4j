@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@ public class stateid4 implements XdrAble, Serializable {
 
     static final long serialVersionUID = -6677150504723505919L;
 
-    public uint32_t seqid;
+    public int seqid;
     public byte [] other;
 
     public stateid4() {
@@ -40,7 +40,7 @@ public class stateid4 implements XdrAble, Serializable {
 
     public stateid4(byte[] other, int seq) {
         this.other = other;
-        seqid = new uint32_t(seq);
+        seqid = seq;
     }
 
     public stateid4(XdrDecodingStream xdr)
@@ -50,13 +50,13 @@ public class stateid4 implements XdrAble, Serializable {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        seqid.xdrEncode(xdr);
+        xdr.xdrEncodeInt(seqid);
         xdr.xdrEncodeOpaque(other, 12);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        seqid = new uint32_t(xdr);
+        seqid = xdr.xdrDecodeInt();
         other = xdr.xdrDecodeOpaque(12);
     }
 
@@ -83,7 +83,7 @@ public class stateid4 implements XdrAble, Serializable {
             return true;
         }
 
-        return otherState.seqid.value == this.seqid.value && Arrays.equals(this.other, otherState.other);
+        return otherState.seqid == this.seqid && Arrays.equals(this.other, otherState.other);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class stateid4 implements XdrAble, Serializable {
 
         sb.append("[");
         sb.append(BaseEncoding.base16().lowerCase().encode(other));
-        sb.append(", seq: ").append(seqid.value).append("]");
+        sb.append(", seq: ").append(seqid).append("]");
         return sb.toString();
     }
 

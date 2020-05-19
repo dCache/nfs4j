@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -64,16 +64,16 @@ public class Stateids {
     }
 
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
-        if (stateid.seqid.value == 0) {
+        if (stateid.seqid == 0) {
             // so called 'most up-to-date seqid', see https://tools.ietf.org/html/rfc5661#section-8.2.2
             return;
         }
 
-        if (expected.seqid.value > stateid.seqid.value) {
+        if (expected.seqid > stateid.seqid) {
             throw new OldStateidException();
         }
 
-        if (expected.seqid.value < stateid.seqid.value) {
+        if (expected.seqid < stateid.seqid) {
             throw new BadStateidException();
         }
     }

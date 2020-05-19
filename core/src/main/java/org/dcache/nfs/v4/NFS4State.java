@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public class NFS4State {
         _disposeListeners = new ArrayList<>();
     }
 
-    public void bumpSeqid() { ++ _stateid.seqid.value; }
+    public void bumpSeqid() { ++ _stateid.seqid; }
 
     public stateid4 stateid() {
         return _stateid;

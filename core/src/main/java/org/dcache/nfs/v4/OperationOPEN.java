@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -271,7 +271,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 _args.opopen.share_access.value,
                 _args.opopen.share_deny.value);
 
-        stateid.seqid.value++;
+        stateid.seqid++;
         context.currentStateid(stateid);
         res.resok4.stateid = stateid;
         res.status = nfsstat.NFS_OK;

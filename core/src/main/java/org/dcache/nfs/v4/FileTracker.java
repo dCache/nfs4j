@@ -180,7 +180,7 @@ public class FileTracker {
             os.shareAccess = shareAccess;
             os.shareDeny = shareDeny;
 
-            os.stateid.seqid.value++;
+            os.stateid.seqid++;
             return os.stateid;
         } finally {
             lock.unlock();

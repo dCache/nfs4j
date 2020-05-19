@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,11 +31,11 @@ public class stateid4Test {
     public void testEqualsTrue() {
 
         stateid4 stateidA = new stateid4();
-        stateidA.seqid = new uint32_t(1);
+        stateidA.seqid = 1;
         stateidA.other = "state".getBytes();
 
         stateid4 stateidB = new stateid4();
-        stateidB.seqid = new uint32_t(1);
+        stateidB.seqid = 1;
         stateidB.other = "state".getBytes();
 
         assertTrue("equal keys not equal", stateidA.equals(stateidB));
@@ -47,7 +47,7 @@ public class stateid4Test {
     public void testEqualsSame() {
 
         stateid4 stateidA = new stateid4();
-        stateidA.seqid = new uint32_t(1);
+        stateidA.seqid = 1;
         stateidA.other = "state".getBytes();
 
         assertTrue("equal keys not equal", stateidA.equals(stateidA));
@@ -57,11 +57,11 @@ public class stateid4Test {
     public void testDifferSequence() {
 
         stateid4 stateidA = new stateid4();
-        stateidA.seqid = new uint32_t(1);
+        stateidA.seqid = 1;
         stateidA.other = "state".getBytes();
 
         stateid4 stateidB = new stateid4();
-        stateidB.seqid = new uint32_t(2);
+        stateidB.seqid = 2;
         stateidB.other = "state".getBytes();
 
         assertTrue("differ by sequence should still be equal", stateidA.equals(stateidB));
@@ -72,11 +72,11 @@ public class stateid4Test {
     public void testDifferOther() {
 
         stateid4 stateidA = new stateid4();
-        stateidA.seqid = new uint32_t(1);
+        stateidA.seqid = 1;
         stateidA.other = "stateA".getBytes();
 
         stateid4 stateidB = new stateid4();
-        stateidB.seqid = new uint32_t(1);
+        stateidB.seqid = 1;
         stateidB.other = "stateB".getBytes();
 
         assertFalse("differ by other not detected", stateidA.equals(stateidB));
