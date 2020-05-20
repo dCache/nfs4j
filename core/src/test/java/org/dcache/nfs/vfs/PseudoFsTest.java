@@ -24,6 +24,8 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 import javax.security.auth.Subject;
+
+import com.google.common.primitives.Longs;
 import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
@@ -383,7 +385,7 @@ public class PseudoFsTest {
         Inode inode = new Inode(
                 new FileHandle.FileHandleBuilder()
                     .setExportIdx(1)
-                    .build(new byte[] {0x1})
+                    .build(Longs.toByteArray(1L))
             );
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(null);
