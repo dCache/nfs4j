@@ -141,6 +141,16 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
+    public boolean getCaseInsensitive() {
+        return delegate().getCaseInsensitive();
+    }
+
+    @Override
+    public boolean getCasePreserving() {
+        return delegate().getCasePreserving();
+    }
+
+    @Override
     public boolean hasIOLayout(Inode inode) throws IOException {
         return delegate().hasIOLayout(inode);
     }

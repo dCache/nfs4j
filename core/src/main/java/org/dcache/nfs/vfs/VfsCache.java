@@ -183,6 +183,16 @@ public class VfsCache extends ForwardingFileSystem {
 	invalidateStatCache(inode);
     }
 
+    @Override
+    public boolean getCaseInsensitive() {
+        return _inner.getCaseInsensitive();
+    }
+
+    @Override
+    public boolean getCasePreserving() {
+        return _inner.getCasePreserving();
+    }
+
     /*
        Utility methods for cache manipulation.
      */

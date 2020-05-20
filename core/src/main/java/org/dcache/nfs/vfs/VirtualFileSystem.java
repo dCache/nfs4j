@@ -298,6 +298,18 @@ public interface VirtualFileSystem {
     NfsIdMapping getIdMapper();
 
     /**
+     * Determins if this file system is case insensitive.
+     * @return
+     */
+    boolean getCaseInsensitive();
+
+    /**
+     * Determines if this case insensitive file system is case preserving.
+     * @return
+     */
+    boolean getCasePreserving();
+
+    /**
      * Object which represents write operation result.
      */
     public static class WriteResult {

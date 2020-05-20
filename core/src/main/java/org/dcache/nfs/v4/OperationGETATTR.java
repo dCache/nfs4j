@@ -250,9 +250,9 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_CANSETTIME:
                 return Optional.of(new fattr4_cansettime(true));
             case nfs4_prot.FATTR4_CASE_INSENSITIVE:
-                return Optional.of(new fattr4_case_insensitive(true));
+                return Optional.of(new fattr4_case_insensitive(fs.getCaseInsensitive()));
             case nfs4_prot.FATTR4_CASE_PRESERVING:
-                return Optional.of(new fattr4_case_preserving(true));
+                return Optional.of(new fattr4_case_preserving(fs.getCasePreserving()));
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
                 return Optional.empty();
             case nfs4_prot.FATTR4_FILEID:

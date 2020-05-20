@@ -584,6 +584,16 @@ public class DummyVFS implements VirtualFileSystem {
     }
 
     @Override
+    public boolean getCaseInsensitive() {
+        return true;
+    }
+
+    @Override
+    public boolean getCasePreserving() {
+        return true;
+    }
+
+    @Override
     public byte[] getXattr(Inode inode, String attr) throws IOException {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
