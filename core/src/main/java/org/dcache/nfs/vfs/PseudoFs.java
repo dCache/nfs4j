@@ -85,9 +85,9 @@ public class PseudoFs extends ForwardingFileSystem {
         return _inner;
     }
 
-    private boolean canAccess(Inode inode, int mode) {
+    private boolean canAccess(Inode inode, Stat stat, int mode) {
         try {
-            checkAccess(inode, mode, false);
+            checkAccess(inode, stat, mode, false);
             return true;
         } catch (IOException e) {
         }
@@ -102,38 +102,39 @@ public class PseudoFs extends ForwardingFileSystem {
             throw new InvalException("invalid access mask");
         }
 
+        Stat stat = _inner.getattr(inode);
         if ((mode & ACCESS4_READ) != 0) {
-            if (canAccess(inode, ACE4_READ_DATA)) {
+            if (canAccess(inode, stat, ACE4_READ_DATA)) {
                 accessmask |= ACCESS4_READ;
             }
         }
 
         if ((mode & ACCESS4_LOOKUP) != 0) {
-            if (canAccess(inode, ACE4_EXECUTE)) {
+            if (canAccess(inode, stat, ACE4_EXECUTE)) {
                 accessmask |= ACCESS4_LOOKUP;
             }
         }
 
         if ((mode & ACCESS4_MODIFY) != 0) {
-            if (canAccess(inode, ACE4_WRITE_DATA)) {
+            if (canAccess(inode, stat, ACE4_WRITE_DATA)) {
                 accessmask |= ACCESS4_MODIFY;
             }
         }
 
         if ((mode & ACCESS4_EXECUTE) != 0) {
-            if (canAccess(inode, ACE4_EXECUTE)) {
+            if (canAccess(inode, stat, ACE4_EXECUTE)) {
                 accessmask |= ACCESS4_EXECUTE;
             }
         }
 
         if ((mode & ACCESS4_EXTEND) != 0) {
-            if (canAccess(inode, ACE4_APPEND_DATA)) {
+            if (canAccess(inode, stat, ACE4_APPEND_DATA)) {
                 accessmask |= ACCESS4_EXTEND;
             }
         }
 
         if ((mode & ACCESS4_DELETE) != 0) {
-            if (canAccess(inode, ACE4_DELETE_CHILD)) {
+            if (canAccess(inode, stat, ACE4_DELETE_CHILD)) {
                 accessmask |= ACCESS4_DELETE;
             }
         }
@@ -146,19 +147,19 @@ public class PseudoFs extends ForwardingFileSystem {
          */
 
         if ((mode & ACCESS4_XAREAD) != 0) {
-            if (canAccess(inode, ACE4_READ_DATA)) {
+            if (canAccess(inode, stat, ACE4_READ_DATA)) {
                 accessmask |= ACCESS4_XAREAD;
             }
         }
 
         if ((mode & ACCESS4_XALIST) != 0) {
-            if (canAccess(inode, ACE4_READ_DATA)) {
+            if (canAccess(inode, stat, ACE4_READ_DATA)) {
                 accessmask |= ACCESS4_XALIST;
             }
         }
 
         if ((mode & ACCESS4_XAWRITE) != 0) {
-            if (canAccess(inode, ACE4_WRITE_DATA)) {
+            if (canAccess(inode, stat, ACE4_WRITE_DATA)) {
                 accessmask |= ACCESS4_XAWRITE;
             }
         }
@@ -393,6 +394,10 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private Subject checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
+        return checkAccess(inode, _inner.getattr(inode), requestedMask, shouldLog);
+    }
+
+    private Subject checkAccess(Inode inode, Stat stat, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
         Access aclMatched = Access.UNDEFINED;
@@ -453,7 +458,6 @@ public class PseudoFs extends ForwardingFileSystem {
          * always allows it.
          */
         if ((aclMatched == Access.UNDEFINED) && (requestedMask != ACE4_READ_ATTRIBUTES)) {
-            Stat stat = _inner.getattr(inode);
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
