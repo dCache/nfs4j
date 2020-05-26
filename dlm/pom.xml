@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.dcache</groupId>
+      <groupId>ch.iterate</groupId>
       <artifactId>nfs4j</artifactId>
       <version>0.22.0-SNAPSHOT</version>
     </parent>
 
     <name>Distributed lock manager</name>
-    <groupId>org.dcache</groupId>
+    <groupId>ch.iterate</groupId>
     <artifactId>nfs4j-dlm</artifactId>
     <packaging>jar</packaging>
 
@@ -39,12 +39,12 @@
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.dcache</groupId>
+            <groupId>ch.iterate</groupId>
             <artifactId>nfs4j-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dcache</groupId>
+            <groupId>ch.iterate</groupId>
             <artifactId>nfs4j-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>

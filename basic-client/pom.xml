@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.dcache</groupId>
+      <groupId>ch.iterate</groupId>
       <artifactId>nfs4j</artifactId>
       <version>0.22.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.dcache</groupId>
+    <groupId>ch.iterate</groupId>
     <artifactId>nfs4j-basic-client</artifactId>
     <packaging>jar</packaging>
 
@@ -53,7 +53,7 @@
     -->
     <dependencies>
         <dependency>
-            <groupId>org.dcache</groupId>
+            <groupId>ch.iterate</groupId>
             <artifactId>nfs4j-core</artifactId>
             <version>${project.version}</version>
         </dependency>

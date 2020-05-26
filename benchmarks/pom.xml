@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.dcache</groupId>
+      <groupId>ch.iterate</groupId>
       <artifactId>nfs4j</artifactId>
       <version>0.22.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.dcache</groupId>
+    <groupId>ch.iterate</groupId>
     <artifactId>benchmarks</artifactId>
     <packaging>jar</packaging>
 
@@ -58,7 +58,7 @@
             <artifactId>jmh-generator-annprocess</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.dcache</groupId>
+            <groupId>ch.iterate</groupId>
             <artifactId>nfs4j-core</artifactId>
             <version>${project.version}</version>
         </dependency>
