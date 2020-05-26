@@ -45,7 +45,6 @@ import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.nfs.util.Cache;
-import org.dcache.nfs.util.CacheElement;
 import org.dcache.nfs.util.NopCacheEventListener;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -65,7 +64,7 @@ public class NFSv4StateHandler {
     private final AtomicInteger _clientId = new AtomicInteger(0);
 
     // mapping between server generated clietid and nfs_client_id, not confirmed yet
-    private final Cache<clientid4, NFS4Client> _clientsByServerId;
+    private final ClientCache _clientsByServerId;
 
     /**
      * Client's lease expiration time in seconds.
@@ -101,10 +100,12 @@ public class NFSv4StateHandler {
      * @param clientStore store used by state handler to keep track of valid clients.
      */
     public NFSv4StateHandler(int leaseTime, int instanceId, ClientRecoveryStore clientStore) {
+        this(leaseTime, instanceId, clientStore, new DefaultClientCache(leaseTime, new DeadClientCollector(clientStore)));
+    }
+
+    public NFSv4StateHandler(int leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId) {
         _leaseTime = leaseTime;
-        _clientsByServerId = new Cache<>("NFSv41 clients", 5000, Long.MAX_VALUE,
-                TimeUnit.SECONDS.toMillis(_leaseTime * 2),
-                new DeadClientCollector());
+        _clientsByServerId = clientsByServerId;
 
         _running = true;
         _instanceId = instanceId;
@@ -230,9 +231,8 @@ public class NFSv4StateHandler {
      * @return an existing client record or null, if not matching record found.
      */
     public synchronized NFS4Client clientByOwner(byte[] ownerid) {
-        return _clientsByServerId.entries()
+        return _clientsByServerId
                 .stream()
-                .map(CacheElement::getObject)
                 .filter(c -> Arrays.equals(c.getOwnerId(), ownerid))
                 .findAny()
                 .orElse(null);
@@ -254,8 +254,7 @@ public class NFSv4StateHandler {
 
     public synchronized List<NFS4Client> getClients() {
         checkState(_running, "NFS state handler not running");
-        return _clientsByServerId.entries().stream()
-                .map(CacheElement::peekObject)
+        return _clientsByServerId.peek()
                 .collect(Collectors.toList());
     }
 
@@ -276,7 +275,12 @@ public class NFSv4StateHandler {
         return _openFileTracker;
     }
 
-    private class DeadClientCollector extends NopCacheEventListener<clientid4, NFS4Client> {
+    private static final class DeadClientCollector extends NopCacheEventListener<clientid4, NFS4Client> {
+        private final ClientRecoveryStore clientStore;
+
+        private DeadClientCollector(ClientRecoveryStore clientStore) {
+            this.clientStore = clientStore;
+        }
 
         @Override
         public void notifyExpired(Cache<clientid4, NFS4Client> cache, NFS4Client client) {
@@ -312,8 +316,7 @@ public class NFSv4StateHandler {
     }
 
     private synchronized void drainClients() {
-        _clientsByServerId.entries().stream()
-                .map(CacheElement::getObject)
+        _clientsByServerId.stream()
                 .forEach(c -> {
                     c.tryDispose();
                     _clientsByServerId.remove(c.getId());
