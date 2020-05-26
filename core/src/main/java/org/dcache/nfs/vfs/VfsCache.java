@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
 import org.dcache.nfs.util.GuavaCacheMXBeanImpl;
 import org.dcache.nfs.util.Opaque;
+import org.dcache.nfs.v4.xdr.stateid4;
 
 import static java.util.Objects.requireNonNull;
 
@@ -170,6 +171,16 @@ public class VfsCache extends ForwardingFileSystem {
 	invalidateStatCache(parent);
         updateParentCache(inode, parent);
         return inode;
+    }
+
+    @Override
+    public void open(Inode inode, int mode, stateid4 stateid) throws IOException {
+        _inner.open(inode, mode, stateid);
+    }
+
+    @Override
+    public void close(Inode inode, stateid4 stateid) throws IOException {
+        _inner.close(inode, stateid);
     }
 
     @Override

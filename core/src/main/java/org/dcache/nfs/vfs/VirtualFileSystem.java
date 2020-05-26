@@ -25,6 +25,7 @@ import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
+import org.dcache.nfs.v4.xdr.stateid4;
 
 /**
  * An interface to file system.
@@ -68,6 +69,23 @@ public interface VirtualFileSystem {
      * @throws IOException
      */
     Inode create(Inode parent, Stat.Type type, String name, Subject subject, int mode) throws IOException;
+
+    /**
+     * Notify about file handle opened
+     * @param inode inode of the object
+     * @param mode Access mode bitmask like ACCESS4_READ
+     * @param stateid Open state id
+     * @throws IOException
+     */
+    void open(Inode inode, int mode, stateid4 stateid) throws IOException;
+
+    /**
+     * Notify about file handle closed
+     * @param inode inode of the object
+     * @param stateid Open state id
+     * @throws IOException
+     */
+    void close(Inode inode, stateid4 stateid) throws IOException;
 
     /**
      * Get file system's usage information.

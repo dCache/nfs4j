@@ -206,6 +206,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 }
 
                 context.currentInode(inode);
+                context.getFs().open(inode, this.getAccessMode(_args.opopen.share_access), result.opopen.resok4.stateid);
 
                 break;
             case open_claim_type4.CLAIM_PREVIOUS:
@@ -279,11 +280,10 @@ public class OperationOPEN extends AbstractNFSv4Operation {
     }
 
 
-    private void checkCanAccess(CompoundContext context, Inode inode, uint32_t share_access) throws IOException {
+    private int getAccessMode(final uint32_t share_access) throws IOException {
+        final int accessMode;
 
-        int accessMode;
-
-        switch (share_access.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) {
+        switch(share_access.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) {
             case nfs4_prot.OPEN4_SHARE_ACCESS_READ:
                 accessMode = nfs4_prot.ACCESS4_READ;
                 break;
@@ -296,6 +296,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             default:
                 throw new InvalException("Invalid share_access mode: " + share_access.value);
         }
+        return accessMode;
+    }
+
+
+    private void checkCanAccess(CompoundContext context, Inode inode, uint32_t share_access) throws IOException {
+
+        int accessMode = getAccessMode(share_access);
 
         if (context.getFs().access(inode, accessMode) != accessMode) {
             throw new AccessException();
