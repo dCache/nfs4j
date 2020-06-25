@@ -113,8 +113,8 @@ public class FileTracker {
             final List<OpenState> opens = files.computeIfAbsent(fileId, x -> new ArrayList<>(1));
 
             stateid4 stateid;
-            // check for conflickting open from not expired client (we need to check
-            // client as session GC may not beed active yet
+            // check for a conflicting open from not expired client (we need to check
+            // client as session GC may not been active yet
             if (opens.stream()
                     .filter(o -> o.client.isLeaseValid())
                     .anyMatch(o -> (shareAccess & o.getShareDeny()) != 0|| (shareDeny & o.getShareAccess()) != 0)) {
