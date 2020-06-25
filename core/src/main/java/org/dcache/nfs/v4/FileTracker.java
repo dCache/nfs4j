@@ -21,11 +21,10 @@ package org.dcache.nfs.v4;
 
 import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
@@ -51,7 +50,7 @@ public class FileTracker {
      * FIXME: get number of threads from RPC service.
      */
     private final Striped<Lock> filesLock = Striped.lock(Runtime.getRuntime().availableProcessors()*4);
-    private final Map<Opaque, List<OpenState>> files = Collections.synchronizedMap(new HashMap<>());
+    private final Map<Opaque, List<OpenState>> files = new ConcurrentHashMap<>();
 
     private static class OpenState {
 
