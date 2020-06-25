@@ -31,7 +31,7 @@ public class ExportFileTest {
         export = File.createTempFile("exports", null);
         export.deleteOnExit();
 
-        Files.write("/export_main 1.1.1.1(sec=sys)", export, UTF_8);
+        Files.asCharSink(export, UTF_8).write("/export_main 1.1.1.1(sec=sys)");
 
         do {
             // create new unique tmp-directory
@@ -43,16 +43,16 @@ public class ExportFileTest {
         for (int i = 0; i < fileNumber; i++) {
             File extraExport = File.createTempFile("extra", ".exports", exportDir);
             extraExport.deleteOnExit();
-            Files.write("/extra_export" + i + " 2.2.2." + i + "(sec=sys)", extraExport, UTF_8);
+            Files.asCharSink(extraExport, UTF_8).write("/extra_export" + i + " 2.2.2." + i + "(sec=sys)");
         }
 
         File hiddenExport = File.createTempFile(".hidden", ".exports", exportDir);
         hiddenExport.deleteOnExit();
-        Files.write("/hidden_export *(sec=sys)", hiddenExport, UTF_8);
+        Files.asCharSink(hiddenExport, UTF_8).write("/hidden_export *(sec=sys)");
 
         File randomFile = File.createTempFile("random", null, exportDir);
         randomFile.deleteOnExit();
-        Files.write("/random_file_export *(sec=sys)", randomFile, UTF_8);
+        Files.asCharSink(randomFile, UTF_8).write("/random_file_export *(sec=sys)");
     }
 
     @Test
@@ -118,7 +118,7 @@ public class ExportFileTest {
         assertExportNotExists("/added_export", ef);
         File addedFile = File.createTempFile("new_export", ".exports", exportDir);
         addedFile.deleteOnExit();
-        Files.write("/added_export *(sec=sys)", addedFile, UTF_8);
+        Files.asCharSink(addedFile, UTF_8).write("/added_export *(sec=sys)");
 
         ef.rescan();
         assertExportExists("/added_export", ef);
