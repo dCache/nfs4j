@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -515,25 +515,12 @@ public class FsExport {
                 mask = s.substring(maskIdx + 1);
             }
 
-            return (isValidIpAddress(host) && isValidNetmask(mask))
-                    || (isValidHostName(host) || isValidWildcard(host));
-        }
-
-        private static boolean isValidIpAddress(String s) {
-            try {
-                InetAddresses.forString(s);
-                return true;
-            } catch (IllegalArgumentException e) {
-            }
-            return false;
-        }
-
-        private static boolean isValidHostName(String s) {
-            return InternetDomainName.isValid(s);
+            return (InetAddresses.isInetAddress(host) && isValidNetmask(mask))
+                    || (InternetDomainName.isValid(host) || isValidWildcard(host));
         }
 
         private static boolean isValidWildcard(String s) {
-            return isValidHostName(s.replace('?', 'a').replace('*', 'a'));
+            return InternetDomainName.isValid(s.replace('?', 'a').replace('*', 'a'));
         }
 
         private static boolean isValidNetmask(String s) {
