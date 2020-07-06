@@ -6,6 +6,10 @@
   - VirtualFileSystem#read(org.dcache.nfs.vfs.Inode, byte[], long, int)
   - VirtualFileSystem#write(org.dcache.nfs.vfs.Inode, byte[], long, int, org.dcache.nfs.vfs.VirtualFileSystem.StabilityLevel)
 
+- VirtualFileSystem extended with new methods
+  - getCaseInsensitive
+  - getCasePreserving
+
 - stateid4 modified to use primitive int as seqid field.
 
 ## 0.20
