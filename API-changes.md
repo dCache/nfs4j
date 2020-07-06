@@ -1,5 +1,21 @@
 # Changes to NFS4J public API
 
+## 0.21
+
+- deprecated methods in *org.dcache.nfs.vfs.VirtualFileSystem*
+  - VirtualFileSystem#read(org.dcache.nfs.vfs.Inode, byte[], long, int)
+  - VirtualFileSystem#write(org.dcache.nfs.vfs.Inode, byte[], long, int, org.dcache.nfs.vfs.VirtualFileSystem.StabilityLevel)
+
+- stateid4 modified to use primitive int as seqid field.
+
+## 0.20
+
+- VirtualFileSystem extended with methods to handle extended attributes
+ - getXattr
+ - setXattr
+ - listXattrs
+ - removeXattr
+
 ## 0.19
 
 - NFSv41DeviceManager methods updated to take raw XDR arguments:
