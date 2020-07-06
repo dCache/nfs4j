@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.vfs;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import javax.security.auth.Subject;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
@@ -177,8 +178,30 @@ public interface VirtualFileSystem {
      * @return number of bytes read from the file, possibly zero. -1 if EOF is
      * reached.
      * @throws IOException
+     * @deprecated instead use the {@code read(Inode inode, ByteBuffer data, long offset)}
      */
+    @Deprecated
     int read(Inode inode, byte[] data, long offset, int count) throws IOException;
+
+    /**
+     * Read data from file with a given inode into {@code data}.
+     *
+     * @param inode inode of the file to read from.
+     * @param data byte array for writing.
+     * @param offset file's position to read from.
+     * @return number of bytes read from the file, possibly zero. -1 if EOF is
+     * reached.
+     * @throws IOException
+     */
+    default int read(Inode inode, ByteBuffer data, long offset) throws IOException {
+        ByteBuffer buf = ByteBuffer.allocate(data.remaining());
+        int n = read(inode, buf.array(), offset, buf.remaining());
+        if (n > 0) {
+            buf.limit(n);
+            data.put(buf);
+        }
+        return n;
+    }
 
     /**
      * Get value of a symbolic link object.
@@ -222,12 +245,31 @@ public interface VirtualFileSystem {
      * @param stabilityLevel data stability level.
      * @return write result.
      * @throws IOException
+     * @deprecated instead use the {@code write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)}
      */
+    @Deprecated
     WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException;
 
     /**
+     * Write provided {@code data} into inode with a given stability level.
+     *
+     * @param inode inode of the file to write.
+     * @param data data to be written.
+     * @param offset the file position to begin writing at.
+     * @param stabilityLevel data stability level.
+     * @return write result.
+     * @throws IOException
+     */
+    default WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel) throws IOException {
+        int count = data.remaining();
+        byte[] bytes = new byte[count];
+        data.get(bytes);
+        return write(inode, bytes, offset, count, stabilityLevel);
+    }
+
+    /**
      * Flush data in {@code dirty} state to the stable storage. Typically
-     * follows {@link #write()} operation.
+     * follows {@link #write(Inode, ByteBuffer, long, StabilityLevel)} operation.
      *
      * @param inode inode of the file to commit.
      * @param offset the file position to start commit at.

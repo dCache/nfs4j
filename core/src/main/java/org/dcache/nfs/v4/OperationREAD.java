@@ -73,18 +73,12 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         ByteBuffer buf = ByteBuffer.allocate(count);
 
-        int bytesReaded = context.getFs().read(context.currentInode(),
-                buf.array(), offset, count);
+        int bytesReaded = context.getFs().read(context.currentInode(), buf, offset);
         if (bytesReaded < 0) {
             throw new NfsIoException("IO not allowd");
         }
 
-        /*
-         * As we have written directly into back-end byte array tell the byte
-         * buffer where the limit is.
-         */
-        buf.limit(bytesReaded);
-
+        buf.flip();
         res.status = nfsstat.NFS_OK;
         res.resok4 = new READ4resok();
 

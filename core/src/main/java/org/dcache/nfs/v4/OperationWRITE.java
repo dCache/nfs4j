@@ -75,12 +75,8 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         }
 
         long offset = _args.opwrite.offset.value;
-        int count = _args.opwrite.data.remaining();
-        byte[] data = new byte[count];
-        _args.opwrite.data.get(data);
-
         VirtualFileSystem.WriteResult writeResult = context.getFs().write(context.currentInode(),
-                data, offset, count, VirtualFileSystem.StabilityLevel.fromStableHow(_args.opwrite.stable));
+                _args.opwrite.data, offset, VirtualFileSystem.StabilityLevel.fromStableHow(_args.opwrite.stable));
 
         if (writeResult.getBytesWritten() < 0) {
             throw new NfsIoException("IO not allowed");

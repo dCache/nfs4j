@@ -20,6 +20,7 @@
 package org.dcache.nfs.vfs;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import javax.security.auth.Subject;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -96,6 +97,11 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
+    public int read(Inode inode, ByteBuffer data, long offset) throws IOException {
+        return delegate().read(inode, data, offset);
+    }
+
+    @Override
     public String readlink(Inode inode) throws IOException {
         return delegate().readlink(inode);
     }
@@ -113,6 +119,11 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     @Override
     public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
         return delegate().write(inode, data, offset, count, stabilityLevel);
+    }
+
+    @Override
+    public WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel) throws IOException {
+        return delegate().write(inode, data, offset, stabilityLevel);
     }
 
     @Override

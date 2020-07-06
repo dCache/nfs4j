@@ -54,7 +54,7 @@ public class OperationWRITETest {
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
-        when(vfs.write(any(), any(), anyLong(), anyInt(), any()))
+        when(vfs.write(any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()
@@ -80,7 +80,7 @@ public class OperationWRITETest {
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
-        when(vfs.write(any(), any(), anyLong(), anyInt(), any()))
+        when(vfs.write(any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()
@@ -107,7 +107,7 @@ public class OperationWRITETest {
         verifier4 verifier = mock(verifier4.class);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
-        when(vfs.write(any(), any(), anyLong(), anyInt(), any()))
+        when(vfs.write(any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()

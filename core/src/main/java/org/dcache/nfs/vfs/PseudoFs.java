@@ -22,6 +22,7 @@ package org.dcache.nfs.vfs;
 import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -282,6 +283,12 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
+    public int read(Inode inode, ByteBuffer data, long offset) throws IOException {
+        checkAccess(inode, ACE4_READ_DATA);
+        return _inner.read(inode, data, offset);
+    }
+
+    @Override
     public String readlink(Inode inode) throws IOException {
         checkAccess(inode, ACE4_READ_DATA);
         return _inner.readlink(inode);
@@ -316,6 +323,12 @@ public class PseudoFs extends ForwardingFileSystem {
     public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
         checkAccess(inode, ACE4_WRITE_DATA);
         return _inner.write(inode, data, offset, count, stabilityLevel);
+    }
+
+    @Override
+    public WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel) throws IOException {
+        checkAccess(inode, ACE4_WRITE_DATA);
+        return _inner.write(inode, data, offset, stabilityLevel);
     }
 
     @Override
