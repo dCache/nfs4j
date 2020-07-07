@@ -1,7 +1,6 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
-import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.nfs_fh4;

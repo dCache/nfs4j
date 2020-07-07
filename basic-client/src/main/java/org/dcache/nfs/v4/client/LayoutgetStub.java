@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,44 +21,46 @@ package org.dcache.nfs.v4.client;
 
 import java.io.IOException;
 
-import org.dcache.nfs.v4.xdr.GETDEVICELIST4args;
+import org.dcache.nfs.v4.xdr.LAYOUTGET4args;
 import org.dcache.nfs.v4.xdr.count4;
-import org.dcache.nfs.v4.xdr.layouttype4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_cookie4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
-import org.dcache.nfs.v4.xdr.verifier4;
+import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
+import org.dcache.nfs.v4.xdr.offset4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.Xdr;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 
-public class GetDeviceListStub {
+public class LayoutgetStub {
 
-    public static nfs_argop4 normal() {
+    public static nfs_argop4 generateRequest(boolean signal_layout_avail,
+            int layout_type, int iomode, int offset, int length, int minlength,
+            int maxcount, stateid4 stateid) {
 
         nfs_argop4 op = new nfs_argop4();
-        op.argop = nfs_opnum4.OP_GETDEVICELIST;
-        op.opgetdevicelist = new GETDEVICELIST4args();
+        op.argop = nfs_opnum4.OP_LAYOUTGET;
+        op.oplayoutget = new LAYOUTGET4args();
 
-        op.opgetdevicelist.gdla_cookie = new nfs_cookie4(0);
+        op.oplayoutget.loga_signal_layout_avail = signal_layout_avail;
+        op.oplayoutget.loga_layout_type = layout_type;
+        op.oplayoutget.loga_iomode = iomode;
 
-        op.opgetdevicelist.gdla_cookieverf = new verifier4();
-        op.opgetdevicelist.gdla_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
+	op.oplayoutget.loga_offset = new offset4(offset);
+	op.oplayoutget.loga_length = new length4(length);
+	op.oplayoutget.loga_minlength = new length4(minlength);
+	op.oplayoutget.loga_maxcount = new count4(maxcount);
 
-        op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
-
-        op.opgetdevicelist.gdla_maxdevices = new count4(256);
+        op.oplayoutget.loga_stateid = stateid;
 
         return op;
     }
 
-    public static nfsv4_1_file_layout_ds_addr4 decodeFileDevice(byte[] data)
-            throws OncRpcException, IOException {
-        XdrDecodingStream xdr = new Xdr(data);
+    static public nfsv4_1_file_layout4 decodeLayoutId(byte[] data) throws OncRpcException, IOException {
 
-        nfsv4_1_file_layout_ds_addr4 device = new nfsv4_1_file_layout_ds_addr4();
+        XdrDecodingStream xdr = new Xdr(data);
+        nfsv4_1_file_layout4 device = new nfsv4_1_file_layout4();
 
         xdr.beginDecoding();
         device.xdrDecode(xdr);

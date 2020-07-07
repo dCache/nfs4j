@@ -17,7 +17,6 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.FileHandle;

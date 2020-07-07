@@ -2,7 +2,6 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.nfs_lock_type4;
 import org.junit.Test;

@@ -3,7 +3,6 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.vfs.Inode;

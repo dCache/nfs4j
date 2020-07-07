@@ -9,7 +9,6 @@ import org.dcache.nfs.vfs.Inode;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.layouttype4;

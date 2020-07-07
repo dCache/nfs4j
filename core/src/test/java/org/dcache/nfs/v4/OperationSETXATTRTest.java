@@ -3,7 +3,6 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.dcache.nfs.status.BadXdrException;
-import org.dcache.nfs.v4.client.CompoundBuilder;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.setxattr_option4;
