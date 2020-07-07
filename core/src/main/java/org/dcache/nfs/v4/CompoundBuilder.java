@@ -113,7 +113,8 @@ import org.dcache.oncrpc4j.xdr.Xdr;
 
 public class CompoundBuilder {
 
-    private final String NO_TAG = "";
+    private static final String NO_TAG = "";
+
     private String tag = NO_TAG;
     private int minorversion = 1;
     private List<nfs_argop4> ops = new ArrayList<>();
