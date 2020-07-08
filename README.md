@@ -9,7 +9,7 @@ with nfs4.1-files and flex-files layout types.
 Building from sources
 ---------------------
 
-To build nfs4j from source code Java8 and Maven3 are required.
+To build nfs4j from source code Java11 and Maven3 are required.
 
 To run benchmarks:
 
