@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ public class OperationSECINFO_NO_NAMETest {
 
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.sys").toURI());
         CompoundContext context = new CompoundContextBuilder()
-                .withExportFile(exportFile)
+                .withExportTable(exportFile)
                 .withCall(generateRpcCall())
                 .build();
         context.currentInode(inode);
@@ -70,7 +70,7 @@ public class OperationSECINFO_NO_NAMETest {
 
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.krb").toURI());
         CompoundContext context = new CompoundContextBuilder()
-                .withExportFile(exportFile)
+                .withExportTable(exportFile)
                 .withCall(generateRpcCall())
                 .build();
         context.currentInode(inode);
@@ -85,7 +85,7 @@ public class OperationSECINFO_NO_NAMETest {
 
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports.mix").toURI());
         CompoundContext context = new CompoundContextBuilder()
-                .withExportFile(exportFile)
+                .withExportTable(exportFile)
                 .withCall(generateRpcCall())
                 .build();
         context.currentInode(inode);

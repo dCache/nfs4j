@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -49,14 +49,6 @@ public class CompoundContextBuilder {
     public CompoundContextBuilder withDeviceManager(NFSv41DeviceManager deviceManager) {
         this.deviceManager = deviceManager;
         return this;
-    }
-
-    /**
-     * @deprecated Use {@link #withExportTable}
-     */
-    @Deprecated
-    public CompoundContextBuilder withExportFile(ExportFile exportFile) {
-        return withExportTable(exportFile);
     }
 
     public CompoundContextBuilder withExportTable(ExportTable exportTable) {

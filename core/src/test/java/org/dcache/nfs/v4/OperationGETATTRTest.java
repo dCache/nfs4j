@@ -42,7 +42,7 @@ public class OperationGETATTRTest {
         CompoundContext context = new CompoundContextBuilder()
                 .withDeviceManager(dm)
                 .withCall(call)
-                .withExportFile(exportFile)
+                .withExportTable(exportFile)
                 .build();
 
         Optional<fattr4_fs_layout_types> res = (Optional<fattr4_fs_layout_types>) OperationGETATTR.fattr2xdr(nfs4_prot.FATTR4_FS_LAYOUT_TYPES, null, null, null, context);
