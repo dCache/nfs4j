@@ -19,9 +19,10 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import com.google.common.io.BaseEncoding;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
+
+import java.util.Base64;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -134,7 +135,10 @@ public class DistributedLockManager extends AbstractLockManager {
     }
 
     private static String objIdToKey(byte[] objId) {
-        return BaseEncoding.base64().omitPadding().encode(objId);
+        return Base64
+                .getEncoder()
+                .withoutPadding()
+                .encodeToString(objId);
     }
 
 }
