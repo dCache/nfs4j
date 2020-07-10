@@ -1,5 +1,9 @@
 # Changes to NFS4J public API
 
+## 0.22
+
+- removed deprecated CompoundContextBuilder#withExportFile 
+
 ## 0.21
 
 - deprecated methods in *org.dcache.nfs.vfs.VirtualFileSystem*
