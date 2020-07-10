@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -64,7 +64,7 @@ public class DistributedLockManager extends AbstractLockManager {
 
     @Override
     protected Lock getObjectLock(byte[] objId) {
-        String key = BaseEncoding.base16().upperCase().encode(objId);
+        String key = objIdToKey(objId);
         return new Lock() {
             @Override
             public void lock() {
