@@ -262,9 +262,7 @@ public class DummyVFS implements VirtualFileSystem {
             throw new ServerFaultException("Failed to create: " + e.getMessage(), e);
         }
 
-        long newInodeNumber = fileId.getAndIncrement();
-        map(newInodeNumber, targetPath);
-        return toFileHandle(newInodeNumber);
+        return existing;
     }
 
     @Override
