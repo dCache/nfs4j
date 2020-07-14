@@ -214,8 +214,7 @@ public class VfsCache extends ForwardingFileSystem {
     /**
      * Discards cached {@link Stat} value for given {@link Inode}.
      *
-     * @param parent inode
-     * @param path to invalidate
+     * @param inode The inode for which cached state value should be invalidated.
      */
     public void invalidateStatCache(final Inode inode) {
 	_statCache.invalidate(new Opaque(inode.getFileId()));
