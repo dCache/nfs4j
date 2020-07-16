@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2015 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,9 +19,9 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -113,7 +113,7 @@ public class SimpleLm extends AbstractLockManager {
     }
 
     private final String toKey(byte[] objId) {
-        return BaseEncoding.base16().lowerCase().encode(objId);
+        return Base64.getEncoder().encodeToString(objId);
     }
 
 }
