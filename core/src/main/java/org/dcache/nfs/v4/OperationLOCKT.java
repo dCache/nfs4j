@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,9 +19,11 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.ChimeraNFSException;
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.ServerFaultException;
 import org.dcache.nfs.v4.nlm.LockDeniedException;
 import org.dcache.nfs.v4.nlm.LockException;
@@ -47,13 +49,25 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
         if (_args.oplockt.length.value == 0) {
             throw new InvalException("zero lock len");
         }
+
+        switch (context.getFs().getattr(inode).type()) {
+            case REGULAR:
+                // OK
+                break;
+            case DIRECTORY:
+                throw new IsDirException("lockt on directory object");
+            default:
+                throw new InvalException("lockt on non file object");
+        }
+
+        _args.oplockt.offset.checkOverflow(_args.oplockt.length, "offset + len overflow");
 
         try {
 
