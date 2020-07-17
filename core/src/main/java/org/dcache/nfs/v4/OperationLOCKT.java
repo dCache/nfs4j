@@ -71,14 +71,16 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
 
         try {
 
-            /*
-            * this is a hypothetic lock owner, which used for lock-test and might
-            * not exist on the server.
-            */
             state_owner4 hypotheticLockOwner = new state_owner4();
-            hypotheticLockOwner.clientid = _args.oplockt.owner.clientid;
             hypotheticLockOwner.owner = _args.oplockt.owner.owner;
 
+            if (context.getMinorversion() == 0) {
+                // poke to check that client id is valid
+                hypotheticLockOwner.clientid = _args.oplockt.owner.clientid;
+                context.getStateHandler().getConfirmedClient(_args.oplockt.owner.clientid);
+            } else {
+                hypotheticLockOwner.clientid = context.getSession().getClient().getId();
+            }
             StateOwner lockOwner = new StateOwner(hypotheticLockOwner, 0);
 
             NlmLock lock = new NlmLock(lockOwner, _args.oplockt.locktype, _args.oplockt.offset.value, _args.oplockt.length.value);
