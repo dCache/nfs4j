@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -79,6 +79,10 @@ public class ClientCB {
     private final sessionid4 _session;
 
     /**
+     * Minor version of the nfs protocol used by client.
+     */
+    private final int _minorVersion;
+    /**
      * authentication flavor to be used for call-backs
      */
     private final RpcAuth _auth;
@@ -100,13 +104,15 @@ public class ClientCB {
 
     /**
      * @param transport for call-back communication
+     * @param minorVersion nfs4 protocol minor version used by client.
      * @param session associated with the client
      * @param highestSlotId highest slot id to use
      * @param program RPC program number to use
      * @param sec_parms supported security flavors
      */
-    ClientCB(RpcTransport transport, int program, sessionid4 session, int highestSlotId,
+    ClientCB(RpcTransport transport, int program, int minorVersion,  sessionid4 session, int highestSlotId,
             callback_sec_parms4[] sec_parms) {
+        _minorVersion = minorVersion;
         _session = session;
 
         switch (sec_parms[0].cb_secflavor) {
@@ -157,7 +163,7 @@ public class ClientCB {
 
         System.arraycopy(cbOperations, 0, cbCompound.argarray, 1, cbOperations.length);
 
-        cbCompound.minorversion = new uint32_t(1);
+        cbCompound.minorversion = new uint32_t(_minorVersion);
         cbCompound.callback_ident = new uint32_t(0);
         cbCompound.tag = new utf8str_cs(tag);
 
