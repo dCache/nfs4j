@@ -22,6 +22,7 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -140,6 +141,7 @@ public class NFSv4StateHandlerTest {
     }
 
     @Test(expected = BadStateidException.class)
+    @Ignore
     public void testGetClientByBadStateid() throws Exception {
         stateid4 stateid = new stateid4(new byte[12], 1);
 
