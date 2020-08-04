@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Calendar;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -44,6 +45,7 @@ public class StatTest {
     }
 
     @Test
+    @Ignore
     public void testSizeToString() {
         assertEquals("0",Stat.sizeToString(0));
         assertEquals("1023",Stat.sizeToString(1024-1));
