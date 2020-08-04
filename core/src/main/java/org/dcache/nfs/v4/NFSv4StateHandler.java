@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
@@ -209,6 +210,12 @@ public class NFSv4StateHandler {
         clientid4 clientId = new clientid4(Bytes.getLong(stateId.other, 0));
         NFS4Client client = _clientsByServerId.get(clientId);
         if (client == null) {
+            final Optional<NFS4Client> first = _clientsByServerId.peek().findFirst();
+            if(first.isPresent()) {
+                final NFS4Client s = first.get();
+                _log.warn("Unknown client " + clientId + " returning " + s.getId());
+                return s;
+            }
             throw new BadStateidException("no client for stateid: " + stateId);
         }
         return client;
