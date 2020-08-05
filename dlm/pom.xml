@@ -5,7 +5,7 @@
     <parent>
       <groupId>ch.iterate</groupId>
       <artifactId>nfs4j</artifactId>
-      <version>0.22.1</version>
+      <version>0.22.2-SNAPSHOT</version>
     </parent>
 
     <name>Distributed lock manager</name>
