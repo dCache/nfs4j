@@ -20,6 +20,7 @@
 package org.dcache.nfs;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
@@ -126,7 +127,7 @@ public class FsExport {
         _allRoot = builder.isAllRoot();
         _withPnfs = builder.isWithPnfs();
         _index = getExportIndex(_path);
-        _layoutTypes = List.copyOf(builder.getLayoutTypes());
+	_layoutTypes = ImmutableList.copyOf(builder.getLayoutTypes());
     }
 
     public static int getExportIndex(String path) {
