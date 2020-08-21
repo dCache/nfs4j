@@ -655,7 +655,7 @@ public class Main {
             COMPOUND4args args = new CompoundBuilder()
                     .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(fh)
-                    .withReaddir(cookie, verifier, 8192, 512)
+                    .withReaddir(cookie, verifier, 16384, 16384)
                     .withTag("readdir")
                     .build();
 
@@ -689,7 +689,7 @@ public class Main {
                     .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(path.charAt(0) == '/' ? _rootFh : fh)
                     .withLookup(path)
-                    .withReaddir(cookie, verifier, 8192, 512)
+                    .withReaddir(cookie, verifier, 16384, 16384)
                     .withTag("readdir")
                     .build();
 
