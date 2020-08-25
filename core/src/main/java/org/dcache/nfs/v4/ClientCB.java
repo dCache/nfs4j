@@ -20,45 +20,40 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.dcache.nfs.v4.xdr.uint64_t;
-import org.dcache.nfs.v4.xdr.nfs_cb_opnum4;
-import org.dcache.nfs.v4.xdr.layoutrecall_type4;
-import org.dcache.nfs.v4.xdr.callback_sec_parms4;
-import org.dcache.nfs.v4.xdr.fsid4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.CB_COMPOUND4res;
-import org.dcache.nfs.v4.xdr.sequenceid4;
-import org.dcache.nfs.v4.xdr.slotid4;
-import org.dcache.nfs.v4.xdr.CB_SEQUENCE4args;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
-import org.dcache.nfs.v4.xdr.layoutiomode4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.layouttype4;
-import org.dcache.nfs.v4.xdr.CB_LAYOUTRECALL4args;
-import org.dcache.nfs.v4.xdr.CB_COMPOUND4args;
-import org.dcache.nfs.v4.xdr.sessionid4;
-import org.dcache.nfs.v4.xdr.layoutrecall4;
-import org.dcache.nfs.v4.xdr.referring_call_list4;
-import org.dcache.nfs.v4.xdr.nfs_cb_argop4;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.CB_COMPOUND4args;
+import org.dcache.nfs.v4.xdr.CB_COMPOUND4res;
+import org.dcache.nfs.v4.xdr.CB_LAYOUTRECALL4args;
 import org.dcache.nfs.v4.xdr.CB_NOTIFY_DEVICEID4args;
+import org.dcache.nfs.v4.xdr.CB_SEQUENCE4args;
 import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.callback_sec_parms4;
 import org.dcache.nfs.v4.xdr.deviceid4;
+import org.dcache.nfs.v4.xdr.fsid4;
+import org.dcache.nfs.v4.xdr.layoutiomode4;
+import org.dcache.nfs.v4.xdr.layoutrecall4;
 import org.dcache.nfs.v4.xdr.layoutrecall_file4;
+import org.dcache.nfs.v4.xdr.layoutrecall_type4;
+import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.length4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_cb_argop4;
+import org.dcache.nfs.v4.xdr.nfs_cb_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.notify4;
 import org.dcache.nfs.v4.xdr.notify_deviceid_delete4;
 import org.dcache.nfs.v4.xdr.notify_deviceid_type4;
 import org.dcache.nfs.v4.xdr.notifylist4;
 import org.dcache.nfs.v4.xdr.offset4;
+import org.dcache.nfs.v4.xdr.referring_call_list4;
+import org.dcache.nfs.v4.xdr.sessionid4;
+import org.dcache.nfs.v4.xdr.slotid4;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.uint32_t;
+import org.dcache.nfs.v4.xdr.uint64_t;
+import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
@@ -101,49 +96,9 @@ public class ClientCB {
      */
     private final RpcCall _rpc;
 
-    /** Queue that maintains the available/unused sessions slots. */
-    private final BlockingQueue<SessionSlot> _unusedSessionSlots = new LinkedBlockingQueue<>();
 
-    /** session slot with associated id and sequence. */
-    private static class SessionSlot {
-        /** slot id */
-        private final slotid4 id;
-
-        /** requests sequence id */
-        private int sequenceid = 0;
-
-        private SessionSlot(int id) {
-            this.id = new slotid4(id);
-        }
-
-        slotid4 getId() {
-            return id;
-        }
-
-        sequenceid4 nextSequenceId() {
-            return new sequenceid4(++sequenceid);
-        }
-    }
-
-
-    /**
-     * Get available session slot, waiting if necessary until a sot becomes available.
-     */
-    private SessionSlot acquireSlot() throws IOException {
-        try {
-            return _unusedSessionSlots.take();
-        } catch (InterruptedException e) {
-            InterruptedIOException eio = new InterruptedIOException(e.getMessage());
-            // preserve the original stacktrace
-            eio.setStackTrace(e.getStackTrace());
-            throw eio;
-        }
-    }
-
-    /** Return session slot into pool of available slots. */
-    private void releaseSlot(SessionSlot slot) {
-        _unusedSessionSlots.offer(slot);
-    }
+    /** Session associated with this callback channel */
+    private final ClientSession _clientSession;
 
     /**
      * @param transport for call-back communication
@@ -173,10 +128,9 @@ public class ClientCB {
             default:
                 throw new IllegalArgumentException("Unsuppotred security flavor");
         }
-        _highestSlotId = maxrequests -1;
-        for(int i = 0; i < maxrequests; i++) {
-            _unusedSessionSlots.add(new SessionSlot(i));
-        }
+
+        _highestSlotId = maxrequests - 1;
+        _clientSession = new ClientSession(session, maxrequests);
         _rpc = new RpcCall(program, CB_VERSION, _auth, transport);
     }
 
@@ -189,7 +143,7 @@ public class ClientCB {
         _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 1, TimeUnit.SECONDS);
     }
 
-    private XdrAble generateCompound(SessionSlot sessionSlot, String tag, nfs_cb_argop4...cbOperations) {
+    private XdrAble generateCompound(ClientSession.SessionSlot sessionSlot, String tag, nfs_cb_argop4...cbOperations) {
 
         CB_SEQUENCE4args cbSequence = new CB_SEQUENCE4args();
         cbSequence.csa_cachethis = false;
@@ -231,12 +185,12 @@ public class ClientCB {
         opArgs.argop = nfs_cb_opnum4.OP_CB_LAYOUTRECALL;
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
-        SessionSlot slot = acquireSlot();
+        var slot = _clientSession.acquireSlot();
         try{
             XdrAble args = generateCompound(slot,"cb_layout_recall_fs", opArgs);
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
         } finally {
-            releaseSlot(slot);
+            _clientSession.releaseSlot(slot);
         }
     }
 
@@ -258,7 +212,7 @@ public class ClientCB {
         opArgs.argop = nfs_cb_opnum4.OP_CB_LAYOUTRECALL;
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
-        SessionSlot slot = acquireSlot();
+        var slot = _clientSession.acquireSlot();
         try{
             XdrAble args = generateCompound(slot,"cb_layout_recall_file", opArgs);
 
@@ -266,7 +220,7 @@ public class ClientCB {
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
             nfsstat.throwIfNeeded(res.status);
         } finally {
-            releaseSlot(slot);
+            _clientSession.releaseSlot(slot);
         }
     }
 
@@ -296,7 +250,7 @@ public class ClientCB {
         opArgs.argop = nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID;
         opArgs.opcbnotify_deviceid = cbDeleteDeciveId;
 
-        SessionSlot slot = acquireSlot();
+        var slot = _clientSession.acquireSlot();
         try{
             XdrAble args = generateCompound(slot,"cb_delete_device", opArgs);
 
@@ -304,7 +258,7 @@ public class ClientCB {
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
             nfsstat.throwIfNeeded(res.status);
         } finally {
-            releaseSlot(slot);
+            _clientSession.releaseSlot(slot);
         }
     }
 
