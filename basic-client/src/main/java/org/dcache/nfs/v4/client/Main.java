@@ -527,9 +527,13 @@ public class Main {
 
         String domain = "nairi.desy.de";
         String name = "dCache.ORG java based client";
+        String clientid = this.getClass().getCanonicalName() + ": "
+                + ProcessHandle.current().info().user().orElse("<nobody>")
+                + "-"
+                + ProcessHandle.current().pid() + "@" + InetAddress.getLocalHost().getHostName();
 
         COMPOUND4args args = new CompoundBuilder()
-                .withExchangeId(domain, name, UUID.randomUUID().toString(), 0,state_protect_how4.SP4_NONE )
+                .withExchangeId(domain, name, clientid, 0, state_protect_how4.SP4_NONE )
                 .withTag("exchange_id")
                 .build();
 
