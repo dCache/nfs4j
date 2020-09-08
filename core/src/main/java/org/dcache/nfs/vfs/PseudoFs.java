@@ -21,7 +21,7 @@ package org.dcache.nfs.vfs;
 
 import com.google.common.base.Splitter;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,8 +62,12 @@ import static org.dcache.nfs.vfs.AclCheckable.Access;
 public class PseudoFs extends ForwardingFileSystem {
 
     private final static Logger _log = LoggerFactory.getLogger(PseudoFs.class);
+
+    /** TCP port range between 0 and 1023 can be used only by privileged (root) user */
+    public static final int PRIVILEGED_PORT = 1023;
+
     private final Subject _subject;
-    private final InetAddress _inetAddress;
+    private final InetSocketAddress _inetAddress;
     private final VirtualFileSystem _inner;
     private final ExportTable _exportTable;
     private final RpcAuth _auth;
@@ -77,7 +81,7 @@ public class PseudoFs extends ForwardingFileSystem {
         _inner = inner;
         _subject = call.getCredential().getSubject();
         _auth = call.getCredential();
-        _inetAddress = call.getTransport().getRemoteSocketAddress().getAddress();
+        _inetAddress = call.getTransport().getRemoteSocketAddress();
         _exportTable = exportTable;
     }
 
@@ -189,13 +193,13 @@ public class PseudoFs extends ForwardingFileSystem {
         /*
          * reject if there are no exports for this client at all
          */
-        if (!_exportTable.exports(_inetAddress).findAny().isPresent()) {
+        if (!_exportTable.exports(_inetAddress.getAddress()).findAny().isPresent()) {
             _log.warn("Access denied: (no export) fs root for client {}", _inetAddress);
             throw new AccessException("no exports");
         }
 
         Inode inode = _inner.getRootInode();
-        FsExport export = _exportTable.getExport("/", _inetAddress);
+        FsExport export = _exportTable.getExport("/", _inetAddress.getAddress());
         return export == null? realToPseudo(inode) :
                 pushExportIndex(inode, export.getIndex());
     }
@@ -211,7 +215,7 @@ public class PseudoFs extends ForwardingFileSystem {
 	/*
 	 * REVISIT: this is not the best place to do it, but the simples one.
 	 */
-	FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress);
+	FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress.getAddress());
 	if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
 	    throw new NoEntException("the dcap magic file is blocked");
 	}
@@ -427,7 +431,7 @@ public class PseudoFs extends ForwardingFileSystem {
 
         if (!inode.isPseudoInode()) {
             int exportIdx = getExportIndex(inode);
-            FsExport export = _exportTable.getExport(exportIdx, _inetAddress);
+            FsExport export = _exportTable.getExport(exportIdx, _inetAddress.getAddress());
             if (exportIdx != 0 && export == null) {
                 if (shouldLog) {
                     _log.warn("Access denied: (no export) to inode {} for client {}", inode, _inetAddress);
@@ -435,6 +439,12 @@ public class PseudoFs extends ForwardingFileSystem {
                 throw new AccessException("permission deny");
             }
 
+            if (export.isPrivilegedClientPortRequired() && _inetAddress.getPort() > PRIVILEGED_PORT) {
+                if (shouldLog) {
+                    _log.warn("Access denied: unprivileged client {}", _inetAddress);
+                }
+                throw new AccessException("unprivileged client");
+            }
             checkSecurityFlavor(_auth, export.getSec());
 
             if ( (export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
@@ -620,7 +630,7 @@ public class PseudoFs extends ForwardingFileSystem {
          * This can be wrong, e.g. RO vs. RW.
          */
         if (inode.handleVersion() == 0) {
-            FsExport export = _exportTable.exports(_inetAddress)
+            FsExport export = _exportTable.exports(_inetAddress.getAddress())
                     .findFirst()
                     .orElse(null);
             return export == null? -1 : export.getIndex();
@@ -679,7 +689,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Inode rootInode = realToPseudo(_inner.getRootInode());
         PseudoFsNode root = new PseudoFsNode(rootInode);
 
-        _exportTable.exports(_inetAddress).forEach(e -> pathToPseudoFs(root, nodes, e));
+        _exportTable.exports(_inetAddress.getAddress()).forEach(e -> pathToPseudoFs(root, nodes, e));
 
         if (nodes.isEmpty()) {
             _log.warn("No exports found for: {}", _inetAddress);
@@ -727,6 +737,6 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private boolean inheritUidGid(Inode inode) {
-        return _exportTable.getExport(inode.exportIndex(), _inetAddress).isAllRoot();
+        return _exportTable.getExport(inode.exportIndex(), _inetAddress.getAddress()).isAllRoot();
     }
 }

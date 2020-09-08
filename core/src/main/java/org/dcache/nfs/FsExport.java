@@ -75,6 +75,7 @@ public class FsExport {
     private final int _index;
     private final boolean _withPnfs;
     private final List<layouttype4> _layoutTypes;
+    private final boolean _requirePrivilegedClientPort;
 
     /**
      * NFS clients may be specified in a number of ways:<br>
@@ -127,6 +128,7 @@ public class FsExport {
         _withPnfs = builder.isWithPnfs();
         _index = getExportIndex(_path);
         _layoutTypes = List.copyOf(builder.getLayoutTypes());
+        _requirePrivilegedClientPort = builder.isPrivilegedClientPortRequired();
     }
 
     public static int getExportIndex(String path) {
@@ -156,6 +158,8 @@ public class FsExport {
                 .append(_withAcl ? "acl" : "noacl")
                 .append(',')
                 .append("sec=").append(_sec)
+                .append(_requirePrivilegedClientPort ? "secure" : "insecure")
+                .append(",")
 		.append(',')
 		.append(_withDcap ? "dcap" : "no_dcap")
                 .append(',')
@@ -237,6 +241,10 @@ public class FsExport {
 
     public boolean isWithPnfs() {
         return _withPnfs;
+    }
+
+    public boolean isPrivilegedClientPortRequired() {
+        return _requirePrivilegedClientPort;
     }
 
     /**
@@ -350,12 +358,27 @@ public class FsExport {
         private boolean _allRoot = false;
         private boolean _withPnfs = true;
 	private final List<layouttype4> _layoutTypes = new ArrayList<>();
+        private boolean _requirePrivilegedClientPort;
 
         public FsExportBuilder forClient(String client) {
             checkArgument(isValidHostSpecifier(client), "bad host specifier: " + client);
 
             _client = client;
             return this;
+        }
+
+        public FsExportBuilder withPrivilegedClientPort() {
+            _requirePrivilegedClientPort = true;
+            return this;
+        }
+
+        public FsExportBuilder withoutPrivilegedClientPort() {
+            _requirePrivilegedClientPort = false;
+            return this;
+        }
+
+        public boolean isPrivilegedClientPortRequired() {
+            return _requirePrivilegedClientPort;
         }
 
         public FsExportBuilder trusted() {

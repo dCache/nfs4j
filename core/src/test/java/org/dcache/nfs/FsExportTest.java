@@ -274,4 +274,25 @@ public class FsExportTest {
         assertEquals(FsExport.IO.RO, iomode);
     }
 
+    @Test
+    public void testSecureOption() throws Exception {
+        FsExport export = _exportFile.getExport("/secure", InetAddress.getByName("192.168.17.1"));
+
+        assertTrue("Incorrect secure option", export.isPrivilegedClientPortRequired());
+    }
+
+    @Test
+    public void testInsecureOption() throws Exception {
+        FsExport export = _exportFile.getExport("/insecure", InetAddress.getByName("192.168.17.1"));
+
+        assertFalse("Incorrect secure option", export.isPrivilegedClientPortRequired());
+    }
+
+    @Test
+    public void testDefaultSecureOption() throws Exception {
+        FsExport export = _exportFile.getExport("/secure_default", InetAddress.getByName("192.168.17.1"));
+
+        assertFalse("Incorrect default secure option", export.isPrivilegedClientPortRequired());
+    }
+
 }

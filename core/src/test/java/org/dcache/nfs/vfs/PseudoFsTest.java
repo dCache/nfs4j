@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ import org.junit.Before;
  */
 public class PseudoFsTest {
 
-    private final static InetSocketAddress localAddress = new InetSocketAddress(0);
+    private final static InetSocketAddress localAddress = new InetSocketAddress(31415);
     private VirtualFileSystem vfs;
     private ExportFile mockedExportFile;
     private FsExport mockedExport;
@@ -699,4 +699,48 @@ public class PseudoFsTest {
         pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8), VirtualFileSystem.SetXattrMode.CREATE);
     }
 
+    @Test(expected = AccessException.class)
+    public void testUnprivilegedClient() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .withPrivilegedClientPort()
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
+    }
+
+    @Test
+    public void testPrivilegedClient() throws IOException {
+        InetSocketAddress privilegedClient = new InetSocketAddress(314);
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(privilegedClient);
+        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .withPrivilegedClientPort()
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), privilegedClient.getAddress())).willReturn(export);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
+    }
 }

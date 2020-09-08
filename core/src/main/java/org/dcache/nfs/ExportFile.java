@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -280,6 +280,16 @@ public class ExportFile implements ExportTable {
                                     .map(t -> "LAYOUT4_" + t)
                                     .map(layouttype4::valueOf)
                                     .forEach(exportBuilder::withLayoutType);
+                            continue;
+                        }
+
+                        if (option.equals("secure")) {
+                            exportBuilder.withPrivilegedClientPort();
+                            continue;
+                        }
+
+                        if (option.equals("insecure")) {
+                            exportBuilder.withoutPrivilegedClientPort();
                             continue;
                         }
 
