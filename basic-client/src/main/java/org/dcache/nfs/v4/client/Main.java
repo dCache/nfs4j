@@ -42,6 +42,7 @@ import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.jline.reader.EndOfFileException;
@@ -1052,10 +1053,7 @@ public class Main {
          */
         do {
             compound4res = _nfsClient.NFSPROC4_COMPOUND_4(compound4args);
-            if (compound4res.status == nfsstat.NFSERR_GRACE) {
-                System.out.println("Server in GRACE period....retry");
-            }
-        } while (compound4res.status == nfsstat.NFSERR_GRACE);
+        } while (canRetry(compound4res.status, compound4args.tag.toString()));
 
         nfsstat.throwIfNeeded(compound4res.status);
         return compound4res;
@@ -1098,10 +1096,7 @@ public class Main {
                 compound4res = _nfsClient.NFSPROC4_COMPOUND_4(compound4args);
                 _lastUpdate = System.currentTimeMillis();
 
-                if (compound4res.status == nfsstat.NFSERR_GRACE) {
-                    System.out.println("Server in GRACE period....retry");
-                }
-            } while (compound4res.status == nfsstat.NFSERR_GRACE);
+            } while (canRetry(compound4res.status, compound4args.tag.toString()));
 
             nfsstat.throwIfNeeded(compound4res.status);
             return compound4res;
@@ -1109,6 +1104,27 @@ public class Main {
             _clientSession.releaseSlot(slot);
         }
     }
+
+    private boolean canRetry(int status, String compound) {
+        switch (status) {
+
+            case nfsstat.NFSERR_DELAY:
+            case nfsstat.NFSERR_LAYOUTTRYLATER:
+            case nfsstat.NFSERR_GRACE:
+                    System.out.println("Retrying " + compound + " on " + nfsstat.toString(status));
+                    try {
+                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(5));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return false;
+                    }
+                return true;
+            default:
+                return false;
+
+        }
+    }
+
 
     private void get_deviceinfo(deviceid4 deviceId) throws OncRpcException,
             IOException {
