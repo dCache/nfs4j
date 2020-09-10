@@ -30,6 +30,7 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,6 +73,7 @@ public class NFS4ClientTest {
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
+                .withFs(mock(VirtualFileSystem.class))
                 .withStateHandler(stateHandler)
                 .withMinorversion(1)
                 .withDeviceManager(mock(NFSv41DeviceManager.class))
@@ -99,6 +101,7 @@ public class NFS4ClientTest {
         OperationCLOSE CLOSE = new OperationCLOSE(close_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
+                .withFs(mock(VirtualFileSystem.class))
                 .withStateHandler(stateHandler)
                 .withMinorversion(0)
                 .withCall(generateRpcCall())

@@ -38,6 +38,7 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
@@ -186,6 +187,16 @@ public class PseudoFs extends ForwardingFileSystem {
         }
 
         return pushExportIndex(parent, _inner.create(parent, type, path, effectiveSubject, mode));
+    }
+
+    @Override
+    public void open(Inode inode, int mode, stateid4 stateid) throws IOException {
+
+    }
+
+    @Override
+    public void close(Inode inode, stateid4 stateid) throws IOException {
+
     }
 
     @Override

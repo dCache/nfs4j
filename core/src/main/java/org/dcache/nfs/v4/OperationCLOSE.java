@@ -47,6 +47,7 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         Inode inode = context.currentInode();
 
         stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opclose.open_stateid);
+        context.getFs().close(inode, stateid);
         NFS4Client client;
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();

@@ -22,6 +22,7 @@ package org.dcache.nfs.vfs;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import com.google.common.primitives.Longs;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,6 +207,16 @@ public class DummyVFS implements VirtualFileSystem {
         map(newInodeNumber, newPath);
         setOwnershipAndMode(newPath, subject, mode);
         return toFileHandle(newInodeNumber);
+    }
+
+    @Override
+    public void open(Inode inode, int mode, stateid4 stateid) throws IOException {
+
+    }
+
+    @Override
+    public void close(Inode inode, stateid4 stateid) throws IOException {
+
     }
 
     @Override
