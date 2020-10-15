@@ -85,6 +85,13 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final uint32_t layoutFlags;
 
     /**
+     * The data transfer buffer size used for READ and WRITE operations.
+     *
+     * REVISIT: for now, we assume that all data server prefer the same rsize/wsize.
+     */
+    private final uint32_t ioBufferSize;
+
+    /**
      * Create new FlexFile layout driver with. The @code nfsVersion} and
      * {@code nfsMinorVersion} represent the protocol to be used to access the
      * storage device. If client uses AUTH_SYS, then provided {@code userPrincipal}
@@ -93,20 +100,22 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      * @param nfsVersion nfs version to use
      * @param nfsMinorVersion nfs minor version to use.
      * @param flags layout flags.
+     * @param ioBufferSize the data transfer buffer size used for READ or WRITE.
      * @param userPrincipal user principal to be used by client
      * @param groupPrincipal group principal to be used by client
      * @param layoutReturnConsumer consumer which accepts data provided on layout return.
      */
-    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, int flags,
+    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, int flags, int ioBufferSize,
             utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal,
             BiConsumer<CompoundContext, ff_layoutreturn4> layoutReturnConsumer) {
+
+        checkArgument((flags & ~flex_files_prot.FF_FLAGS_MASK) == 0, "Invalid flex files layout flag");
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
         this.userPrincipal = new fattr4_owner(userPrincipal);
         this.groupPrincipal = new fattr4_owner_group(groupPrincipal);
         this.layoutReturnConsumer = layoutReturnConsumer;
-
-        checkArgument((flags & ~flex_files_prot.FF_FLAGS_MASK) == 0, "Invalid flex files layout flag");
+        this.ioBufferSize = new uint32_t(ioBufferSize);
         this.layoutFlags = new uint32_t(flags);
     }
 
@@ -124,8 +133,8 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         flexfile_type.ffda_versions[0] = new ff_device_versions4();
         flexfile_type.ffda_versions[0].ffdv_version = new uint32_t(nfsVersion);
         flexfile_type.ffda_versions[0].ffdv_minorversion = new uint32_t(nfsMinorVersion);
-        flexfile_type.ffda_versions[0].ffdv_rsize = new uint32_t(64 * 1024);
-        flexfile_type.ffda_versions[0].ffdv_wsize = new uint32_t(64 * 1024);
+        flexfile_type.ffda_versions[0].ffdv_rsize = ioBufferSize;
+        flexfile_type.ffda_versions[0].ffdv_wsize = ioBufferSize;
         flexfile_type.ffda_versions[0].ffdv_tightly_coupled = true;
 
         flexfile_type.ffda_netaddrs = new multipath_list4();
