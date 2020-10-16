@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import org.dcache.auth.UidPrincipal;
@@ -324,9 +323,10 @@ public class CompoundContext {
             type = UidPrincipal.class;
         }
 
-        Set<? extends Principal> principals =
-                call.getCredential().getSubject().getPrincipals(type);
-        return principals.isEmpty() ? NO_PRINCIPAL : principals.iterator().next();
+        return call.getCredential().getSubject().getPrincipals().stream()
+                .filter(type::isInstance)
+                .findFirst()
+                .orElse(NO_PRINCIPAL);
     }
 
     /**
