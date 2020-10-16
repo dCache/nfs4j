@@ -21,8 +21,9 @@ package org.dcache.nfs.v4.client;
 import java.io.IOException;
 
 import java.net.InetAddress;
-import javax.security.auth.Subject;
-import org.dcache.auth.Subjects;
+import java.util.Arrays;
+
+import com.sun.security.auth.module.UnixSystem;
 
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
@@ -34,8 +35,6 @@ import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
 import org.dcache.oncrpc4j.xdr.XdrVoid;
-import org.dcache.nfs.util.UnixUtils;
-
 
 /**
  * The class <code>nfs4_prot_NFS4_PROGRAM_Client</code> implements the client stub proxy
@@ -74,14 +73,11 @@ public class nfs4_prot_NFS4_PROGRAM_Client {
     public nfs4_prot_NFS4_PROGRAM_Client(InetAddress host, int port, int protocol)
            throws OncRpcException, IOException {
 
-        Subject currentUser = UnixUtils.getCurrentUser();
-        if (currentUser == null) {
-            throw new IllegalStateException("unable to determine current unix user. please provide uid/gid explicitly");
-        }
+        UnixSystem currentUser = new UnixSystem();
 
-        int uid = (int)Subjects.getUid(currentUser);
-        int gid = (int)Subjects.getPrimaryGid(currentUser);
-        int[] gids = UnixUtils.toIntArray(Subjects.getGids(currentUser));
+        int uid = (int)currentUser.getUid();
+        int gid = (int)currentUser.getGid();
+        int[] gids = Arrays.stream(currentUser.getGroups()).mapToInt(Math::toIntExact).toArray();
 
         rpcClient = new OncRpcClient(host, protocol, port);
         RpcTransport transport;
