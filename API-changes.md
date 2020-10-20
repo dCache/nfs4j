@@ -2,7 +2,8 @@
 
 ## 0.22
 
-- removed deprecated CompoundContextBuilder#withExportFile 
+- removed deprecated CompoundContextBuilder#withExportFile
+- removed interface org.dcache.nfs.v4.NfsLoginService
 
 ## 0.21
 
