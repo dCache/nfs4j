@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import javax.security.auth.Subject;
-import org.dcache.auth.Subjects;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
@@ -53,6 +53,8 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.dcache.nfs.vfs.AclCheckable.Access;
+import static org.dcache.nfs.util.UnixSubjects.*;
+
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
  * on top of an other file system based on export rules.
@@ -176,13 +178,13 @@ public class PseudoFs extends ForwardingFileSystem {
     public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
 
-        if (subject != null && Subjects.isRoot(effectiveSubject)) {
+        if (subject != null && isRootSubject(effectiveSubject)) {
             effectiveSubject = subject;
         }
 
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
 
         return pushExportIndex(parent, _inner.create(parent, type, path, effectiveSubject, mode));
@@ -229,7 +231,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
         return pushExportIndex(parent, _inner.link(parent, link, path, effectiveSubject));
     }
@@ -247,13 +249,13 @@ public class PseudoFs extends ForwardingFileSystem {
     @Override
     public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
-        if (subject != null && Subjects.isRoot(effectiveSubject)) {
+        if (subject != null && isRootSubject(effectiveSubject)) {
             effectiveSubject = subject;
         }
 
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
         return pushExportIndex(parent, _inner.mkdir(parent, path, effectiveSubject, mode));
     }
@@ -318,7 +320,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
         return pushExportIndex(parent, _inner.symlink(parent, path, link, effectiveSubject, mode));
     }
@@ -460,8 +462,8 @@ public class PseudoFs extends ForwardingFileSystem {
                 return effectiveSubject;
             }
 
-            if (Subjects.isNobody(_subject) || export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
-                effectiveSubject = Subjects.of(export.getAnonUid(), export.getAnonGid());
+            if (isNobodySubject(_subject) || export.hasAllSquash() || (!export.isTrusted() && isRootSubject(_subject))) {
+                effectiveSubject = toSubject(export.getAnonUid(), export.getAnonGid());
             }
 
             if (export.checkAcls()) {
@@ -508,12 +510,12 @@ public class PseudoFs extends ForwardingFileSystem {
         boolean isDir = (mode & Stat.S_IFDIR) == Stat.S_IFDIR;
         int fromUnixMask;
 
-        if (Subjects.isRoot(subject)) {
+        if (isRootSubject(subject)) {
             fromUnixMask = Acls.toAccessMask(Acls.RBIT | Acls.WBIT | Acls.XBIT, isDir, true);
             fromUnixMask |= ACE4_WRITE_OWNER;
-        } else if (Subjects.hasUid(subject, stat.getUid())) {
+        } else if (hasUid(subject, stat.getUid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OWNER_OFFSET, isDir, true);
-        } else if (Subjects.hasGid(subject, stat.getGid())) {
+        } else if (hasGid(subject, stat.getGid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_GROUP_OFFSET, isDir, false);
         } else {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OTHER_OFFSET, isDir, false);

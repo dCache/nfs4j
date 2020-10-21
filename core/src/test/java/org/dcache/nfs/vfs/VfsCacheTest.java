@@ -1,6 +1,5 @@
 package org.dcache.nfs.vfs;
 
-import org.dcache.auth.Subjects;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +12,7 @@ import static org.mockito.Mockito.*;
 
 public class VfsCacheTest {
 
-    private Subject subject = Subjects.of(0, 1, 2, 3);
+    private Subject subject = new Subject();
 
     private VirtualFileSystem vfs;
     private VfsCache vfsCache;
