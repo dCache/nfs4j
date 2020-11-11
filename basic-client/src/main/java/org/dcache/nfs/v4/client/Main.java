@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4.client;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -41,6 +42,7 @@ import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.jline.reader.EndOfFileException;
@@ -70,14 +72,18 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.AttributeMap;
+import org.dcache.nfs.v4.ClientSession;
+import org.dcache.nfs.v4.xdr.SEQUENCE4args;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.sequenceid4;
 import org.dcache.nfs.v4.xdr.sessionid4;
+import org.dcache.nfs.v4.xdr.slotid4;
 import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
@@ -95,9 +101,10 @@ public class Main {
     private nfs_fh4 _ioFH = null;
     private clientid4 _clientIdByServer = null;
     private sequenceid4 _sequenceID = null;
-    private sessionid4 _sessionid = null;
     private long _lastUpdate = -1;
-    private int _slotId = -1;
+
+    private ClientSession _clientSession;
+
     private boolean _isMDS = false;
     private boolean _isDS = false;
     private static final String PROMPT = "NFSv41: ";
@@ -521,9 +528,13 @@ public class Main {
 
         String domain = "nairi.desy.de";
         String name = "dCache.ORG java based client";
+        String clientid = this.getClass().getCanonicalName() + ": "
+                + ProcessHandle.current().info().user().orElse("<nobody>")
+                + "-"
+                + ProcessHandle.current().pid() + "@" + InetAddress.getLocalHost().getHostName();
 
         COMPOUND4args args = new CompoundBuilder()
-                .withExchangeId(domain, name, UUID.randomUUID().toString(), 0,state_protect_how4.SP4_NONE )
+                .withExchangeId(domain, name, clientid, 0, state_protect_how4.SP4_NONE )
                 .withTag("exchange_id")
                 .build();
 
@@ -557,6 +568,7 @@ public class Main {
 
     private void create_session() throws OncRpcException, IOException {
 
+        Preconditions.checkState(_clientSession == null, "Session already exists");
         COMPOUND4args args = new CompoundBuilder()
                 .withCreatesession(_clientIdByServer, _sequenceID)
                 .withTag("create_session")
@@ -564,19 +576,19 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompound(args);
 
-        _sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
+        sessionid4 sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
         _sequenceID.value = 0;
-        _slotId = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_fore_chan_attrs.ca_maxrequests.value -1;
-        System.out.println("Using slots: " + _slotId);
+        int maxRequests = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_fore_chan_attrs.ca_maxrequests.value;
+        System.out.println("Using slots: " + maxRequests);
+        _clientSession = new ClientSession(sessionid, maxRequests);
         if (_isMDS) {
             args = new CompoundBuilder()
-                    .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutrootfh()
                     .withGetattr(nfs4_prot.FATTR4_LEASE_TIME)
                     .withTag("get_lease_time")
                     .build();
 
-            compound4res = sendCompound(args);
+            compound4res = sendCompoundInSession(args);
 
             AttributeMap attributeMap = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
             Optional<fattr4_lease_time> fattr4_lease_timeAttr = attributeMap.get(nfs4_prot.FATTR4_LEASE_TIME);
@@ -593,12 +605,13 @@ public class Main {
     private void destroy_session() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withDestroysession(_sessionid)
+                .withDestroysession(_clientSession.sessionId())
                 .withTag("destroy_session")
                 .build();
 
         @SuppressWarnings("unused")
         COMPOUND4res compound4res = sendCompound(args);
+        _clientSession = null;
         _executorService.shutdown();
     }
 
@@ -617,14 +630,13 @@ public class Main {
     private void getRootFh(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutrootfh()
                 .withLookup(path)
                 .withGetfh()
                 .withTag("get_rootfh")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         _rootFh = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
         _cwd = _rootFh;
@@ -653,13 +665,12 @@ public class Main {
         do {
 
             COMPOUND4args args = new CompoundBuilder()
-                    .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(fh)
-                    .withReaddir(cookie, verifier, 8192, 512)
+                    .withReaddir(cookie, verifier, 16384, 16384)
                     .withTag("readdir")
                     .build();
 
-            COMPOUND4res compound4res = sendCompound(args);
+            COMPOUND4res compound4res = sendCompoundInSession(args);
 
             verifier = compound4res.resarray.get(2).opreaddir.resok4.cookieverf;
             done = compound4res.resarray.get(2).opreaddir.resok4.reply.eof;
@@ -686,14 +697,13 @@ public class Main {
         do {
 
             COMPOUND4args args = new CompoundBuilder()
-                    .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                     .withPutfh(path.charAt(0) == '/' ? _rootFh : fh)
                     .withLookup(path)
-                    .withReaddir(cookie, verifier, 8192, 512)
+                    .withReaddir(cookie, verifier, 16384, 16384)
                     .withTag("readdir")
                     .build();
 
-            COMPOUND4res compound4res = sendCompound(args);
+            COMPOUND4res compound4res = sendCompoundInSession(args);
 
             verifier = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.cookieverf;
             done = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.eof;
@@ -713,7 +723,6 @@ public class Main {
     private void mkdir(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withSavefh()
                 .withGetattr(nfs4_prot.FATTR4_CHANGE)
@@ -722,20 +731,19 @@ public class Main {
                 .withGetattr(nfs4_prot.FATTR4_CHANGE)
                 .withTag("mkdir")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private void get_fs_locations(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withLookup(path)
                 .withGetattr(nfs4_prot.FATTR4_FS_LOCATIONS)
                 .withTag("get_fs_locations")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
@@ -752,13 +760,12 @@ public class Main {
     nfs_fh4 cwd(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(path)
                 .withGetfh()
                 .withTag("lookup (cwd)")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         _cwd = compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object;
         System.out.println("CWD fh = " + BaseEncoding.base16().lowerCase().encode(_cwd.value));
@@ -770,12 +777,11 @@ public class Main {
         Stat stat = new Stat();
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withGetattr(nfs4_prot.FATTR4_SIZE,nfs4_prot.FATTR4_TYPE)
                 .withTag("getattr (stat)")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         AttributeMap attrs = new AttributeMap(compound4res.resarray.get(2).opgetattr.resok4.obj_attributes);
 
@@ -826,7 +832,6 @@ public class Main {
     private void readatonce(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
@@ -835,7 +840,7 @@ public class Main {
                 .withTag("open+read+close")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         int opss = compound4res.resarray.size();
         byte[] data = new byte[compound4res.resarray.get(opss - 2).opread.resok4.data.remaining()];
@@ -907,14 +912,13 @@ public class Main {
     private OpenReply open(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
                 .withGetfh()
                 .withTag("open_read")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         int opCount = compound4res.resarray.size();
 
@@ -928,14 +932,13 @@ public class Main {
     private OpenReply create(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpenCreate(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_BOTH)
                 .withGetfh()
                 .withTag("open_create")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         int opCount = compound4res.resarray.size();
         nfs_fh4 fh = compound4res.resarray.get(opCount - 1).opgetfh.resok4.object;
@@ -948,19 +951,17 @@ public class Main {
     private void close(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withClose(stateid, 1)
                 .withTag("close")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private StripeMap layoutget(nfs_fh4 fh, stateid4 stateid, int layoutiomode) throws OncRpcException,
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withLayoutget(false,
                 layouttype4.LAYOUT4_NFSV4_1_FILES,
@@ -968,7 +969,7 @@ public class Main {
                 stateid)
                 .withTag("layoutget")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         layout4[] layout = compound4res.resarray.get(2).oplayoutget.logr_resok4.logr_layout;
         System.out.println("Layoutget for fh: " + BaseEncoding.base16().lowerCase().encode(fh.value));
@@ -1021,26 +1022,24 @@ public class Main {
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withLayoutreturn(offset, len, body, stateid)
                 .withTag("layoutreturn")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private void layoutCommit(nfs_fh4 fh, stateid4 stateid, long offset, long len,
             OptionalLong newOffset, byte[] body) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withLayoutcommit(offset, len, false, stateid, newOffset, layouttype4.LAYOUT4_NFSV4_1_FILES, body)
                 .withTag("layoutcommit")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private COMPOUND4res sendCompound(COMPOUND4args compound4args)
@@ -1048,31 +1047,93 @@ public class Main {
 
         COMPOUND4res compound4res;
         /*
-         * wail if server is in the grace period.
+         * wait if server is in the grace period.
          *
          * TODO: escape if it takes too long
          */
         do {
             compound4res = _nfsClient.NFSPROC4_COMPOUND_4(compound4args);
-            processSequence(compound4res);
-            if (compound4res.status == nfsstat.NFSERR_GRACE) {
-                System.out.println("Server in GRACE period....retry");
-            }
-        } while (compound4res.status == nfsstat.NFSERR_GRACE);
+        } while (canRetry(compound4res.status, compound4args.tag.toString()));
 
         nfsstat.throwIfNeeded(compound4res.status);
         return compound4res;
     }
 
+    private COMPOUND4res sendCompoundInSession(COMPOUND4args compound4args)
+            throws OncRpcException, IOException {
+
+        if (compound4args.argarray[0].argop == nfs_opnum4.OP_SEQUENCE) {
+            throw new IllegalArgumentException("The operation sequence should not be included");
+        }
+
+        nfs_argop4[] extendedOps = new nfs_argop4[compound4args.argarray.length + 1];
+        System.arraycopy(compound4args.argarray, 0, extendedOps, 1, compound4args.argarray.length);
+        compound4args.argarray = extendedOps;
+
+        var slot = _clientSession.acquireSlot();
+        try {
+
+            COMPOUND4res compound4res;
+            /*
+             * wait if server is in the grace period.
+             *
+             * TODO: escape if it takes too long
+             */
+            do {
+
+                nfs_argop4 op = new nfs_argop4();
+                op.argop = nfs_opnum4.OP_SEQUENCE;
+                op.opsequence = new SEQUENCE4args();
+                op.opsequence.sa_cachethis = false;
+
+                op.opsequence.sa_slotid = slot.getId();
+                op.opsequence.sa_highest_slotid = new slotid4(_clientSession.maxRequests() - 1);
+                op.opsequence.sa_sequenceid = slot.nextSequenceId();
+                op.opsequence.sa_sessionid = _clientSession.sessionId();
+
+                compound4args.argarray[0] = op;
+
+                compound4res = _nfsClient.NFSPROC4_COMPOUND_4(compound4args);
+                _lastUpdate = System.currentTimeMillis();
+
+            } while (canRetry(compound4res.status, compound4args.tag.toString()));
+
+            nfsstat.throwIfNeeded(compound4res.status);
+            return compound4res;
+        } finally {
+            _clientSession.releaseSlot(slot);
+        }
+    }
+
+    private boolean canRetry(int status, String compound) {
+        switch (status) {
+
+            case nfsstat.NFSERR_DELAY:
+            case nfsstat.NFSERR_LAYOUTTRYLATER:
+            case nfsstat.NFSERR_GRACE:
+                    System.out.println("Retrying " + compound + " on " + nfsstat.toString(status));
+                    try {
+                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(5));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return false;
+                    }
+                return true;
+            default:
+                return false;
+
+        }
+    }
+
+
     private void get_deviceinfo(deviceid4 deviceId) throws OncRpcException,
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withGetdeviceinfo(deviceId)
                 .withTag("get_deviceinfo")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub
                 .decodeFileDevice(compound4res.resarray.get(1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
@@ -1083,14 +1144,13 @@ public class Main {
     private void get_devicelist() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_rootFh)
                 .withGetdevicelist()
                 .withTag("get_devicelist")
                 .build();
 
         try {
-            COMPOUND4res compound4res = sendCompound(args);
+            COMPOUND4res compound4res = sendCompoundInSession(args);
 
             deviceid4[] deviceList = compound4res.resarray.get(2).opgetdevicelist.gdlr_resok4.gdlr_deviceid_list;
 
@@ -1107,12 +1167,11 @@ public class Main {
             throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withRead(4096, 0, stateid)
                 .withTag("pNFS read")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         byte[] data = new byte[compound4res.resarray.get(2).opread.resok4.data.remaining()];
         compound4res.resarray.get(2).opread.resok4.data.get(data);
@@ -1124,64 +1183,58 @@ public class Main {
             throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(fh)
                 .withWrite(offset, data, stateid)
                 .withTag("pNFS write")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private void sequence() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withTag("sequence")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private void get_supported_attributes() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_rootFh)
                 .withGetattr(nfs4_prot.FATTR4_CHANGE)
                 .withTag("get_supported_attributes")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
         // TODO:
     }
 
     private void reclaimComplete() throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_rootFh)
                 .withReclaimComplete()
                 .withTag("reclaim_complete")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     public void remove(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withRemove(path)
                 .withTag("remove")
                 .build();
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private void lookup(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withSavefh()
                 .withLookup(path)
@@ -1194,27 +1247,25 @@ public class Main {
                 .withTag("lookup-sun")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
     }
 
     private void lookup(String fh, String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh( new nfs_fh4(fh.getBytes()))
                 .withLookup(path)
                 .withGetfh()
                 .withTag("lookup-with-id")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
         System.out.println("fh = " + BaseEncoding.base16().lowerCase().encode(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object.value));
     }
 
     private void getattr(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withSequence(false, _sessionid, _sequenceID.value, _slotId, 0)
                 .withPutfh(_cwd)
                 .withLookup(path)
                 .withGetattr(nfs4_prot.FATTR4_CHANGE,
@@ -1222,21 +1273,13 @@ public class Main {
                 .withTag("getattr")
                 .build();
 
-        COMPOUND4res compound4res = sendCompound(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
         AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
 
         Optional<mode4> mode = attrs.get(nfs4_prot.FATTR4_MODE);
         if (mode.isPresent()) {
             System.out.println("mode: 0" + Integer.toOctalString(mode.get().value));
-        }
-    }
-
-    public void processSequence(COMPOUND4res compound4res) {
-
-        if (compound4res.resarray.get(0).resop == nfs_opnum4.OP_SEQUENCE && compound4res.resarray.get(0).opsequence.sr_status == nfsstat.NFS_OK) {
-            _lastUpdate = System.currentTimeMillis();
-            ++_sequenceID.value;
         }
     }
 

@@ -22,6 +22,8 @@ package org.dcache.nfs.vfs;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import com.google.common.primitives.Longs;
+import com.sun.security.auth.UnixNumericGroupPrincipal;
+import com.sun.security.auth.UnixNumericUserPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +67,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.dcache.auth.GidPrincipal;
-import org.dcache.auth.UidPrincipal;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.PermException;
 import org.dcache.nfs.status.ServerFaultException;
@@ -311,11 +311,11 @@ public class DummyVFS implements VirtualFileSystem {
         int uid = -1;
         int gid = -1;
         for (Principal principal : subject.getPrincipals()) {
-            if (principal instanceof UidPrincipal) {
-                uid = (int) ((UidPrincipal) principal).getUid();
+            if (principal instanceof UnixNumericUserPrincipal) {
+                uid = (int) ((UnixNumericUserPrincipal) principal).longValue();
             }
-            if (principal instanceof GidPrincipal) {
-                gid = (int) ((GidPrincipal) principal).getGid();
+            if (principal instanceof UnixNumericGroupPrincipal) {
+                gid = (int) ((UnixNumericGroupPrincipal) principal).longValue();
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,16 +39,25 @@ public class NFSv41Session {
     private final int _maxOps;
     private final int _maxCbOps;
 
-    private final int _cbReplyCacheSize;
+    private final int _maxCbRequests;
     private final Set<SessionConnection> _boundConnections;
 
-    public NFSv41Session(NFS4Client client, sessionid4 sessionid,  int replyCacheSize, int cbReplyCacheSize, int maxOps, int maxCbOps) {
+    /**
+     * Create new session for the given client.
+     * @param client The client that owns this session.
+     * @param sessionid The session id uniquely identifying session on the server.
+     * @param maxRequests The maximum number of concurrent requests.
+     * @param maxCbRequests The maximum number of concurrent callback requests.
+     * @param maxOps The maximum number of compound operations per requests.
+     * @param maxCbOps The maximum number of compound operations per callback requests.
+     */
+    public NFSv41Session(NFS4Client client, sessionid4 sessionid,  int maxRequests, int maxCbRequests, int maxOps, int maxCbOps) {
         _client = client;
-        _slots = new SessionSlot[replyCacheSize];
+        _slots = new SessionSlot[maxRequests];
         _session = sessionid;
-	_maxOps = maxOps;
-	_maxCbOps = maxCbOps;
-        _cbReplyCacheSize = cbReplyCacheSize;
+        _maxOps = maxOps;
+        _maxCbOps = maxCbOps;
+        _maxCbRequests = maxCbRequests;
         _boundConnections = new HashSet<>();
     }
 
@@ -69,8 +78,7 @@ public class NFSv41Session {
     }
 
     public int getCbHighestSlot() {
-        // FIXME: currently we do not support call-backs, but have to keep client happy
-        return _cbReplyCacheSize - 1;
+        return _maxCbRequests - 1;
     }
 
     /**

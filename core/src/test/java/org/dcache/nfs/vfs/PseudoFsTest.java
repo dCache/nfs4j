@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import javax.security.auth.Subject;
 
 import com.google.common.primitives.Longs;
-import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.AccessException;
@@ -47,6 +46,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.dcache.nfs.util.UnixSubjects.*;
 
 import org.junit.Before;
 
@@ -56,7 +56,9 @@ import org.junit.Before;
  */
 public class PseudoFsTest {
 
-    private final static InetSocketAddress localAddress = new InetSocketAddress(0);
+    private final Subject ROOT = toSubject(0, 0);
+
+    private final static InetSocketAddress localAddress = new InetSocketAddress(31415);
     private VirtualFileSystem vfs;
     private ExportFile mockedExportFile;
     private FsExport mockedExport;
@@ -86,7 +88,7 @@ public class PseudoFsTest {
     public void testRootSquash() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
@@ -101,14 +103,14 @@ public class PseudoFsTest {
         given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
-        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
+        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", ROOT, 0644);
     }
 
     @Test
     public void testNoRootSquash() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
@@ -123,14 +125,14 @@ public class PseudoFsTest {
         given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
-        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
+        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", ROOT, 0644);
     }
 
     @Test(expected = AccessException.class)
     public void testAllSquash() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
@@ -152,14 +154,14 @@ public class PseudoFsTest {
         given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
-        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
+        pseudoFs.create(fsRoot, Stat.Type.REGULAR, "aFile", ROOT, 0644);
     }
 
     @Test(expected = PermException.class)
     public void testAuthFlavorTooWeak() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
@@ -183,7 +185,7 @@ public class PseudoFsTest {
         RpcAuthGss mockedAuthGss = mock(RpcAuthGss.class);
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuthGss.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuthGss.getSubject()).willReturn(ROOT);
         given(mockedAuthGss.type()).willReturn(RpcAuthType.RPCGSS_SEC);
         given(mockedAuthGss.getService()).willReturn(RpcGssService.RPC_GSS_SVC_NONE);
 
@@ -210,7 +212,7 @@ public class PseudoFsTest {
         RpcAuthGss mockedAuthGss = mock(RpcAuthGss.class);
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuthGss.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuthGss.getSubject()).willReturn(ROOT);
         given(mockedAuthGss.type()).willReturn(RpcAuthType.RPCGSS_SEC);
         given(mockedAuthGss.getService()).willReturn(RpcGssService.RPC_GSS_SVC_INTEGRITY);
 
@@ -235,7 +237,7 @@ public class PseudoFsTest {
     public void testAllRoot() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
@@ -250,12 +252,12 @@ public class PseudoFsTest {
         given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
         given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
 
-        Subject subject = Subjects.of(17, 17);
+        Subject subject = toSubject(17, 17);
 
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
 
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
-        Inode fileInode = pseudoFs.create(parent, Stat.Type.REGULAR, "aFile", Subjects.ROOT, 0644);
+        Inode fileInode = pseudoFs.create(parent, Stat.Type.REGULAR, "aFile", ROOT, 0644);
         Stat stat = pseudoFs.getattr(fileInode);
 
         assertEquals("file's owner no propagated", 17, stat.getUid());
@@ -266,12 +268,12 @@ public class PseudoFsTest {
     public void testReaddirWithSingleExport() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
-        vfs.mkdir(fsRoot, "bar", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "foo", ROOT, 0755);
+        vfs.mkdir(fsRoot, "bar", ROOT, 0755);
         FsExport export = new FsExport.FsExportBuilder()
                 .rw()
                 .trusted()
@@ -301,12 +303,12 @@ public class PseudoFsTest {
     public void testLookupOfUnexportedDirectory() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
-        vfs.mkdir(fsRoot, "bar", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "foo", ROOT, 0755);
+        vfs.mkdir(fsRoot, "bar", ROOT, 0755);
         FsExport export = new FsExport.FsExportBuilder()
                 .rw()
                 .trusted()
@@ -328,11 +330,11 @@ public class PseudoFsTest {
     public void testReaddirBehind() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "foo", ROOT, 0755);
         FsExport export = new FsExport.FsExportBuilder()
                 .rw()
                 .trusted()
@@ -364,11 +366,11 @@ public class PseudoFsTest {
     public void testAccessDenyOnNoExport() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "foo", ROOT, 0755);
 
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
         pseudoFs.getRootInode();
@@ -378,7 +380,7 @@ public class PseudoFsTest {
     public void testAccessDenyOnHighjackedInode() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
@@ -398,11 +400,11 @@ public class PseudoFsTest {
     public void testRejectPseudofsModification() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "foo", ROOT, 0755);
         FsExport export = new FsExport.FsExportBuilder()
                 .rw()
                 .trusted()
@@ -416,19 +418,19 @@ public class PseudoFsTest {
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
         Inode pseudoRoot = pseudoFs.getRootInode();
 
-        pseudoFs.mkdir(pseudoRoot, "bar", Subjects.ROOT, 0755);
+        pseudoFs.mkdir(pseudoRoot, "bar", ROOT, 0755);
     }
 
     @Test(expected = AccessException.class)
     public void testRejectRoExportModification() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.ROOT);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        vfs.mkdir(fsRoot, "foo", Subjects.ROOT, 0755);
+        vfs.mkdir(fsRoot, "foo", ROOT, 0755);
         FsExport export = new FsExport.FsExportBuilder()
                 .ro()
                 .trusted()
@@ -443,19 +445,19 @@ public class PseudoFsTest {
         Inode pseudoRoot = pseudoFs.getRootInode();
         Inode exportDir = pseudoFs.lookup(pseudoRoot, "foo");
 
-        pseudoFs.mkdir(exportDir, "bar", Subjects.ROOT, 0755);
+        pseudoFs.mkdir(exportDir, "bar", ROOT, 0755);
     }
 
     @Test
     public void testAllowOwnerReadXattr() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(1, 17);
+        Subject subject = toSubject(1, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         Inode file = vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
         vfs.setXattr(file, "xattr1", "value1".getBytes(StandardCharsets.UTF_8),
@@ -483,12 +485,12 @@ public class PseudoFsTest {
     public void testRejectReadXattr() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(17, 17);
+        Subject subject = toSubject(17, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -514,12 +516,12 @@ public class PseudoFsTest {
     public void testAllowOwnerListXattrs() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(1, 17);
+        Subject subject = toSubject(1, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -546,12 +548,12 @@ public class PseudoFsTest {
     public void testRejectListXattrs() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(17, 17);
+        Subject subject = toSubject(17, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -577,12 +579,12 @@ public class PseudoFsTest {
     public void testAllowOwnerRemoveXattr() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(1, 17);
+        Subject subject = toSubject(1, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -609,12 +611,12 @@ public class PseudoFsTest {
     public void testRejectRemoveXattr() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(17, 17);
+        Subject subject = toSubject(17, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -640,12 +642,12 @@ public class PseudoFsTest {
     public void testAllowOwnerWriteXattr() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(1, 17);
+        Subject subject = toSubject(1, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -672,12 +674,12 @@ public class PseudoFsTest {
     public void testRejectWriteXattr() throws IOException {
 
         given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
-        given(mockedAuth.getSubject()).willReturn(Subjects.of(1, 1));
+        given(mockedAuth.getSubject()).willReturn(toSubject(1, 1));
         given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Subject subject = Subjects.of(17, 17);
+        Subject subject = toSubject(17, 17);
         Inode parent = vfs.mkdir(fsRoot, "dir", subject, 0755);
         vfs.create(parent, Stat.Type.REGULAR, "aFile", subject, 0600);
 
@@ -699,4 +701,48 @@ public class PseudoFsTest {
         pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8), VirtualFileSystem.SetXattrMode.CREATE);
     }
 
+    @Test(expected = AccessException.class)
+    public void testUnprivilegedClient() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .withPrivilegedClientPort()
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
+    }
+
+    @Test
+    public void testPrivilegedClient() throws IOException {
+        InetSocketAddress privilegedClient = new InetSocketAddress(314);
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(privilegedClient);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .withPrivilegedClientPort()
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), privilegedClient.getAddress())).willReturn(export);
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
+        pseudoFs.getattr(fsRoot);
+    }
 }

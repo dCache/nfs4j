@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,23 +19,16 @@
  */
 package org.dcache.nfs.v4;
 
-import java.security.Principal;
-import javax.security.auth.Subject;
-import org.dcache.auth.Subjects;
-
 /**
  * Simple implementation of {@link NfsIdMapping} which converts number into
  * string representation and vice versa.
  *
  * @since 0.0.4
  */
-public class SimpleIdMap implements NfsIdMapping, NfsLoginService {
+public class SimpleIdMap implements NfsIdMapping {
 
     private static final int NOBODY_UID = 65534;
     private static final int NOBODY_GID = 65534;
-
-    private static final int DEFAULT_UID = 1001;
-    private static final int DEFAULT_GID = 1001;
 
     @Override
     public int principalToGid(String principal) {
@@ -63,10 +56,5 @@ public class SimpleIdMap implements NfsIdMapping, NfsLoginService {
     @Override
     public String gidToPrincipal(int id) {
         return Integer.toString(id);
-    }
-
-    @Override
-    public Subject login(Principal principal) {
-        return Subjects.of(DEFAULT_UID, DEFAULT_GID);
     }
 }

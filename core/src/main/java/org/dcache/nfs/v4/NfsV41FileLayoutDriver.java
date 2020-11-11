@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,7 +37,6 @@ import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.Xdr;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -69,25 +68,21 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         file_type.nflda_stripe_indices = new uint32_t[1];
         file_type.nflda_stripe_indices[0] = new uint32_t(0);
 
-        byte[] retBytes;
         try(Xdr xdr = new Xdr(128)){
             xdr.beginEncoding();
             file_type.xdrEncode(xdr);
             xdr.endEncoding();
-            retBytes = xdr.getBytes();
-        } catch (OncRpcException e) {
-            /* forced by interface, should never happen. */
-            throw new RuntimeException("Unexpected OncRpcException:", e);
+
+            device_addr4 addr = new device_addr4();
+            addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
+            addr.da_addr_body = xdr.getBytes();
+
+            return addr;
         } catch (IOException e) {
             /* forced by interface, should never happen. */
             throw new RuntimeException("Unexpected IOException:", e);
         }
 
-        device_addr4 addr = new device_addr4();
-        addr.da_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
-        addr.da_addr_body = retBytes;
-
-        return addr;
     }
 
     @Override
@@ -123,21 +118,21 @@ public class NfsV41FileLayoutDriver implements LayoutDriver {
         //where the striping pattern starts
         layout.nfl_pattern_offset = new offset4(0);
 
-        byte[] body;
         try (Xdr xdr = new Xdr(512)) {
             xdr.beginEncoding();
             layout.xdrEncode(xdr);
             xdr.endEncoding();
-            body = xdr.getBytes();
+
+            layout_content4 content = new layout_content4();
+            content.loc_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
+            content.loc_body = xdr.getBytes();
+
+            return content;
+
         } catch (IOException e) {
             throw new ServerFaultException("failed to encode layout body");
         }
 
-        layout_content4 content = new layout_content4();
-        content.loc_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
-        content.loc_body = body;
-
-        return content;
     }
 
     /**

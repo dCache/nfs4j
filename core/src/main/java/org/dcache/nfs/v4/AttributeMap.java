@@ -34,6 +34,7 @@ import org.dcache.nfs.v4.xdr.fattr4_type;
 import org.dcache.nfs.v4.xdr.int32_t;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.settime4;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
@@ -154,6 +155,9 @@ public class AttributeMap {
 	    case nfs4_prot.FATTR4_LEASE_TIME:
 		attr = new fattr4_lease_time();
 		break;
+            case nfs4_prot.FATTR4_FILEHANDLE:
+                attr = new nfs_fh4();
+                break;
 	    default:
 		throw new InvalException("invalid attribute: " + OperationGETATTR.attrMask2String(fattr));
 	}

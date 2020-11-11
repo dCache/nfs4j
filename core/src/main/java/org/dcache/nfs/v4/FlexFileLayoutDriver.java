@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2016 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -45,7 +45,6 @@ import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.utf8str_mixed;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.Xdr;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -86,6 +85,13 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final uint32_t layoutFlags;
 
     /**
+     * The data transfer buffer size used for READ and WRITE operations.
+     *
+     * REVISIT: for now, we assume that all data server prefer the same rsize/wsize.
+     */
+    private final uint32_t ioBufferSize;
+
+    /**
      * Create new FlexFile layout driver with. The @code nfsVersion} and
      * {@code nfsMinorVersion} represent the protocol to be used to access the
      * storage device. If client uses AUTH_SYS, then provided {@code userPrincipal}
@@ -94,20 +100,22 @@ public class FlexFileLayoutDriver implements LayoutDriver {
      * @param nfsVersion nfs version to use
      * @param nfsMinorVersion nfs minor version to use.
      * @param flags layout flags.
+     * @param ioBufferSize the data transfer buffer size used for READ or WRITE.
      * @param userPrincipal user principal to be used by client
      * @param groupPrincipal group principal to be used by client
      * @param layoutReturnConsumer consumer which accepts data provided on layout return.
      */
-    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, int flags,
+    public FlexFileLayoutDriver(int nfsVersion, int nfsMinorVersion, int flags, int ioBufferSize,
             utf8str_mixed userPrincipal, utf8str_mixed groupPrincipal,
             BiConsumer<CompoundContext, ff_layoutreturn4> layoutReturnConsumer) {
+
+        checkArgument((flags & ~flex_files_prot.FF_FLAGS_MASK) == 0, "Invalid flex files layout flag");
         this.nfsVersion = nfsVersion;
         this.nfsMinorVersion = nfsMinorVersion;
         this.userPrincipal = new fattr4_owner(userPrincipal);
         this.groupPrincipal = new fattr4_owner_group(groupPrincipal);
         this.layoutReturnConsumer = layoutReturnConsumer;
-
-        checkArgument((flags & ~flex_files_prot.FF_FLAGS_MASK) == 0, "Invalid flex files layout flag");
+        this.ioBufferSize = new uint32_t(ioBufferSize);
         this.layoutFlags = new uint32_t(flags);
     }
 
@@ -125,8 +133,8 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         flexfile_type.ffda_versions[0] = new ff_device_versions4();
         flexfile_type.ffda_versions[0].ffdv_version = new uint32_t(nfsVersion);
         flexfile_type.ffda_versions[0].ffdv_minorversion = new uint32_t(nfsMinorVersion);
-        flexfile_type.ffda_versions[0].ffdv_rsize = new uint32_t(64 * 1024);
-        flexfile_type.ffda_versions[0].ffdv_wsize = new uint32_t(64 * 1024);
+        flexfile_type.ffda_versions[0].ffdv_rsize = ioBufferSize;
+        flexfile_type.ffda_versions[0].ffdv_wsize = ioBufferSize;
         flexfile_type.ffda_versions[0].ffdv_tightly_coupled = true;
 
         flexfile_type.ffda_netaddrs = new multipath_list4();
@@ -135,25 +143,21 @@ public class FlexFileLayoutDriver implements LayoutDriver {
             flexfile_type.ffda_netaddrs.value[i] = new netaddr4(deviceAddress[i]);
         }
 
-        byte[] retBytes;
         try(Xdr xdr = new Xdr(128)) {
             xdr.beginEncoding();
             flexfile_type.xdrEncode(xdr);
             xdr.endEncoding();
-            retBytes = xdr.getBytes();
-        } catch (OncRpcException e) {
-            /* forced by interface, should never happen. */
-            throw new RuntimeException("Unexpected OncRpcException:" + e.getMessage(), e);
+
+            device_addr4 addr = new device_addr4();
+            addr.da_layout_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
+            addr.da_addr_body = xdr.getBytes();
+
+            return addr;
         } catch (IOException e) {
             /* forced by interface, should never happen. */
             throw new RuntimeException("Unexpected IOException:"  + e.getMessage(), e);
         }
 
-        device_addr4 addr = new device_addr4();
-        addr.da_layout_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
-        addr.da_addr_body = retBytes;
-
-        return addr;
     }
 
     @Override
@@ -168,20 +172,19 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         layout.ffl_flags4 = layoutFlags;
         layout.ffl_stats_collect_hint = new uint32_t(0);
 
-        byte[] body;
         try (Xdr xdr = new Xdr(512)) {
             xdr.beginEncoding();
             layout.xdrEncode(xdr);
             xdr.endEncoding();
-            body = xdr.getBytes();
+
+            layout_content4 content = new layout_content4();
+            content.loc_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
+            content.loc_body = xdr.getBytes();
+
+            return content;
         } catch (IOException e) {
             throw new ServerFaultException("failed to encode layout body", e);
         }
-
-        layout_content4 content = new layout_content4();
-        content.loc_type = layouttype4.LAYOUT4_FLEX_FILES.getValue();
-        content.loc_body = body;
-        return content;
     }
 
     private ff_data_server4 createDataserver(deviceid4 deviceid,

@@ -8,7 +8,7 @@
 
     <groupId>ch.iterate</groupId>
     <artifactId>nfs4j</artifactId>
-    <version>0.22.2-SNAPSHOT</version>
+    <version>0.23.2-SNAPSHOT</version>
     <name>Java based NFSv4.1 implementation</name>
     <packaging>pom</packaging>
 
@@ -177,7 +177,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -220,7 +220,7 @@
             <dependency>
                 <groupId>org.dcache</groupId>
                 <artifactId>oncrpc4j-core</artifactId>
-                <version>3.0.3</version>
+                <version>3.1.0</version>
             </dependency>
             <dependency>
                 <groupId>com.hazelcast</groupId>

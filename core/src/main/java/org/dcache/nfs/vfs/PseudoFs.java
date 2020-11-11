@@ -21,7 +21,7 @@ package org.dcache.nfs.vfs;
 
 import com.google.common.base.Splitter;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import javax.security.auth.Subject;
-import org.dcache.auth.Subjects;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
@@ -53,6 +53,8 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.dcache.nfs.vfs.AclCheckable.Access;
+import static org.dcache.nfs.util.UnixSubjects.*;
+
 /**
  * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
  * on top of an other file system based on export rules.
@@ -62,8 +64,12 @@ import static org.dcache.nfs.vfs.AclCheckable.Access;
 public class PseudoFs extends ForwardingFileSystem {
 
     private final static Logger _log = LoggerFactory.getLogger(PseudoFs.class);
+
+    /** TCP port range between 0 and 1023 can be used only by privileged (root) user */
+    public static final int PRIVILEGED_PORT = 1023;
+
     private final Subject _subject;
-    private final InetAddress _inetAddress;
+    private final InetSocketAddress _inetAddress;
     private final VirtualFileSystem _inner;
     private final ExportTable _exportTable;
     private final RpcAuth _auth;
@@ -77,7 +83,7 @@ public class PseudoFs extends ForwardingFileSystem {
         _inner = inner;
         _subject = call.getCredential().getSubject();
         _auth = call.getCredential();
-        _inetAddress = call.getTransport().getRemoteSocketAddress().getAddress();
+        _inetAddress = call.getTransport().getRemoteSocketAddress();
         _exportTable = exportTable;
     }
 
@@ -172,13 +178,13 @@ public class PseudoFs extends ForwardingFileSystem {
     public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
 
-        if (subject != null && Subjects.isRoot(effectiveSubject)) {
+        if (subject != null && isRootSubject(effectiveSubject)) {
             effectiveSubject = subject;
         }
 
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
 
         return pushExportIndex(parent, _inner.create(parent, type, path, effectiveSubject, mode));
@@ -189,13 +195,13 @@ public class PseudoFs extends ForwardingFileSystem {
         /*
          * reject if there are no exports for this client at all
          */
-        if (!_exportTable.exports(_inetAddress).findAny().isPresent()) {
+        if (!_exportTable.exports(_inetAddress.getAddress()).findAny().isPresent()) {
             _log.warn("Access denied: (no export) fs root for client {}", _inetAddress);
             throw new AccessException("no exports");
         }
 
         Inode inode = _inner.getRootInode();
-        FsExport export = _exportTable.getExport("/", _inetAddress);
+        FsExport export = _exportTable.getExport("/", _inetAddress.getAddress());
         return export == null? realToPseudo(inode) :
                 pushExportIndex(inode, export.getIndex());
     }
@@ -211,7 +217,7 @@ public class PseudoFs extends ForwardingFileSystem {
 	/*
 	 * REVISIT: this is not the best place to do it, but the simples one.
 	 */
-	FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress);
+	FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress.getAddress());
 	if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
 	    throw new NoEntException("the dcap magic file is blocked");
 	}
@@ -225,7 +231,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
         return pushExportIndex(parent, _inner.link(parent, link, path, effectiveSubject));
     }
@@ -243,13 +249,13 @@ public class PseudoFs extends ForwardingFileSystem {
     @Override
     public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_SUBDIRECTORY);
-        if (subject != null && Subjects.isRoot(effectiveSubject)) {
+        if (subject != null && isRootSubject(effectiveSubject)) {
             effectiveSubject = subject;
         }
 
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
         return pushExportIndex(parent, _inner.mkdir(parent, path, effectiveSubject, mode));
     }
@@ -314,7 +320,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Subject effectiveSubject = checkAccess(parent, ACE4_ADD_FILE);
         if (inheritUidGid(parent)) {
             Stat s = _inner.getattr(parent);
-            effectiveSubject = Subjects.of(s.getUid(), s.getGid());
+            effectiveSubject = toSubject(s.getUid(), s.getGid());
         }
         return pushExportIndex(parent, _inner.symlink(parent, path, link, effectiveSubject, mode));
     }
@@ -427,7 +433,7 @@ public class PseudoFs extends ForwardingFileSystem {
 
         if (!inode.isPseudoInode()) {
             int exportIdx = getExportIndex(inode);
-            FsExport export = _exportTable.getExport(exportIdx, _inetAddress);
+            FsExport export = _exportTable.getExport(exportIdx, _inetAddress.getAddress());
             if (exportIdx != 0 && export == null) {
                 if (shouldLog) {
                     _log.warn("Access denied: (no export) to inode {} for client {}", inode, _inetAddress);
@@ -435,6 +441,12 @@ public class PseudoFs extends ForwardingFileSystem {
                 throw new AccessException("permission deny");
             }
 
+            if (export.isPrivilegedClientPortRequired() && _inetAddress.getPort() > PRIVILEGED_PORT) {
+                if (shouldLog) {
+                    _log.warn("Access denied: unprivileged client {}", _inetAddress);
+                }
+                throw new AccessException("unprivileged client");
+            }
             checkSecurityFlavor(_auth, export.getSec());
 
             if ( (export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
@@ -450,8 +462,8 @@ public class PseudoFs extends ForwardingFileSystem {
                 return effectiveSubject;
             }
 
-            if (Subjects.isNobody(_subject) || export.hasAllSquash() || (!export.isTrusted() && Subjects.isRoot(_subject))) {
-                effectiveSubject = Subjects.of(export.getAnonUid(), export.getAnonGid());
+            if (isNobodySubject(_subject) || export.hasAllSquash() || (!export.isTrusted() && isRootSubject(_subject))) {
+                effectiveSubject = toSubject(export.getAnonUid(), export.getAnonGid());
             }
 
             if (export.checkAcls()) {
@@ -498,12 +510,12 @@ public class PseudoFs extends ForwardingFileSystem {
         boolean isDir = (mode & Stat.S_IFDIR) == Stat.S_IFDIR;
         int fromUnixMask;
 
-        if (Subjects.isRoot(subject)) {
+        if (isRootSubject(subject)) {
             fromUnixMask = Acls.toAccessMask(Acls.RBIT | Acls.WBIT | Acls.XBIT, isDir, true);
             fromUnixMask |= ACE4_WRITE_OWNER;
-        } else if (Subjects.hasUid(subject, stat.getUid())) {
+        } else if (hasUid(subject, stat.getUid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OWNER_OFFSET, isDir, true);
-        } else if (Subjects.hasGid(subject, stat.getGid())) {
+        } else if (hasGid(subject, stat.getGid())) {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_GROUP_OFFSET, isDir, false);
         } else {
             fromUnixMask = Acls.toAccessMask(mode >> BIT_MASK_OTHER_OFFSET, isDir, false);
@@ -620,7 +632,7 @@ public class PseudoFs extends ForwardingFileSystem {
          * This can be wrong, e.g. RO vs. RW.
          */
         if (inode.handleVersion() == 0) {
-            FsExport export = _exportTable.exports(_inetAddress)
+            FsExport export = _exportTable.exports(_inetAddress.getAddress())
                     .findFirst()
                     .orElse(null);
             return export == null? -1 : export.getIndex();
@@ -679,7 +691,7 @@ public class PseudoFs extends ForwardingFileSystem {
         Inode rootInode = realToPseudo(_inner.getRootInode());
         PseudoFsNode root = new PseudoFsNode(rootInode);
 
-        _exportTable.exports(_inetAddress).forEach(e -> pathToPseudoFs(root, nodes, e));
+        _exportTable.exports(_inetAddress.getAddress()).forEach(e -> pathToPseudoFs(root, nodes, e));
 
         if (nodes.isEmpty()) {
             _log.warn("No exports found for: {}", _inetAddress);
@@ -727,6 +739,6 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private boolean inheritUidGid(Inode inode) {
-        return _exportTable.getExport(inode.exportIndex(), _inetAddress).isAllRoot();
+        return _exportTable.getExport(inode.exportIndex(), _inetAddress.getAddress()).isAllRoot();
     }
 }

@@ -2,7 +2,11 @@
 
 ## 0.22
 
-- removed deprecated CompoundContextBuilder#withExportFile 
+- removed deprecated CompoundContextBuilder#withExportFile
+- removed interface org.dcache.nfs.v4.NfsLoginService
+- drop dependency on org.dcache.auth package. Now only UnixNumericUserPrincipal and UnixNumericGroupPrincipal are used.
+  - this change is not backward compatible due to license incompatibility of org.dcache.auth package.
+  - added new class org.dcache.nfs.util.UnixSubjects that provides functionality used form org.dcache.auth package.Subjects
 
 ## 0.21
 

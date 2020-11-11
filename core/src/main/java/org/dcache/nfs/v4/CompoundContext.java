@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@ package org.dcache.nfs.v4;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
+
+import com.sun.security.auth.UnixNumericUserPrincipal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -30,10 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
-import org.dcache.auth.UidPrincipal;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.NoFileHandleException;
@@ -321,12 +321,13 @@ public class CompoundContext {
         if(call.getCredential().type() == RpcAuthType.RPCGSS_SEC) {
             type = KerberosPrincipal.class;
         } else {
-            type = UidPrincipal.class;
+            type = UnixNumericUserPrincipal.class;
         }
 
-        Set<? extends Principal> principals =
-                call.getCredential().getSubject().getPrincipals(type);
-        return principals.isEmpty() ? NO_PRINCIPAL : principals.iterator().next();
+        return call.getCredential().getSubject().getPrincipals().stream()
+                .filter(type::isInstance)
+                .findFirst()
+                .orElse(NO_PRINCIPAL);
     }
 
     /**

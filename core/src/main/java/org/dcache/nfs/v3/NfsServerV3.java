@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,10 @@
  */
 package org.dcache.nfs.v3;
 
-import org.dcache.auth.Subjects;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.util.UnixSubjects;
 import org.dcache.nfs.v3.xdr.LOOKUP3res;
 import org.dcache.nfs.v3.xdr.WRITE3resfail;
 import org.dcache.nfs.v3.xdr.RMDIR3resok;
@@ -300,7 +300,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (newAttr != null) {
                 fmode = newAttr.mode.mode.value.value | Stat.S_IFREG;
                 if( newAttr.uid.set_it || newAttr.gid.set_it) {
-                    actualSubject = Subjects.of(newAttr.uid.uid.value.value, newAttr.gid.gid.value.value);
+                    actualSubject = UnixSubjects.toSubject(newAttr.uid.uid.value.value, newAttr.gid.gid.value.value);
                 }
             }
             inode = fs.create(parent, Stat.Type.REGULAR, path, actualSubject, fmode);
@@ -600,7 +600,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (attr != null) {
                 mode = attr.mode.mode.value.value | Stat.S_IFDIR;
                 if( attr.uid.set_it || attr.gid.set_it) {
-                    actualSubject = Subjects.of(attr.uid.uid.value.value, attr.gid.gid.value.value);
+                    actualSubject = UnixSubjects.toSubject(attr.uid.uid.value.value, attr.gid.gid.value.value);
                 }
             }
 
