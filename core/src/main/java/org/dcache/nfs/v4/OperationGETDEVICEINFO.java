@@ -72,7 +72,8 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         }
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;
-        res.gdir_resok4.gdir_notification = new bitmap4();
+        // expect the returned notification bitmap to be the same size as requested by client.
+        res.gdir_resok4.gdir_notification = new bitmap4(new int[_args.opgetdeviceinfo.gdia_notify_types.value.length]);
         /*
          * provide faked notification only if client expects them
          */

@@ -74,7 +74,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
         }
 
         /*
-         * ceate a bitmap to hold values
+         * create a bitmap to hold values
          */
         int n = max/Integer.SIZE + 1;
         bitmap4 bitmap = new bitmap4(new int[n]);
