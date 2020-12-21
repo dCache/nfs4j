@@ -203,7 +203,7 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
 
     public static class HostNameMatcher extends InetAddressMatcher {
 
-        HostNameMatcher(String hostname) throws UnknownHostException {
+        HostNameMatcher(String hostname) {
             super(hostname);
         }
 
