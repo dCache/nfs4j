@@ -24,6 +24,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.dcache.testutils.XdrHelper.calculateSize;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -165,7 +169,7 @@ public class NfsServerV3READDIR_3Test {
         when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIR3args args = NfsV3Ops.readDir(dirHandle, 0, cookieVerifier, 770); // only 22 entries will fit
+        READDIR3args args = NfsV3Ops.readDir(dirHandle, 0, cookieVerifier, 836); // only 22 entries will fit
         READDIR3res result = nfsServer.NFSPROC3_READDIR_3(call, args);
 
         int n = 0;
@@ -176,7 +180,8 @@ public class NfsServerV3READDIR_3Test {
             n++;
         }
 
-        assertEquals("Not all antries returned", dirContents.size() - 1, n);
+        assertThat("reply overflow", calculateSize(result), is(lessThanOrEqualTo(836)));
+        assertEquals("Not all entries returned", dirContents.size() - 1, n);
         assertFalse("The last entry is missed", result.resok.reply.eof);
     }
 }

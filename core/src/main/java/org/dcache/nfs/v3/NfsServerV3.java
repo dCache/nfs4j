@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -155,7 +155,18 @@ import javax.security.auth.Subject;
 public class NfsServerV3 extends nfs3_protServerStub {
 
     // needed to calculate replay size for READDIR3 and READDIRPLUS3
-    private static final int ENTRY3_SIZE = 24;
+    /*
+     * readdir entry size + overhead
+     * 8 (cookie) + 8 (file id) + 4 (name len) + 4 (smallest padded name) + 4 (boolean has next)
+     */
+    private static final int ENTRY3_SIZE = 28;
+
+    /*
+     * readdir_plus entry size + overhead, without file handle
+     * 8 (cookie) + 8 (file id) + 4 (name len) + 4 (smallest padded name) + 4 (boolean has next) +
+     * 4 (boolean attrs follow, always true) + 84 (fattr3) + 4 (boolean has handle, always true) +
+     * 4 (handle len)
+     */
     private static final int ENTRYPLUS3_SIZE = 124;
     private static final int READDIR3RESOK_SIZE = 104;
     private static final int READDIRPLUS3RESOK_SIZE = 104;

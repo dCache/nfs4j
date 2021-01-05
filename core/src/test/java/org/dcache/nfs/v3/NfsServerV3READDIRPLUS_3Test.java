@@ -24,6 +24,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.dcache.testutils.XdrHelper.calculateSize;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -177,7 +181,8 @@ public class NfsServerV3READDIRPLUS_3Test {
             n++;
         }
 
-        assertEquals("Not all antries returned", dirContents.size() - 1, n);
+        assertThat("reply overflow", calculateSize(result), is(lessThanOrEqualTo(3480)));
+        assertEquals("Not all entries returned", dirContents.size() - 1, n);
         assertFalse("The last entry is missed", result.resok.reply.eof);
     }
 }
