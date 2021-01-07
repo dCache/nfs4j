@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import org.dcache.nfs.ChimeraNFSException;
@@ -46,6 +48,8 @@ import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.nfs.util.Cache;
 import org.dcache.nfs.util.NopCacheEventListener;
+
+import javax.annotation.concurrent.GuardedBy;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -63,8 +67,18 @@ public class NFSv4StateHandler {
      */
     private final AtomicInteger _clientId = new AtomicInteger(0);
 
-    // mapping between server generated clietid and nfs_client_id, not confirmed yet
+    /**
+     * Mapping between server generated clietid and nfs_client_id, not confirmed yet.
+     */
     private final ClientCache _clientsByServerId;
+
+    /**
+     * Read/write lock that guards the access to {@link #_clientsByServerId}.
+     */
+    private final ReentrantReadWriteLock _accessLock = new ReentrantReadWriteLock();
+
+    private final Lock _readLock = _accessLock.readLock();
+    private final Lock _writeLock = _accessLock.writeLock();
 
     /**
      * Client's lease expiration time in seconds.
@@ -129,19 +143,27 @@ public class NFSv4StateHandler {
 
     public void removeClient(NFS4Client client) {
 
-        synchronized (this) {
+        _writeLock.lock();
+        try {
             checkState(_running, "NFS state handler not running");
             _clientsByServerId.remove(client.getId());
             clientStore.removeClient(client.getOwnerId());
+        } finally {
+            _writeLock.unlock();
         }
         client.tryDispose();
     }
 
-    private synchronized void addClient(NFS4Client newClient) {
+    private void addClient(NFS4Client newClient) {
 
-        checkState(_running, "NFS state handler not running");
-        _clientsByServerId.put(newClient.getId(), newClient);
-        clientStore.addClient(newClient.getOwnerId());
+        _writeLock.lock();
+        try {
+            checkState(_running, "NFS state handler not running");
+            _clientsByServerId.put(newClient.getId(), newClient);
+            clientStore.addClient(newClient.getOwnerId());
+        } finally {
+            _writeLock.unlock();
+        }
     }
 
     /**
@@ -152,14 +174,12 @@ public class NFSv4StateHandler {
      * @throws StaleClientidException if there are no corresponding verified
      * valid record exist.
      */
-    public synchronized NFS4Client getConfirmedClient(clientid4 clientid) throws StaleClientidException {
+    public NFS4Client getConfirmedClient(clientid4 clientid) throws StaleClientidException {
 
         NFS4Client client = getValidClient(clientid);
-
         if (!client.isConfirmed()) {
             throw new StaleClientidException("client not confirmed.");
         }
-
         return client;
     }
 
@@ -172,14 +192,12 @@ public class NFSv4StateHandler {
      * @throws StaleClientidException if there are no corresponding verified
      * valid record exist.
      */
-    public synchronized NFS4Client getValidClient(clientid4 clientid) throws StaleClientidException {
+    public NFS4Client getValidClient(clientid4 clientid) throws StaleClientidException {
 
         NFS4Client client = getClient(clientid);
-
         if (!client.isLeaseValid()) {
             throw new StaleClientidException("client expired.");
         }
-
         return client;
     }
 
@@ -191,37 +209,53 @@ public class NFSv4StateHandler {
      * @return nfs client associated with clientid.
      * @throws StaleClientidException if there are no corresponding record exist.
      */
-    public synchronized NFS4Client getClient(clientid4 clientid) throws StaleClientidException {
+    public NFS4Client getClient(clientid4 clientid) throws StaleClientidException {
 
-        checkState(_running, "NFS state handler not running");
+        _readLock.lock();
+        try {
+            checkState(_running, "NFS state handler not running");
 
-        NFS4Client client = _clientsByServerId.get(clientid);
-        if(client == null) {
-            throw new StaleClientidException("bad client id.");
+            NFS4Client client = _clientsByServerId.get(clientid);
+            if (client == null) {
+                throw new StaleClientidException("bad client id.");
+            }
+            return client;
+        } finally {
+            _readLock.unlock();
         }
-        return client;
     }
 
-    public synchronized NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
+    public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
 
-        checkState(_running, "NFS state handler not running");
+        _readLock.lock();
+        try {
+            checkState(_running, "NFS state handler not running");
 
-        clientid4 clientId = new clientid4(Bytes.getLong(stateId.other, 0));
-        NFS4Client client = _clientsByServerId.get(clientId);
-        if (client == null) {
-            throw new BadStateidException("no client for stateid: " + stateId);
+            clientid4 clientId = new clientid4(Bytes.getLong(stateId.other, 0));
+            NFS4Client client = _clientsByServerId.get(clientId);
+            if (client == null) {
+                throw new BadStateidException("no client for stateid: " + stateId);
+            }
+            return client;
+        } finally {
+            _readLock.unlock();
         }
-        return client;
     }
 
-    public synchronized NFS4Client getClient(sessionid4 id) throws ChimeraNFSException {
-        checkState(_running, "NFS state handler not running");
-        clientid4 clientId = new clientid4(Bytes.getLong(id.value, 0));
-        NFS4Client client = _clientsByServerId.get(clientId);
-        if (client == null) {
-            throw new BadSessionException("session not found: " + id);
+    public NFS4Client getClient(sessionid4 id) throws ChimeraNFSException {
+
+        _readLock.lock();
+        try {
+            checkState(_running, "NFS state handler not running");
+            clientid4 clientId = new clientid4(Bytes.getLong(id.value, 0));
+            NFS4Client client = _clientsByServerId.get(clientId);
+            if (client == null) {
+                throw new BadSessionException("session not found: " + id);
+            }
+            return client;
+        } finally {
+            _readLock.unlock();
         }
-        return client;
     }
 
     /**
@@ -230,12 +264,18 @@ public class NFSv4StateHandler {
      *
      * @return an existing client record or null, if not matching record found.
      */
-    public synchronized NFS4Client clientByOwner(byte[] ownerid) {
-        return _clientsByServerId
-                .stream()
-                .filter(c -> Arrays.equals(c.getOwnerId(), ownerid))
-                .findAny()
-                .orElse(null);
+    public NFS4Client clientByOwner(byte[] ownerid) {
+
+        _readLock.lock();
+        try {
+            return _clientsByServerId
+                    .stream()
+                    .filter(c -> Arrays.equals(c.getOwnerId(), ownerid))
+                    .findAny()
+                    .orElse(null);
+        } finally {
+            _readLock.unlock();
+        }
     }
 
     public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
@@ -252,10 +292,16 @@ public class NFSv4StateHandler {
         client.updateLeaseTime();
     }
 
-    public synchronized List<NFS4Client> getClients() {
-        checkState(_running, "NFS state handler not running");
-        return _clientsByServerId.peek()
-                .collect(Collectors.toList());
+    public List<NFS4Client> getClients() {
+
+        _readLock.lock();
+        try {
+            checkState(_running, "NFS state handler not running");
+            return _clientsByServerId.peek()
+                    .collect(Collectors.toList());
+        } finally {
+            _readLock.unlock();
+        }
     }
 
     public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress, int minorVersion,
@@ -315,7 +361,8 @@ public class NFSv4StateHandler {
         clientStore.wantReclaim(owner);
     }
 
-    private synchronized void drainClients() {
+    @GuardedBy("_writeLock")
+    private void drainClients() {
         _clientsByServerId.stream()
                 .forEach(c -> {
                     c.tryDispose();
@@ -326,12 +373,18 @@ public class NFSv4StateHandler {
     /**
      * Shutdown session lease time watchdog thread.
      */
-    public synchronized void shutdown() throws IOException {
-        checkState(_running, "NFS state handler not running");
-        _running = false;
-        drainClients();
-        _cleanerScheduler.shutdown();
-        clientStore.close();
+    public void shutdown() throws IOException {
+
+        _writeLock.lock();
+        try {
+            checkState(_running, "NFS state handler not running");
+            _running = false;
+            drainClients();
+            _cleanerScheduler.shutdown();
+            clientStore.close();
+        } finally {
+            _writeLock.unlock();
+        }
     }
 
     /**
