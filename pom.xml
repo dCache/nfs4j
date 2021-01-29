@@ -257,13 +257,13 @@
         <repository>
             <id>maven2-repository.dcache.org</id>
             <name>dCache.ORG Repository for Maven</name>
-            <url>http://download.dcache.org/nexus/content/groups/public/</url>
+            <url>https://download.dcache.org/nexus/content/groups/public/</url>
             <layout>default</layout>
         </repository>
         <repository>
             <id>dcache-snapshots</id>
             <name>dCache.ORG snapshots repository</name>
-            <url>http://download.dcache.org/nexus/content/repositories/snapshots</url>
+            <url>https://download.dcache.org/nexus/content/repositories/snapshots</url>
             <layout>default</layout>
         </repository>
         <repository>

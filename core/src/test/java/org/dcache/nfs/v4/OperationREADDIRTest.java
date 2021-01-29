@@ -27,8 +27,16 @@ import org.dcache.oncrpc4j.xdr.Xdr;
 import org.junit.Test;
 import org.junit.Before;
 
+import static org.hamcrest.MatcherAssert.*;
 import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-import static org.junit.Assert.*;
+import static org.dcache.testutils.XdrHelper.calculateSize;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 public class OperationREADDIRTest {
@@ -111,6 +119,7 @@ public class OperationREADDIRTest {
 
         listed();
 
+        assertThat("reply overflow", calculateSize(result), is(lessThanOrEqualTo(1000)));
         assertEquals("Not all entries returned", dirEntries.length - 1, entryCount());
         assertFalse("The last entry is missed", result.opreaddir.resok4.reply.eof);
     }
