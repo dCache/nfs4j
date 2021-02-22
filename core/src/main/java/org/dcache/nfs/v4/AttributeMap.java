@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.fattr4;
@@ -63,29 +64,31 @@ public class AttributeMap {
 
     /**
      * Create new {@link AttributeMap} from give attributes {@link bitmap4}.
+     *
      * @param attributes bitmap to process
      * @throws OncRpcException
      * @throws IOException
      */
     public AttributeMap(fattr4 attributes) throws OncRpcException, IOException {
-	_attrs = asMap(attributes);
+        _attrs = asMap(attributes);
     }
 
     /**
      * Retrieve the {@link Optional} value for a given attribute.
+     *
      * @param <T>
      * @param attr to get
      * @return present Optional if value is defined or absent if not.
      */
     public <T extends XdrAble> Optional<T> get(Integer attr) {
-	return (Optional<T>) Optional.ofNullable(_attrs.get(attr));
+        return (Optional<T>) Optional.ofNullable(_attrs.get(attr));
     }
 
     private static Map<Integer, XdrAble> asMap(fattr4 attributes) throws OncRpcException, IOException {
-	Map<Integer, XdrAble> attrs = new HashMap<>();
+        Map<Integer, XdrAble> attrs = new HashMap<>();
 
-	if (attributes != null) {
-	    int[] mask = attributes.attrmask.value;
+        if (attributes != null) {
+            int[] mask = attributes.attrmask.value;
 
             try (Xdr xdr = new Xdr(attributes.attr_vals.value)) {
                 xdr.beginDecoding();
@@ -101,72 +104,72 @@ public class AttributeMap {
                 }
                 xdr.endDecoding();
             }
-	}
-	return attrs;
+        }
+        return attrs;
     }
 
-    private static void xdr2fattr(Map<Integer,XdrAble> attrs, int fattr, XdrDecodingStream xdr) throws OncRpcException, IOException {
-	XdrAble attr;
-	switch (fattr) {
-	    case nfs4_prot.FATTR4_SIZE:
-		attr = new fattr4_size();
-		break;
-	    case nfs4_prot.FATTR4_ACL:
-		attr = new fattr4_acl();
-		break;
-	    case nfs4_prot.FATTR4_ARCHIVE:
-		attr = new int32_t();
-		break;
-	    case nfs4_prot.FATTR4_HIDDEN:
-		attr = new int32_t();
-		break;
-	    case nfs4_prot.FATTR4_MIMETYPE:
-		attr = new utf8str_cs();
-		break;
-	    case nfs4_prot.FATTR4_MODE:
-		attr = new mode4();
-		break;
-	    case nfs4_prot.FATTR4_OWNER:
-		attr = new utf8str_cs();
-		break;
-	    case nfs4_prot.FATTR4_OWNER_GROUP:
-		attr = new utf8str_cs();
-		break;
-	    case nfs4_prot.FATTR4_SYSTEM:
-		attr = new int32_t();
-		break;
-	    case nfs4_prot.FATTR4_TIME_ACCESS_SET:
-		attr = new settime4();
-		break;
-	    case nfs4_prot.FATTR4_TIME_BACKUP:
-		attr = new nfstime4();
-		break;
-	    case nfs4_prot.FATTR4_TIME_CREATE:
-		attr = new nfstime4();
-		break;
-	    case nfs4_prot.FATTR4_TIME_MODIFY_SET:
-		attr = new settime4();
-		break;
-	    case nfs4_prot.FATTR4_FS_LOCATIONS:
-		attr = new fattr4_fs_locations();
-		break;
-	    case nfs4_prot.FATTR4_TYPE:
-		attr = new fattr4_type();
-		break;
-	    case nfs4_prot.FATTR4_LEASE_TIME:
-		attr = new fattr4_lease_time();
-		break;
+    private static void xdr2fattr(Map<Integer, XdrAble> attrs, int fattr, XdrDecodingStream xdr) throws OncRpcException, IOException {
+        XdrAble attr;
+        switch (fattr) {
+            case nfs4_prot.FATTR4_SIZE:
+                attr = new fattr4_size();
+                break;
+            case nfs4_prot.FATTR4_ACL:
+                attr = new fattr4_acl();
+                break;
+            case nfs4_prot.FATTR4_ARCHIVE:
+                attr = new int32_t();
+                break;
+            case nfs4_prot.FATTR4_HIDDEN:
+                attr = new int32_t();
+                break;
+            case nfs4_prot.FATTR4_MIMETYPE:
+                attr = new utf8str_cs();
+                break;
+            case nfs4_prot.FATTR4_MODE:
+                attr = new mode4();
+                break;
+            case nfs4_prot.FATTR4_OWNER:
+                attr = new utf8str_cs();
+                break;
+            case nfs4_prot.FATTR4_OWNER_GROUP:
+                attr = new utf8str_cs();
+                break;
+            case nfs4_prot.FATTR4_SYSTEM:
+                attr = new int32_t();
+                break;
+            case nfs4_prot.FATTR4_TIME_ACCESS_SET:
+                attr = new settime4();
+                break;
+            case nfs4_prot.FATTR4_TIME_BACKUP:
+                attr = new nfstime4();
+                break;
+            case nfs4_prot.FATTR4_TIME_CREATE:
+                attr = new nfstime4();
+                break;
+            case nfs4_prot.FATTR4_TIME_MODIFY_SET:
+                attr = new settime4();
+                break;
+            case nfs4_prot.FATTR4_FS_LOCATIONS:
+                attr = new fattr4_fs_locations();
+                break;
+            case nfs4_prot.FATTR4_TYPE:
+                attr = new fattr4_type();
+                break;
+            case nfs4_prot.FATTR4_LEASE_TIME:
+                attr = new fattr4_lease_time();
+                break;
             case nfs4_prot.FATTR4_FILEHANDLE:
                 attr = new nfs_fh4();
                 break;
-		case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
-			attr = new fattr4_fs_layout_types();
-			break;
-	    default:
-		throw new InvalException("invalid attribute: " + OperationGETATTR.attrMask2String(fattr));
-	}
-	attr.xdrDecode(xdr);
-	attrs.put(fattr, attr);
+            case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
+                attr = new fattr4_fs_layout_types();
+                break;
+            default:
+                throw new InvalException("invalid attribute: " + OperationGETATTR.attrMask2String(fattr));
+        }
+        attr.xdrDecode(xdr);
+        attrs.put(fattr, attr);
     }
 
 }
