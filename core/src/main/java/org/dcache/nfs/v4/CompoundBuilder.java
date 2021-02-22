@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -369,7 +369,7 @@ public class CompoundBuilder {
         return this;
     }
 
-    public CompoundBuilder withGetdevicelist() {
+    public CompoundBuilder withGetdevicelist(layouttype4 layoutType) {
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_GETDEVICELIST;
         op.opgetdevicelist = new GETDEVICELIST4args();
@@ -379,19 +379,19 @@ public class CompoundBuilder {
         op.opgetdevicelist.gdla_cookieverf = new verifier4();
         op.opgetdevicelist.gdla_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        op.opgetdevicelist.gdla_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
+        op.opgetdevicelist.gdla_layout_type = layoutType.getValue();
         op.opgetdevicelist.gdla_maxdevices = new count4(256);
         ops.add(op);
         return this;
     }
 
-    public CompoundBuilder withGetdeviceinfo(deviceid4 devId) {
+    public CompoundBuilder withGetdeviceinfo(deviceid4 devId, layouttype4 layoutType) {
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_GETDEVICEINFO;
         op.opgetdeviceinfo = new GETDEVICEINFO4args();
 
         op.opgetdeviceinfo.gdia_device_id = devId;
-        op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
+        op.opgetdeviceinfo.gdia_layout_type = layoutType.getValue();
 
         op.opgetdeviceinfo.gdia_maxcount = new count4(1024);
         op.opgetdeviceinfo.gdia_notify_types = new bitmap4();

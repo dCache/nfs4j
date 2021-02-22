@@ -1142,7 +1142,7 @@ public class Main {
             IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withGetdeviceinfo(deviceId)
+                .withGetdeviceinfo(deviceId, clientLayoutType)
                 .withTag("get_deviceinfo")
                 .build();
         COMPOUND4res compound4res = sendCompoundInSession(args);
@@ -1191,7 +1191,7 @@ public class Main {
 
         COMPOUND4args args = new CompoundBuilder()
                 .withPutfh(_rootFh)
-                .withGetdevicelist()
+                .withGetdevicelist(clientLayoutType)
                 .withTag("get_devicelist")
                 .build();
 
