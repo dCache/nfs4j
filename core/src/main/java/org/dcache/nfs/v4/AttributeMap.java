@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_acl;
+import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
 import org.dcache.nfs.v4.xdr.fattr4_fs_locations;
 import org.dcache.nfs.v4.xdr.fattr4_lease_time;
 import org.dcache.nfs.v4.xdr.fattr4_size;
@@ -158,6 +159,9 @@ public class AttributeMap {
             case nfs4_prot.FATTR4_FILEHANDLE:
                 attr = new nfs_fh4();
                 break;
+		case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
+			attr = new fattr4_fs_layout_types();
+			break;
 	    default:
 		throw new InvalException("invalid attribute: " + OperationGETATTR.attrMask2String(fattr));
 	}

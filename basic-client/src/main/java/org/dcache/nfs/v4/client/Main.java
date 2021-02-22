@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -44,7 +44,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import org.dcache.nfs.status.BadLayoutException;
+import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -108,6 +111,14 @@ public class Main {
     private boolean _isMDS = false;
     private boolean _isDS = false;
     private static final String PROMPT = "NFSv41: ";
+
+    /**
+     * pNFS layout type that client supports.
+     *
+     * TODO: add flex_files layout support
+     */
+    private final layouttype4 clientLayoutType = layouttype4.LAYOUT4_NFSV4_1_FILES;
+
     private final ScheduledExecutorService _executorService = Executors.newScheduledThreadPool(1);
 
     public static void main(String[] args) throws IOException, OncRpcException, InterruptedException {
@@ -506,6 +517,7 @@ public class Main {
         getRootFh(root);
         get_supported_attributes();
         if (_isMDS) {
+            getLayoutTypes();
             get_devicelist();
         }
         reclaimComplete();
@@ -964,7 +976,7 @@ public class Main {
         COMPOUND4args args = new CompoundBuilder()
                 .withPutfh(fh)
                 .withLayoutget(false,
-                layouttype4.LAYOUT4_NFSV4_1_FILES,
+                clientLayoutType,
                 layoutiomode, 0, 0xffffffff, 0xff, 4096,
                 stateid)
                 .withTag("layoutget")
@@ -1139,6 +1151,40 @@ public class Main {
                 .decodeFileDevice(compound4res.resarray.get(1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
         _knowDevices.put(deviceId, new FileIoDevice(addr));
+    }
+
+    private void getLayoutTypes() throws OncRpcException, IOException {
+
+        COMPOUND4args args = new CompoundBuilder()
+                .withPutfh(_rootFh)
+                .withGetattr(nfs4_prot.FATTR4_FS_LAYOUT_TYPES)
+                .withTag("get_supported_layout_types")
+                .build();
+
+            COMPOUND4res compound4res = sendCompoundInSession(args);
+
+            AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+            Optional<fattr4_fs_layout_types> layoutTypes = attrs.get(nfs4_prot.FATTR4_FS_LAYOUT_TYPES);
+
+        List<layouttype4> serverLayoutTypes = Arrays.stream(layoutTypes.get().value)
+                .mapToObj(t -> {
+                    try {
+                        return layouttype4.valueOf(t);
+                    } catch (BadLayoutException e) {
+                        throw new IllegalArgumentException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+        System.out.println("Server supported layout types: " + serverLayoutTypes);
+
+        serverLayoutTypes.stream()
+                .filter(clientLayoutType::equals)
+                .findAny()
+                .ifPresentOrElse(t -> System.out.println("Using layout type: " + t),
+                        () -> {
+                            System.out.println("Layout type " + clientLayoutType + " not supported. Disabling pNFS");
+                            _isMDS = false;
+                        });
     }
 
     private void get_devicelist() throws OncRpcException, IOException {
