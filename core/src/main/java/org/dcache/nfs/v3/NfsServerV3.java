@@ -141,9 +141,9 @@ import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.dcache.nfs.v3.HimeraNfsUtils.defaultPostOpAttr;
-import static org.dcache.nfs.v3.HimeraNfsUtils.defaultWccData;
-import static org.dcache.nfs.v3.NameUtils.checkFilename;
+import static org.dcache.nfs.v3.Utils.defaultPostOpAttr;
+import static org.dcache.nfs.v3.Utils.defaultWccData;
+import static org.dcache.nfs.v3.Utils.checkFilename;
 
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
@@ -208,7 +208,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = new Inode(arg1.object.data);
             Stat objStat = fs.getattr(inode);
 
-            HimeraNfsUtils.fill_attributes(objStat, res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(objStat, res.resok.obj_attributes.attributes);
 
             int realAccess = fs.access(inode,  arg1.access.value);
 
@@ -248,7 +248,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.file_wcc.after.attributes_follow = true;
             res.resok.file_wcc.after.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
             res.resok.file_wcc.before = new pre_op_attr();
             res.resok.file_wcc.before.attributes_follow = false;
             res.resok.verf = writeVerifier;
@@ -324,7 +324,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(inodeStat, res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(inodeStat, res.resok.obj_attributes.attributes);
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
@@ -339,7 +339,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             parentStat.setNlink(parentStat.getNlink() + 1);
             parentStat.setMTime(now);
 
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
 
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = false;
@@ -400,7 +400,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
 
             res.resok.properties = new uint32(nfs3_prot.FSF3_CANSETTIME |
                     nfs3_prot.FSF3_HOMOGENEOUS |
@@ -445,7 +445,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             Inode inode = new Inode(arg1.fsroot.data);
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
 
         } catch (Exception e) {
             _log.error("FSSTAT", e);
@@ -474,7 +474,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new GETATTR3resok();
 
             res.resok.obj_attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes);
 
         } catch (ChimeraNFSException e) {
             res.status = e.getStatus();
@@ -509,7 +509,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.file_attributes.attributes_follow = true;
             res.resok.file_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(hlink), res.resok.file_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(hlink), res.resok.file_attributes.attributes);
 
             res.resok.linkdir_wcc = new wcc_data();
             res.resok.linkdir_wcc.after = new post_op_attr();
@@ -519,7 +519,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             // fake answer
             parentStat.setNlink(parentStat.getNlink() + 1);
             parentStat.setMTime(System.currentTimeMillis());
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.linkdir_wcc.after.attributes);
+            Utils.fill_attributes(parentStat, res.resok.linkdir_wcc.after.attributes);
 
             res.resok.linkdir_wcc.before = new pre_op_attr();
             res.resok.linkdir_wcc.before.attributes_follow = false;
@@ -566,13 +566,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
 
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(parent), res.resok.dir_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(parent), res.resok.dir_attributes.attributes);
 
         } catch (ChimeraNFSException hne) {
             _log.debug("lookup {}", hne.toString());
@@ -627,7 +627,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
 
             res.resok.dir_wcc = new wcc_data();
             res.resok.dir_wcc.after = new post_op_attr();
@@ -637,7 +637,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             // fake answer
             parentStat.setNlink(parentStat.getNlink() + 1);
             parentStat.setMTime(System.currentTimeMillis());
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
 
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = false;
@@ -736,7 +736,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_attributes.attributes = new fattr3();
             res.resok.cookieverf = new cookieverf3(directoryStream.getVerifier());
 
-            HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
+            Utils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
 
             int currcount = READDIRPLUS3RESOK_SIZE;
@@ -761,7 +761,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 currentEntry.name_attributes = new post_op_attr();
                 currentEntry.name_attributes.attributes_follow = true;
                 currentEntry.name_attributes.attributes = new fattr3();
-                HimeraNfsUtils.fill_attributes(le.getStat(), currentEntry.name_attributes.attributes);
+                Utils.fill_attributes(le.getStat(), currentEntry.name_attributes.attributes);
 
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRYPLUS3_SIZE + name.length() + currentEntry.name_handle.handle.data.length;
@@ -842,7 +842,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_attributes = new post_op_attr();
             res.resok.dir_attributes.attributes_follow = true;
             res.resok.dir_attributes.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
+            Utils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
             res.resok.cookieverf = new cookieverf3(directoryStream.getVerifier());
 
@@ -919,7 +919,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             res.resok.symlink_attributes.attributes_follow = true;
             res.resok.symlink_attributes.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.symlink_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.symlink_attributes.attributes);
 
             res.status = nfsstat.NFS_OK;
 
@@ -977,7 +977,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.file_attributes = new post_op_attr();
             res.resok.file_attributes.attributes_follow = true;
             res.resok.file_attributes.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(inodeStat, res.resok.file_attributes.attributes);
+            Utils.fill_attributes(inodeStat, res.resok.file_attributes.attributes);
         } catch (ChimeraNFSException hne) {
             res.status = hne.getStatus();
             res.resfail = new READ3resfail();
@@ -1019,7 +1019,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = true;
             res.resok.dir_wcc.before.attributes = new wcc_attr();
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.before.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.before.attributes);
 
 
             // correct parent modification time and nlink counter
@@ -1029,7 +1029,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.after = new post_op_attr();
             res.resok.dir_wcc.after.attributes_follow = true;
             res.resok.dir_wcc.after.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
 
 
         } catch (ChimeraNFSException hne) {
@@ -1072,7 +1072,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.fromdir_wcc.after = new post_op_attr();
             res.resok.fromdir_wcc.after.attributes_follow = true;
             res.resok.fromdir_wcc.after.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(fs.getattr(from), res.resok.fromdir_wcc.after.attributes);
+            Utils.fill_attributes(fs.getattr(from), res.resok.fromdir_wcc.after.attributes);
 
             res.resok.fromdir_wcc.before = new pre_op_attr();
             res.resok.fromdir_wcc.before.attributes_follow = false;
@@ -1081,7 +1081,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.todir_wcc.after = new post_op_attr();
             res.resok.todir_wcc.after.attributes_follow = true;
             res.resok.todir_wcc.after.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(fs.getattr(to), res.resok.todir_wcc.after.attributes);
+            Utils.fill_attributes(fs.getattr(to), res.resok.todir_wcc.after.attributes);
 
             res.resok.todir_wcc.before = new pre_op_attr();
             res.resok.todir_wcc.before.attributes_follow = false;
@@ -1131,7 +1131,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = true;
             res.resok.dir_wcc.before.attributes = new wcc_attr();
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.before.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.before.attributes);
 
             res.resok.dir_wcc.after.attributes_follow = true;
             res.resok.dir_wcc.after.attributes = new fattr3();
@@ -1139,7 +1139,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             parentStat.setMTime(System.currentTimeMillis());
             parentStat.setNlink(parentStat.getNlink() - 1);
 
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new RMDIR3resfail();
@@ -1167,13 +1167,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Inode inode = new Inode(arg1.object.data);
             sattr3 newAttr = arg1.new_attributes;
 
-            HimeraNfsUtils.set_sattr(inode, fs, newAttr);
+            Utils.set_sattr(inode, fs, newAttr);
             res.resok = new SETATTR3resok();
             res.resok.obj_wcc = new wcc_data();
             res.resok.obj_wcc.after = new post_op_attr();
             res.resok.obj_wcc.after.attributes_follow = true;
             res.resok.obj_wcc.after.attributes = new fattr3();
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_wcc.after.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_wcc.after.attributes);
 
             res.resok.obj_wcc.before = new pre_op_attr();
             res.resok.obj_wcc.before.attributes_follow = false;
@@ -1214,7 +1214,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Stat parentStat = fs.getattr(parent);
             Inode inode = fs.symlink(parent, file, link, call$.getCredential().getSubject(), 777);
 
-            HimeraNfsUtils.set_sattr(inode, fs, linkAttr);
+            Utils.set_sattr(inode, fs, linkAttr);
 
             res.resok = new SYMLINK3resok();
 
@@ -1222,7 +1222,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.obj_attributes.attributes_follow = true;
             res.resok.obj_attributes.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.obj_attributes.attributes);
             res.resok.obj = new post_op_fh3();
             res.resok.obj.handle_follows = true;
             res.resok.obj.handle = new nfs_fh3();
@@ -1237,7 +1237,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             parentStat.setNlink(parentStat.getNlink() + 1);
             parentStat.setMTime(System.currentTimeMillis());
 
-            HimeraNfsUtils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
+            Utils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
 
             res.resok.dir_wcc.before = new pre_op_attr();
             res.resok.dir_wcc.before.attributes_follow = false;
@@ -1285,7 +1285,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.file_wcc.after.attributes_follow = true;
             res.resok.file_wcc.after.attributes = new fattr3();
 
-            HimeraNfsUtils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
+            Utils.fill_attributes(fs.getattr(inode), res.resok.file_wcc.after.attributes);
             res.resok.file_wcc.before = new pre_op_attr();
             res.resok.file_wcc.before.attributes_follow = false;
             res.resok.committed = ret.getStabilityLevel().toStableHow();

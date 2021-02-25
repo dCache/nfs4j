@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,15 +21,16 @@ package org.dcache.nfs.v3;
 
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.NameTooLongException;
-
+import org.dcache.nfs.v3.xdr.nfstime3;
+import org.junit.Assert;
 import org.junit.Test;
 
-import static org.dcache.nfs.v3.NameUtils.checkFilename;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
-/**
- *
- */
-public class NameUtilsTest {
+import static org.dcache.nfs.v3.Utils.checkFilename;
+
+public class UtilsTest {
 
     private final static String GOOD_NAME = "someGoodName";
     private final static String EMPTY_NAME = "";
@@ -38,6 +39,17 @@ public class NameUtilsTest {
     private final static String GOOD_UTF8_ARM = "Երեվան";
     private final static String GOOD_UTF8_HBR = "יְרוּשָׁלַיִם";
 
+    @Test
+    public void testConvertTimestamp() throws Exception {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        long timestamp = dateFormat.parse("01/02/2003 04:06:06.789").getTime();
+        nfstime3 converted = Utils.convertTimestamp(timestamp);
+        Assert.assertEquals(timestamp/1000, converted.seconds.value);
+        Assert.assertEquals(1000000 * (timestamp%1000), converted.nseconds.value);
+        long decoded = Utils.convertTimestamp(converted);
+        Assert.assertEquals(timestamp, decoded);
+    }
 
     @Test
     public void testWithGoodName() throws AccessException, NameTooLongException {

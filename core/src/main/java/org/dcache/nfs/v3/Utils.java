@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v3;
 
+import org.dcache.nfs.status.AccessException;
+import org.dcache.nfs.status.NameTooLongException;
 import org.dcache.nfs.v3.xdr.fattr3;
 import org.dcache.nfs.v3.xdr.fileid3;
 import org.dcache.nfs.v3.xdr.ftype3;
@@ -46,14 +48,14 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
-public class HimeraNfsUtils {
+public class Utils {
 
 
 	private static final int MODE_MASK = 0770000;
 
-	private static final Logger _log = LoggerFactory.getLogger(HimeraNfsUtils.class);
+	private static final Logger _log = LoggerFactory.getLogger(Utils.class);
 
-    private HimeraNfsUtils() {
+    private Utils() {
         // no instance allowed
     }
 
@@ -232,5 +234,24 @@ public class HimeraNfsUtils {
         wccData.after = defaultPostOpAttr();
         wccData.before = defaultPreOpAttr();
         return wccData;
+    }
+
+    /**
+     * Validate ${code filename} requirements.
+     * @param filename
+     * @throws AccessException if filename does not meet expected constrains
+     * @throws NameTooLongException if filename is longer than negotiated with PATHCONF operation.
+     */
+    public static void checkFilename(String filename) throws AccessException, NameTooLongException {
+
+        // FIXME: merge with NFSv4 defaults
+        if (filename.length() > 256) {
+            throw new NameTooLongException();
+        }
+
+        if (filename.length() == 0 || filename.indexOf('/') != -1 || filename.indexOf('\0') != -1 ) {
+            throw new AccessException();
+        }
+
     }
 }
