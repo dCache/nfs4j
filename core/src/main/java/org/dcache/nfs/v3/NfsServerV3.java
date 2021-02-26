@@ -388,7 +388,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             // preferred size of READDIR request
             res.resok.dtpref = new uint32(8192);
             // max size of a file of the file system
-            res.resok.maxfilesize = new size3(new uint64(4294967296L));
+            res.resok.maxfilesize = new size3(4294967296L);
             // server time granularity -- accurate only to nearest second
             nfstime3 time = new nfstime3();
             time.seconds = new uint32(1);
@@ -429,13 +429,13 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new FSSTAT3resok();
 
             FsStat fsStat = fs.getFsStat();
-            res.resok.tbytes = new size3(new uint64(fsStat.getTotalSpace()));
-            res.resok.fbytes = new size3(new uint64(fsStat.getTotalSpace() - fsStat.getUsedSpace()));
-            res.resok.abytes = new size3(new uint64(fsStat.getTotalSpace() - fsStat.getUsedSpace()));
+            res.resok.tbytes = new size3(fsStat.getTotalSpace());
+            res.resok.fbytes = new size3(fsStat.getTotalSpace() - fsStat.getUsedSpace());
+            res.resok.abytes = new size3(fsStat.getTotalSpace() - fsStat.getUsedSpace());
 
-            res.resok.tfiles = new size3(new uint64(fsStat.getTotalFiles()));
-            res.resok.ffiles = new size3(new uint64(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
-            res.resok.afiles = new size3(new uint64(fsStat.getTotalFiles() - fsStat.getUsedFiles()));
+            res.resok.tfiles = new size3(fsStat.getTotalFiles());
+            res.resok.ffiles = new size3(fsStat.getTotalFiles() - fsStat.getUsedFiles());
+            res.resok.afiles = new size3(fsStat.getTotalFiles() - fsStat.getUsedFiles());
 
             res.resok.invarsec = new uint32(0);
 

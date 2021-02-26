@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -84,8 +84,8 @@ public class HimeraNfsUtils {
         // Get some value for this file/dir
         at.fileid = new fileid3(new uint64( stat.getFileId() ) );
 
-        at.size = new size3( new uint64( stat.getSize() ) );
-        at.used = new size3( new uint64( stat.getSize() ) );
+        at.size = new size3(stat.getSize());
+        at.used = new size3(stat.getSize());
 
         //public nfstime atime;
         at.atime = convertTimestamp(stat.getATime());
@@ -98,7 +98,7 @@ public class HimeraNfsUtils {
 
     public static void fill_attributes(Stat stat,  wcc_attr at) {
 
-        at.size = new size3( new uint64( stat.getSize() ) );
+        at.size = new size3(stat.getSize());
         //public nfstime mtime;
         at.mtime = convertTimestamp(stat.getMTime());
         //public nfstime ctime;
@@ -136,7 +136,7 @@ public class HimeraNfsUtils {
         }
 
         if( s.size.set_it ) {
-            stat.setSize( s.size.size.value.value);
+            stat.setSize( s.size.size.value);
         }
 
    /*     switch( s.atime.set_it ) {

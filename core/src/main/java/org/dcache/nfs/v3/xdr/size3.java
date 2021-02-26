@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,12 +26,12 @@ import java.io.IOException;
 
 public class size3 implements XdrAble {
 
-    public uint64 value;
+    public long value;
 
     public size3() {
     }
 
-    public size3(uint64 value) {
+    public size3(long value) {
         this.value = value;
     }
 
@@ -42,12 +42,12 @@ public class size3 implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
+        xdr.xdrEncodeLong(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        value = new uint64(xdr);
+        value = xdr.xdrDecodeLong();
     }
 
 }
