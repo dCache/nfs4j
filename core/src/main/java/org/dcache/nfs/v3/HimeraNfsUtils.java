@@ -66,10 +66,10 @@ public class HimeraNfsUtils {
         at.nlink= new uint32( stat.getNlink() );
 
         //public int uid;
-        at.uid= new uid3( new uint32(stat.getUid()) );
+        at.uid= new uid3(stat.getUid());
 
         //public int gid;
-        at.gid=new gid3(new uint32( stat.getGid()) );
+        at.gid=new gid3(stat.getGid());
 
         //public int rdev;
         at.rdev = new specdata3();
@@ -122,11 +122,11 @@ public class HimeraNfsUtils {
         long now = System.currentTimeMillis();
 
         if( s.uid.set_it ) {
-            stat.setUid( s.uid.uid.value.value);
+            stat.setUid( s.uid.uid.value);
         }
 
         if( s.gid.set_it ) {
-            stat.setGid(s.gid.gid.value.value);
+            stat.setGid(s.gid.gid.value);
         }
 
         if( s.mode.set_it  ) {

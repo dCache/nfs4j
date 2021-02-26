@@ -311,7 +311,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (newAttr != null) {
                 fmode = newAttr.mode.mode.value.value | Stat.S_IFREG;
                 if( newAttr.uid.set_it || newAttr.gid.set_it) {
-                    actualSubject = UnixSubjects.toSubject(newAttr.uid.uid.value.value, newAttr.gid.gid.value.value);
+                    actualSubject = UnixSubjects.toSubject(newAttr.uid.uid.value, newAttr.gid.gid.value);
                 }
             }
             inode = fs.create(parent, Stat.Type.REGULAR, path, actualSubject, fmode);
@@ -611,7 +611,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             if (attr != null) {
                 mode = attr.mode.mode.value.value | Stat.S_IFDIR;
                 if( attr.uid.set_it || attr.gid.set_it) {
-                    actualSubject = UnixSubjects.toSubject(attr.uid.uid.value.value, attr.gid.gid.value.value);
+                    actualSubject = UnixSubjects.toSubject(attr.uid.uid.value, attr.gid.gid.value);
                 }
             }
 
