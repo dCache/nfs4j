@@ -77,7 +77,7 @@ Use NFS4J in your project
     <repository>
         <id>dcache-releases</id>
         <name>dCache.ORG maven repository</name>
-        <url>https://download.dcache.org/nexus/content/repositories/releases</url>
+        <url>https://download.dcache.org/nexus/repository/public/</url>
         <layout>default</layout>
     </repository>
 </repositories>
