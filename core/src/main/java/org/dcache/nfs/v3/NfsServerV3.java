@@ -468,7 +468,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         try{
             Inode inode = new Inode(arg1.object.data);
-            _log.debug("NFS Request GETATTR for inode: {}", inode.toString());
+            _log.debug("NFS Request GETATTR for inode: {}", inode);
 
             res.status = nfsstat.NFS_OK;
             res.resok = new GETATTR3resok();
