@@ -1,8 +1,8 @@
 package org.dcache.nfs;
 
-import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +10,6 @@ import org.junit.Test;
 import static org.mockito.Mockito.*;
 import static org.mockito.BDDMockito.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
@@ -31,7 +30,7 @@ public class ExportFileTest {
         export = File.createTempFile("exports", null);
         export.deleteOnExit();
 
-        Files.asCharSink(export, UTF_8).write("/export_main 1.1.1.1(sec=sys)");
+        Files.writeString(export.toPath(), "/export_main 1.1.1.1(sec=sys)");
 
         do {
             // create new unique tmp-directory
@@ -43,16 +42,16 @@ public class ExportFileTest {
         for (int i = 0; i < fileNumber; i++) {
             File extraExport = File.createTempFile("extra", ".exports", exportDir);
             extraExport.deleteOnExit();
-            Files.asCharSink(extraExport, UTF_8).write("/extra_export" + i + " 2.2.2." + i + "(sec=sys)");
+            Files.writeString(extraExport.toPath(), "/extra_export" + i + " 2.2.2." + i + "(sec=sys)");
         }
 
         File hiddenExport = File.createTempFile(".hidden", ".exports", exportDir);
         hiddenExport.deleteOnExit();
-        Files.asCharSink(hiddenExport, UTF_8).write("/hidden_export *(sec=sys)");
+        Files.writeString(hiddenExport.toPath(), "/hidden_export *(sec=sys)");
 
         File randomFile = File.createTempFile("random", null, exportDir);
         randomFile.deleteOnExit();
-        Files.asCharSink(randomFile, UTF_8).write("/random_file_export *(sec=sys)");
+        Files.writeString(randomFile.toPath(), "/random_file_export *(sec=sys)");
     }
 
     @Test
@@ -118,7 +117,7 @@ public class ExportFileTest {
         assertExportNotExists("/added_export", ef);
         File addedFile = File.createTempFile("new_export", ".exports", exportDir);
         addedFile.deleteOnExit();
-        Files.asCharSink(addedFile, UTF_8).write("/added_export *(sec=sys)");
+        Files.writeString(addedFile.toPath(), "/added_export *(sec=sys)");
 
         ef.rescan();
         assertExportExists("/added_export", ef);
