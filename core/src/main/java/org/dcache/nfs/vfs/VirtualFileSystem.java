@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,10 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 import javax.security.auth.Subject;
+
+import com.google.common.annotations.Beta;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -501,4 +504,20 @@ public interface VirtualFileSystem {
         throw new NotSuppException();
     }
 
+    /**
+     * Performs an in-filesystem copy between two open files. The result of the successfully completed {@link CompletableFuture}
+     * corresponds to the number of copied bytes. If {@code copyFileRange} operation fails, the returned CompletableFuture
+     * with complete exceptionally with corresponding error.
+     * @param src inode of the source file.
+     * @param srcPos starting position in the source file.
+     * @param dst inode of the destination file.
+     * @param dstPos starting position in the destination file.
+     * @param len number of bytes to copy.
+     * @return a {@link CompletableFuture} representing pending completion of the copy request
+     * @since 0.23
+     */
+    @Beta
+    default CompletableFuture<Long> copyFileRange(Inode src, long srcPos, Inode dst, long dstPos, long len) {
+        return CompletableFuture.failedFuture(new NotSuppException());
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 import javax.security.auth.Subject;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -199,5 +200,10 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     @Override
     public void removeXattr(Inode inode, String attr) throws IOException {
         delegate().removeXattr(inode, attr);
+    }
+
+    @Override
+    public CompletableFuture<Long> copyFileRange(Inode src, long srcPos, Inode dst, long dstPos, long len) {
+        return delegate().copyFileRange(src, srcPos, dst, dstPos, len);
     }
 }

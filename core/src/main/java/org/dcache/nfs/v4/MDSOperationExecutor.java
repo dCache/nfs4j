@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -159,8 +159,9 @@ public class MDSOperationExecutor extends AbstractOperationExecutor {
                 return new OperationLISTXATTRS(op);
             case nfs_opnum4.OP_REMOVEXATTR:
                 return new OperationREMOVEXATTR(op);
-            case nfs_opnum4.OP_ALLOCATE:
             case nfs_opnum4.OP_COPY:
+                return new OperationCOPY(op);
+            case nfs_opnum4.OP_ALLOCATE:
             case nfs_opnum4.OP_COPY_NOTIFY:
             case nfs_opnum4.OP_DEALLOCATE:
             case nfs_opnum4.OP_IO_ADVISE:
