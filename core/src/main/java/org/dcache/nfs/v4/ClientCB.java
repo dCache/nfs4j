@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import org.dcache.nfs.v4.xdr.CB_COMPOUND4args;
 import org.dcache.nfs.v4.xdr.CB_COMPOUND4res;
 import org.dcache.nfs.v4.xdr.CB_LAYOUTRECALL4args;
 import org.dcache.nfs.v4.xdr.CB_NOTIFY_DEVICEID4args;
+import org.dcache.nfs.v4.xdr.CB_OFFLOAD4args;
 import org.dcache.nfs.v4.xdr.CB_SEQUENCE4args;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.callback_sec_parms4;
@@ -46,6 +47,7 @@ import org.dcache.nfs.v4.xdr.notify4;
 import org.dcache.nfs.v4.xdr.notify_deviceid_delete4;
 import org.dcache.nfs.v4.xdr.notify_deviceid_type4;
 import org.dcache.nfs.v4.xdr.notifylist4;
+import org.dcache.nfs.v4.xdr.offload_info4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.referring_call_list4;
 import org.dcache.nfs.v4.xdr.sessionid4;
@@ -54,6 +56,7 @@ import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
+import org.dcache.nfs.v4.xdr.write_response4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
@@ -261,5 +264,32 @@ public class ClientCB {
             _clientSession.releaseSlot(slot);
         }
     }
+
+    public void cbOffload(nfs_fh4 fh, stateid4 stateid, write_response4 response) throws OncRpcException, IOException {
+
+        CB_OFFLOAD4args copyOffload = new CB_OFFLOAD4args();
+
+        copyOffload.coa_fh = fh;
+        copyOffload.coa_stateid = stateid;
+        copyOffload.coa_offload_info = new offload_info4();
+        copyOffload.coa_offload_info.coa_resok4 = response;
+        copyOffload.coa_offload_info.coa_status = nfsstat.NFS_OK;
+
+        nfs_cb_argop4 opArgs = new nfs_cb_argop4();
+        opArgs.argop = nfs_cb_opnum4.OP_CB_OFFLOAD;
+        opArgs.opcboffload = copyOffload;
+
+        var slot = _clientSession.acquireSlot();
+        try{
+            XdrAble args = generateCompound(slot,"cb_offload", opArgs);
+
+            CB_COMPOUND4res res = new CB_COMPOUND4res();
+            _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
+            nfsstat.throwIfNeeded(res.status);
+        } finally {
+            _clientSession.releaseSlot(slot);
+        }
+    }
+
 
 }
