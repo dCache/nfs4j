@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -76,7 +76,23 @@ public class nfsace4 implements XdrAble {
         }
 
         sb.append(':');
-        // flag
+
+        if ((flag.value.value & nfs4_prot.ACE4_FILE_INHERIT_ACE) == nfs4_prot.ACE4_FILE_INHERIT_ACE) {
+            sb.append('f');
+        }
+
+        if ((flag.value.value & nfs4_prot.ACE4_DIRECTORY_INHERIT_ACE) == nfs4_prot.ACE4_DIRECTORY_INHERIT_ACE) {
+            sb.append('d');
+        }
+
+        if ((flag.value.value & nfs4_prot.ACE4_INHERIT_ONLY_ACE) == nfs4_prot.ACE4_INHERIT_ONLY_ACE) {
+            sb.append('i');
+        }
+
+        if ((flag.value.value & nfs4_prot.ACE4_IDENTIFIER_GROUP) == nfs4_prot.ACE4_IDENTIFIER_GROUP) {
+            sb.append('g');
+        }
+
         sb.append(':');
         sb.append(who);
         sb.append(':');
