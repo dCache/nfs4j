@@ -87,10 +87,10 @@ public class AclsTest {
     private nfsace4 toACE(utf8str_mixed principal, int type, int mask, int flag) {
         nfsace4 ace = new nfsace4();
         ace.who = principal;
-        ace.access_mask = new acemask4(new uint32_t(mask));
-        ace.type = new acetype4(new uint32_t(type));
+        ace.access_mask = new acemask4(mask);
+        ace.type = new acetype4(type);
         int flags = flag | (principal == Acls.GROUP ? ACE4_IDENTIFIER_GROUP : 0);
-        ace.flag = new aceflag4(new uint32_t(flags));
+        ace.flag = new aceflag4(flags);
         return ace;
     }
 

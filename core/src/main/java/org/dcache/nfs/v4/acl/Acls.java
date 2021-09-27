@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 package org.dcache.nfs.v4.acl;
 
 import org.dcache.nfs.v4.xdr.utf8str_mixed;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.aceflag4;
 import org.dcache.nfs.v4.xdr.acetype4;
@@ -51,9 +50,9 @@ public class Acls {
     public final static utf8str_mixed GROUP =    new utf8str_mixed("GROUP@");
     public final static utf8str_mixed EVERYONE = new utf8str_mixed("EVERYONE@");
 
-    private final static aceflag4 NO_FLAGS = new aceflag4(new uint32_t(0));
-    private final static acetype4 ALLOW = new acetype4(new uint32_t(ACE4_ACCESS_ALLOWED_ACE_TYPE));
-    private final static acetype4 DENY = new acetype4(new uint32_t(ACE4_ACCESS_DENIED_ACE_TYPE));
+    private final static aceflag4 NO_FLAGS = new aceflag4(0);
+    private final static acetype4 ALLOW = new acetype4(ACE4_ACCESS_ALLOWED_ACE_TYPE);
+    private final static acetype4 DENY = new acetype4(ACE4_ACCESS_DENIED_ACE_TYPE);
 
     private final static int WANT_MODITY = ACE4_WRITE_ACL
             | ACE4_WRITE_ATTRIBUTES
@@ -185,7 +184,7 @@ public class Acls {
     private static acemask4 toAceMask(int mode, boolean isDir, boolean isOwner) {
 
         acemask4 acemask = new acemask4();
-        acemask.value = new uint32_t(toAccessMask(mode, isDir, isOwner));
+        acemask.value = toAccessMask(mode, isDir, isOwner);
 
         return acemask;
     }
@@ -257,15 +256,15 @@ public class Acls {
             /*
              * consider only ALLOWED and DENIED aces
              */
-            if (ace.type.value.value != ACE4_ACCESS_DENIED_ACE_TYPE
-                    && ace.type.value.value != ACE4_ACCESS_ALLOWED_ACE_TYPE) {
+            if (ace.type.value != ACE4_ACCESS_DENIED_ACE_TYPE
+                    && ace.type.value != ACE4_ACCESS_ALLOWED_ACE_TYPE) {
                 continue;
             }
 
             if( ace.who.equals(EVERYONE) || ace.who.equals(principal)) {
-                int acemask = ace.access_mask.value.value;
+                int acemask = ace.access_mask.value;
                 int rwx = getBitR(acemask) |  getBitW(acemask) | getBitX(acemask);
-                if (ace.type.value.value == ACE4_ACCESS_ALLOWED_ACE_TYPE) {
+                if (ace.type.value == ACE4_ACCESS_ALLOWED_ACE_TYPE) {
                     mode |= rwx;
                 } else {
                     mode ^= rwx;
@@ -293,21 +292,21 @@ public class Acls {
             nfsace4 a = acl[i];
             utf8str_mixed pricipal = a.who;
 
-            int processedMask = a.access_mask.value.value;
+            int processedMask = a.access_mask.value;
             for(int j = i+1; j < size; j++) {
                 nfsace4 b = acl[j];
-                if (a.flag.value.value != b.flag.value.value || !pricipal.equals(b.who)) {
+                if (a.flag.value != b.flag.value|| !pricipal.equals(b.who)) {
                     continue;
                 }
 
                 // remove processed bits
-                b.access_mask.value.value &= ~processedMask;
-                int maskToProcess = b.access_mask.value.value;
+                b.access_mask.value &= ~processedMask;
+                int maskToProcess = b.access_mask.value;
 
                 if(maskToProcess != 0) {
-                    if (a.type.value.value == b.type.value.value) {
-                        a.access_mask.value.value |= maskToProcess;
-                        b.access_mask.value.value &=  ~maskToProcess;
+                    if (a.type.value == b.type.value) {
+                        a.access_mask.value |= maskToProcess;
+                        b.access_mask.value &=  ~maskToProcess;
                     } else {
                         //b.access_mask.value.value &=  ~maskToProcess;
                     }
@@ -317,7 +316,7 @@ public class Acls {
         }
 
         for (nfsace4 ace : acl) {
-            if (ace.access_mask.value.value == 0) {
+            if (ace.access_mask.value == 0) {
                 size--;
             }
         }
@@ -325,7 +324,7 @@ public class Acls {
         nfsace4[] compact = new nfsace4[size];
         int i = 0;
         for (nfsace4 ace : acl) {
-            if (ace.access_mask.value.value != 0) {
+            if (ace.access_mask.value != 0) {
                 compact[i] = ace;
                 i++;
             }

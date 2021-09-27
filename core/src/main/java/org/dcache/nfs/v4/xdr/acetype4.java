@@ -26,12 +26,12 @@ import java.io.IOException;
 
 public class acetype4 implements XdrAble {
 
-    public uint32_t value;
+    public int value;
 
     public acetype4() {
     }
 
-    public acetype4(uint32_t value) {
+    public acetype4(int value) {
         this.value = value;
     }
 
@@ -42,12 +42,12 @@ public class acetype4 implements XdrAble {
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
+        xdr.xdrEncodeInt(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        value = new uint32_t(xdr);
+        value = xdr.xdrDecodeInt();
     }
 
 }

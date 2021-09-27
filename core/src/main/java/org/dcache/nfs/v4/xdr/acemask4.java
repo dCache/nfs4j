@@ -27,12 +27,12 @@ import java.io.IOException;
 
 public class acemask4 implements XdrAble {
 
-    public uint32_t value;
+    public int value;
 
     public acemask4() {
     }
 
-    public acemask4(uint32_t value) {
+    public acemask4(int value) {
         this.value = value;
     }
 
@@ -42,26 +42,26 @@ public class acemask4 implements XdrAble {
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        value.xdrEncode(xdr);
+            throws OncRpcException, IOException {
+        xdr.xdrEncodeInt(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        value = new uint32_t(xdr);
+            throws OncRpcException, IOException {
+        value = xdr.xdrDecodeInt();
     }
 
     public static acemask4 allOf(acemask4... masks) {
         int mask = 0;
         for (acemask4 acemask : masks) {
-            mask |= acemask.value.value;
+            mask |= acemask.value;
         }
-        return new acemask4(new uint32_t(mask));
+        return new acemask4(mask);
     }
 
     public static acemask4 clear(acemask4 acemask, acemask4 clear) {
-        int mask = (acemask.value.value | clear.value.value) & ~acemask.value.value;
-        return new acemask4(new uint32_t(mask));
+        int mask = (acemask.value | clear.value) & ~acemask.value;
+        return new acemask4(mask);
     }
 
     private static boolean hasBit(int value, int bit) {
@@ -126,7 +126,7 @@ public class acemask4 implements XdrAble {
 
     @Override
     public String toString() {
-        return toString(value.value);
+        return toString(value);
     }
 }
 // End of acemask4.java
