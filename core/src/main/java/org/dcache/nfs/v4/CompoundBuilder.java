@@ -110,6 +110,7 @@ import org.dcache.nfs.v4.xdr.newtime4;
 import org.dcache.nfs.v4.xdr.xattrvalue4;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.Xdr;
+import org.dcache.oncrpc4j.xdr.XdrAble;
 
 public class CompoundBuilder {
 
@@ -460,11 +461,11 @@ public class CompoundBuilder {
         // createhow4(mode, attrs, verifier)
         createhow4 how = new createhow4();
         how.mode = createmode4.GUARDED4;
-        fattr4 attr = new fattr4();
 
-        attr.attrmask = openFattrBitmap();
+        fattr4 attr = new fattr4();
         attr.attr_vals = new attrlist4();
-        attr.attr_vals.value = openAttrs();
+        attr.attr_vals.value = encodeAttrs(new fattr4_size(0), new fattr4_mode(0644));
+        attr.attrmask = bitmap4.of(nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_MODE);
 
         how.createattrs = attr;
         how.createverf = new verifier4(new byte[nfs4_prot.NFS4_VERIFIER_SIZE]);
@@ -496,10 +497,8 @@ public class CompoundBuilder {
         args.createattrs = new fattr4();
 
         args.createattrs.attr_vals = new attrlist4();
-        args.createattrs.attr_vals.value = openAttrs();
-
-        args.createattrs.attrmask = openFattrBitmap();
-
+        args.createattrs.attr_vals.value = encodeAttrs(new fattr4_mode(0755));
+        args.createattrs.attrmask = bitmap4.of(nfs4_prot.FATTR4_MODE);
 
         nfs_argop4 op = new nfs_argop4();
 
@@ -724,46 +723,15 @@ public class CompoundBuilder {
         return compound4args;
     }
 
-    private static bitmap4 openFattrBitmap() {
-
-        List<Integer> attrs = new ArrayList<>();
-
-        attrs.add(nfs4_prot.FATTR4_SIZE);
-        attrs.add(nfs4_prot.FATTR4_MODE);
-
-
-        bitmap4 afttrBitmap = new bitmap4();
-        afttrBitmap.value = new int[2];
-
-        for (Integer mask : attrs) {
-            int bit;
-            int bitmap;
-            if (mask > 31) {
-                bit = mask - 32;
-                bitmap = afttrBitmap.value[1];
-            } else {
-                bit = mask;
-                bitmap = afttrBitmap.value[0];
-            }
-
-            bitmap |= 1 << bit;
-
-        }
-
-        return afttrBitmap;
-    }
-
-    private static byte[] openAttrs() {
+    private static byte[] encodeAttrs(XdrAble ... attrs) {
 
         try (Xdr xdr = new Xdr(1024)) {
 
             xdr.beginEncoding();
 
-            fattr4_mode mode = new fattr4_mode(0755);
-            fattr4_size size = new fattr4_size(0);
-
-            size.xdrEncode(xdr);
-            mode.xdrEncode(xdr);
+            for (XdrAble attr: attrs) {
+                attr.xdrEncode(xdr);
+            }
 
             xdr.endEncoding();
             return xdr.getBytes();
