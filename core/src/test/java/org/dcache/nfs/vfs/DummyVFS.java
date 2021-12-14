@@ -483,7 +483,7 @@ public class DummyVFS implements VirtualFileSystem {
     }
 
     @Override
-    public int access(Inode inode, int mode) throws IOException {
+    public int access(Subject subject, Inode inode, int mode) throws IOException {
         return mode;
     }
 

@@ -210,7 +210,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             HimeraNfsUtils.fill_attributes(objStat, res.resok.obj_attributes.attributes);
 
-            int realAccess = fs.access(inode,  arg1.access.value);
+            int realAccess = fs.access(call$.getCredential().getSubject(), inode,  arg1.access.value);
 
             res.resok.access = new uint32(realAccess);
         } catch (ChimeraNFSException hne) {
