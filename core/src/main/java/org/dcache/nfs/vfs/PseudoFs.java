@@ -102,7 +102,7 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
-    public int access(Inode inode, int mode) throws IOException {
+    public int access(Subject subject, Inode inode, int mode) throws IOException {
         int accessmask = 0;
 
         if ((mode & ~ACCESS4_MASK) != 0) {
@@ -171,7 +171,7 @@ public class PseudoFs extends ForwardingFileSystem {
             }
         }
 
-        return accessmask & _inner.access(inode, accessmask);
+        return accessmask & _inner.access(subject, inode, accessmask);
     }
 
     @Override
