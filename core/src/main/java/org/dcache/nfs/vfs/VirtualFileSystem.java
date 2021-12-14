@@ -50,12 +50,14 @@ public interface VirtualFileSystem {
     /**
      * Check access to file system object.
      *
+     *
+     * @param subject User
      * @param inode inode of the object to check.
      * @param mode a mask of permission bits to check.
      * @return an allowed subset of permissions from the given mask.
      * @throws IOException
      */
-    int access(Inode inode, int mode) throws IOException;
+    int access(Subject subject, Inode inode, int mode) throws IOException;
 
     /**
      * Create a new object in a given directory with a specific name.

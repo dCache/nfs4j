@@ -183,7 +183,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                                     Integer.toOctalString(fileStat.getMode() & 0777));
                         }
 
-                        if (context.getFs().access(inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
+                        if (context.getFs().access(context.getSubject(), inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
                             throw new AccessException();
                         }
 
@@ -297,7 +297,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 throw new InvalException("Invalid share_access mode: " + share_access.value);
         }
 
-        if (context.getFs().access(inode, accessMode) != accessMode) {
+        if (context.getFs().access(context.getSubject(), inode, accessMode) != accessMode) {
             throw new AccessException();
         }
 
