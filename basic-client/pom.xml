@@ -5,7 +5,7 @@
     <parent>
       <groupId>ch.iterate</groupId>
       <artifactId>nfs4j</artifactId>
-      <version>0.23.3-SNAPSHOT</version>
+      <version>0.23.3</version>
     </parent>
 
     <groupId>ch.iterate</groupId>
