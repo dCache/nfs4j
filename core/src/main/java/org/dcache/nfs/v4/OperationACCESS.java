@@ -61,7 +61,7 @@ public class OperationACCESS extends AbstractNFSv4Operation {
             throw new InvalException("invalid access mask");
         }
 
-        final int realAccess = context.getFs().access(context.currentInode(), requestedAccess);
+        final int realAccess = context.getFs().access(context.getSubject(), context.currentInode(), requestedAccess);
 
         _log.debug("NFS Request ACCESS uid: {} {} {}",
                     context.getSubject(), requestedAccess, realAccess );

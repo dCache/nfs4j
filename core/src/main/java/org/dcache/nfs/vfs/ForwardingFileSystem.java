@@ -43,8 +43,8 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     protected abstract VirtualFileSystem delegate();
 
     @Override
-    public int access(Inode inode, int mode) throws IOException {
-        return delegate().access(inode, mode);
+    public int access(Subject subject, Inode inode, int mode) throws IOException {
+        return delegate().access(subject, inode, mode);
     }
 
     @Override
