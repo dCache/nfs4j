@@ -158,146 +158,233 @@ public class Stat implements Serializable, Cloneable {
     private long _ctime;
     private long _btime;
 
+    /**
+     * Returns the ID of device containing file.
+     */
     public int getDev() {
         guard(StatAttribute.DEV);
         return _dev;
     }
 
+    /**
+     * Set the ID of device containing file.
+     */
     public void setDev(int dev) {
         define(StatAttribute.DEV);
         _dev = dev;
     }
 
+    /**
+     * Returns file inode number.
+     */
     public int getIno() {
         guard(StatAttribute.INO);
         return _ino;
     }
 
+    /**
+     * Set files inode number.
+     */
     public void setIno(int ino) {
         define(StatAttribute.INO);
         _ino = ino;
     }
 
+    /**
+     * Returns files type and mode.
+     */
     public int getMode() {
         guard(StatAttribute.MODE);
         return _mode;
     }
 
+    /**
+     * Set files type and mode.
+     */
     public void setMode(int mode) {
         define(StatAttribute.MODE);
         _mode = mode;
     }
 
+    /**
+     * Returns number of hard links.
+     */
     public int getNlink() {
         guard(StatAttribute.NLINK);
         return _nlink;
     }
 
+    /**
+     * Sets number of hard links.
+     */
     public void setNlink(int nlink) {
         define(StatAttribute.NLINK);
         _nlink = nlink;
     }
 
+    /**
+     * Returns User ID of owner.
+     */
     public int getUid() {
         guard(StatAttribute.OWNER);
         return _owner;
     }
 
+    /**
+     * Sets user ID of owner.
+     */
     public void setUid(int owner) {
         define(StatAttribute.OWNER);
         _owner = owner;
     }
 
+    /**
+     * Returns group ID of owner.
+     */
     public int getGid() {
         guard(StatAttribute.GROUP);
         return _group;
     }
 
+    /**
+     * Sets group ID of owner.
+     */
     public void setGid(int group) {
         define(StatAttribute.GROUP);
         _group = group;
     }
 
+    /**
+     * Returns device ID, if special file.
+     */
     public int getRdev() {
         guard(StatAttribute.RDEV);
         return _rdev;
     }
 
+    /**
+     * Sets' special files device ID.
+     */
     public void setRdev(int rdev) {
         define(StatAttribute.RDEV);
         _rdev = rdev;
     }
 
+    /**
+     * Returns total file size, in bytes.
+     */
     public long getSize() {
         guard(StatAttribute.SIZE);
         return _size;
     }
 
+    /**
+     * Sets total file size, in bytes.
+     */
     public void setSize(long size) {
         define(StatAttribute.SIZE);
         _size = size;
     }
 
+    /**
+     * Returns files last access time, in milliseconds since January 1, 1970.
+     */
     public long getATime() {
         guard(StatAttribute.ATIME);
         return _atime;
     }
 
+    /**
+     * Set files last access time, in milliseconds since January 1, 1970.
+     */
     public void setATime(long atime) {
         define(StatAttribute.ATIME);
         _atime = atime;
     }
 
+    /**
+     * Returns files last modification time, in milliseconds since January 1, 1970.
+     */
     public long getMTime() {
         guard(StatAttribute.MTIME);
         return _mtime;
     }
 
+    /**
+     * Set files last modification time, in milliseconds since January 1, 1970.
+     */
     public void setMTime(long mtime) {
         define(StatAttribute.MTIME);
         _mtime = mtime;
     }
 
+    /**
+     * Returns files last attribute change time, in milliseconds since January 1, 1970.
+     */
     public long getCTime() {
         guard(StatAttribute.CTIME);
         return _ctime;
     }
 
+    /**
+     * Set files last attribute change time, in milliseconds since January 1, 1970.
+     */
     public void setCTime(long ctime) {
         define(StatAttribute.CTIME);
         _ctime = ctime;
     }
 
+    /**
+     * Returns files creation (birth) time, in milliseconds since January 1, 1970.
+     */
     public long getBTime() {
         guard(StatAttribute.BTIME);
         return _btime;
     }
 
+    /**
+     * Set files creation (birth) time, in milliseconds since January 1, 1970.
+     */
     public void setBTime(long btime) {
         define(StatAttribute.BTIME);
         _btime = btime;
     }
 
+    /**
+     * Returns file inode number.
+     */
     public long getFileId() {
         guard(StatAttribute.FILEID);
         return _fileid;
     }
 
+    /**
+     * Set file inode number.
+     */
     public void setFileid(long fileid) {
         define(StatAttribute.FILEID);
         _fileid = fileid;
     }
 
+    /**
+     * Returns files change counter.
+     */
     public long getGeneration() {
         guard(StatAttribute.GENERATION);
         return _generation;
     }
 
+    /**
+     * Set files change counter.
+     */
     public void setGeneration(long generation) {
         define(StatAttribute.GENERATION);
         _generation = generation;
     }
 
+    /**
+     * Retunrs files type.
+     */
     public Type type() {
         guard(StatAttribute.MODE);
         return Type.fromMode(_mode);
