@@ -275,7 +275,7 @@ public class Stat implements Serializable, Cloneable {
 
     public void setBTime(long btime) {
         define(StatAttribute.BTIME);
-        _ctime = btime;
+        _btime = btime;
     }
 
     public long getFileId() {
