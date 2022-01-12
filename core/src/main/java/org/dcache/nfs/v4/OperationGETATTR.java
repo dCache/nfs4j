@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -87,6 +87,7 @@ import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.nfs.v4.xdr.GETATTR4res;
 
+import org.dcache.nfs.vfs.Stat.StatAttribute;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.Xdr;
 import org.dcache.nfs.status.InvalException;
@@ -333,8 +334,9 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_TIME_BACKUP:
                 return Optional.empty();
             case nfs4_prot.FATTR4_TIME_CREATE:
-                fattr4_time_create ctime = new fattr4_time_create(stat.getCTime());
-                return Optional.of(ctime);
+                long btimeMillis = stat.isDefined(StatAttribute.BTIME) ? stat.getBTime() : stat.getCTime();
+                fattr4_time_create btime = new fattr4_time_create(btimeMillis);
+                return Optional.of(btime);
             case nfs4_prot.FATTR4_TIME_DELTA:
                 // one (1) second is a common value for time delta across nfs4 servers
                 return Optional.of(new fattr4_time_delta( new nfstime4(TimeUnit.SECONDS.toMillis(1))));

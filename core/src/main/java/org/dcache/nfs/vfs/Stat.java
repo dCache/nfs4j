@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -42,7 +42,8 @@ public class Stat implements Serializable, Cloneable {
         GENERATION,
         ATIME,
         MTIME,
-        CTIME
+        CTIME,
+        BTIME
     };
 
     private static final long serialVersionUID = 1L;
@@ -155,6 +156,7 @@ public class Stat implements Serializable, Cloneable {
     private long _atime;
     private long _mtime;
     private long _ctime;
+    private long _btime;
 
     public int getDev() {
         guard(StatAttribute.DEV);
@@ -264,6 +266,16 @@ public class Stat implements Serializable, Cloneable {
     public void setCTime(long ctime) {
         define(StatAttribute.CTIME);
         _ctime = ctime;
+    }
+
+    public long getBTime() {
+        guard(StatAttribute.BTIME);
+        return _btime;
+    }
+
+    public void setBTime(long btime) {
+        define(StatAttribute.BTIME);
+        _ctime = btime;
     }
 
     public long getFileId() {
