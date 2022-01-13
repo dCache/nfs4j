@@ -86,67 +86,67 @@ public class StatTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedNotDefeinedGetDev() {
+    public void testNotDefinedGetDev() {
         new Stat().getDev();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetIno() {
+    public void testNotDefinedGetIno() {
         new Stat().getIno();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetMode() {
+    public void testNotDefinedGetMode() {
         new Stat().getMode();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetNlink() {
+    public void testNotDefinedGetNlink() {
         new Stat().getNlink();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetUid() {
+    public void testNotDefinedGetUid() {
         new Stat().getUid();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetGid() {
+    public void testNotDefinedGetGid() {
         new Stat().getGid();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetRdev() {
+    public void testNotDefinedGetRdev() {
         new Stat().getRdev();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetSize() {
+    public void testNotDefinedGetSize() {
         new Stat().getSize();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetATime() {
+    public void testNotDefinedGetATime() {
         new Stat().getATime();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetMTime() {
+    public void testNotDefinedGetMTime() {
         new Stat().getMTime();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetCTime() {
+    public void testNotDefinedGetCTime() {
         new Stat().getCTime();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetGeneration() {
+    public void testNotDefinedGetGeneration() {
         new Stat().getGeneration();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedType() {
+    public void testNotDefinedType() {
         new Stat().type();
     }
 
@@ -158,7 +158,7 @@ public class StatTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetBtime() {
+    public void testNotDefinedGetBtime() {
         new Stat().getBTime();
     }
 
