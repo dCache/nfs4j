@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -751,7 +751,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 Inode ef = le.getInode();
 
                 entryplus3 currentEntry = new entryplus3();
-                currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
+                currentEntry.fileid = new fileid3(new uint64(le.getStat().getIno()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
                 currentEntry.name_handle = new post_op_fh3();
@@ -856,7 +856,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 String name = le.getName();
 
                 entry3 currentEntry = new entry3();
-                currentEntry.fileid = new fileid3(new uint64(le.getStat().getFileId()));
+                currentEntry.fileid = new fileid3(new uint64(le.getStat().getIno()));
                 currentEntry.name = new filename3(name);
                 currentEntry.cookie = new cookie3(new uint64(le.getCookie()));
 

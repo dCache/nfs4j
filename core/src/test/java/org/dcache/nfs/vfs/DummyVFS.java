@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2019 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -473,10 +473,9 @@ public class DummyVFS implements VirtualFileSystem {
         stat.setMode(permissionsToMode(permissions, attrs));
 //        stat.setNlink((Integer) Files.getAttribute(p, "nlink", NOFOLLOW_LINKS));
         stat.setDev(17);
-        stat.setIno((int) inodeNumber);
+        stat.setIno(inodeNumber);
         stat.setRdev(17);
         stat.setSize(attrs.size());
-        stat.setFileid((int) inodeNumber);
         stat.setGeneration(attrs.lastModifiedTime().toMillis());
 
         return stat;

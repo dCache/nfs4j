@@ -1,5 +1,13 @@
 # Changes to NFS4J public API
 
+## 0.23
+
+- dropped Stat#get/setFileId methods
+  - use `Stat#get/setIno` instead
+- Update the signature of `Stat#getIno` to return _long_
+- Update the signature of `Stat#setIno` to accept _long_
+- Update the signature of VirtualFileSystem#access to accept additional `Subject`
+
 ## 0.22
 
 - removed deprecated CompoundContextBuilder#withExportFile

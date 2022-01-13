@@ -34,7 +34,7 @@ public class DirectoryStreamTest {
             stat.setUid(1);
             stat.setGid(2);
             stat.setDev(1);
-            stat.setFileid(i);
+            stat.setIno(i);
             stat.setSize(512);
 
             entries.add(new DirectoryEntry(String.format("file-%d", i), inode, stat, i));

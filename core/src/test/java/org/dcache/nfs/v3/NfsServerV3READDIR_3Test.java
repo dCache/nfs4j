@@ -55,7 +55,7 @@ public class NfsServerV3READDIR_3Test {
         dirStat.setUid(1);
         dirStat.setGid(2);
         dirStat.setDev(1);
-        dirStat.setFileid(1);
+        dirStat.setIno(1);
         dirStat.setSize(512);
         vfs = mock(VirtualFileSystem.class); // the vfs serving it
         when(vfs.getattr(eq(dirInode))).thenReturn(dirStat);

@@ -40,7 +40,7 @@ public class OperationWRITETest {
         fileStat.setUid(1);
         fileStat.setGid(2);
         fileStat.setDev(1);
-        fileStat.setFileid(1);
+        fileStat.setIno(1);
         fileStat.setSize(512);
 
         vfs = mock(VirtualFileSystem.class);

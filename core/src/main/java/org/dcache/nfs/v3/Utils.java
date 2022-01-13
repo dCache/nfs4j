@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -84,7 +84,7 @@ public class Utils {
 
         //public int fileid;
         // Get some value for this file/dir
-        at.fileid = new fileid3(new uint64( stat.getFileId() ) );
+        at.fileid = new fileid3(new uint64(stat.getIno()));
 
         at.size = new size3(stat.getSize());
         at.used = new size3(stat.getSize());

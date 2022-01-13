@@ -71,7 +71,7 @@ public class OperationREADDIRTest {
         dirStat.setUid(1);
         dirStat.setGid(2);
         dirStat.setDev(1);
-        dirStat.setFileid(1);
+        dirStat.setIno(1);
         dirStat.setSize(512);
         vfs = mock(VirtualFileSystem.class); // the vfs serving it
         when(vfs.getattr(eq(dirInode))).thenReturn(dirStat);
@@ -183,7 +183,7 @@ public class OperationREADDIRTest {
         stat.setUid(1);
         stat.setGid(2);
         stat.setDev(1);
-        stat.setFileid(cookie);
+        stat.setIno(cookie);
         stat.setSize(512);
 
         try {
@@ -211,7 +211,7 @@ public class OperationREADDIRTest {
         stat.setUid(1);
         stat.setGid(2);
         stat.setDev(1);
-        stat.setFileid(cookie);
+        stat.setIno(cookie);
         stat.setSize(1024);
 
         try {

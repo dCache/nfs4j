@@ -141,11 +141,6 @@ public class StatTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testNotDefeinedGetFileId() {
-        new Stat().getFileId();
-    }
-
-    @Test(expected = IllegalStateException.class)
     public void testNotDefeinedGetGeneration() {
         new Stat().getGeneration();
     }
@@ -238,13 +233,6 @@ public class StatTest {
         Stat stat = new Stat();
         stat.setCTime(1);
         assertEquals(1, stat.getCTime());
-    }
-
-    @Test
-    public void testGetFileId() {
-        Stat stat = new Stat();
-        stat.setFileid(1);
-        assertEquals(1, stat.getFileId());
     }
 
     @Test

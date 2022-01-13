@@ -38,7 +38,6 @@ public class Stat implements Serializable, Cloneable {
         GROUP,
         RDEV,
         SIZE,
-        FILEID,
         GENERATION,
         ATIME,
         MTIME,
@@ -140,14 +139,13 @@ public class Stat implements Serializable, Cloneable {
     }
 
     private int _dev;
-    private int _ino;
+    private long _ino;
     private int _mode;
     private int _nlink;
     private int _owner;
     private int _group;
     private int _rdev;
     private long _size;
-    private long _fileid;
     private long _generation;
 
     /*
@@ -177,7 +175,7 @@ public class Stat implements Serializable, Cloneable {
     /**
      * Returns file inode number.
      */
-    public int getIno() {
+    public long getIno() {
         guard(StatAttribute.INO);
         return _ino;
     }
@@ -185,7 +183,7 @@ public class Stat implements Serializable, Cloneable {
     /**
      * Set files inode number.
      */
-    public void setIno(int ino) {
+    public void setIno(long ino) {
         define(StatAttribute.INO);
         _ino = ino;
     }
@@ -348,22 +346,6 @@ public class Stat implements Serializable, Cloneable {
     public void setBTime(long btime) {
         define(StatAttribute.BTIME);
         _btime = btime;
-    }
-
-    /**
-     * Returns file inode number.
-     */
-    public long getFileId() {
-        guard(StatAttribute.FILEID);
-        return _fileid;
-    }
-
-    /**
-     * Set file inode number.
-     */
-    public void setFileid(long fileid) {
-        define(StatAttribute.FILEID);
-        _fileid = fileid;
     }
 
     /**
