@@ -162,6 +162,11 @@ public class StatTest {
         assertEquals(1, stat.getDev());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testNotDefeinedGetBtime() {
+        new Stat().getBTime();
+    }
+
     @Test
     public void testGetIno() {
         Stat stat = new Stat();
@@ -247,6 +252,13 @@ public class StatTest {
         Stat stat = new Stat();
         stat.setGeneration(1);
         assertEquals(1, stat.getGeneration());
+    }
+
+    @Test
+    public void testGetBtime() {
+        Stat stat = new Stat();
+        stat.setBTime(1);
+        assertEquals(1, stat.getBTime());
     }
 
     @Test
