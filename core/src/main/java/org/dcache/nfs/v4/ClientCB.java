@@ -265,7 +265,7 @@ public class ClientCB {
         }
     }
 
-    public void cbOffload(nfs_fh4 fh, stateid4 stateid, write_response4 response) throws OncRpcException, IOException {
+    public void cbOffload(nfs_fh4 fh, stateid4 stateid, write_response4 response, int status) throws OncRpcException, IOException {
 
         CB_OFFLOAD4args copyOffload = new CB_OFFLOAD4args();
 
@@ -273,7 +273,7 @@ public class ClientCB {
         copyOffload.coa_stateid = stateid;
         copyOffload.coa_offload_info = new offload_info4();
         copyOffload.coa_offload_info.coa_resok4 = response;
-        copyOffload.coa_offload_info.coa_status = nfsstat.NFS_OK;
+        copyOffload.coa_offload_info.coa_status = status;
 
         nfs_cb_argop4 opArgs = new nfs_cb_argop4();
         opArgs.argop = nfs_cb_opnum4.OP_CB_OFFLOAD;
