@@ -1,8 +1,9 @@
 package org.dcache.nfs.v4;
 
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
+
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.v4.xdr.device_addr4;
@@ -30,7 +31,7 @@ public class OperationGETDEVICEINFOTest {
         NFSv41DeviceManager dm = mock(NFSv41DeviceManager.class);
         given(dm.getDeviceInfo(any(), any())).willReturn(mock(device_addr4.class));
 
-        given(dm.getLayoutTypes()).willReturn(Sets.newHashSet(layouttype4.values()));
+        given(dm.getLayoutTypes()).willReturn(EnumSet.allOf(layouttype4.class));
         CompoundContext context = new CompoundContextBuilder()
                 .withDeviceManager(dm)
                 .withCall(generateRpcCall())

@@ -1,9 +1,9 @@
 package org.dcache.nfs.v4;
 
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
 import java.util.Optional;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
@@ -33,7 +33,7 @@ public class OperationGETATTRTest {
         RpcTransport transport = mock(RpcTransport.class);
         ExportFile exportFile = new ExportFile(ClassLoader.getSystemResource("org/dcache/nfs/exports").toURI());
 
-        given(dm.getLayoutTypes()).willReturn(Sets.newHashSet(layouttype4.values()));
+        given(dm.getLayoutTypes()).willReturn(EnumSet.allOf(layouttype4.class));
         given(transport.getRemoteSocketAddress()).willReturn(new InetSocketAddress("172.16.4.1", 0));
 
         given(call.getCredential()).willReturn(new RpcAuthTypeNone());
