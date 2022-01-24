@@ -199,12 +199,7 @@
           <dependency>
               <groupId>com.hazelcast</groupId>
               <artifactId>hazelcast</artifactId>
-              <version>3.9.2</version>
-          </dependency>
-          <dependency>
-              <groupId>com.hazelcast</groupId>
-              <artifactId>hazelcast-client</artifactId>
-              <version>3.9.2</version>
+              <version>4.1.8</version>
           </dependency>
           <dependency>
               <groupId>com.sleepycat</groupId>

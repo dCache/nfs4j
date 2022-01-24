@@ -33,7 +33,7 @@ public class DistributedLockManagerTest {
                 "127.0.0.1:" + hzSerrver.getCluster().getLocalMember().getAddress().getPort())
         );
 
-        config.getGroupConfig().setName(hzSerrver.getConfig().getGroupConfig().getName());
+        config.setClusterName(hzSerrver.getConfig().getClusterName());
         hzClient = HazelcastClient.newHazelcastClient(config);
         lm1 = new DistributedLockManager(hzClient, "distributed-byte-range-lock");
         lm2 = new DistributedLockManager(hzClient, "distributed-byte-range-lock");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,8 +20,7 @@
 package org.dcache.nfs.v4.nlm;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MultiMap;
-
+import com.hazelcast.multimap.MultiMap;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
