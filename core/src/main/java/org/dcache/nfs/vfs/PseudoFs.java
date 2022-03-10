@@ -208,8 +208,6 @@ public class PseudoFs extends ForwardingFileSystem {
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        checkAccess(parent, ACE4_EXECUTE);
-
         if (parent.isPseudoInode()) {
             return lookupInPseudoDirectory(parent, path);
         }
@@ -339,7 +337,6 @@ public class PseudoFs extends ForwardingFileSystem {
 
     @Override
     public Stat getattr(Inode inode) throws IOException {
-        checkAccess(inode, ACE4_READ_ATTRIBUTES);
         return _inner.getattr(inode);
     }
 
@@ -374,7 +371,6 @@ public class PseudoFs extends ForwardingFileSystem {
 
     @Override
     public nfsace4[] getAcl(Inode inode) throws IOException {
-        checkAccess(inode, ACE4_READ_ACL);
         return _inner.getAcl(inode);
     }
 
