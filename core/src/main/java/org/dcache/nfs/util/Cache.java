@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.StampedLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +91,7 @@ public class Cache<K, V> {
     /**
      * Internal storage access lock.
      */
-    private final Lock _accessLock = new ReentrantLock();
+    private final StampedLock _accessLock = new StampedLock();
     /**
      * Cache event listener.
      */
@@ -194,7 +194,7 @@ public class Cache<K, V> {
     public void put(K k, V v, long entryMaxLifeTime, long entryIdleTime) {
         _log.debug("Adding new cache entry: key = [{}], value = [{}]", k, v);
 
-        _accessLock.lock();
+        long stamp = _accessLock.writeLock();
         try {
             if( _storage.size() >= _size && !_storage.containsKey(k)) {
                 _log.warn("Cache limit reached: {}", _size);
@@ -202,7 +202,7 @@ public class Cache<K, V> {
             }
             _storage.put(k, new CacheElement<>(v, _timeSource, entryMaxLifeTime, entryIdleTime));
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
 
         _eventListener.notifyPut(this, v);
@@ -218,8 +218,9 @@ public class Cache<K, V> {
 
         V v;
         boolean valid;
+        boolean removed = false;
 
-        _accessLock.lock();
+        long stamp = _accessLock.readLock();
         try {
             CacheElement<V> element = _storage.get(k);
 
@@ -234,16 +235,26 @@ public class Cache<K, V> {
 
             if ( !valid ) {
                 _log.debug("Cache hits but entry expired for key = [{}], value = [{}]", k, v);
-                _storage.remove(k);
+                long ws = _accessLock.tryConvertToWriteLock(stamp);
+                if (ws != 0L) {
+                    stamp = ws;
+                } else {
+                    _accessLock.unlock(stamp);
+                    stamp = _accessLock.writeLock();
+                }
+                removed = _storage.remove(k) != null;
             } else {
                 _log.debug("Cache hits for key = [{}], value = [{}]", k, v);
             }
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
 
         if(!valid) {
-            _eventListener.notifyExpired(this, v);
+            // notify only if this thread have removed the expired entry
+            if (removed) {
+                _eventListener.notifyExpired(this, v);
+            }
             v = null;
         }else{
             _eventListener.notifyGet(this, v);
@@ -263,14 +274,14 @@ public class Cache<K, V> {
         V v;
         boolean valid;
 
-        _accessLock.lock();
+        long stamp = _accessLock.writeLock();
         try {
             CacheElement<V> element = _storage.remove(k);
             if( element == null ) return null;
             valid = element.validAt(_timeSource.millis());
             v = element.getObject();
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
 
         _log.debug("Removing entry: active = [{}] key = [{}], value = [{}]",
@@ -288,11 +299,11 @@ public class Cache<K, V> {
      */
     int size() {
 
-        _accessLock.lock();
+        long stamp = _accessLock.readLock();
         try {
           return _storage.size();
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
     }
 
@@ -321,11 +332,11 @@ public class Cache<K, V> {
 
         _log.debug("Cleaning the cache");
 
-        _accessLock.lock();
+        long stamp = _accessLock.writeLock();
         try {
             _storage.clear();
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
     }
 
@@ -335,7 +346,7 @@ public class Cache<K, V> {
     public void cleanUp() {
         List<V> expiredEntries = new ArrayList<>();
 
-        _accessLock.lock();
+        long stamp = _accessLock.writeLock();
         try {
             long now = _timeSource.millis();
             Iterator<Map.Entry<K, CacheElement<V>>> entries = _storage.entrySet().iterator();
@@ -352,7 +363,7 @@ public class Cache<K, V> {
             }
             _lastClean.set(now);
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
 
         expiredEntries.forEach( v -> _eventListener.notifyExpired(this, v));
@@ -365,12 +376,12 @@ public class Cache<K, V> {
     public List<CacheElement<V>> entries() {
         List<CacheElement<V>> entries;
 
-        _accessLock.lock();
+        long stamp = _accessLock.readLock();
         try {
             entries = new ArrayList<>(_storage.size());
             entries.addAll(_storage.values());
         } finally {
-            _accessLock.unlock();
+            _accessLock.unlock(stamp);
         }
         return entries;
     }
