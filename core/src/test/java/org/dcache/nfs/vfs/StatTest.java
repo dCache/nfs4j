@@ -50,7 +50,8 @@ public class StatTest {
         assertEquals("1K",Stat.sizeToString(1024));
         assertEquals("1K",Stat.sizeToString(1024+1));
         assertEquals("1K",Stat.sizeToString(1024+51));
-        assertEquals("1.1K",Stat.sizeToString(1024+52)); //just after 1.05, round up
+        // localized format to handle ',' vs '.' (German vs US English)
+        assertEquals(String.format("%.1fK", 1.1),Stat.sizeToString(1024+52)); //just after 1.05, round up
         assertEquals("1024M",Stat.sizeToString(1024*1024*1024-1));
         assertEquals("1G",Stat.sizeToString(1024*1024*1024));
         assertEquals("8E",Stat.sizeToString(Long.MAX_VALUE));
