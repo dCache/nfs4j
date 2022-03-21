@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * A Dictionary where value associated with the key may become unavailable due
@@ -146,6 +148,9 @@ public class Cache<K, V> {
      */
     public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
             CacheEventListener<K, V> eventListener, Clock clock) {
+
+        checkArgument(entryLifeTime >= entryIdleTime, "Entry life time cant be smaller that idle time");
+
         _name = name;
         _size = size;
         _defaultEntryMaxLifeTime = entryLifeTime;

@@ -42,6 +42,13 @@ public class CacheTest {
                 new NopCacheEventListener(), _clock);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testCacheIdleBiggerThanMax() {
+        new Cache<>("test cache", 10,
+                5, 7,
+                new NopCacheEventListener(), _clock);
+    }
+
     @Test
     public void testPutGet() {
 
