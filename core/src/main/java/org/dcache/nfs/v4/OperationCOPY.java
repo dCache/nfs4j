@@ -88,8 +88,14 @@ public class OperationCOPY extends AbstractNFSv4Operation {
 
         NFS4Client client = context.getSession().getClient();
 
-        int srcAccess = context.getStateHandler().getFileTracker().getShareAccess(client, srcInode, _args.opcopy.ca_src_stateid);
-        int dstAccess = context.getStateHandler().getFileTracker().getShareAccess(client, dstInode, _args.opcopy.ca_dst_stateid);
+        NFS4State srcState = client.state(_args.opcopy.ca_src_stateid);
+        NFS4State dstState = client.state(_args.opcopy.ca_dst_stateid);
+
+        int srcAccess = context.getStateHandler().getFileTracker()
+              .getShareAccess(client, srcInode, srcState.getOpenState().stateid());
+
+        int dstAccess = context.getStateHandler().getFileTracker()
+              .getShareAccess(client, dstInode, dstState.getOpenState().stateid());
 
         if ((srcAccess & nfs4_prot.OPEN4_SHARE_ACCESS_READ) == 0) {
             throw new OpenModeException("Invalid source inode open mode (required read)");
