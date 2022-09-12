@@ -1,5 +1,10 @@
 # Changes to NFS4J public API
 
+## 0.24
+
+- update org.dcache.nfs.util.Cache and org.dcache.nfs.v4.NFSv4StateHandler to use java.time.Duration instead of a _long in millis_ to describe various amounts of time.
+- update org.dcache.nfs.v4.{NFSv4StateHandler,NFS4Client} to use java.time.Clock as a time source
+
 ## 0.23
 
 - dropped Stat#get/setFileId methods

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.util;
 import java.lang.management.ManagementFactory;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import javax.management.*;
 import org.slf4j.Logger;
@@ -75,17 +77,17 @@ public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
 
     @Override
     public long getEntryIdleTime() {
-        return _cache.getEntryIdleTime();
+        return _cache.getEntryIdleTime().toMillis();
     }
 
     @Override
     public long getEntryLiveTime() {
-        return _cache.getEntryLiveTime();
+        return _cache.getEntryLiveTime().toMillis();
     }
 
     @Override
     public long getLastClean() {
-        return System.currentTimeMillis() - _cache.lastClean();
+        return Duration.between(Instant.now(), _cache.lastClean()).toMillis();
     }
 }
 

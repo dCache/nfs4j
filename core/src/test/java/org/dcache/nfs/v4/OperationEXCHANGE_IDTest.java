@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import java.time.Duration;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -43,7 +44,7 @@ public class OperationEXCHANGE_IDTest {
 
     @Before
     public void setUp() {
-        stateHandler = new NFSv4StateHandler(2, 0, new EphemeralClientRecoveryStore());
+        stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), 0, new EphemeralClientRecoveryStore());
         clientId = UUID.randomUUID().toString();
     }
 

@@ -20,13 +20,15 @@
 package org.dcache.nfs.util;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.StampedLock;
 
 import org.slf4j.Logger;
@@ -40,8 +42,8 @@ import static com.google.common.base.Preconditions.checkArgument;
  *
  * Typical usage is:
  * <pre>
- *     Cache&lt;String, String&gt; cache  = new Cache&lt;&gt;("test cache", 10, TimeUnit.HOURS.toMillis(1),
- *           TimeUnit.MINUTES.toMillis(5));
+ *     Cache&lt;String, String&gt; cache  = new Cache&lt;&gt;("test cache", 10, Duration.ofHours(1),
+ *           Duration.ofMinutes(2);
  *
  *     cache.put("key", "value");
  *     String value = cache.get("key");
@@ -65,17 +67,16 @@ public class Cache<K, V> {
     private final String _name;
 
     /**
-     * Maximum allowed time, in milliseconds, that an object is allowed to be cached.
+     * Maximum amount of time that an object is allowed to be cached.
      * After expiration of this time cache entry invalidated.
      */
-
-    private final long _defaultEntryMaxLifeTime;
+    private final Duration _defaultEntryMaxLifeTime;
 
     /**
-     * Time in milliseconds since last use of the object. After expiration of this
+     * Time amount since last use of the object. After expiration of this
      * time cache entry is invalidated.
      */
-    private final long _defaultEntryIdleTime;
+    private final Duration _defaultEntryIdleTime;
 
     /**
      * Maximum number of entries in cache.
@@ -105,7 +106,7 @@ public class Cache<K, V> {
     /**
      * Last cleanup time
      */
-    private final AtomicLong _lastClean = new AtomicLong(System.currentTimeMillis());
+    private final AtomicReference<Instant> _lastClean;
 
     /**
      * Create new cache instance with default {@link CacheEventListener} and
@@ -113,10 +114,10 @@ public class Cache<K, V> {
      *
      * @param name Unique id for this cache.
      * @param size maximal number of elements.
-     * @param entryLifeTime maximal time in milliseconds.
-     * @param entryIdleTime maximal idle time in milliseconds.
+     * @param entryLifeTime maximal time that an entry allowed to stay in the cache after creation.
+     * @param entryIdleTime maximal time that an entry allowed to stay in the cache after last access.
      */
-    public Cache(String name, int size, long entryLifeTime, long entryIdleTime) {
+    public Cache(String name, int size, Duration entryLifeTime, Duration entryIdleTime) {
         this(name, size, entryLifeTime, entryIdleTime,
                 new NopCacheEventListener<K, V>());
     }
@@ -126,11 +127,11 @@ public class Cache<K, V> {
      *
      * @param name Unique id for this cache.
      * @param size maximal number of elements.
-     * @param entryLifeTime maximal time in milliseconds.
-     * @param entryIdleTime maximal idle time in milliseconds.
+     * @param entryLifeTime maximal time that an entry allowed to stay in the cache after creation.
+     * @param entryIdleTime maximal time that an entry allowed to stay in the cache after last access.
      * @param eventListener {@link CacheEventListener}
      */
-    public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
+    public Cache(final String name, int size, Duration entryLifeTime, Duration entryIdleTime,
             CacheEventListener<K, V> eventListener) {
         this(name, size, entryLifeTime, entryIdleTime, eventListener, Clock.systemDefaultZone());
     }
@@ -140,16 +141,16 @@ public class Cache<K, V> {
      *
      * @param name Unique id for this cache.
      * @param size maximal number of elements.
-     * @param entryLifeTime maximal time in milliseconds.
-     * @param entryIdleTime maximal idle time in milliseconds.
+     * @param entryLifeTime maximal time that an entry allowed to stay in the cache after creation.
+     * @param entryIdleTime maximal time that an entry allowed to stay in the cache after last access.
      * @param eventListener {@link CacheEventListener}
      * @param clock {@link Clock} to use
      * <code>timeValue</code> parameter.
      */
-    public Cache(final String name, int size, long entryLifeTime, long entryIdleTime,
+    public Cache(final String name, int size, Duration entryLifeTime, Duration entryIdleTime,
             CacheEventListener<K, V> eventListener, Clock clock) {
 
-        checkArgument(entryLifeTime >= entryIdleTime, "Entry life time cant be smaller that idle time");
+        checkArgument(entryLifeTime.compareTo(entryIdleTime) >= 0, "Entry life time cant be smaller that idle time");
 
         _name = name;
         _size = size;
@@ -159,6 +160,7 @@ public class Cache<K, V> {
         _eventListener = eventListener;
         _mxBean = new CacheMXBeanImpl<>(this);
         _timeSource = clock;
+        _lastClean = new AtomicReference<>(_timeSource.instant());
     }
 
     /**
@@ -186,12 +188,12 @@ public class Cache<K, V> {
      *
      * @param k key associated with the value.
      * @param v value associated with key.
-     * @param entryMaxLifeTime maximal life time in milliseconds.
-     * @param entryIdleTime maximal idle time in milliseconds.
+     * @param entryMaxLifeTime maximal time that an entry allowed to stay in the cache after creation.
+     * @param entryIdleTime maximal time that an entry allowed to stay in the cache after last access.
      *
      * @throws MissingResourceException if Cache limit is reached.
      */
-    public void put(K k, V v, long entryMaxLifeTime, long entryIdleTime) {
+    public void put(K k, V v, Duration entryMaxLifeTime, Duration entryIdleTime) {
         _log.debug("Adding new cache entry: key = [{}], value = [{}]", k, v);
 
         long stamp = _accessLock.writeLock();
@@ -229,8 +231,7 @@ public class Cache<K, V> {
                 return null;
             }
 
-            long now = _timeSource.millis();
-            valid = element.validAt(now);
+            valid = element.validAt(_timeSource.instant());
             v = element.getObject();
 
             if ( !valid ) {
@@ -278,7 +279,7 @@ public class Cache<K, V> {
         try {
             CacheElement<V> element = _storage.remove(k);
             if( element == null ) return null;
-            valid = element.validAt(_timeSource.millis());
+            valid = element.validAt(_timeSource.instant());
             v = element.getObject();
         } finally {
             _accessLock.unlock(stamp);
@@ -310,18 +311,18 @@ public class Cache<K, V> {
     /**
      * Get maximal idle time until entry become unavailable.
      *
-     * @return time in milliseconds.
+     * @return default amount of an entry's maximal idle time.
      */
-    public long getEntryIdleTime() {
+    public Duration getEntryIdleTime() {
         return _defaultEntryIdleTime;
     }
 
     /**
      * Get maximal total time until entry become unavailable.
      *
-     * @return time in milliseconds.
+     * @return default amount of an entry's live time.
      */
-    public long getEntryLiveTime() {
+    public Duration getEntryLiveTime() {
         return _defaultEntryMaxLifeTime;
     }
 
@@ -348,7 +349,7 @@ public class Cache<K, V> {
 
         long stamp = _accessLock.writeLock();
         try {
-            long now = _timeSource.millis();
+            Instant now = _timeSource.instant();
             Iterator<Map.Entry<K, CacheElement<V>>> entries = _storage.entrySet().iterator();
             while (entries.hasNext()) {
                 Map.Entry<K, CacheElement<V>> entry = entries.next();
@@ -386,7 +387,7 @@ public class Cache<K, V> {
         return entries;
     }
 
-    public long lastClean() {
+    public Instant lastClean() {
         return _lastClean.get();
     }
 }

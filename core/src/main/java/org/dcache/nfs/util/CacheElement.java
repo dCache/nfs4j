@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,7 +20,8 @@
 package org.dcache.nfs.util;
 
 import java.time.Clock;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * CacheElement wrapper.
@@ -31,23 +32,23 @@ import java.util.Date;
 public class CacheElement<V> {
 
     /**
-     * Maximum allowed time, in milliseconds, that an object is allowed to be cached.
+     * Maximum amount of time that the cache entry is allowed to be cached.
      * After expiration of this time cache entry invalidated.
      */
-    private final long _maxLifeTime;
+    private final Duration _maxLifeTime;
     /**
-     * Time in milliseconds since last use of the object. After expiration of this
+     * Maximum amount of time that the cache entry is allowed to be cached since last use. After expiration of this
      * time cache entry is invalidated.
      */
-    private final long _idleTime;
+    private final Duration _idleTime;
     /**
      * Element creation time.
      */
-    private final long _creationTime;
+    private final Instant _creationTime;
     /**
      * Elements last access time.
      */
-    private long _lastAccessTime;
+    private Instant _lastAccessTime;
     /**
      * internal object.
      */
@@ -55,9 +56,9 @@ public class CacheElement<V> {
 
     private final Clock _clock;
 
-    CacheElement(V inner, Clock clock, long maxLifeTime, long idleTime) {
+    CacheElement(V inner, Clock clock, Duration maxLifeTime, Duration idleTime) {
         _clock = clock;
-        _creationTime = _clock.millis();
+        _creationTime = _clock.instant();
         _lastAccessTime = _creationTime;
         _inner = inner;
         _maxLifeTime = maxLifeTime;
@@ -71,7 +72,7 @@ public class CacheElement<V> {
      * @return internal object.
      */
     public V getObject() {
-        _lastAccessTime = _clock.millis();
+        _lastAccessTime = _clock.instant();
         return _inner;
     }
 
@@ -86,21 +87,21 @@ public class CacheElement<V> {
     }
 
     /**
-     * Check the entry's validity at the specified time.
+     * Check the entry's validity at the specified point in time.
      *
-     * @param time in milliseconds since 1 of January 1970.
-     *
+     * @param instant point in time at which entry validity is checked.
      * @return true if entry still valid and false otherwise.
      */
-    public boolean validAt(long time) {
-        return time - _lastAccessTime < _idleTime && time - _creationTime < _maxLifeTime;
+    public boolean validAt(Instant instant) {
+        return Duration.between(_lastAccessTime, instant).compareTo(_idleTime) <= 0 &&
+              Duration.between(_creationTime, instant).compareTo(_maxLifeTime) <= 0;
     }
 
     @Override
     public String toString() {
-        long now = _clock.millis();
-        return String.format("Element: [%s], created: %s, last access: %s, life time %d, idle: %d, max idle: %d",
-            _inner.toString(), new Date( _creationTime), new Date(_lastAccessTime),
-            _maxLifeTime, now - _lastAccessTime, _idleTime);
+        Instant now = _clock.instant();
+        return String.format("Element: [%s], created: %s, last access: %s, life time %s, idle: %s, max idle: %s",
+            _inner.toString(), _creationTime, _lastAccessTime,
+            _maxLifeTime, Duration.between(_lastAccessTime, now), _idleTime);
     }
 }

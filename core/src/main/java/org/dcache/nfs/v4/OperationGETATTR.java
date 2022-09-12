@@ -231,7 +231,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_UNIQUE_HANDLES:
                 return Optional.of(new fattr4_unique_handles(true));
             case nfs4_prot.FATTR4_LEASE_TIME:
-                return Optional.of(new fattr4_lease_time(context.getStateHandler().getLeaseTime()));
+                return Optional.of(new fattr4_lease_time((int)context.getStateHandler().getLeaseTime().toSeconds()));
             case nfs4_prot.FATTR4_RDATTR_ERROR:
                 // this attribute provided by the readdir operation
                 return Optional.empty();

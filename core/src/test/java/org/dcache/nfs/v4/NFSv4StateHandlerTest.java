@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import java.time.Duration;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.junit.After;
 import org.junit.Before;
@@ -110,7 +111,7 @@ public class NFSv4StateHandlerTest {
     @Test
     public void testInstanceId() throws Exception {
         int instanceId = 18;
-        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId, new EphemeralClientRecoveryStore());
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), instanceId, new EphemeralClientRecoveryStore());
         try {
             assertEquals("Invalid instance id returned", instanceId, stateHandler.getInstanceId());
         } finally {
@@ -121,7 +122,7 @@ public class NFSv4StateHandlerTest {
     @Test
     public void testInstanceIdByStateid() throws UnknownHostException, ChimeraNFSException, Exception {
         int instanceId = 117;
-        NFSv4StateHandler stateHandler = new NFSv4StateHandler(2, instanceId, new EphemeralClientRecoveryStore());
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), instanceId, new EphemeralClientRecoveryStore());
         try {
             NFS4State state = createClient(stateHandler).createState(_owner);
             assertEquals("Invalid instance id returned", instanceId, NFSv4StateHandler.getInstanceId(state.stateid()));

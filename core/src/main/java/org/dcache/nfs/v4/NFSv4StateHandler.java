@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 package org.dcache.nfs.v4;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.time.Clock;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,9 +83,9 @@ public class NFSv4StateHandler {
     private final Lock _writeLock = _accessLock.writeLock();
 
     /**
-     * Client's lease expiration time in seconds.
+     * Client's lease validity duration.
      */
-    private final int _leaseTime;
+    private final Duration _leaseTime;
 
     private boolean _running;
 
@@ -101,23 +103,28 @@ public class NFSv4StateHandler {
      */
     private final ScheduledExecutorService _cleanerScheduler;
 
+    /**
+     * Clock to use for all time related operations.
+     */
+    private final Clock _clock = Clock.systemDefaultZone();
+
     public NFSv4StateHandler() {
-        this(NFSv4Defaults.NFS4_LEASE_TIME, 0, new EphemeralClientRecoveryStore());
+        this(Duration.ofSeconds(NFSv4Defaults.NFS4_LEASE_TIME), 0, new EphemeralClientRecoveryStore());
     }
 
     /**
      * Create NFSv4 state handler with given lease time, instance id and client store.
      * The {@code instanceId} should uniquely identify this state handler.
      *
-     * @param leaseTime state lease time in seconds.
+     * @param leaseTime time duration of a lease.
      * @param instanceId the nfs server instance id within deployment.
      * @param clientStore store used by state handler to keep track of valid clients.
      */
-    public NFSv4StateHandler(int leaseTime, int instanceId, ClientRecoveryStore clientStore) {
+    public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore) {
         this(leaseTime, instanceId, clientStore, new DefaultClientCache(leaseTime, new DeadClientCollector(clientStore)));
     }
 
-    public NFSv4StateHandler(int leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId) {
+    public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId) {
         _leaseTime = leaseTime;
         _clientsByServerId = clientsByServerId;
 
@@ -134,11 +141,11 @@ public class NFSv4StateHandler {
 
         // periodic dead client scan
         _cleanerScheduler.scheduleAtFixedRate(() -> _clientsByServerId.cleanUp(),
-                _leaseTime * 4, _leaseTime * 4, TimeUnit.SECONDS);
+                _leaseTime.toSeconds() * 4, _leaseTime.toSeconds() * 4, TimeUnit.SECONDS);
 
         // one time action to close recovery window.
         _cleanerScheduler.schedule(() -> clientStore.reclaimComplete(),
-                _leaseTime, TimeUnit.SECONDS);
+                _leaseTime.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void removeClient(NFS4Client client) {
@@ -308,7 +315,7 @@ public class NFSv4StateHandler {
             byte[] ownerID, verifier4 verifier, Principal principal, boolean callbackNeeded) {
         NFS4Client client = new NFS4Client(this, nextClientId(),
 		minorVersion, clientAddress, localAddress, ownerID, verifier,
-		principal, TimeUnit.SECONDS.toMillis(_leaseTime), callbackNeeded);
+		principal, _leaseTime, callbackNeeded);
         addClient(client);
         return client;
     }
@@ -319,6 +326,14 @@ public class NFSv4StateHandler {
      */
     public FileTracker getFileTracker() {
         return _openFileTracker;
+    }
+
+    /**
+     * Clock used to time related operations.
+     * @return
+     */
+    Clock getClock() {
+        return _clock;
     }
 
     private static final class DeadClientCollector extends NopCacheEventListener<clientid4, NFS4Client> {
@@ -423,7 +438,7 @@ public class NFSv4StateHandler {
      * 2^16 instances of state handler.
      */
     private clientid4 nextClientId() {
-        long now = (System.currentTimeMillis() / 1000);
+        long now = _clock.instant().getEpochSecond();
         return new clientid4((now << 32) | (_instanceId << 16) | (_clientId.incrementAndGet() & 0x0000FFFF));
     }
 
@@ -468,8 +483,8 @@ public class NFSv4StateHandler {
      * Get lease time value in seconds used by this state handler.
      * @return lease time value in seconds.
      */
-    public int getLeaseTime() {
-	return _leaseTime;
+    public Duration getLeaseTime() {
+        return _leaseTime;
     }
 
 }

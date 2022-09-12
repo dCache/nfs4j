@@ -1,5 +1,7 @@
 package org.dcache.nfs.benchmarks;
 
+import java.time.Duration;
+import java.time.Instant;
 import org.dcache.nfs.util.Cache;
 import org.dcache.nfs.util.NopCacheEventListener;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -28,8 +30,8 @@ public class CacheBenchmark {
 
         @Setup
         public void setUp() {
-            cache = new Cache<>("test cache", 64, Integer.MAX_VALUE,
-                    Integer.MAX_VALUE,
+            cache = new Cache<>("test cache", 64, Duration.ofSeconds(Long.MAX_VALUE),
+                    Duration.ofSeconds(Long.MAX_VALUE),
                     new NopCacheEventListener());
             cache.put("foo", "bar");
         }
@@ -42,7 +44,7 @@ public class CacheBenchmark {
     @Benchmark
     @Threads(16)
     @Warmup(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-    public long cachePutRemoveBenchmark(CacheHolder cacheHolder) {
+    public Instant cachePutRemoveBenchmark(CacheHolder cacheHolder) {
 
         final var cache = cacheHolder.getCache();
         var key = "key";

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,6 +23,9 @@ package org.dcache.nfs.v4;
  *  with great help of William A.(Andy) Adamson
  */
 import com.google.common.io.BaseEncoding;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,9 +126,9 @@ public class NFS4Client {
     private final Map<sessionid4, NFSv41Session> _sessions = new HashMap<>();
 
     /**
-     * The timestamp in millis of the last lease renewal.
+     * The point in time of the last lease renewal.
      */
-    private volatile long _lastLeaseUpdate = System.currentTimeMillis();
+    private volatile Instant _lastLeaseUpdate;
 
     /**
      * Open Owners associated with client.
@@ -162,9 +165,9 @@ public class NFS4Client {
     private ClientCB _cl_cb = null; /* callback info */
 
     /**
-     * lease expiration time in milliseconds.
+     * Time duration of a valid lease.
      */
-    private final long _leaseTime;
+    private final Duration _leaseTime;
 
     /**
      * A flag to indicate that the client already have
@@ -187,10 +190,16 @@ public class NFS4Client {
      */
     private final NFSv4StateHandler _stateHandler;
 
+    /**
+     * Clock to use for all time related operations.
+     */
+    private final Clock _clock;
+
     public NFS4Client(NFSv4StateHandler stateHandler, clientid4 clientId, int minorVersion, InetSocketAddress clientAddress, InetSocketAddress localAddress,
-            byte[] ownerID, verifier4 verifier, Principal principal, long leaseTime, boolean calbackNeeded) {
+            byte[] ownerID, verifier4 verifier, Principal principal, Duration leaseTime, boolean calbackNeeded) {
 
         _stateHandler = stateHandler;
+        _clock = _stateHandler.getClock();
         _ownerId = Arrays.copyOf(ownerID, ownerID.length);
         _verifier = verifier;
         _principal = principal;
@@ -198,6 +207,7 @@ public class NFS4Client {
 
         _clientAddress = clientAddress;
         _localAddress = localAddress;
+        _lastLeaseUpdate = _clock.instant();
         _leaseTime = leaseTime;
         _callbackNeeded = calbackNeeded;
         _minorVersion = minorVersion;
@@ -257,7 +267,7 @@ public class NFS4Client {
     }
 
     public boolean isLeaseValid() {
-        return (System.currentTimeMillis() - _lastLeaseUpdate) < _leaseTime;
+        return _lastLeaseUpdate.plus(_leaseTime).isAfter(_clock.instant());
     }
 
     /**
@@ -268,9 +278,9 @@ public class NFS4Client {
      */
     public void updateLeaseTime() throws ChimeraNFSException {
 
-        long curentTime = System.currentTimeMillis();
-        long delta = curentTime - _lastLeaseUpdate;
-        if (delta > _leaseTime) {
+        Instant curentTime = _clock.instant();
+        var delta = Duration.between(_lastLeaseUpdate, curentTime);
+        if (delta.compareTo(_leaseTime) > 0) {
             throw new ExpiredException("lease time expired: (" + delta +"): " + BaseEncoding.base16().lowerCase().encode(_ownerId) +
                     " (" + _clientId + ").");
         }
@@ -281,7 +291,7 @@ public class NFS4Client {
      * sets client lease time with current time
      */
     public void refreshLeaseTime() {
-        _lastLeaseUpdate = System.currentTimeMillis();
+        _lastLeaseUpdate = _clock.instant();
     }
 
     /**

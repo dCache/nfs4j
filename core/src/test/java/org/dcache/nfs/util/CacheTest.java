@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 package org.dcache.nfs.util;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
@@ -37,15 +38,15 @@ public class CacheTest {
     @Before
     public void setUp() {
         _clock = new ManualClock();
-        _cache = new Cache<>("test cache", 10, TimeUnit.SECONDS.toMillis(5),
-                TimeUnit.SECONDS.toMillis(5),
+        _cache = new Cache<>("test cache", 10, Duration.ofSeconds(5),
+                Duration.ofSeconds(5),
                 new NopCacheEventListener(), _clock);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCacheIdleBiggerThanMax() {
         new Cache<>("test cache", 10,
-                5, 7,
+                Duration.ofSeconds(5), Duration.ofSeconds(7),
                 new NopCacheEventListener(), _clock);
     }
 
@@ -100,21 +101,21 @@ public class CacheTest {
     @Test
     public void testExpiredByTime() throws Exception {
         _cache.put("key1", "value1");
-        _clock.advance(_cache.getEntryIdleTime() + 1000, TimeUnit.MILLISECONDS);
+        _clock.advance(_cache.getEntryIdleTime().plus(Duration.ofSeconds(1)));
         String value = _cache.get("key1");
         assertNull("Object not expired", value);
     }
 
     @Test
     public void testBigLifeTime() {
-         _cache.put("key1", "value1", Long.MAX_VALUE, TimeUnit.SECONDS.toMillis(180));
+         _cache.put("key1", "value1", Duration.ofSeconds(Instant.MAX.getEpochSecond()), Duration.ofSeconds(180));
           assertNotNull("Object expired", _cache.get("key1"));
     }
 
     @Test
     public void testCleanUp() {
-        _cache.put("key1", "value1", 1000, 1000);
-        _cache.put("key2", "value2", 600, 600);
+        _cache.put("key1", "value1", Duration.ofSeconds(1), Duration.ofSeconds(1));
+        _cache.put("key2", "value2", Duration.ofMillis(600), Duration.ofMillis(600));
         _clock.advance(700, TimeUnit.MILLISECONDS);
         _cache.cleanUp();
         assertEquals("unexpected number of elements", 1, _cache.size());
@@ -140,6 +141,10 @@ public class CacheTest {
 
         void advance(long time, TimeUnit unit) {
             currentTime.addAndGet(unit.toMillis(time));
+        }
+
+        void advance(Duration duration) {
+            currentTime.addAndGet(duration.toMillis());
         }
 
         @Override

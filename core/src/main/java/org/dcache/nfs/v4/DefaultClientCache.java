@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 iterate GmbH
+ * Copyright (c) 2020 - 2022 iterate GmbH
  *
  * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Library General Public License as
@@ -18,18 +18,19 @@
  */
 package org.dcache.nfs.v4;
 
+import java.time.Duration;
+import java.time.Instant;
 import org.dcache.nfs.util.Cache;
 import org.dcache.nfs.util.CacheElement;
 import org.dcache.nfs.util.CacheEventListener;
 import org.dcache.nfs.v4.xdr.clientid4;
 
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class DefaultClientCache extends Cache<clientid4, NFS4Client> implements ClientCache {
-    public DefaultClientCache(int leaseTime, CacheEventListener<clientid4, NFS4Client> eventListener) {
-        super("NFSv41 clients", 5000, Long.MAX_VALUE,
-                TimeUnit.SECONDS.toMillis(leaseTime * 2),
+    public DefaultClientCache(Duration leaseTime, CacheEventListener<clientid4, NFS4Client> eventListener) {
+        super("NFSv41 clients", 5000, Duration.ofSeconds(Long.MAX_VALUE),
+                leaseTime.multipliedBy(2),
                 eventListener);
     }
 
