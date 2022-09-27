@@ -90,7 +90,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         int bytesWritten = out.write(_args.opwrite.data, offset);
 
         if (bytesWritten < 0) {
-            throw new NfsIoException("IO not allowd");
+            throw new NfsIoException("IO not allowed");
         }
 
         res.status = nfsstat.NFS_OK;
