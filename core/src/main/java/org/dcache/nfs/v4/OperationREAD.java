@@ -75,7 +75,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         int bytesReaded = context.getFs().read(context.currentInode(), buf, offset);
         if (bytesReaded < 0) {
-            throw new NfsIoException("IO not allowd");
+            throw new NfsIoException("IO not allowed");
         }
 
         buf.flip();
