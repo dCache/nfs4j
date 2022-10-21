@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,11 +21,13 @@ package org.dcache.nfs.v4;
 
 import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.InvalException;
@@ -84,6 +86,9 @@ public class FileTracker {
             return owner;
         }
 
+        public NFS4Client getClient() {
+            return client;
+        }
     }
 
     /**
@@ -250,5 +255,19 @@ public class FileTracker {
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Get all currently open files with associated clients. The resulting map contains file's inodes
+     * as key and collection of nfs clients that have this file opened as a value.
+     *
+     * @return map of all open files.
+     */
+    public Map<Inode, Collection<NFS4Client>> getOpenFiles() {
+        return files.entrySet().stream()
+              .collect(Collectors.toMap(
+                    e -> Inode.forFile(e.getKey().getOpaque()),
+                    e -> e.getValue().stream().map(OpenState::getClient).collect(Collectors.toSet()))
+              );
     }
 }
