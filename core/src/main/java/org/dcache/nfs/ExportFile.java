@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
+import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,11 +135,11 @@ public class ExportFile implements ExportTable {
         }
 
         /*
-         * sort in reverse order to get smallest network first
+         * sort in reverse order to get the smallest network first
          */
         return exportsBuilder
-                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client))
-                .build();
+              .orderValuesBy(Comparator.comparing(FsExport::client, HostEntryComparator::compare))
+              .build();
     }
 
     private static ImmutableMultimap<Integer, FsExport> parseExportLines(Iterable<String> lines) throws IOException {
@@ -304,11 +304,11 @@ public class ExportFile implements ExportTable {
         }
 
         /*
-         * sort in reverse order to get smallest network first
+         * sort in reverse order to get the smallest network first
          */
         return exportsBuilder
-                .orderValuesBy(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client))
-                .build();
+              .orderValuesBy(Comparator.comparing(FsExport::client, HostEntryComparator::compare))
+              .build();
     }
 
     @Override
@@ -331,7 +331,7 @@ public class ExportFile implements ExportTable {
     public Stream<FsExport> exports(InetAddress client) {
         return _exports.values().stream()
                 .filter(e -> e.isAllowed(client))
-                .sorted(Ordering.from(HostEntryComparator::compare).onResultOf(FsExport::client));
+                .sorted(Comparator.comparing(FsExport::client,HostEntryComparator::compare));
     }
 
     public final void rescan() throws IOException {
