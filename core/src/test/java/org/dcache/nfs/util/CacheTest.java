@@ -19,12 +19,9 @@
  */
 package org.dcache.nfs.util;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -130,31 +127,4 @@ public class CacheTest {
         assertTrue("Not all entries are removed", _cache.entries().isEmpty());
     }
 
-    private static class ManualClock extends Clock {
-
-        private final AtomicLong currentTime = new AtomicLong();
-
-        @Override
-        public Instant instant() {
-            return Instant.ofEpochMilli(currentTime.get());
-        }
-
-        void advance(long time, TimeUnit unit) {
-            currentTime.addAndGet(unit.toMillis(time));
-        }
-
-        void advance(Duration duration) {
-            currentTime.addAndGet(duration.toMillis());
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return Clock.systemDefaultZone().getZone();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            throw new UnsupportedClassVersionError();
-        }
-    }
 }
