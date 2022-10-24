@@ -124,7 +124,11 @@ public class OperationCOPY extends AbstractNFSv4Operation {
                 long n = copyFuture.get(1, TimeUnit.SECONDS);
                 res.cr_resok4.cr_response.wr_count = new length4(n);
             } catch (InterruptedException | ExecutionException e) {
-                LOGGER.error("Copy-offload interrupted: ", Throwables.getRootCause(e));
+
+                Throwable cause = Throwables.getRootCause(e);
+                Throwables.propagateIfPossible(cause, ChimeraNFSException.class);
+
+                LOGGER.error("Copy-offload failed: {}", e.getMessage());
                 res.cr_status = nfsstat.NFSERR_IO;
             } catch (TimeoutException e) {
                 // continue as async copy
