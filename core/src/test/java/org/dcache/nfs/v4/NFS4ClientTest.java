@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,11 +21,15 @@ package org.dcache.nfs.v4;
 
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.SeqMisorderedException;
+import org.dcache.nfs.util.ManualClock;
+import org.dcache.nfs.util.NopCacheEventListener;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -49,12 +53,20 @@ public class NFS4ClientTest {
     private NFSv4StateHandler stateHandler;
     private NFS4Client nfsClient;
     private StateOwner owner;
+    private ManualClock clock;
 
     @Before
     public void setUp() throws UnknownHostException, ChimeraNFSException {
-        stateHandler = new NFSv4StateHandler();
+
+        clock = new ManualClock();
+        var leaseTime = Duration.ofSeconds(NFSv4Defaults.NFS4_LEASE_TIME);
+        var clientStore = new EphemeralClientRecoveryStore();
+        stateHandler = new NFSv4StateHandler(leaseTime, 0, clientStore,
+              new DefaultClientCache(leaseTime, new NopCacheEventListener<>()), clock);
+
         nfsClient = createClient(stateHandler);
-        owner = nfsClient.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        owner = nfsClient.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8),
+              new seqid4(0));
     }
 
     @Test
@@ -170,6 +182,24 @@ public class NFS4ClientTest {
         nfsClient.tryDispose();
         assertTrue("client state is not disposed", isDisposed.get());
         assertFalse("client claims to have a state after dispose", nfsClient.hasState());
+    }
+
+    @Test
+    public void testClientValidityBeforeLeaseExpired() throws ChimeraNFSException {
+
+        assertTrue(nfsClient.isLeaseValid());
+
+        clock.advance(stateHandler.getLeaseTime().minus(1, ChronoUnit.SECONDS));
+        assertTrue("Client should be valid before lease have expired.", nfsClient.isLeaseValid());
+    }
+
+    @Test
+    public void testClientValidityAfterLeaseExpired() throws ChimeraNFSException {
+
+        assertTrue(nfsClient.isLeaseValid());
+
+        clock.advance(stateHandler.getLeaseTime().plus(1, ChronoUnit.SECONDS));
+        assertFalse("Client can be valid with expired lease", nfsClient.isLeaseValid());
     }
 }
 

@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.v4;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.time.Clock;
 import java.time.Duration;
@@ -106,7 +107,7 @@ public class NFSv4StateHandler {
     /**
      * Clock to use for all time related operations.
      */
-    private final Clock _clock = Clock.systemDefaultZone();
+    private final Clock _clock;
 
     public NFSv4StateHandler() {
         this(Duration.ofSeconds(NFSv4Defaults.NFS4_LEASE_TIME), 0, new EphemeralClientRecoveryStore());
@@ -125,8 +126,14 @@ public class NFSv4StateHandler {
     }
 
     public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId) {
+        this(leaseTime, instanceId, clientStore, new DefaultClientCache(leaseTime, new DeadClientCollector(clientStore)), Clock.systemDefaultZone());
+    }
+
+    @VisibleForTesting
+    NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId, Clock clock) {
         _leaseTime = leaseTime;
         _clientsByServerId = clientsByServerId;
+        _clock = clock;
 
         _running = true;
         _instanceId = instanceId;
