@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -611,6 +611,8 @@ public final class nfsstat {
                 throw new NoXattrException();
             case nfsstat.NFSERR_XATTR2BIG:
                 throw new XattrTooBigException();
+            case nfsstat.NFS4ERR_OFFLOAD_DENIED:
+                throw new OffloadDeniedExeption();
             default:
                 throw new BadXdrException();
         }
