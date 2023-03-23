@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -122,6 +122,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
                 context.getLm().unlockIfExists(inode.getFileId(), lock);
             });
 
+            // FIXME: we might run into race condition, thus updating sedid must be fenced!
             lock_state.bumpSeqid();
             context.currentStateid(lock_state.stateid());
             result.oplock.status = nfsstat.NFS_OK;
