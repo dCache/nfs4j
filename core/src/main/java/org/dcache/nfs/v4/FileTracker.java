@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -125,7 +125,7 @@ public class FileTracker {
                     throw new ShareDeniedException("Conflicting share");
             }
 
-            // if there is an another open from the same client we must merge
+            // if there is another open from the same client we must merge
             // access mode and return the same stateid as required by rfc5661#18.16.3
 
             for (OpenState os : opens) {
@@ -133,6 +133,7 @@ public class FileTracker {
                         os.getOwner().equals(owner)) {
                         os.shareAccess |= shareAccess;
                         os.shareDeny |= shareDeny;
+                        os.stateid.seqid++;
                         return os.stateid;
                 }
             }
@@ -142,6 +143,7 @@ public class FileTracker {
             OpenState openState = new OpenState(client, owner, stateid, shareAccess, shareDeny);
             opens.add(openState);
             state.addDisposeListener(s -> removeOpen(inode, stateid));
+            stateid.seqid++;
             return stateid;
         } finally {
             lock.unlock();
