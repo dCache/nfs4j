@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -328,11 +328,12 @@ public class NFS4Client {
         if (openState != null) {
             openState.addDisposeListener(s -> {
                 // remove and dispose derived states.
-                NFS4State nfsState = _clientStates.remove(state.stateid());
+                NFS4State nfsState = _clientStates.get(state.stateid());
                 if (nfsState != null) {
                     _log.debug("removing derived state {}", nfsState);
                     nfsState.tryDispose();
                 }
+                _clientStates.remove(state.stateid());
             });
         }
         _clientStates.put(state.stateid(), state);
