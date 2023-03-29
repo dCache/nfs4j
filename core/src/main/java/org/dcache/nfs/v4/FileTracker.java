@@ -95,7 +95,7 @@ public class FileTracker {
      * @param inode of opened file.
      * @param shareAccess type of access required.
      * @param shareDeny type of access to deny others.
-     * @return stateid associated with open.
+     * @return a snapshot of the stateid associated with open.
      * @throws ShareDeniedException if share reservation conflicts with an existing open.
      * @throws ChimeraNFSException
      */
@@ -129,7 +129,8 @@ public class FileTracker {
                         os.shareAccess |= shareAccess;
                         os.shareDeny |= shareDeny;
                         os.stateid.seqid++;
-                        return os.stateid;
+                        //we need to return copy to avoid modification by concurrent opens
+                        return new stateid4(os.stateid.other, os.stateid.seqid);
                 }
             }
 
@@ -139,7 +140,8 @@ public class FileTracker {
             opens.add(openState);
             state.addDisposeListener(s -> removeOpen(inode, stateid));
             stateid.seqid++;
-            return stateid;
+            //we need to return copy to avoid modification by concurrent opens
+            return new stateid4(stateid.other, stateid.seqid);
         } finally {
             lock.unlock();
         }
@@ -153,7 +155,7 @@ public class FileTracker {
      * @param inode of opened file.
      * @param shareAccess type of access required.
      * @param shareDeny type of access to deny others.
-     * @return stateid associated with open.
+     * @return a snapshot of the stateid associated with open.
      * @throws ChimeraNFSException
      */
     public stateid4 downgradeOpen(NFS4Client client, stateid4 stateid, Inode inode, int shareAccess, int shareDeny) throws ChimeraNFSException {
@@ -182,7 +184,8 @@ public class FileTracker {
             os.shareDeny = shareDeny;
 
             os.stateid.seqid++;
-            return os.stateid;
+            //we need to return copy to avoid modification by concurrent opens
+            return new stateid4(os.stateid.other, os.stateid.seqid);
         } finally {
             lock.unlock();
         }
