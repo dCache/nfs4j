@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -394,11 +394,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                     .orElseThrow(AccessException::new) // should never happen as handled by PseudoFS first
                     .getLayoutTypes();
 
-		Set<layouttype4> supportedLayouts = pnfsDeviceManager.get().getLayoutTypes();
-
+                Set<layouttype4> supportedLayouts = pnfsDeviceManager.get().getLayoutTypes();
                 if (exportLayouts.isEmpty()) {
-                    // for backward compatibility, pick NFSv41_FILES layout if nothing is specified
-                    fs_layout_type.value = new int[] {layouttype4.LAYOUT4_NFSV4_1_FILES.getValue()};
+                    fs_layout_type.value = supportedLayouts.stream()
+                            .mapToInt(layouttype4::getValue)
+                            .toArray();
                 } else {
                     fs_layout_type.value = exportLayouts.stream()
                         .filter(e -> supportedLayouts.contains(e))
