@@ -56,6 +56,15 @@ public class nfstime4 implements XdrAble {
 	nseconds = (int)((millis % 1000) * 1000000);
     }
 
+    /**
+     * Create a new nfstime4 from given {@link Instant}.
+     * @param instant
+     */
+    public nfstime4(Instant instant) {
+        seconds = instant.getEpochSecond();
+        nseconds = instant.getNano();
+    }
+
     public nfstime4(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);

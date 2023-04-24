@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -18,6 +18,10 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4;
+
+import org.dcache.nfs.util.Misc;
+
+import java.time.Instant;
 
 public interface NFSv4Defaults {
 
@@ -54,7 +58,7 @@ public interface NFSv4Defaults {
     /**
      * NFSv4.1 implementation date
      */
-    public final static long NFS4_IMPLEMENTATION_DATE = System.currentTimeMillis();
+    public final static Instant NFS4_IMPLEMENTATION_DATE = Misc.getBuildTime().orElse(Instant.now());
 
     /**
      * Maximal number of operations in a compound call
@@ -65,4 +69,5 @@ public interface NFSv4Defaults {
      * Maximal number of session slots
      */
     public final static int NFS4_MAX_SESSION_SLOTS = 16;
+
 }

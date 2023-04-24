@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,21 +22,18 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.ExportFile;
-import org.dcache.nfs.v4.xdr.COMPOUND4args;
-import org.dcache.nfs.v4.xdr.COMPOUND4res;
-import org.dcache.nfs.v4.xdr.nfs4_prot_NFS4_PROGRAM_ServerStub;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.*;
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
+
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.status.MinorVersMismatchException;
@@ -48,7 +45,6 @@ import org.dcache.nfs.status.SequencePosException;
 import org.dcache.nfs.status.TooManyOpsException;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.nlm.SimpleLm;
-import org.dcache.nfs.v4.xdr.verifier4;
 
 public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
@@ -60,6 +56,8 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     private final NFSv41DeviceManager _deviceManager;
     private final NFSv4StateHandler _statHandler;
     private final LockManager _nlm;
+    private final nfs_impl_id4 _implementationId;
+
     /**
      * Verifier to indicate client that server is rebooted. Current currentTimeMillis
      * is good enough, unless server reboots within a millisecond.
@@ -73,6 +71,12 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         _operationExecutor = builder.operationExecutor;
         _nlm = builder.nlm == null ? new SimpleLm() : builder.nlm;
         _statHandler = builder.stateHandler == null ? new NFSv4StateHandler() : builder.stateHandler;
+
+        _implementationId = new nfs_impl_id4();
+        _implementationId.nii_date = new nfstime4(builder.implementationDate.toEpochMilli());
+        _implementationId.nii_domain = new utf8str_cis(builder.implementationDomain);
+        _implementationId.nii_name = new utf8str_cs(builder.implementationName);
+
     }
 
     @Deprecated
@@ -86,6 +90,11 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         _operationExecutor = operationExecutor;
         _nlm = new SimpleLm();
         _statHandler = new NFSv4StateHandler();
+
+        _implementationId = new nfs_impl_id4();
+        _implementationId.nii_date = new nfstime4(NFSv4Defaults.NFS4_IMPLEMENTATION_DATE);
+        _implementationId.nii_domain = new utf8str_cis(NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN);
+        _implementationId.nii_name = new utf8str_cs(NFSv4Defaults.NFS4_IMPLEMENTATION_ID);
     }
 
     @Override
@@ -136,6 +145,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                     .withLockManager(_nlm)
                     .withExportTable(_exportTable)
                     .withRebootVerifier(_rebootVerifier)
+                    .withImplementationId(_implementationId)
                     .withCall(call$);
 
             if (_deviceManager != null) {
@@ -291,6 +301,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
         private ExportTable exportTable;
         private LockManager nlm;
         private NFSv4StateHandler stateHandler;
+        private String implementationName = NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
+        private String implementationDomain = NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
+        private Instant implementationDate = NFSv4Defaults.NFS4_IMPLEMENTATION_DATE;
 
         public Builder withDeviceManager(NFSv41DeviceManager deviceManager) {
             this.deviceManager = deviceManager;
@@ -317,6 +330,19 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             return this;
         }
 
+        public Builder withImplementationName(String implementationName) {
+            this.implementationName = implementationName;
+            return this;
+        }
+
+        public Builder withImplementationDomain(String implementationDomain) {
+            this.implementationDomain = implementationDomain;
+            return this;
+        }
+        public Builder withImplementationDate(Instant implementationDate) {
+            this.implementationDate = implementationDate;
+            return this;
+        }
         /**
          * @deprecated Use {@link #withExportTable}
          */

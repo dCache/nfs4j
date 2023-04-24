@@ -20,14 +20,19 @@
 package org.dcache.nfs.v4;
 
 import java.time.Duration;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.state_protect_how4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
+
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_impl_id4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.nfstime4;
+import org.dcache.nfs.v4.xdr.state_protect_how4;
+import org.dcache.nfs.v4.xdr.utf8str_cis;
+import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -340,5 +345,39 @@ public class OperationEXCHANGE_IDTest {
         assertEquals("Invalid pNFS-capabilities returned",
                 nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
+    }
+
+
+    @Test
+    public void testCustomImplementationId() throws Exception {
+        CompoundContext context;
+        nfs_resop4 result;
+
+        nfs_argop4 exchangeid_args = new CompoundBuilder()
+                .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
+                .build().argarray[0];
+
+        nfs_impl_id4 implId = new nfs_impl_id4();
+        implId.nii_date = new nfstime4(NFSv4Defaults.NFS4_IMPLEMENTATION_DATE);
+        implId.nii_domain = new utf8str_cis("nfs.dev");
+        implId.nii_name = new utf8str_cs("junit");
+
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+
+        result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
+        context = new CompoundContextBuilder()
+                .withStateHandler(stateHandler)
+                .withCall(generateRpcCall())
+                .withImplementationId(implId)
+                .build();
+
+        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        assertEquals("Invalid implementation domain returned",
+                new utf8str_cis("nfs.dev"),
+                result.opexchange_id.eir_resok4.eir_server_impl_id[0].nii_domain);
+
+        assertEquals("Invalid implementation name returned",
+                new utf8str_cs("junit"),
+                result.opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name);
     }
 }

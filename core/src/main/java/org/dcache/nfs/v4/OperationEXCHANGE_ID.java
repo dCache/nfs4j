@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -78,40 +78,6 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             | nfs4_prot.EXCHGID4_FLAG_BIND_PRINC_STATEID
             | nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A
             | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
-
-    /**
-     * compile time
-     */
-    private static long COMPILE_TIME = 0;
-
-    static {
-        /*
-         * get 'Build-Time' attribute from jar file manifest ( if available )
-         */
-        try {
-
-            ProtectionDomain pd = OperationEXCHANGE_ID.class.getProtectionDomain();
-            CodeSource cs = pd.getCodeSource();
-            URL u = cs.getLocation();
-
-            InputStream is = u.openStream();
-            JarInputStream jis = new JarInputStream(is);
-            Manifest m = jis.getManifest();
-
-            if (m != null) {
-                Attributes as = m.getMainAttributes();
-                String buildTime = as.getValue("Build-Time");
-                if( buildTime != null ) {
-                    Instant dateTime = Instant.parse(buildTime);
-                    COMPILE_TIME = dateTime.toEpochMilli();
-                }
-            }
-
-        }catch(IOException  | DateTimeParseException e) {
-            _log.warn("Failed to get compile time: {}", e.getMessage());
-            // bad luck
-        }
-    }
 
     public OperationEXCHANGE_ID(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_EXCHANGE_ID);
@@ -264,10 +230,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         res.eir_resok4.eir_server_scope = serverIdProvider.getScope();
 
         res.eir_resok4.eir_server_impl_id = new nfs_impl_id4[1];
-        res.eir_resok4.eir_server_impl_id[0] = new nfs_impl_id4();
-        res.eir_resok4.eir_server_impl_id[0].nii_domain = new utf8str_cis(NFS4_IMPLEMENTATION_DOMAIN);
-        res.eir_resok4.eir_server_impl_id[0].nii_name = new utf8str_cs(NFS4_IMPLEMENTATION_ID);
-        res.eir_resok4.eir_server_impl_id[0].nii_date = new nfstime4(COMPILE_TIME);
+        res.eir_resok4.eir_server_impl_id[0] = context.getImplementationId();
 
         res.eir_resok4.eir_state_protect = new state_protect4_r();
         res.eir_resok4.eir_state_protect.spr_how = state_protect_how4.SP4_NONE;

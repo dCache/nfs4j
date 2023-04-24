@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,7 +25,12 @@ import java.security.Principal;
 import com.sun.security.auth.UnixNumericUserPrincipal;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
+import org.dcache.nfs.v4.xdr.nfs_impl_id4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.server_owner4;
+import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.uint64_t;
+import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +44,6 @@ import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.NoFileHandleException;
 import org.dcache.nfs.status.RestoreFhException;
 import org.dcache.nfs.v4.nlm.LockManager;
-import org.dcache.nfs.v4.xdr.server_owner4;
-import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint64_t;
-import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.oncrpc4j.rpc.net.InetSocketAddresses;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
@@ -96,6 +97,8 @@ public class CompoundContext {
     private final int _exchangeIdFlags;
     private final verifier4 _rebootVerifier;
 
+    private final nfs_impl_id4 _implId;
+
     /**
      * Create context of COUMPOUND request.
      *
@@ -114,6 +117,7 @@ public class CompoundContext {
         _principal = principalOf(_callInfo);
         _exchangeIdFlags = builder.getExchangeIdFlags();
         _rebootVerifier = builder.getRebootVerifier();
+        _implId = builder.getImplementationId();
     }
 
     public RpcCall getRpcCall() {
@@ -353,5 +357,12 @@ public class CompoundContext {
      */
     public verifier4 getRebootVerifier() {
         return _rebootVerifier;
+    }
+
+    /**
+     * Return server Implementation ID.
+     */
+    public nfs_impl_id4 getImplementationId() {
+        return _implId;
     }
 }

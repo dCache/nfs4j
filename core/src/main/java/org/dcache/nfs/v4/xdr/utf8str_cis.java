@@ -54,5 +54,26 @@ public class utf8str_cis implements XdrAble {
         value = new utf8string(xdr);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof utf8str_cis)) {
+            return false;
+        }
+
+        return this.value.equals(((utf8str_cis) obj).value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
 }
 // End of utf8str_cis.java

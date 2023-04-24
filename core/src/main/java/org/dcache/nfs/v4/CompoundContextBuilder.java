@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,10 +19,10 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_impl_id4;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.oncrpc4j.rpc.RpcCall;
@@ -40,6 +40,8 @@ public class CompoundContextBuilder {
     private ExportTable exportTable = null;
     private int exchangeIdFlags = nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS;
     private verifier4 rebootVerifier;
+
+    private nfs_impl_id4 implId;
 
     public CompoundContextBuilder withCall(RpcCall call) {
         this.call = call;
@@ -76,6 +78,11 @@ public class CompoundContextBuilder {
         return this;
     }
 
+    public CompoundContextBuilder withImplementationId(nfs_impl_id4 impId) {
+        this.implId = impId;
+        return this;
+    }
+
     public LockManager getLm() {
         return lm;
     }
@@ -102,6 +109,10 @@ public class CompoundContextBuilder {
 
     public ExportTable getExportTable() {
         return exportTable;
+    }
+
+    public nfs_impl_id4 getImplementationId() {
+        return implId;
     }
 
     public CompoundContext build() {
