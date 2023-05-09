@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -126,7 +126,7 @@ public class NFSv4StateHandler {
     }
 
     public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId) {
-        this(leaseTime, instanceId, clientStore, new DefaultClientCache(leaseTime, new DeadClientCollector(clientStore)), Clock.systemDefaultZone());
+        this(leaseTime, instanceId, clientStore, clientsByServerId, Clock.systemDefaultZone());
     }
 
     @VisibleForTesting
