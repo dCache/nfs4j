@@ -41,6 +41,7 @@
       <module>spring</module>
       <module>dlm</module>
       <module>benchmarks</module>
+      <module>basic-server</module>
   </modules>
 
   <properties>
@@ -215,6 +216,16 @@
               <groupId>org.openjdk.jmh</groupId>
               <artifactId>jmh-generator-annprocess</artifactId>
               <version>1.21</version>
+          </dependency>
+          <dependency>
+              <groupId>info.picocli</groupId>
+              <artifactId>picocli</artifactId>
+              <version>4.7.4</version>
+          </dependency>
+          <dependency>
+              <groupId>com.boundary</groupId>
+              <artifactId>high-scale-lib</artifactId>
+              <version>1.0.6</version>
           </dependency>
       </dependencies>
   </dependencyManagement>
