@@ -42,6 +42,7 @@
       <module>dlm</module>
       <module>benchmarks</module>
       <module>basic-server</module>
+      <module>rquota</module>
   </modules>
 
   <properties>
