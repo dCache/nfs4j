@@ -20,6 +20,7 @@
 package org.dcache.rquota;
 
 import org.dcache.rquota.xdr.rquota;
+import org.dcache.rquota.xdr.sq_dqblk;
 
 /**
  * Interface for querying quotas.
@@ -41,7 +42,17 @@ public interface QuotaVfs {
      *
      * @param id   numeric id of user or group to get quota for.
      * @param type type of quota to get, either {@link #USER_QUOTA} or {@link #GROUP_QUOTA}.
-     * @return the quota for the given subject
+     * @return the quota for the given id and type
      */
     rquota getQuota(int id, int type);
+
+    /**
+     * Set the quota for the given id.
+     *
+     * @param id    numeric id of user or group to set quota for.
+     * @param type  type of quota to set, either {@link #USER_QUOTA} or {@link #GROUP_QUOTA}.
+     * @param quota the quota to set
+     * @return the new quota for the given id and type
+     */
+    rquota setQuota(int id, int type, sq_dqblk quota);
 }

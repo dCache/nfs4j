@@ -21,6 +21,8 @@ package org.dcache.rquota;
 
 import static org.dcache.rquota.QuotaVfs.GROUP_QUOTA;
 import static org.dcache.rquota.QuotaVfs.USER_QUOTA;
+import org.dcache.nfs.ExportTable;
+import org.dcache.nfs.FsExport;
 import org.dcache.nfs.util.SubjectHolder;
 import org.dcache.nfs.util.UnixSubjects;
 import org.dcache.oncrpc4j.rpc.RpcCall;
@@ -33,17 +35,20 @@ import org.dcache.rquota.xdr.rquotaServerStub;
 import org.dcache.rquota.xdr.setquota_args;
 import org.dcache.rquota.xdr.setquota_rslt;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 
 public class QuotaSvc extends rquotaServerStub {
 
-    private final static Logger LOGGER = org.slf4j.LoggerFactory.getLogger(QuotaSvc.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(QuotaSvc.class);
 
-    private final QuotaVfs _qfs;
+    private final QuotaVfs qfs;
+    private final ExportTable exportTable;
 
-    public QuotaSvc(QuotaVfs _qfs) {
-        this._qfs = _qfs;
+    public QuotaSvc(QuotaVfs qfs, ExportTable exportTable) {
+        this.qfs = qfs;
+        this.exportTable = exportTable;
     }
 
     @Override
@@ -76,7 +81,7 @@ public class QuotaSvc extends rquotaServerStub {
         }
 
         r.status = qr_status.Q_OK;
-        r.gqr_rquota = _qfs.getQuota(arg1.gqa_id, arg1.gqa_type);
+        r.gqr_rquota = qfs.getQuota(arg1.gqa_id, arg1.gqa_type);
         return r;
     }
 
@@ -90,18 +95,53 @@ public class QuotaSvc extends rquotaServerStub {
         }
 
         r.status = qr_status.Q_OK;
-        r.gqr_rquota = _qfs.getQuota(arg1.gqa_id, arg1.gqa_type);
+        r.gqr_rquota = qfs.getQuota(arg1.gqa_id, arg1.gqa_type);
         return r;
     }
 
     @Override
     public setquota_rslt RQUOTAPROC_SETQUOTA_2(RpcCall call$, ext_setquota_args arg1) {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        setquota_rslt result = new setquota_rslt();
+        String path = "/" + arg1.sqa_pathp; // leading slash is never sent by the client
+
+
+        FsExport export = exportTable.getExport(path, call$.getTransport().getRemoteSocketAddress().getAddress());
+        if (export == null) {
+            result.status = qr_status.Q_EPERM;
+            return result;
+        }
+
+        if (!(UnixSubjects.isRootSubject(call$.getCredential().getSubject()) && export.isTrusted())) {
+            result.status = qr_status.Q_EPERM;
+            return result;
+        }
+
+        result.sqr_rquota = qfs.setQuota(arg1.sqa_id, arg1.sqa_type, arg1.sqa_dqblk);
+        result.status = qr_status.Q_OK;
+        return result;
     }
 
     @Override
     public setquota_rslt RQUOTAPROC_SETACTIVEQUOTA_2(RpcCall call$, ext_setquota_args arg1) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        setquota_rslt result = new setquota_rslt();
+        String path = "/" + arg1.sqa_pathp; // leading slash is never sent by the client
+
+
+        FsExport export = exportTable.getExport(path, call$.getTransport().getRemoteSocketAddress().getAddress());
+        if (export == null) {
+            result.status = qr_status.Q_EPERM;
+            return result;
+        }
+
+        if (!(UnixSubjects.isRootSubject(call$.getCredential().getSubject()) && export.isTrusted())) {
+            result.status = qr_status.Q_EPERM;
+            return result;
+        }
+
+        result.sqr_rquota = qfs.setQuota(arg1.sqa_id, arg1.sqa_type, arg1.sqa_dqblk);
+        result.status = qr_status.Q_OK;
+        return result;
     }
 
     /**
