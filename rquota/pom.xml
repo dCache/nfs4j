@@ -8,7 +8,6 @@
       <version>0.26.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.dcache</groupId>
     <artifactId>rquota</artifactId>
     <packaging>jar</packaging>
     <description>Remote quota protocol implementation</description>
@@ -43,7 +42,8 @@
         </dependency>
         <dependency>
             <groupId>org.dcache</groupId>
-            <artifactId>oncrpc4j-core</artifactId>
+            <artifactId>nfs4j-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
