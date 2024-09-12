@@ -5,7 +5,7 @@
     <parent>
       <groupId>org.dcache</groupId>
       <artifactId>nfs4j</artifactId>
-      <version>0.26.0</version>
+      <version>0.26.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.dcache</groupId>
