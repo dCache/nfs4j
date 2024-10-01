@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2024 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@ import org.dcache.nfs.v4.xdr.CB_COMPOUND4res;
 import org.dcache.nfs.v4.xdr.CB_LAYOUTRECALL4args;
 import org.dcache.nfs.v4.xdr.CB_NOTIFY_DEVICEID4args;
 import org.dcache.nfs.v4.xdr.CB_OFFLOAD4args;
+import org.dcache.nfs.v4.xdr.CB_RECALL4args;
 import org.dcache.nfs.v4.xdr.CB_SEQUENCE4args;
 import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.callback_sec_parms4;
@@ -189,7 +190,7 @@ public class ClientCB {
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
         var slot = _clientSession.acquireSlot();
-        try{
+        try {
             XdrAble args = generateCompound(slot,"cb_layout_recall_fs", opArgs);
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
         } finally {
@@ -197,6 +198,44 @@ public class ClientCB {
         }
     }
 
+    /**
+     * Recall file delegation from the client.
+     *
+     * @param fh file handle of the file
+     * @param stateid stateid of the delegation
+     * @param truncate true if the client should truncate the file
+     * @throws OncRpcException if an RPC error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    public void cbDelegationRecall(nfs_fh4 fh, stateid4 stateid, boolean truncate) throws OncRpcException, IOException {
+
+        CB_RECALL4args cbDelegRecall = new CB_RECALL4args();
+
+        cbDelegRecall.stateid = stateid;
+        cbDelegRecall.fh = fh;
+        cbDelegRecall.truncate = truncate;
+
+        nfs_cb_argop4 opArgs = new nfs_cb_argop4();
+        opArgs.argop = nfs_cb_opnum4.OP_CB_RECALL;
+        opArgs.opcbrecall = cbDelegRecall;
+
+        var slot = _clientSession.acquireSlot();
+        try {
+            XdrAble args = generateCompound(slot,"cb_recall_delegation", opArgs);
+            _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
+        } finally {
+            _clientSession.releaseSlot(slot);
+        }
+    }
+
+    /**
+     * Recall pNFS layout from the client.
+     *
+     * @param fh file handle of the file
+     * @param stateid stateid of the layout
+     * @throws OncRpcException if an RPC error occurs
+     * @throws IOException if an I/O error occurs
+     */
     public void cbLayoutRecallFile(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
 
         CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
@@ -227,6 +266,13 @@ public class ClientCB {
         }
     }
 
+    /**
+     * Notify the client that a device id has been added.
+     *
+     * @param id device id
+     * @throws OncRpcException if an RPC error occurs
+     * @throws IOException if an I/O error occurs
+     */
     public void cbDeleteDevice(deviceid4 id) throws OncRpcException, IOException {
 
         CB_NOTIFY_DEVICEID4args cbDeleteDeciveId = new CB_NOTIFY_DEVICEID4args();
@@ -265,6 +311,14 @@ public class ClientCB {
         }
     }
 
+    /**
+     * Notify the client that offload copy has been completed.
+     *
+     * @param fh       file handle of the file
+     * @param stateid  stateid of the file
+     * @param response write response
+     * @param status   status of the offload
+     */
     public void cbOffload(nfs_fh4 fh, stateid4 stateid, write_response4 response, int status) throws OncRpcException, IOException {
 
         CB_OFFLOAD4args copyOffload = new CB_OFFLOAD4args();
