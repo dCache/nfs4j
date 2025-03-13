@@ -62,11 +62,37 @@ public class FileTracker {
         private int shareAccess;
         private int shareDeny;
 
+        /**
+         * Bitmask of share_access that have been seen by the open.
+         * The bit position represents seen open mode.
+         * <pre>
+         *     1: OPEN4_SHARE_ACCESS_READ
+         *     2: OPEN4_SHARE_ACCESS_WRITE
+         *     3: OPEN4_SHARE_ACCESS_BOTH
+         * </pre>
+         */
+        private int shareAccessSeen;
+
+        /**
+         * Bitmask of share_deny that have been seen by the open.
+         * The bit position represents seen open mode.
+         * <pre>
+         *     1: OPEN4_SHARE_ACCESS_READ
+         *     2: OPEN4_SHARE_ACCESS_WRITE
+         *     3: OPEN4_SHARE_ACCESS_BOTH
+         * </pre>
+         */
+        private int shareDenySeen;
+
         public OpenState(NFS4Client client, StateOwner owner, stateid4 stateid, int shareAccess, int shareDeny) {
             this.client = client;
             this.stateid = stateid;
             this.shareAccess = shareAccess;
             this.shareDeny = shareDeny;
+
+            // initialize seen bitmaps with the current share modes, if set
+            this.shareAccessSeen = shareAccess == 0 ? 0 : 1 << (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) - 1;
+            this.shareDenySeen = shareDeny == 0 ? 0 : 1 << (shareDeny & nfs4_prot.OPEN4_SHARE_DENY_BOTH) - 1;
             this.owner = owner;
         }
 
@@ -133,6 +159,14 @@ public class FileTracker {
                         os.getOwner().equals(owner)) {
                         os.shareAccess |= shareAccess;
                         os.shareDeny |= shareDeny;
+
+                        if (shareAccess != 0) {
+                            os.shareAccessSeen |= 1 << ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) - 1);
+                        }
+                        if (shareDeny != 0) {
+                            os.shareDenySeen |= 1 << ((shareDeny & nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) - 1);
+                        }
+
                         os.stateid.seqid++;
                         //we need to return copy to avoid modification by concurrent opens
                         return new stateid4(os.stateid.other, os.stateid.seqid);
@@ -177,12 +211,22 @@ public class FileTracker {
                     .findFirst()
                     .orElseThrow(BadStateidException::new);
 
+
             if ((os.shareAccess & shareAccess) != shareAccess) {
                 throw new InvalException("downgrading to not owned share_access mode");
             }
 
             if ((os.shareDeny & shareDeny) != shareDeny) {
                 throw new InvalException("downgrading to not owned share_deny mode");
+            }
+
+            // check if we are downgrading to a mode that has been seen
+            if ((os.shareAccessSeen & (1 << (shareAccess - 1))) == 0) {
+                throw new InvalException("downgrading to not seen share_access mode");
+            }
+
+            if ((os.shareDenySeen & (1 << (shareDeny - 1))) != 0) {
+                throw new InvalException("downgrading to not seen share_deny mode");
             }
 
             os.shareAccess = shareAccess;
