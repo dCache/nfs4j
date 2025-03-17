@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2017 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -254,7 +254,7 @@ public class FileTracker {
             return opens.stream()
                     .filter(s -> client.getId() == s.client.getId())
                     .filter(s -> s.stateid.equals(stateid))
-                    .map(OpenState::getShareAccess)
+                    .mapToInt(OpenState::getShareAccess)
                     .findFirst()
                     .orElseThrow(BadStateidException::new);
         } finally {
