@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,6 +22,10 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.dcache.nfs.v4.xdr.aceflag4;
+import org.dcache.nfs.v4.xdr.acemask4;
+import org.dcache.nfs.v4.xdr.acetype4;
+import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.open_delegation_type4;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.bitmap4;
@@ -29,6 +33,8 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.v4.xdr.open_none_delegation4;
+import org.dcache.nfs.v4.xdr.open_read_delegation4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.opentype4;
 import org.dcache.nfs.v4.xdr.open_claim_type4;
@@ -51,6 +57,8 @@ import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.utf8str_mixed;
+import org.dcache.nfs.v4.xdr.why_no_delegation4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
@@ -85,7 +93,9 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         res.resok4 = new OPEN4resok();
         res.resok4.attrset = new bitmap4();
         res.resok4.delegation = new open_delegation4();
-        res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_NONE;
+        res.resok4.delegation.delegation_type = context.getMinorversion() == 0 ? open_delegation_type4.OPEN_DELEGATE_NONE : open_delegation_type4.OPEN_DELEGATE_NONE_EXT;
+        res.resok4.delegation.od_whynone =  new open_none_delegation4();
+        res.resok4.delegation.od_whynone.ond_why =  why_no_delegation4.WND4_NOT_WANTED;
         res.resok4.cinfo = new change_info4();
         res.resok4.cinfo.atomic = true;
 
@@ -264,15 +274,28 @@ public class OperationOPEN extends AbstractNFSv4Operation {
          * THis is a perfectly a valid situation as at the end file is created and only
          * one writer is allowed.
          */
-        stateid4 stateid = context
+        var openRecord = context
                 .getStateHandler()
                 .getFileTracker()
                 .addOpen(client, owner, context.currentInode(),
                 _args.opopen.share_access.value,
                 _args.opopen.share_deny.value);
 
-        context.currentStateid(stateid);
-        res.resok4.stateid = stateid;
+        context.currentStateid(openRecord.openStateId());
+        res.resok4.stateid = openRecord.openStateId();
+        if (openRecord.hasDelegation()) {
+            res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_READ;
+            res.resok4.delegation.read = new open_read_delegation4();
+            res.resok4.delegation.read.stateid = openRecord.delegationStateId();
+            res.resok4.delegation.read.permissions = new nfsace4();
+            res.resok4.delegation.read.permissions.type = new acetype4(nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE);
+            res.resok4.delegation.read.permissions.flag = new aceflag4(0);
+            res.resok4.delegation.read.permissions.access_mask = new acemask4(nfs4_prot.ACCESS4_READ);
+            res.resok4.delegation.read.permissions.who = new utf8str_mixed(context.getPrincipal().getName());
+        } else if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_ANY_DELEG) != 0) {
+            // REVISIT: shall we return something less general?
+            res.resok4.delegation.od_whynone.ond_why = why_no_delegation4.WND4_RESOURCE;
+        }
         res.status = nfsstat.NFS_OK;
 
     }

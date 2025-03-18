@@ -57,12 +57,12 @@ public class OperationLAYOUTCOMMITTest {
     public void testCommitOnReadLayout() throws Exception {
 
         StateOwner stateOwner = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        stateid4 openState = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
                 .withPutfh(fh)
-                .withLayoutcommit(0, 100, true, openState, OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
+                .withLayoutcommit(0, 100, true, openRecord.openStateId(), OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()
@@ -82,12 +82,12 @@ public class OperationLAYOUTCOMMITTest {
         when(dm.layoutCommit(any(), any())).thenReturn(OptionalLong.of(100));
 
         StateOwner stateOwner = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        stateid4 openState = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
                 .withPutfh(fh)
-                .withLayoutcommit(0, 100, true, openState, OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
+                .withLayoutcommit(0, 100, true, openRecord.openStateId(), OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()
@@ -112,12 +112,12 @@ public class OperationLAYOUTCOMMITTest {
         when(dm.layoutCommit(any(), any())).thenReturn(OptionalLong.empty());
 
         StateOwner stateOwner = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        stateid4 openState = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
                 .withPutfh(fh)
-                .withLayoutcommit(0, 100, true, openState, OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
+                .withLayoutcommit(0, 100, true, openRecord.openStateId(), OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()
@@ -136,12 +136,12 @@ public class OperationLAYOUTCOMMITTest {
     @Test(expected = NotSuppException.class)
     public void testNoPnfsConfigured() throws Exception {
 
-        stateid4 openState = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
                 .withPutfh(fh)
-                .withLayoutcommit(0, 100, true, openState, OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
+                .withLayoutcommit(0, 100, true, openRecord.openStateId(), OptionalLong.of(100), layouttype4.LAYOUT4_FLEX_FILES, new byte[0])
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()
