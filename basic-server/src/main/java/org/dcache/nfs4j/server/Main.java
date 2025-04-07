@@ -24,10 +24,11 @@ public class Main implements Callable<Void> {
     private boolean withPortmap;
 
     public static void main(String[] args) throws Exception {
-        new CommandLine(new Main()).execute(args);
+        int rc = new CommandLine(new Main()).execute(args);
+        System.exit(rc);
     }
 
-    public Void call() throws IOException {
+    public Void call() throws IOException, InterruptedException {
 
         ExportFile exportFile = null;
         if (exportsFile != null) {
@@ -39,8 +40,8 @@ public class Main implements Callable<Void> {
         }
 
         try (SimpleNfsServer ignored = new SimpleNfsServer(nfsVers, rpcPort, root, exportFile, null)) {
-            //noinspection ResultOfMethodCallIgnored
-            System.in.read(); //any key to shutdown
+            System.out.println("Press Ctrl-C to stop the server...");
+            Thread.currentThread().join();
         }
 
         return null;
