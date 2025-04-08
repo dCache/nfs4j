@@ -107,6 +107,8 @@ public class MDSOperationExecutor extends AbstractOperationExecutor {
                 return new OperationWRITE(op);
             case nfs_opnum4.OP_RELEASE_LOCKOWNER:
                 return new OperationRELEASE_LOCKOWNER(op);
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                return new OperationBACKCHANNEL_CTL(op);
             /**
              *  NFSv4.1 (pNFS)
              */
