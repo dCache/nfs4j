@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
+import org.dcache.nfs.status.FBigException;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.bitmap4;
@@ -135,6 +137,10 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_SIZE :
                 uint64_t size = new uint64_t();
                 size.xdrDecode(xdr);
+                // long is signed 64 bit, so, large values will be negative
+                if (size.value < 0) {
+                    throw new FBigException("Signed long overflow");
+                }
                 stat.setSize(size.value);
                 break;
             case nfs4_prot.FATTR4_ACL :
