@@ -8,6 +8,8 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.ExistException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.status.NotEmptyException;
 import org.dcache.nfs.status.NotSuppException;
@@ -534,6 +536,17 @@ public class LocalFileSystem implements VirtualFileSystem {
             }
         }
         if (stat.isDefined(Stat.StatAttribute.SIZE)) {
+
+            var currentAttributes = attributeView.readAttributes();
+
+            if (currentAttributes.isDirectory()) {
+                throw new IsDirException("set size on directory");
+            }
+
+            if (!Files.isRegularFile(path)) {
+                throw new InvalException("set size on non file object");
+            }
+
             try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "rw")) {
                 raf.setLength(stat.getSize());
             }
