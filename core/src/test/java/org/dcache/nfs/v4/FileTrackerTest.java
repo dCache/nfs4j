@@ -238,24 +238,25 @@ public class FileTrackerTest {
     @Test
     public void shouldReCallReadDelegationOnConflict() throws Exception {
 
-        NFS4Client client = createClient(sh);
+        NFS4Client client1 = createClient(sh);
+        NFS4Client client2 = createClient(sh);
 
-        StateOwner stateOwner1 = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        StateOwner stateOwner2 = client.getOrCreateOwner("client2".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        StateOwner stateOwner2 = client2.getOrCreateOwner("client2".getBytes(StandardCharsets.UTF_8), new seqid4(0));
 
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
         try {
-            var openRecord2 = tracker.addOpen(client, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE,
+            var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE,
                   0);
             fail("Delay exception expected");
         } catch (DelayException e) {
             // expected
         }
 
-        verify(client.getCB()).cbDelegationRecall(any(), any(), anyBoolean());
+        verify(client1.getCB()).cbDelegationRecall(any(), any(), anyBoolean());
     }
 
     @Test

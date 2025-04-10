@@ -42,11 +42,15 @@ import org.dcache.nfs.v4.xdr.open_delegation_type4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.util.Opaque;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class which tracks open files.
  */
 public class FileTracker {
+
+    public static final Logger LOG = LoggerFactory.getLogger(FileTracker.class);
 
     /*
      * we use {@link Striped} locks here to split synchronized block on open files
@@ -135,7 +139,7 @@ public class FileTracker {
      * @param stateid
      * @param delegationType
      */
-    record DelegationState(NFS4Client client, stateid4 openStateId, stateid4 stateid, int delegationType) {
+    record DelegationState(NFS4Client client, NFS4State delegationStateid, int delegationType) {
 
     }
 
@@ -187,6 +191,43 @@ public class FileTracker {
                     throw new ShareDeniedException("Conflicting share");
             }
 
+            /*
+             * REVISIT: currently only read-delegations are supported
+             */
+            var existingDelegations = delegations.get(fileId);
+
+            /*
+             * delegation is possible if:
+             * - client has a callback channel
+             * - client does not have a delegation for this file
+             * - no other open has write access
+             */
+            boolean canDelegateRead = client.getCB() != null &&
+                    (existingDelegations == null || existingDelegations.stream().noneMatch(d -> d.client().getId() == client.getId())) &&
+                    opens.stream().noneMatch(os -> (os.shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0);
+
+            // recall any read delegations if write
+            if ((existingDelegations != null) && (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0) {
+                var fh = new nfs_fh4(inode.toNfsHandle());
+                int recalledDelegations = existingDelegations.stream()
+                        .filter(d -> d.client().isLeaseValid())
+                        .filter(d -> !d.client().getId().equals(client.getId()))
+                        .reduce(0, (c, d) -> {
+                            try {
+                                d.client().getCB().cbDelegationRecall(fh, d.delegationStateid().stateid(), false);
+                                return c + 1;
+                            } catch (IOException e) {
+                                LOG.warn("Failed to recall delegation from {} : {}", d.client(), e.toString());
+                                d.delegationStateid().disposeIgnoreFailures();
+                                return c;
+                            }
+                        }, Integer::sum);
+
+                if (recalledDelegations > 0) {
+                    throw new DelayException("Recalling read delegations");
+                }
+            }
+
             // if there is another open from the same client we must merge
             // access mode and return the same stateid as required by rfc5661#18.16.3
 
@@ -210,41 +251,6 @@ public class FileTracker {
                 }
             }
 
-            /*
-             * REVISIT: currently only read-delegations are supported
-             */
-            var existingDelegations = delegations.get(fileId);
-
-            /*
-             * delegation is possible if:
-             * - client has a callback channel
-             * - client does not have a delegation for this file
-             * - no other open has write access
-             */
-            boolean canDelegate = client.getCB() != null &&
-                  (existingDelegations == null || existingDelegations.stream().noneMatch(d -> d.client().getId() == client.getId())) &&
-                  opens.stream().noneMatch(os -> (os.shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0);
-
-            // recall any read delegations if write
-            if ((existingDelegations != null) && (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0) {
-
-                // REVISIT: usage of Stream#peek is an anti-pattern
-                boolean haveRecalled = existingDelegations.stream()
-                      .filter(d -> client.isLeaseValid())
-                      .peek(d -> {
-                          try {
-                              d.client().getCB()
-                                    .cbDelegationRecall(new nfs_fh4(inode.toNfsHandle()), d.stateid(), false);
-                          } catch (IOException e) {
-                              // ignore
-                          }
-                      }).count() > 0;
-
-                if (haveRecalled) {
-                    throw new DelayException("Recalling read delegations");
-                }
-            }
-
             NFS4State state = client.createState(owner);
             stateid = state.stateid();
             OpenState openState = new OpenState(client, owner, stateid, shareAccess, shareDeny);
@@ -256,12 +262,12 @@ public class FileTracker {
             var openStateid = new stateid4(stateid.other, stateid.seqid);
 
             // REVISIT: currently only read-delegations are supported
-            if (wantReadDelegation && canDelegate) {
+            if (wantReadDelegation && canDelegateRead) {
                 // REVISIT: currently only read-delegations are supported
-                stateid4 delegationStateid = client.createState(state.getStateOwner(), state).stateid();
+                var delegationStateid = client.createState(state.getStateOwner(), state);
                 delegations.computeIfAbsent(fileId, x -> new ArrayList<>(1))
-                        .add(new DelegationState(client, openStateid, delegationStateid, open_delegation_type4.OPEN_DELEGATE_READ));
-                return new OpenRecord(openStateid, delegationStateid, true);
+                        .add(new DelegationState(client, delegationStateid, open_delegation_type4.OPEN_DELEGATE_READ));
+                return new OpenRecord(openStateid, delegationStateid.stateid(), true);
             } else {
                 //we need to return copy to avoid modification by concurrent opens
                 return new OpenRecord(openStateid, null, false);
@@ -332,7 +338,7 @@ public class FileTracker {
      * @param inode the inode of the delegated file.
      */
     public void delegationReturn(NFS4Client client, stateid4 stateid, Inode inode)
-          throws StaleException {
+            throws ChimeraNFSException {
 
         Opaque fileId = new Opaque(inode.getFileId());
         Lock lock = filesLock.get(fileId);
@@ -345,11 +351,12 @@ public class FileTracker {
             }
 
             DelegationState delegation = fileDelegations.stream()
-                    .filter(d -> d.client().getId() == client.getId())
-                    .filter(d -> d.stateid().equals(stateid))
+                    .filter(d -> d.client().getId().equals(client.getId()))
+                    .filter(d -> d.delegationStateid().stateid().equals(stateid))
                     .findFirst()
                     .orElseThrow(StaleException::new);
 
+            delegation.delegationStateid().tryDispose();
             fileDelegations.remove(delegation);
             if (fileDelegations.isEmpty()) {
                 delegations.remove(fileId);
@@ -389,22 +396,6 @@ public class FileTracker {
                  */
                 if (opens.isEmpty()) {
                     files.remove(fileId);
-                }
-            }
-
-            var existingDelegations = delegations.get(fileId);
-            if (existingDelegations != null) {
-                Iterator<DelegationState> dsi = existingDelegations.iterator();
-                while (dsi.hasNext()) {
-                    stateid4 os = dsi.next().openStateId();
-                    if (os.equals(stateid)) {
-                        dsi.remove();
-                        break;
-                    }
-                }
-
-                if (existingDelegations.isEmpty()) {
-                    delegations.remove(fileId);
                 }
             }
 
