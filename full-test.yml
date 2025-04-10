@@ -2,7 +2,6 @@
 
 version: "2"
 
-
 services:
   nfs4j:
     build:
@@ -10,7 +9,7 @@ services:
       dockerfile: Dockerfile
 
     ports:
-        - "2049:2049"
+      - "2049:2049"
     image: "nfs4j:dev"
     container_name: "nfs4j"
 
@@ -19,7 +18,7 @@ services:
     container_name: "tester"
     depends_on:
       - nfs4j
-    entrypoint: ["/bin/sh","-c"]
+    entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         sleep 10
