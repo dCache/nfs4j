@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -66,7 +66,12 @@ class NfsTestUtils {
         byte[] bootTime = new byte[8];
         RANDOM.nextBytes(owner);
         Bytes.putLong(bootTime, 0, System.currentTimeMillis());
-        return stateHandler.createClient(address, address, minor, owner, new verifier4(bootTime), null, false);
+
+        ClientCB mockCallBack = mock(ClientCB.class);
+        var client =  stateHandler.createClient(address, address, minor, owner, new verifier4(bootTime), null, false);
+        client.setCB(mockCallBack);
+
+        return client;
     }
 
     public static COMPOUND4res executeWithStatus(CompoundContext context, COMPOUND4args args, int expectedStatus) throws IOException {

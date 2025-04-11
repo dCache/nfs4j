@@ -239,8 +239,6 @@ public class FileTrackerTest {
     public void shouldReCallReadDelegationOnConflict() throws Exception {
 
         NFS4Client client = createClient(sh);
-        ClientCB mockCallBack = mock(ClientCB.class);
-        client.setCB(mockCallBack);
 
         StateOwner stateOwner1 = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
         StateOwner stateOwner2 = client.getOrCreateOwner("client2".getBytes(StandardCharsets.UTF_8), new seqid4(0));
@@ -257,7 +255,25 @@ public class FileTrackerTest {
             // expected
         }
 
-        verify(mockCallBack).cbDelegationRecall(any(), any(), anyBoolean());
+        verify(client.getCB()).cbDelegationRecall(any(), any(), anyBoolean());
     }
 
+    @Test
+    public void shouldAllowMultipleReadDelegation() throws Exception {
+
+        NFS4Client client1 = createClient(sh);
+        NFS4Client client2 = createClient(sh);
+
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        StateOwner stateOwner2 = client2.getOrCreateOwner("client2".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+
+        nfs_fh4 fh = generateFileHandle();
+        Inode inode = Inode.forFile(fh.value);
+
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ | nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+
+        assertTrue("Read delegation not granted", openRecord2.hasDelegation());
+
+    }
 }
