@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,8 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.stable_how4;
+import org.dcache.nfs.status.OpenModeException;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.count4;
@@ -63,6 +64,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             throw new InvalException("path is a symlink");
         }
 
+        NFS4Client client;
         if (context.getMinorversion() == 0) {
             /*
              * The NFSv4.0 spec requires lease renewal on WRITE.
@@ -72,6 +74,16 @@ public class OperationWRITE extends AbstractNFSv4Operation {
              * lease time done through SEQUENCE operations.
              */
             context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
+            client = context.getStateHandler().getClientIdByStateId(_args.opwrite.stateid);
+        } else {
+            client = context.getSession().getClient();
+        }
+
+        var inode = context.currentInode();
+        // will throw BAD_STATEID if stateid is not valid
+        int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, _args.opwrite.stateid);
+        if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
+            throw new OpenModeException("Invalid open mode");
         }
 
         long offset = _args.opwrite.offset.value;

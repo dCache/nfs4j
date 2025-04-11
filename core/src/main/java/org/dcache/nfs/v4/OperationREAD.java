@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -65,8 +65,10 @@ public class OperationREAD extends AbstractNFSv4Operation {
              * lease time done through SEQUENCE operations.
              */
             context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
+        } else {
+            var client = context.getSession().getClient();
+            client.state(_args.opread.stateid); // will throw BAD_STATEID if stateid is not valid
         }
-
 
         long offset = _args.opread.offset.value;
         int count = _args.opread.count.value;
