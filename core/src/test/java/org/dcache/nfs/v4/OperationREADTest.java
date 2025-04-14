@@ -70,12 +70,12 @@ public class OperationREADTest {
 
         CompoundContext context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
+                .withSession(session)
                 .withFs(vfs)
                 .withMinorversion(0)
                 .withCall(generateRpcCall())
                 .build();
 
-        context.setSession(session);
         execute(context, readArgs);
         verify(stateHandler, times(1)).updateClientLeaseTime(stateid);
     }
@@ -106,12 +106,12 @@ public class OperationREADTest {
 
         CompoundContext context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
+                .withSession(session)
                 .withFs(vfs)
                 .withMinorversion(1)
                 .withCall(generateRpcCall())
                 .build();
 
-        context.setSession(session);
         execute(context, readArgs);
         verify(stateHandler, never()).updateClientLeaseTime(stateid);
     }

@@ -73,12 +73,12 @@ public class OperationWRITETest {
 
         CompoundContext context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
+                .withSession(session)
                 .withFs(vfs)
                 .withMinorversion(0)
                 .withCall(generateRpcCall())
                 .build();
 
-        context.setSession(session);
         execute(context, writeArgs);
         verify(stateHandler, times(1)).updateClientLeaseTime(stateid);
     }
@@ -109,12 +109,12 @@ public class OperationWRITETest {
 
         CompoundContext context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
+                .withSession(session)
                 .withFs(vfs)
                 .withMinorversion(1)
                 .withCall(generateRpcCall())
                 .build();
 
-        context.setSession(session);
         execute(context, writeArgs);
         verify(stateHandler, never()).updateClientLeaseTime(stateid);
     }
@@ -147,12 +147,12 @@ public class OperationWRITETest {
 
         CompoundContext context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
+                .withSession(session)
                 .withFs(vfs)
                 .withMinorversion(1)
                 .withRebootVerifier(verifier)
                 .withCall(generateRpcCall())
                 .build();
-        context.setSession(session);
 
         COMPOUND4res res = execute(context, writeArgs);
         assertSame(verifier, res.resarray.get(1).opwrite.resok4.writeverf);

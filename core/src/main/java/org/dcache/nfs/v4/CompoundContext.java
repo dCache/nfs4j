@@ -118,6 +118,7 @@ public class CompoundContext {
         _exchangeIdFlags = builder.getExchangeIdFlags();
         _rebootVerifier = builder.getRebootVerifier();
         _implId = builder.getImplementationId();
+        _session = builder.getSession();
     }
 
     public RpcCall getRpcCall() {

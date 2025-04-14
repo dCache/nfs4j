@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ public class CompoundContextBuilder {
     private ExportTable exportTable = null;
     private int exchangeIdFlags = nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS;
     private verifier4 rebootVerifier;
+    private NFSv41Session session;
 
     private nfs_impl_id4 implId;
 
@@ -150,5 +151,14 @@ public class CompoundContextBuilder {
 
     public verifier4 getRebootVerifier() {
         return rebootVerifier;
+    }
+
+    public CompoundContextBuilder withSession(NFSv41Session session) {
+        this.session = session;
+        return this;
+    }
+
+    public NFSv41Session getSession() {
+        return session;
     }
 }
