@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.vfs.Inode;
 import org.junit.Test;
@@ -51,6 +52,15 @@ public class OperationWRITETest {
 
         stateid4 stateid = mock(stateid4.class);
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
+        NFS4Client client = mock(NFS4Client.class);
+        NFSv41Session session = mock(NFSv41Session.class);
+        FileTracker fileTracker = mock(FileTracker.class);
+
+        when(stateHandler.getFileTracker()).thenReturn(fileTracker);
+        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
+        when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
+        when(session.getClient()).thenReturn(client);
+        when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.write(any(), any(), anyLong(), any()))
@@ -68,6 +78,7 @@ public class OperationWRITETest {
                 .withCall(generateRpcCall())
                 .build();
 
+        context.setSession(session);
         execute(context, writeArgs);
         verify(stateHandler, times(1)).updateClientLeaseTime(stateid);
     }
@@ -77,6 +88,15 @@ public class OperationWRITETest {
 
         stateid4 stateid = mock(stateid4.class);
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
+        NFS4Client client = mock(NFS4Client.class);
+        NFSv41Session session = mock(NFSv41Session.class);
+        FileTracker fileTracker = mock(FileTracker.class);
+
+        when(stateHandler.getFileTracker()).thenReturn(fileTracker);
+        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
+        when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
+        when(session.getClient()).thenReturn(client);
+        when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.write(any(), any(), anyLong(), any()))
@@ -94,6 +114,7 @@ public class OperationWRITETest {
                 .withCall(generateRpcCall())
                 .build();
 
+        context.setSession(session);
         execute(context, writeArgs);
         verify(stateHandler, never()).updateClientLeaseTime(stateid);
     }
@@ -103,6 +124,16 @@ public class OperationWRITETest {
 
         stateid4 stateid = mock(stateid4.class);
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
+        NFS4Client client = mock(NFS4Client.class);
+        NFSv41Session session = mock(NFSv41Session.class);
+        FileTracker fileTracker = mock(FileTracker.class);
+
+        when(stateHandler.getFileTracker()).thenReturn(fileTracker);
+        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
+        when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
+        when(session.getClient()).thenReturn(client);
+        when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
+
         verifier4 verifier = mock(verifier4.class);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
@@ -121,6 +152,7 @@ public class OperationWRITETest {
                 .withRebootVerifier(verifier)
                 .withCall(generateRpcCall())
                 .build();
+        context.setSession(session);
 
         COMPOUND4res res = execute(context, writeArgs);
         assertSame(verifier, res.resarray.get(1).opwrite.resok4.writeverf);
