@@ -22,6 +22,8 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.OpenModeException;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.READ4resok;
@@ -30,6 +32,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +50,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
         final READ4res res = result.opread;
 
         Stat inodeStat = context.getFs().getattr(context.currentInode());
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opread.stateid);
 
         if (inodeStat.type() == Stat.Type.DIRECTORY) {
             throw new IsDirException();
@@ -56,6 +60,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
             throw new InvalException();
         }
 
+        NFS4Client client;
         if (context.getMinorversion() == 0) {
             /*
              * The NFSv4.0 spec requires lease renewal on READ.
@@ -64,10 +69,16 @@ public class OperationREAD extends AbstractNFSv4Operation {
              * With introduction of sessions in v4.1 update of the
              * lease time done through SEQUENCE operations.
              */
-            context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
+            context.getStateHandler().updateClientLeaseTime(stateid);
+            client = context.getStateHandler().getClientIdByStateId(stateid);
         } else {
-            var client = context.getSession().getClient();
-            client.state(_args.opread.stateid); // will throw BAD_STATEID if stateid is not valid
+            client = context.getSession().getClient();
+        }
+
+        var inode = context.currentInode();
+        int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, stateid);
+        if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_READ) == 0) {
+            throw new OpenModeException("Invalid open mode");
         }
 
         long offset = _args.opread.offset.value;
@@ -75,7 +86,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         ByteBuffer buf = ByteBuffer.allocate(count);
 
-        int bytesReaded = context.getFs().read(context.currentInode(), buf, offset);
+        int bytesReaded = context.getFs().read(inode, buf, offset);
         if (bytesReaded < 0) {
             throw new NfsIoException("IO not allowed");
         }

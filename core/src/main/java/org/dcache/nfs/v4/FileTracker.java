@@ -27,12 +27,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.DelayException;
+import org.dcache.nfs.status.DelegRevokedException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.ShareDeniedException;
 import org.dcache.nfs.status.StaleException;
@@ -134,12 +136,67 @@ public class FileTracker {
     }
 
     /**
-     * Record associated with open-delegation.
-     * @param client
-     * @param delegationStateid
-     * @param delegationType
+     * Open-delegation record
      */
-    record DelegationState(NFS4Client client, NFS4State delegationStateid, int delegationType) {
+    static final class DelegationState {
+        private final NFS4Client client;
+        private final NFS4State delegationStateid;
+        private final int delegationType;
+        private boolean revoked;
+
+        /**
+         * @param client
+         * @param delegationStateid
+         * @param delegationType
+         */
+        DelegationState(NFS4Client client, NFS4State delegationStateid, int delegationType) {
+            this.client = client;
+            this.delegationStateid = delegationStateid;
+            this.delegationType = delegationType;
+            this.revoked = false;
+        }
+
+        public NFS4Client client() {
+            return client;
+        }
+
+        public NFS4State delegationStateid() {
+            return delegationStateid;
+        }
+
+        public int delegationType() {
+            return delegationType;
+        }
+
+        public boolean revoked() {
+            return revoked;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (DelegationState) obj;
+            return Objects.equals(this.client, that.client) &&
+                    Objects.equals(this.delegationStateid, that.delegationStateid) &&
+                    this.delegationType == that.delegationType &&
+                    Objects.equals(this.revoked, that.revoked);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(client, delegationStateid, delegationType, revoked);
+        }
+
+        @Override
+        public String toString() {
+            return "DelegationState[" +
+                    "client=" + client + ", " +
+                    "delegationStateid=" + delegationStateid + ", " +
+                    "delegationType=" + delegationType + ", " +
+                    "revoked=" + revoked + ']';
+        }
+
 
     }
 
@@ -215,6 +272,7 @@ public class FileTracker {
                         .reduce(0, (c, d) -> {
                             try {
                                 d.client().getCB().cbDelegationRecall(fh, d.delegationStateid().stateid(), false);
+                                d.revoked = true;
                                 return c + 1;
                             } catch (IOException e) {
                                 LOG.warn("Failed to recall delegation from {} : {}", d.client(), e.toString());
@@ -367,6 +425,71 @@ public class FileTracker {
         }
     }
 
+    /**
+     * Get access mode for a given files, client and stateid. The state is must be either an open,
+     * lock or delegation stateid.
+     *
+     * @param client  nfs client who returns the delegation.
+     * @param inode   the inode of the delegated file.
+     * @param stateid open or delegation stateid
+     */
+    public int getShareAccess(NFS4Client client, Inode inode, stateid4 stateid)
+            throws ChimeraNFSException {
+
+        Opaque fileId = new Opaque(inode.getFileId());
+        Lock lock = filesLock.get(fileId);
+        lock.lock();
+        try {
+
+            switch (stateid.other[11]) {
+                case Stateids.LOCK_STATE_ID:
+                    NFS4State lockState = client.state(stateid);
+                    stateid = lockState.getOpenState().stateid();
+                    // fall through
+                case Stateids.OPEN_STATE_ID: {
+                    final List<OpenState> opens = files.get(fileId);
+
+                    if (opens == null) {
+                        throw new BadStateidException("no matching open");
+                    }
+
+                    final stateid4 openStateid = stateid;
+                    return opens.stream()
+                            .filter(s -> client.getId() == s.client.getId())
+                            .filter(s -> s.stateid.equals(openStateid))
+                            .mapToInt(OpenState::getShareAccess)
+                            .findAny()
+                            .orElseThrow(BadStateidException::new);
+                }
+                case Stateids.DELEGATION_STATE_ID: {
+
+                    var fileDelegations = delegations.get(fileId);
+                    if (fileDelegations == null) {
+                        throw new BadStateidException("no delegation found");
+                    }
+
+                    stateid4 delegationStateid = stateid;
+
+                    var delegation =  fileDelegations.stream()
+                            .filter(d -> d.client().getId().equals(client.getId()))
+                            .filter(d -> d.delegationStateid().stateid().equals(delegationStateid))
+                            .findAny()
+                            .orElseThrow(BadStateidException::new);
+
+                    if (delegation.revoked()) {
+                        throw new DelegRevokedException();
+                    }
+                    // NOTE: as delegation types match access modes we don't convert the values.
+                    return delegation.delegationType();
+                }
+
+                default:
+                    throw new BadStateidException();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 
     /**
      * Remove an open from the list.
@@ -399,37 +522,6 @@ public class FileTracker {
                 }
             }
 
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Get open access type used by opened file.
-     * @param client nfs client which performs the request.
-     * @param inode of the opened file
-     * @param stateid associated with the open.
-     * @return share access typed used.
-     * @throws BadStateidException if no open file associated with provided state id.
-     */
-    public int getShareAccess(NFS4Client client, Inode inode, stateid4 stateid) throws BadStateidException {
-
-        Opaque fileId = new Opaque(inode.getFileId());
-        Lock lock = filesLock.get(fileId);
-        lock.lock();
-        try {
-            final List<OpenState> opens = files.get(fileId);
-
-            if (opens == null) {
-                throw new BadStateidException("no matching open");
-            }
-
-            return opens.stream()
-                    .filter(s -> client.getId() == s.client.getId())
-                    .filter(s -> s.stateid.equals(stateid))
-                    .mapToInt(OpenState::getShareAccess)
-                    .findFirst()
-                    .orElseThrow(BadStateidException::new);
         } finally {
             lock.unlock();
         }

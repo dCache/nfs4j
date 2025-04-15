@@ -34,6 +34,7 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
 
         Stat stat = context.getFs().getattr(context.currentInode());
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opwrite.stateid);
 
         if (stat.type() == Stat.Type.DIRECTORY) {
             throw new IsDirException();
@@ -73,15 +75,15 @@ public class OperationWRITE extends AbstractNFSv4Operation {
              * With introduction of sessions in v4.1 update of the
              * lease time done through SEQUENCE operations.
              */
-            context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
-            client = context.getStateHandler().getClientIdByStateId(_args.opwrite.stateid);
+            context.getStateHandler().updateClientLeaseTime(stateid);
+            client = context.getStateHandler().getClientIdByStateId(stateid);
         } else {
             client = context.getSession().getClient();
         }
 
         var inode = context.currentInode();
-        // will throw BAD_STATEID if stateid is not valid
-        int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, _args.opwrite.stateid);
+
+        int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, stateid);
         if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
             throw new OpenModeException("Invalid open mode");
         }

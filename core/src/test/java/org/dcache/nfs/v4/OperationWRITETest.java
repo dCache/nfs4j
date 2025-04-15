@@ -50,7 +50,7 @@ public class OperationWRITETest {
     @Test
     public void testLeaseUpdateForV40Client() throws UnknownHostException, ChimeraNFSException, IOException {
 
-        stateid4 stateid = mock(stateid4.class);
+        stateid4 stateid = generateStateId();
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
         NFS4Client client = mock(NFS4Client.class);
         NFSv41Session session = mock(NFSv41Session.class);
@@ -86,7 +86,7 @@ public class OperationWRITETest {
     @Test
     public void testNoLeaseUpdateForV41Client() throws UnknownHostException, ChimeraNFSException, IOException {
 
-        stateid4 stateid = mock(stateid4.class);
+        stateid4 stateid = generateStateId();
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
         NFS4Client client = mock(NFS4Client.class);
         NFSv41Session session = mock(NFSv41Session.class);
@@ -122,7 +122,7 @@ public class OperationWRITETest {
     @Test
     public void testReturnWriteVerifier() throws UnknownHostException, ChimeraNFSException, IOException {
 
-        stateid4 stateid = mock(stateid4.class);
+        stateid4 stateid = generateStateId();
         NFSv4StateHandler stateHandler = mock(NFSv4StateHandler.class);
         NFS4Client client = mock(NFS4Client.class);
         NFSv41Session session = mock(NFSv41Session.class);

@@ -33,6 +33,7 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
@@ -128,5 +129,13 @@ class NfsTestUtils {
         given(call.getTransport()).willReturn(transport);
 
         return call;
+    }
+
+
+    public static stateid4 generateStateId() {
+        byte[] b = new byte[12];
+        RANDOM.nextBytes(b);
+        b[11] = Stateids.OPEN_STATE_ID;
+        return new stateid4(b, 1);
     }
 }
