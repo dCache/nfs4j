@@ -136,7 +136,7 @@ public class FileTracker {
     /**
      * Record associated with open-delegation.
      * @param client
-     * @param stateid
+     * @param delegationStateid
      * @param delegationType
      */
     record DelegationState(NFS4Client client, NFS4State delegationStateid, int delegationType) {
@@ -251,7 +251,7 @@ public class FileTracker {
                 }
             }
 
-            NFS4State state = client.createState(owner);
+            NFS4State state = client.createOpenState(owner);
             stateid = state.stateid();
             OpenState openState = new OpenState(client, owner, stateid, shareAccess, shareDeny);
             opens.add(openState);
@@ -264,7 +264,7 @@ public class FileTracker {
             // REVISIT: currently only read-delegations are supported
             if (wantReadDelegation && canDelegateRead) {
                 // REVISIT: currently only read-delegations are supported
-                var delegationStateid = client.createState(state.getStateOwner(), state);
+                var delegationStateid = client.createDelegationState(state.getStateOwner());
                 delegations.computeIfAbsent(fileId, x -> new ArrayList<>(1))
                         .add(new DelegationState(client, delegationStateid, open_delegation_type4.OPEN_DELEGATE_READ));
                 return new OpenRecord(openStateid, delegationStateid.stateid(), true);

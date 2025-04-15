@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,6 +26,31 @@ import org.dcache.nfs.status.OldStateidException;
 import org.dcache.nfs.v4.xdr.stateid4;
 
 public class Stateids {
+
+    /**
+     * OPEN state ID.
+     */
+    final static byte OPEN_STATE_ID = 0x01;
+    /**
+     * Byte-range locks state ID.
+     */
+    final static byte LOCK_STATE_ID = 0x02;
+    /**
+     * Layout state ID.
+     */
+    final static byte LAYOUT_STATE_ID = 0x03;
+    /**
+     * Delegation state ID.
+     */
+    final static byte DELEGATION_STATE_ID = 0x04;
+    /**
+     * Directory delegation state ID.
+     */
+    final static byte DIR_DELEGATION_STATE_ID = 0x04;
+    /**
+     * Server Side Copy state ID.
+     */
+    final static byte SSC_STATE_ID = 0x05;
 
     private Stateids() {
     }
@@ -83,5 +108,41 @@ public class Stateids {
             return context.currentStateid();
         }
         return stateid;
+    }
+
+    public static void checkOpenStateid(stateid4 stateid) throws BadStateidException {
+        if (stateid.other[11] != OPEN_STATE_ID) {
+            throw new BadStateidException("Not an open stateid");
+        }
+    }
+
+    public static void checkLockStateid(stateid4 stateid) throws BadStateidException {
+        if (stateid.other[11] != LOCK_STATE_ID) {
+            throw new BadStateidException("Not a lock stateid");
+        }
+    }
+
+    public static void checkDelegationStateid(stateid4 stateid) throws BadStateidException {
+        if (stateid.other[11] != DELEGATION_STATE_ID) {
+            throw new BadStateidException("Not a delegation stateid");
+        }
+    }
+
+    public static void checkDirDelegationStateid(stateid4 stateid) throws BadStateidException {
+        if (stateid.other[11] != DIR_DELEGATION_STATE_ID) {
+            throw new BadStateidException("Not a directory delegation stateid");
+        }
+    }
+
+    public static void checkServerSiderCopyStateid(stateid4 stateid) throws BadStateidException {
+        if (stateid.other[11] != SSC_STATE_ID) {
+            throw new BadStateidException("Not a server-side copy stateid");
+        }
+    }
+
+    public static void checkLayoutStateid(stateid4 stateid) throws BadStateidException {
+        if (stateid.other[11] != LAYOUT_STATE_ID) {
+            throw new BadStateidException("Not a layout stateid");
+        }
     }
 }

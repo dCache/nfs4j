@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@ import com.google.common.io.BaseEncoding;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -331,9 +332,9 @@ public class NFS4Client {
         return _sessionSequence;
     }
 
-    public NFS4State createState(StateOwner stateOwner, NFS4State openState) throws ChimeraNFSException {
+    private NFS4State createState(StateOwner stateOwner, byte type, NFS4State openState) throws ChimeraNFSException {
 
-        NFS4State state = new NFS4State(openState, stateOwner, _stateHandler.createStateId(this, _stateIdCounter.incrementAndGet()));
+        NFS4State state = new NFS4State(openState, stateOwner, _stateHandler.createStateId(this, type, _stateIdCounter.incrementAndGet()));
         if (openState != null) {
             openState.addDisposeListener(s -> {
                 // remove and dispose derived states.
@@ -349,8 +350,59 @@ public class NFS4Client {
         return state;
     }
 
-    public NFS4State createState(StateOwner stateOwner) throws ChimeraNFSException {
-        return createState(stateOwner, null);
+    /**
+     * Create a new open state.
+     * @param stateOwner state owner
+     * @return new open state.
+     * @throws ChimeraNFSException
+     */
+    public NFS4State createOpenState(StateOwner stateOwner) throws ChimeraNFSException {
+        return createState(stateOwner, Stateids.OPEN_STATE_ID, null);
+    }
+
+    /**
+     * Create a new lock state.
+     * @param stateOwner state owner
+     * @param openState open state to derive from
+     * @return new lock state.
+     * @throws ChimeraNFSException
+     */
+    public NFS4State createLockState(StateOwner stateOwner, NFS4State openState) throws ChimeraNFSException {
+        return createState(stateOwner, Stateids.LOCK_STATE_ID, openState);
+    }
+
+    /**
+     * Create a new layout state.
+     * @param stateOwner state owner
+     * @return new layout state.
+     * @throws ChimeraNFSException
+     */
+    public NFS4State createLayoutState(StateOwner stateOwner) throws ChimeraNFSException {
+        return createState(stateOwner, Stateids.LAYOUT_STATE_ID, null);
+    }
+
+    /**
+     * Create a new delegation state.
+     * @param stateOwner state owner.
+     * @return new delegation state.
+     * @throws ChimeraNFSException
+     */
+    public NFS4State createDelegationState(StateOwner stateOwner) throws ChimeraNFSException {
+        return createState(stateOwner, Stateids.DELEGATION_STATE_ID, null);
+    }
+
+    /**
+     * Create a new directory delegation state.
+     * @param stateOwner state owner.
+     * @return new directory delegation state.
+     * @throws ChimeraNFSException
+     */
+    public NFS4State createDirDelegationState(StateOwner stateOwner) throws ChimeraNFSException {
+        return createState(stateOwner, Stateids.DIR_DELEGATION_STATE_ID, null);
+    }
+
+    public NFS4State createServerSideCopyState(StateOwner stateOwner, NFS4State openState) throws ChimeraNFSException {
+        return createState(stateOwner, Stateids.SSC_STATE_ID, openState);
     }
 
     public void releaseState(stateid4 stateid) throws ChimeraNFSException {

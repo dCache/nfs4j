@@ -200,7 +200,7 @@ public class FileTrackerTest {
         Inode inode = Inode.forFile(fh.value);
 
         tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.getShareAccess(client1, inode, client1.createState(stateOwner1).stateid());
+        tracker.getShareAccess(client1, inode, client1.createOpenState(stateOwner1).stateid());
     }
 
     @Test

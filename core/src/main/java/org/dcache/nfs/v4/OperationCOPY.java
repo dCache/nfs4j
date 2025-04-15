@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2021 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -146,7 +146,7 @@ public class OperationCOPY extends AbstractNFSv4Operation {
 
     private stateid4 notifyWhenComplete(NFS4Client client, Inode dstInode, verifier4 verifier, CompletableFuture<Long> copyFuture) throws ChimeraNFSException {
         var openState = client.state(_args.opcopy.ca_src_stateid);
-        var copyState = client.createState(openState.getStateOwner(), openState).stateid();
+        var copyState = client.createServerSideCopyState(openState.getStateOwner(), openState).stateid();
 
         copyFuture.handle((n, t) -> {
 

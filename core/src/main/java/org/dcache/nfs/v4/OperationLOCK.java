@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -83,7 +83,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             }
 
             lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner, _args.oplock.locker.open_owner.lock_seqid);
-            lock_state = client.createState(lockOwner, openState);
+            lock_state = client.createLockState(lockOwner, openState);
 
             // lock states do not requires extra confirmation
             lock_state.confirm();

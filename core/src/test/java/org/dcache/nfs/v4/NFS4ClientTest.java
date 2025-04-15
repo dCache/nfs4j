@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -75,7 +75,7 @@ public class NFS4ClientTest {
         nfs_resop4 result;
 
         NFSv41Session session = nfsClient.createSession(1, 2, 1, 8, 8);
-        NFS4State state = nfsClient.createState(owner);
+        NFS4State state = nfsClient.createOpenState(owner);
 
         nfs_argop4 close_args = new CompoundBuilder()
                 .withClose(state.stateid(), 1)
@@ -102,7 +102,7 @@ public class NFS4ClientTest {
         CompoundContext context;
         nfs_resop4 result;
 
-        NFS4State state = nfsClient.createState(owner);
+        NFS4State state = nfsClient.createOpenState(owner);
 
         nfs_argop4 close_args = new CompoundBuilder()
                 .withClose(state.stateid(), 1)
@@ -145,7 +145,7 @@ public class NFS4ClientTest {
 
     @Test
     public void testCreateState() throws ChimeraNFSException {
-        NFS4State state = nfsClient.createState(owner);
+        NFS4State state = nfsClient.createOpenState(owner);
         assertTrue(nfsClient.hasState());
     }
 
@@ -176,7 +176,7 @@ public class NFS4ClientTest {
     public void testClientDisposeCleansState() throws ChimeraNFSException {
         AtomicBoolean isDisposed = new AtomicBoolean(false);
 
-        NFS4State state = nfsClient.createState(owner);
+        NFS4State state = nfsClient.createOpenState(owner);
         state.addDisposeListener(s -> isDisposed.set(true));
 
         nfsClient.tryDispose();

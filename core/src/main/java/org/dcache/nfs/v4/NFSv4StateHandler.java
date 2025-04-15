@@ -452,18 +452,22 @@ public class NFSv4StateHandler {
     /**
      * Generate new state id associated with a given {@code client}.
      *
-     * we construct 'other' fileld of state IDs as following:
+     * we construct 'other' field of state IDs as following:
      * |0 -  7| : client id
-     * |8 - 11| : clients state counter
+     * |8 - 10| : clients state counter
+     * |11|     : type of state id
      *
      * @param client nfs client for which state is generated.
+     * @param type the type of state id.
      * @param count the count of already generated state ids for give client.
      * @return new state id.
      */
-    public stateid4 createStateId(NFS4Client client, int count) {
+    public stateid4 createStateId(NFS4Client client, byte type, int count) {
         byte[] other = new byte[12];
         Bytes.putLong(other, 0, client.getId().value);
-        Bytes.putInt(other, 8, count);
+        // we eat the first 8 bits if the counter, however, we don't expect 16M states be active at the same time,
+        // thus the probability of a collision is too low
+        Bytes.putInt(other, 8, count << 8 | (type & 0xFF));
         return new stateid4(other, STATE_INITIAL_SEQUENCE);
     }
 
