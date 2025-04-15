@@ -613,6 +613,8 @@ public final class nfsstat {
                 throw new XattrTooBigException();
             case nfsstat.NFS4ERR_OFFLOAD_DENIED:
                 throw new OffloadDeniedExeption();
+            case nfsstat.NFS4ERR_DELEG_REVOKED:
+                throw new DelegRevokedException();
             default:
                 throw new BadXdrException();
         }
