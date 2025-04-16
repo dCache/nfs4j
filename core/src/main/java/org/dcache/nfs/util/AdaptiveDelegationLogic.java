@@ -211,7 +211,12 @@ public class AdaptiveDelegationLogic {
     private ClientQueues getClientQueues(NFS4Client client) {
         return clientQueuesMap.computeIfAbsent(
                 client.getId(),
-                k -> new ClientQueues(maxEvictionQueueSize, maxActiveQueueSize)
+                k -> {
+                    client.addDisposeListener( (c) -> {
+                        clientQueuesMap.remove(c.getId());
+                    });
+                    return new ClientQueues(maxEvictionQueueSize, maxActiveQueueSize);
+                }
         );
     }
 

@@ -22,6 +22,7 @@ package org.dcache.nfs.v4;
 import com.google.common.util.concurrent.Striped;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import org.dcache.nfs.status.DelegRevokedException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.ShareDeniedException;
 import org.dcache.nfs.status.StaleException;
+import org.dcache.nfs.util.AdaptiveDelegationLogic;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.open_delegation_type4;
@@ -71,6 +73,15 @@ public class FileTracker {
      * Delegation records associated with open files.
      */
     private final Map<Opaque, List<DelegationState>> delegations = new ConcurrentHashMap<>();
+
+    /**
+     * Heuristic to offer delegations.
+     *
+     * FIXME: for now we use a fixed sizes and timeout. THe best practice still should be identified.
+     */
+    private final AdaptiveDelegationLogic adlHeuristic =
+            new AdaptiveDelegationLogic(4096, 4096, Duration.ofSeconds(120));
+
 
     private static class OpenState {
 
@@ -226,7 +237,13 @@ public class FileTracker {
      */
     public OpenRecord addOpen(NFS4Client client, StateOwner owner, Inode inode, int shareAccess, int shareDeny) throws  ChimeraNFSException {
 
+        // client explicitly refused delegation
+        boolean acceptsDelegation = (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG) == 0;
+
+        // client explicitly requested read delegation
         boolean wantReadDelegation = (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG) != 0;
+
+        // client explicitly requested write delegation
         boolean wantWriteDelegation = (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_WRITE_DELEG) != 0;
 
         Opaque fileId = new Opaque(inode.getFileId());
@@ -255,13 +272,17 @@ public class FileTracker {
 
             /*
              * delegation is possible if:
+             * - client has not explicitly requested no delegation
              * - client has a callback channel
              * - client does not have a delegation for this file
              * - no other open has write access
              */
-            boolean canDelegateRead = client.getCB() != null &&
-                    (existingDelegations == null || existingDelegations.stream().noneMatch(d -> d.client().getId() == client.getId())) &&
-                    opens.stream().noneMatch(os -> (os.shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0);
+            boolean canDelegateRead = acceptsDelegation && (client.getCB() != null &&
+                    (existingDelegations == null ||
+                            existingDelegations.stream()
+                                    .noneMatch(d -> d.client().getId() == client.getId())) &&
+                            opens.stream()
+                                    .noneMatch(os -> (os.shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0));
 
             // recall any read delegations if write
             if ((existingDelegations != null) && (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) != 0) {
@@ -290,8 +311,7 @@ public class FileTracker {
             // access mode and return the same stateid as required by rfc5661#18.16.3
 
             for (OpenState os : opens) {
-                if (os.client.getId() == client.getId() &&
-                        os.getOwner().equals(owner)) {
+                if (os.client.getId() == client.getId()) {
                         os.shareAccess |= shareAccess;
                         os.shareDeny |= shareDeny;
 
@@ -305,6 +325,19 @@ public class FileTracker {
                         os.stateid.seqid++;
                         //we need to return copy to avoid modification by concurrent opens
                         var openStateid = new stateid4(os.stateid.other, os.stateid.seqid);
+
+                        // yet another open from the same client. Let's check if we can delegate.
+                        if (canDelegateRead && (os.shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) == nfs4_prot.OPEN4_SHARE_ACCESS_READ &&
+                                (wantReadDelegation || adlHeuristic.shouldDelegate(client, inode))) {
+
+                            var delegationState = client.createDelegationState(os.getOwner());
+                            var delegation = new DelegationState(client, delegationState, open_delegation_type4.OPEN_DELEGATE_READ);
+                            delegations.computeIfAbsent(fileId, x -> new ArrayList<>(1))
+                                    .add(delegation);
+
+                            return new OpenRecord(openStateid, delegationState.stateid(), true);
+                        }
+
                         return new OpenRecord(openStateid, null, false);
                 }
             }
@@ -320,8 +353,7 @@ public class FileTracker {
             var openStateid = new stateid4(stateid.other, stateid.seqid);
 
             // REVISIT: currently only read-delegations are supported
-            if (wantReadDelegation && canDelegateRead) {
-                // REVISIT: currently only read-delegations are supported
+            if (canDelegateRead && (wantReadDelegation || adlHeuristic.shouldDelegate(client, inode))) {
                 var delegationStateid = client.createDelegationState(state.getStateOwner());
                 delegations.computeIfAbsent(fileId, x -> new ArrayList<>(1))
                         .add(new DelegationState(client, delegationStateid, open_delegation_type4.OPEN_DELEGATE_READ));
