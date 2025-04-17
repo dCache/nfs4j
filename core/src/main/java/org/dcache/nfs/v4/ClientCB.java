@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2024 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -233,14 +233,15 @@ public class ClientCB {
      *
      * @param fh file handle of the file
      * @param stateid stateid of the layout
+     * @param layouttype type of layout to recall
      * @throws OncRpcException if an RPC error occurs
      * @throws IOException if an I/O error occurs
      */
-    public void cbLayoutRecallFile(nfs_fh4 fh, stateid4 stateid) throws OncRpcException, IOException {
+    public void cbLayoutRecallFile(nfs_fh4 fh, stateid4 stateid, layouttype4 layouttype) throws OncRpcException, IOException {
 
         CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
         cbLayoutrecall.clora_changed = true;
-        cbLayoutrecall.clora_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
+        cbLayoutrecall.clora_type = layouttype.getValue();
         cbLayoutrecall.clora_iomode = layoutiomode4.LAYOUTIOMODE4_ANY;
         cbLayoutrecall.clora_recall = new layoutrecall4();
         cbLayoutrecall.clora_recall.lor_recalltype = layoutrecall_type4.LAYOUTRECALL4_FILE;
