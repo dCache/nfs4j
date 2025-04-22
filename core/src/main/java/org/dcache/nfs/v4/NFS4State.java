@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ public class NFS4State {
      */
     private final NFS4State _openState;
 
-    private final List<StateDisposeListener> _disposeListeners;
+    private final List<DisposeListener<NFS4State>> _disposeListeners;
 
     public NFS4State(StateOwner owner, stateid4 stateid) {
         this(null, owner, stateid);
@@ -95,9 +95,9 @@ public class NFS4State {
      */
     synchronized public final void tryDispose() throws ChimeraNFSException {
         if (!_disposed) {
-            Iterator<StateDisposeListener> i = _disposeListeners.iterator();
+            Iterator<DisposeListener<NFS4State>> i = _disposeListeners.iterator();
             while(i.hasNext()) {
-                StateDisposeListener listener = i.next();
+                DisposeListener listener = i.next();
                 listener.notifyDisposed(this);
                 i.remove();
             }
@@ -112,9 +112,9 @@ public class NFS4State {
      */
     synchronized public final void disposeIgnoreFailures() {
         if (!_disposed) {
-            Iterator<StateDisposeListener> i = _disposeListeners.iterator();
+            Iterator<DisposeListener<NFS4State>> i = _disposeListeners.iterator();
             while (i.hasNext()) {
-                StateDisposeListener listener = i.next();
+                DisposeListener<NFS4State> listener = i.next();
                 try {
                     listener.notifyDisposed(this);
                 } catch (ChimeraNFSException e) {
@@ -142,7 +142,7 @@ public class NFS4State {
         return _owner;
     }
 
-    synchronized public void addDisposeListener(StateDisposeListener disposeListener) {
+    synchronized public void addDisposeListener(DisposeListener<NFS4State> disposeListener) {
         _disposeListeners.add(disposeListener);
     }
 

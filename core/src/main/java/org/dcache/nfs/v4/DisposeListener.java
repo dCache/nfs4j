@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,14 +22,14 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.ChimeraNFSException;
 
 /**
- * Should be implemented by an object that wants to receive state dispose notifications.
+ * Should be implemented by an object that wants to receive dispose notifications.
  */
-public interface StateDisposeListener {
+public interface DisposeListener<T> {
 
     /**
-     * Called when specified {@link NFS4State} is disposed.
-     * @param state disposed state
+     * Called when attached object is disposed.
+     * @param attachement disposed object
      * @throws ChimeraNFSException on errors.
      */
-    void notifyDisposed(NFS4State state) throws ChimeraNFSException;
+    void notifyDisposed(T attachement) throws ChimeraNFSException;
 }
