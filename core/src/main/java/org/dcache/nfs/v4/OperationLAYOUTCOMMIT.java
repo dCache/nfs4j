@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,11 +29,8 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4resok;
 import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4res;
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.BadLayoutException;
 import org.dcache.nfs.status.NotSuppException;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,20 +53,6 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
                 .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
         Inode inode = context.currentInode();
-        NFS4Client client = context.getSession().getClient();
-        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplayoutcommit.loca_stateid);
-
-        // will throw BAD_STATEID
-        NFS4State state = client.state(stateid);
-
-        // changing file size requires open for writing
-        int shareAccess = context.getStateHandler()
-                .getFileTracker()
-                .getShareAccess(client, inode, state.getOpenState().stateid());
-
-        if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
-            throw new BadLayoutException("Invalid open mode");
-        }
 
         _log.debug("LAYOUTCOMMIT: inode={} length={} offset={} loca_last_write_offset={}",
                 inode, _args.oplayoutcommit.loca_length.value,
