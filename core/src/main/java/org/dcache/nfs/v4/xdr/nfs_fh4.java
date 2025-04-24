@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@ import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class nfs_fh4 implements XdrAble {
 
@@ -55,6 +57,18 @@ public class nfs_fh4 implements XdrAble {
     @Override
     public String toString() {
         return BaseEncoding.base16().lowerCase().encode(value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        nfs_fh4 nfsFh4 = (nfs_fh4) o;
+        return Arrays.equals(value, nfsFh4.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(value);
     }
 }
 // End of nfs_fh4.java
