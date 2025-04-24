@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -165,7 +165,7 @@ public class NFSv4StateHandler {
         } finally {
             _writeLock.unlock();
         }
-        client.tryDispose();
+        client.disposeIgnoreFailures();
     }
 
     private void addClient(NFS4Client newClient) {
@@ -353,7 +353,7 @@ public class NFSv4StateHandler {
         @Override
         public void notifyExpired(Cache<clientid4, NFS4Client> cache, NFS4Client client) {
             _log.info("Removing expired client: {}", client);
-            client.tryDispose();
+            client.disposeIgnoreFailures();
             clientStore.removeClient(client.getOwnerId());
         }
     }
@@ -387,7 +387,7 @@ public class NFSv4StateHandler {
     private void drainClients() {
         _clientsByServerId.stream()
                 .forEach(c -> {
-                    c.tryDispose();
+                    c.disposeIgnoreFailures();
                     _clientsByServerId.remove(c.getId());
                 });
     }
