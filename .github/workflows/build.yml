@@ -13,18 +13,26 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
           cache: maven
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
+
+      - name: JUnit test report
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        with:
+          check_name: junit test report
+          report_paths: "**/target/surefire-reports/*.xml"
 
       - name: Run pynfs tests in container
         id: tester
         run: COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose -f full-test.yml up --build --quiet-pull --exit-code-from tester
 
-      - name: Publish Test Report
+      - name: Pynfs Test Report
         uses: mikepenz/action-junit-report@v5
         if: always()
         with:
-          report_paths: 'report/*.xml'
+          check_name: pynfs protocol compatibility test
+          report_paths: "report/*.xml"
