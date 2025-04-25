@@ -572,4 +572,19 @@ public class FileTracker {
                     e -> e.getValue().stream().map(OpenState::getClient).collect(Collectors.toSet()))
               );
     }
+
+
+    /**
+     * Get all currently issued delegations. The resulting map contains file's inodes
+     * as key and collection of nfs clients that hold the delegation as a value.
+     *
+     * @return map of all currently issued delegations.
+     */
+    public Map<Inode, Collection<NFS4Client>> getDelegations() {
+        return delegations.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> Inode.forFile(e.getKey().getOpaque()),
+                        e -> e.getValue().stream().map(DelegationState::client).collect(Collectors.toSet()))
+                );
+    }
 }
