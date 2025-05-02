@@ -1,7 +1,7 @@
 NFS4J
 =====
 
-<img src="dCache.png" height="165" width="200">
+<img src=".assets/nfs4j-logo.png" height="200">
 
 The pure java implementation of NFS server version 3, 4.0 and 4.1 including pNFS extension
 with nfs4.1-files and flex-files layout types.
