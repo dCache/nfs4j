@@ -1,10 +1,12 @@
 NFS4J
 =====
 
-[![Latest release](https://img.shields.io/github/release/dcache/nfs4j.svg)](https://github.com/dcache/nfs4j/releases/latest)
+<img src="dCache.png" height="165" width="200">
 
 The pure java implementation of NFS server version 3, 4.0 and 4.1 including pNFS extension
 with nfs4.1-files and flex-files layout types.
+
+[![Latest release](https://img.shields.io/github/release/dcache/nfs4j.svg)](https://github.com/dcache/nfs4j/releases/latest)
 
 Building from sources
 ---------------------
