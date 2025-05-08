@@ -21,9 +21,6 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Throwables;
@@ -70,21 +67,22 @@ public class OperationCOPY extends AbstractNFSv4Operation {
             throw new NotSuppException("Inter-server copy is not supported");
         }
 
-        // only consecutive copy is supported
-        if (!_args.opcopy.ca_consecutive) {
-            res.cr_requirements = new copy_requirements4();
-            res.cr_requirements.cr_consecutive = true;
-            res.cr_requirements.cr_synchronous = _args.opcopy.ca_synchronous;
-            res.cr_status = nfsstat.NFS4ERR_OFFLOAD_NO_REQS;
-            return;
-        }
-
         Inode srcInode = context.savedInode();
         Inode dstInode = context.currentInode();
 
         long srcPos = _args.opcopy.ca_src_offset.value;
         long dstPos = _args.opcopy.ca_dst_offset.value;
         long len = _args.opcopy.ca_count.value;
+
+
+        // Only consecutive copy is supported. Synchronous copy is allowed if the byte count is smaller than max IO size.
+        if (!_args.opcopy.ca_consecutive || (_args.opcopy.ca_synchronous && len > NFSv4Defaults.NFS4_MAXIOBUFFERSIZE)) {
+            res.cr_requirements = new copy_requirements4();
+            res.cr_requirements.cr_consecutive = true;
+            res.cr_requirements.cr_synchronous = true;
+            res.cr_status = nfsstat.NFS4ERR_OFFLOAD_NO_REQS;
+            return;
+        }
 
         NFS4Client client = context.getSession().getClient();
 
@@ -108,40 +106,34 @@ public class OperationCOPY extends AbstractNFSv4Operation {
         res.cr_resok4 = new COPY4resok();
         res.cr_resok4.cr_response = new write_response4();
         res.cr_resok4.cr_response.wr_writeverf = context.getRebootVerifier();
-        res.cr_resok4.cr_response.wr_callback_id = new stateid4[]{};
-        res.cr_resok4.cr_response.wr_committed = stable_how4.FILE_SYNC4;
-        res.cr_resok4.cr_response.wr_count = new length4(0);
-
-        res.cr_resok4.cr_requirements = new copy_requirements4();
-        res.cr_resok4.cr_requirements.cr_consecutive = true;
         res.cr_status = nfsstat.NFS_OK;
 
-        CompletableFuture<Long> copyFuture = context.getFs().copyFileRange(srcInode, srcPos, dstInode, dstPos, len);
-        boolean isSync = _args.opcopy.ca_synchronous;
-        if (isSync) {
-            try {
-                // try sync copy and fall-back to async
-                long n = copyFuture.get(1, TimeUnit.SECONDS);
-                res.cr_resok4.cr_response.wr_count = new length4(n);
-            } catch (InterruptedException | ExecutionException e) {
 
+        CompletableFuture<Long> copyFuture = context.getFs().copyFileRange(srcInode, srcPos, dstInode, dstPos, len);
+        if (_args.opcopy.ca_synchronous) {
+            long bytes = 0L;
+            try {
+                bytes = copyFuture.get();
+            } catch (Exception e) {
                 Throwable cause = Throwables.getRootCause(e);
                 Throwables.propagateIfPossible(cause, ChimeraNFSException.class);
 
                 LOGGER.error("Copy-offload failed: {}", e.getMessage());
                 res.cr_status = nfsstat.NFSERR_IO;
-            } catch (TimeoutException e) {
-                // continue as async copy
-                isSync = false;
             }
-        }
 
-        if (!isSync) {
-            // copy asynchronously
+            res.cr_resok4.cr_response.wr_count = new length4(bytes);
+            res.cr_resok4.cr_response.wr_callback_id = new stateid4[]{};
+        } else {
             var copyState = notifyWhenComplete(client, dstInode, context.getRebootVerifier(), copyFuture);
             res.cr_resok4.cr_response.wr_callback_id = new stateid4[]{copyState};
+            res.cr_resok4.cr_response.wr_count = new length4(0);
         }
-        res.cr_resok4.cr_requirements.cr_synchronous = isSync;
+
+        res.cr_resok4.cr_response.wr_committed = stable_how4.FILE_SYNC4;
+        res.cr_resok4.cr_requirements = new copy_requirements4();
+        res.cr_resok4.cr_requirements.cr_consecutive = true;
+        res.cr_resok4.cr_requirements.cr_synchronous = _args.opcopy.ca_synchronous;
     }
 
     private stateid4 notifyWhenComplete(NFS4Client client, Inode dstInode, verifier4 verifier, CompletableFuture<Long> copyFuture) throws ChimeraNFSException {

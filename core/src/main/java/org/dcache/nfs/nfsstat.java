@@ -615,6 +615,8 @@ public final class nfsstat {
                 throw new OffloadDeniedExeption();
             case nfsstat.NFS4ERR_DELEG_REVOKED:
                 throw new DelegRevokedException();
+            case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
+                throw new OffloadNoReqsException();
             default:
                 throw new BadXdrException();
         }
