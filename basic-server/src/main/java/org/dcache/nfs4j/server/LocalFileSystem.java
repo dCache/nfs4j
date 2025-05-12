@@ -462,7 +462,7 @@ public class LocalFileSystem implements VirtualFileSystem {
         Stat stat = new Stat();
 
         stat.setATime(attrs.lastAccessTime().toMillis());
-        stat.setCTime(attrs.creationTime().toMillis());
+        stat.setBTime(attrs.creationTime().toMillis());
         stat.setMTime(attrs.lastModifiedTime().toMillis());
 
         if (IS_UNIX) {
@@ -470,6 +470,7 @@ public class LocalFileSystem implements VirtualFileSystem {
             stat.setUid((Integer) Files.getAttribute(p, "unix:uid", NOFOLLOW_LINKS));
             stat.setMode((Integer) Files.getAttribute(p, "unix:mode", NOFOLLOW_LINKS));
             stat.setNlink((Integer) Files.getAttribute(p, "unix:nlink", NOFOLLOW_LINKS));
+            stat.setCTime(((FileTime) Files.getAttribute(p, "unix:ctime", NOFOLLOW_LINKS)).toMillis());
         } else {
             DosFileAttributes dosAttrs = (DosFileAttributes)attrs;
             stat.setGid(0);
@@ -483,7 +484,7 @@ public class LocalFileSystem implements VirtualFileSystem {
         stat.setIno(inodeNumber);
         stat.setRdev(17);
         stat.setSize(attrs.size());
-        stat.setGeneration(attrs.lastModifiedTime().toMillis());
+        stat.setGeneration(Math.max(stat.getCTime(), stat.getMTime()));
 
         return stat;
     }
