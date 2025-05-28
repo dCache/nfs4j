@@ -28,8 +28,8 @@ public interface DisposeListener<T> {
 
     /**
      * Called when attached object is disposed.
-     * @param attachement disposed object
+     * @param attachment disposed object
      * @throws ChimeraNFSException on errors.
      */
-    void notifyDisposed(T attachement) throws ChimeraNFSException;
+    void notifyDisposed(T attachment) throws ChimeraNFSException;
 }
