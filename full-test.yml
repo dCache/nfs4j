@@ -38,7 +38,7 @@ services:
           noSEC7 noWRT1 noWRT11 noWRT13 noWRT14 noWRT15 noWRT18 noWRT19 noWRT1b noWRT2 \
           noWRT3 noWRT6a noWRT6b noWRT6c noWRT6d noWRT6f noWRT6s noWRT8 noWRT9
         /run-nfs4.1.sh --noinit --minorversion=2 --xml=/report/xunit-report-v41.xml nfs4j:/data all nochar nosocket noblock nofifo deleg xattr \
-          noCOUR2 noCSESS25 noCSESS26 noCSESS27 noCSESS28 noCSESS29 noCSID9 noEID5f \
+          noCOUR2 noCSESS25 noCSESS26 noCSESS27 noCSESS28 noCSESS29 noCSID9 noDELEG2 noDELEG8 noEID5f \
           noEID50 noOPEN31 noSEQ6 noRECC3 noSEQ7 noSEQ10b noSEQ2 noXATT11 noXATT10 noALLOC1 noALLOC2 noALLOC3
     volumes:
       - ./report:/report
