@@ -311,7 +311,7 @@ public class FileTracker {
             // access mode and return the same stateid as required by rfc5661#18.16.3
 
             for (OpenState os : opens) {
-                if (os.client.getId() == client.getId()) {
+                if (os.client.getId() == client.getId() && os.getOwner().equals(owner)) {
                         os.shareAccess |= shareAccess;
                         os.shareDeny |= shareDeny;
 

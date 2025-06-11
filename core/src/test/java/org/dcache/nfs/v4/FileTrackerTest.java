@@ -94,6 +94,21 @@ public class FileTrackerTest {
     }
 
     @Test
+    public void shouldReturnDifferentStateIdForDifferentOwners() throws Exception {
+
+        NFS4Client client1 = createClient(sh);
+        StateOwner stateOwner1 = client1.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        StateOwner stateOwner2 = client1.getOrCreateOwner("client2".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+
+        nfs_fh4 fh = generateFileHandle();
+        Inode inode = Inode.forFile(fh.value);
+
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord2 = tracker.addOpen(client1, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        assertNotEquals("Same stateid for different owners returned", openRecord1.openStateId(), openRecord2.openStateId());
+    }
+
+    @Test
     public void shouldMergeAccessModesOnMultipleOpenes() throws Exception {
 
         NFS4Client client1 = createClient(sh);
