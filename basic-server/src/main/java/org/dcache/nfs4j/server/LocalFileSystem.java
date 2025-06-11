@@ -66,6 +66,7 @@ public class LocalFileSystem implements VirtualFileSystem {
     private static final Logger LOG = LoggerFactory.getLogger(LocalFileSystem.class);
 
     private final Path _root;
+    private final FileStore _store;
     private final NonBlockingHashMapLong<Path> inodeToPath = new NonBlockingHashMapLong<>();
     private final NonBlockingHashMap<Path, Long> pathToInode = new NonBlockingHashMap<>();
     private final AtomicLong fileId = new AtomicLong(1); //numbering starts at 1
@@ -150,6 +151,7 @@ public class LocalFileSystem implements VirtualFileSystem {
     public LocalFileSystem(Path root, Iterable<FsExport> exportIterable) throws IOException {
         _root = root;
         assert (Files.exists(_root));
+        _store = Files.getFileStore(_root);
         for (FsExport export : exportIterable) {
             String relativeExportPath = export.getPath().substring(1); // remove the opening '/'
             Path exportRootPath = root.resolve(relativeExportPath);
@@ -203,9 +205,8 @@ public class LocalFileSystem implements VirtualFileSystem {
 
     @Override
     public FsStat getFsStat() throws IOException {
-        FileStore store = Files.getFileStore(_root);
-        long total = store.getTotalSpace();
-        long free = store.getUsableSpace();
+        long total = _store.getTotalSpace();
+        long free = _store.getUsableSpace();
         return new FsStat(total, Long.MAX_VALUE, total-free, pathToInode.size());
     }
 
