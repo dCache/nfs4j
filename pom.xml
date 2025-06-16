@@ -294,6 +294,75 @@
               </plugins>
           </build>
       </profile>
+      <profile>
+            <id>reformat</id>
+            <activation>
+                <property>
+                    <name>reformat</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.revelc.code</groupId>
+                        <artifactId>impsort-maven-plugin</artifactId>
+                        <version>1.12.0</version>
+                        <executions>
+                            <execution>
+                                <id>sort-imports</id>
+                                <goals>
+                                    <goal>sort</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <groups>java.,javax.,org.,com.</groups>
+                            <staticGroups>java,*</staticGroups>
+                            <excludes>
+                                <exclude>**/thrift/*.java</exclude>
+                                <exclude>**/*generated*/*.java</exclude>
+                            </excludes>
+                            <includes>
+                                <include>org/dcache/**/*.java</include>
+                            </includes>
+                            <compliance>${java.version}</compliance>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>net.revelc.code.formatter</groupId>
+                        <artifactId>formatter-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>format-sourcecode</id>
+                                <configuration>
+                                    <skip>${formatter.skip}</skip>
+                                </configuration>
+                                <goals>
+                                    <goal>format</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <version>2.26.0</version>
+                        <configuration>
+                            <compilerCompliance>${java.version}</compilerCompliance>
+                            <compilerSource>${java.version}</compilerSource>
+                            <compilerTargetPlatform>${java.version}</compilerTargetPlatform>
+                            <lineEnding>LF</lineEnding>
+                            <configFile>
+                                ${maven.multiModuleProjectDirectory}/nfs4j-formatter.xml
+                            </configFile>
+                            <includes>
+                                <include>org/dcache/**/*.java</include>
+                            </includes>
+                            <directories>
+                                <directory>src/main/java</directory>
+                                <directory>src/test/java</directory>
+                            </directories>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
