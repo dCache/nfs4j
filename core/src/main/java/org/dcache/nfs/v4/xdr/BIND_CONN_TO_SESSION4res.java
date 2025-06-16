@@ -18,12 +18,14 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class BIND_CONN_TO_SESSION4res implements XdrAble {
     public int bctsr_status;
@@ -33,31 +35,31 @@ public class BIND_CONN_TO_SESSION4res implements XdrAble {
     }
 
     public BIND_CONN_TO_SESSION4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(bctsr_status);
-        switch ( bctsr_status ) {
-        case nfsstat.NFS_OK:
-            bctsr_resok4.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (bctsr_status) {
+            case nfsstat.NFS_OK:
+                bctsr_resok4.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         bctsr_status = xdr.xdrDecodeInt();
-        switch ( bctsr_status ) {
-        case nfsstat.NFS_OK:
-            bctsr_resok4 = new BIND_CONN_TO_SESSION4resok(xdr);
-            break;
-        default:
-            break;
+        switch (bctsr_status) {
+            case nfsstat.NFS_OK:
+                bctsr_resok4 = new BIND_CONN_TO_SESSION4resok(xdr);
+                break;
+            default:
+                break;
         }
     }
 

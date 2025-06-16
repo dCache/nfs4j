@@ -40,7 +40,7 @@ public interface QuotaVfs {
     /**
      * Get the quota for the given id.
      *
-     * @param id   numeric id of user or group to get quota for.
+     * @param id numeric id of user or group to get quota for.
      * @param type type of quota to get, either {@link #USER_QUOTA} or {@link #GROUP_QUOTA}.
      * @return the quota for the given id and type
      */
@@ -49,8 +49,8 @@ public interface QuotaVfs {
     /**
      * Set the quota for the given id.
      *
-     * @param id    numeric id of user or group to set quota for.
-     * @param type  type of quota to set, either {@link #USER_QUOTA} or {@link #GROUP_QUOTA}.
+     * @param id numeric id of user or group to set quota for.
+     * @param type type of quota to set, either {@link #USER_QUOTA} or {@link #GROUP_QUOTA}.
      * @param quota the quota to set
      * @return the new quota for the given id and type
      */

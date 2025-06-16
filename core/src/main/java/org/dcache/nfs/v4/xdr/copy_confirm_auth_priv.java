@@ -7,31 +7,33 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class copy_confirm_auth_priv implements XdrAble {
-    public byte [] ccap_shared_secret_mic;
+    public byte[] ccap_shared_secret_mic;
     public utf8str_mixed ccap_username;
 
     public copy_confirm_auth_priv() {
     }
 
     public copy_confirm_auth_priv(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeDynamicOpaque(ccap_shared_secret_mic);
         ccap_username.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ccap_shared_secret_mic = xdr.xdrDecodeDynamicOpaque();
         ccap_username = new utf8str_mixed(xdr);
     }

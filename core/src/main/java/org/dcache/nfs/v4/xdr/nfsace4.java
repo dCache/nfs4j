@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class nfsace4 implements XdrAble {
     public acetype4 type;
@@ -34,12 +36,12 @@ public class nfsace4 implements XdrAble {
     }
 
     public nfsace4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         type.xdrEncode(xdr);
         flag.xdrEncode(xdr);
         access_mask.xdrEncode(xdr);
@@ -47,7 +49,7 @@ public class nfsace4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         type = new acetype4(xdr);
         flag = new aceflag4(xdr);
         access_mask = new acemask4(xdr);

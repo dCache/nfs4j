@@ -18,34 +18,48 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class retention_set4 implements XdrAble {
     public boolean rs_enable;
-    public uint64_t [] rs_duration;
+    public uint64_t[] rs_duration;
 
     public retention_set4() {
     }
 
     public retention_set4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(rs_enable);
-        { int $size = rs_duration.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { rs_duration[$idx].xdrEncode(xdr); } }
+        {
+            int $size = rs_duration.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                rs_duration[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         rs_enable = xdr.xdrDecodeBoolean();
-        { int $size = xdr.xdrDecodeInt(); rs_duration = new uint64_t[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { rs_duration[$idx] = new uint64_t(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            rs_duration = new uint64_t[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                rs_duration[$idx] = new uint64_t(xdr);
+            }
+        }
     }
 
 }

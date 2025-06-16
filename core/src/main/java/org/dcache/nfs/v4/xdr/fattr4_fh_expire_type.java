@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class fattr4_fh_expire_type extends uint32_t {
 
@@ -34,7 +36,7 @@ public class fattr4_fh_expire_type extends uint32_t {
     }
 
     public fattr4_fh_expire_type(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         super(xdr);
     }
 }

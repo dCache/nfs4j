@@ -20,12 +20,12 @@ package org.dcache.nfs.v4;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.stream.Stream;
+
 import org.dcache.nfs.util.Cache;
 import org.dcache.nfs.util.CacheElement;
 import org.dcache.nfs.util.CacheEventListener;
 import org.dcache.nfs.v4.xdr.clientid4;
-
-import java.util.stream.Stream;
 
 public class DefaultClientCache extends Cache<clientid4, NFS4Client> implements ClientCache {
     public DefaultClientCache(Duration leaseTime, CacheEventListener<clientid4, NFS4Client> eventListener) {

@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class open_claim_delegate_cur4 implements XdrAble {
     public stateid4 delegate_stateid;
@@ -32,18 +34,18 @@ public class open_claim_delegate_cur4 implements XdrAble {
     }
 
     public open_claim_delegate_cur4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         delegate_stateid.xdrEncode(xdr);
         file.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         delegate_stateid = new stateid4(xdr);
         file = new component4(xdr);
     }

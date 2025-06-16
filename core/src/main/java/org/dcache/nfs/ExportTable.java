@@ -37,8 +37,8 @@ public interface ExportTable {
     Stream<FsExport> exports();
 
     /**
-     * Get a {@link Stream} of exports allowed for a given client.
-     * The stream is ordered with most relevant export entry first.
+     * Get a {@link Stream} of exports allowed for a given client. The stream is ordered with most relevant export entry
+     * first.
      *
      * @param client address if the client.
      * @return all entries exported to a given client.
@@ -50,8 +50,7 @@ public interface ExportTable {
      *
      * @param path exported path
      * @param client address of the client.
-     * @return best matching export entry for a given client or null if no
-     * entries found.
+     * @return best matching export entry for a given client or null if no entries found.
      */
     FsExport getExport(String path, InetAddress client);
 
@@ -60,8 +59,7 @@ public interface ExportTable {
      *
      * @param index export index that identifies export path.
      * @param client address of the client.
-     * @return best matching export entry for a given client or null if no
-     * entries found.
+     * @return best matching export entry for a given client or null if no entries found.
      */
     FsExport getExport(int index, InetAddress client);
 }

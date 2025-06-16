@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class WRITE3resok implements XdrAble {
     public wcc_data file_wcc;
@@ -34,12 +36,12 @@ public class WRITE3resok implements XdrAble {
     }
 
     public WRITE3resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         file_wcc.xdrEncode(xdr);
         count.xdrEncode(xdr);
         xdr.xdrEncodeInt(committed);
@@ -47,7 +49,7 @@ public class WRITE3resok implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         file_wcc = new wcc_data(xdr);
         count = new count3(xdr);
         committed = xdr.xdrDecodeInt();

@@ -18,16 +18,16 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.clientid4;
-
 import java.util.stream.Stream;
+
+import org.dcache.nfs.v4.xdr.clientid4;
 
 public interface ClientCache {
 
     /**
      * Cache client by id
      *
-     * @param clientid4  Client id
+     * @param clientid4 Client id
      * @param nfs4Client Client reference
      */
     void put(clientid4 clientid4, NFS4Client nfs4Client);

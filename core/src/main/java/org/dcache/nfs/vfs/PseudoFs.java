@@ -19,7 +19,11 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.base.Splitter;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.dcache.nfs.util.UnixSubjects.*;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
+import static org.dcache.nfs.vfs.AclCheckable.Access;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -29,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+
 import javax.security.auth.Subject;
 
 import org.dcache.nfs.ChimeraNFSException;
@@ -36,28 +41,23 @@ import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.*;
+import org.dcache.nfs.util.SubjectHolder;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
-import org.dcache.oncrpc4j.rpc.RpcCall;
-
-import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
-
 import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.util.SubjectHolder;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.gss.RpcAuthGss;
 import org.dcache.oncrpc4j.rpc.gss.RpcGssService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.dcache.nfs.vfs.AclCheckable.Access;
-import static org.dcache.nfs.util.UnixSubjects.*;
+import com.google.common.base.Splitter;
 
 /**
- * A decorated {@code VirtualFileSystem} that builds a Pseudo file system
- * on top of an other file system based on export rules.
+ * A decorated {@code VirtualFileSystem} that builds a Pseudo file system on top of an other file system based on export
+ * rules.
  *
  * In addition, PseudoFS takes the responsibility of permission and access checking.
  */
@@ -76,8 +76,8 @@ public class PseudoFs extends ForwardingFileSystem {
 
     private final static int ACCESS4_MASK =
             ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
-            | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ
-            | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
+                    | ACCESS4_LOOKUP | ACCESS4_MODIFY | ACCESS4_READ
+                    | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
 
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable) {
         _inner = inner;
@@ -147,10 +147,9 @@ public class PseudoFs extends ForwardingFileSystem {
         }
 
         /**
-         * rfc8276 specifies only 'user' attributes. Thus access to access to them is controlled
-         * as access to the file:
-         *  - to read or list xattrs file read permission is required
-         *  - to set or delete xattrs file write permission is required
+         * rfc8276 specifies only 'user' attributes. Thus access to access to them is controlled as access to the file:
+         * - to read or list xattrs file read permission is required - to set or delete xattrs file write permission is
+         * required
          */
 
         if ((mode & ACCESS4_XAREAD) != 0) {
@@ -202,8 +201,7 @@ public class PseudoFs extends ForwardingFileSystem {
 
         Inode inode = _inner.getRootInode();
         FsExport export = _exportTable.getExport("/", _inetAddress.getAddress());
-        return export == null? realToPseudo(inode) :
-                pushExportIndex(inode, export.getIndex());
+        return export == null ? realToPseudo(inode) : pushExportIndex(inode, export.getIndex());
     }
 
     @Override
@@ -214,15 +212,15 @@ public class PseudoFs extends ForwardingFileSystem {
             return lookupInPseudoDirectory(parent, path);
         }
 
-	/*
-	 * REVISIT: this is not the best place to do it, but the simples one.
-	 */
-	FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress.getAddress());
-	if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
-	    throw new NoEntException("the dcap magic file is blocked");
-	}
+        /*
+         * REVISIT: this is not the best place to do it, but the simples one.
+         */
+        FsExport export = _exportTable.getExport(parent.exportIndex(), _inetAddress.getAddress());
+        if (!export.isWithDcap() && ".(get)(cursor)".equals(path)) {
+            throw new NoEntException("the dcap magic file is blocked");
+        }
 
-	return pushExportIndex(parent, _inner.lookup(parent, path));
+        return pushExportIndex(parent, _inner.lookup(parent, path));
     }
 
     @Override
@@ -270,16 +268,16 @@ public class PseudoFs extends ForwardingFileSystem {
     @Override
     public Inode parentOf(Inode inode) throws IOException {
 
-	Inode parent = _inner.parentOf(inode);
-	Inode asPseudo = realToPseudo(parent);
-	if (isPseudoDirectory(asPseudo)) {
-	    /*
-	     * if parent is a path of export tree
-	     */
-	    return asPseudo;
-	} else {
-	    return pushExportIndex(inode, parent);
-	}
+        Inode parent = _inner.parentOf(inode);
+        Inode asPseudo = realToPseudo(parent);
+        if (isPseudoDirectory(asPseudo)) {
+            /*
+             * if parent is a path of export tree
+             */
+            return asPseudo;
+        } else {
+            return pushExportIndex(inode, parent);
+        }
     }
 
     @Override
@@ -326,13 +324,15 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
-    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
+    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel)
+            throws IOException {
         checkAccess(inode, ACE4_WRITE_DATA);
         return _inner.write(inode, data, offset, count, stabilityLevel);
     }
 
     @Override
-    public WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel) throws IOException {
+    public WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
         checkAccess(inode, ACE4_WRITE_DATA);
         return _inner.write(inode, data, offset, stabilityLevel);
     }
@@ -349,12 +349,11 @@ public class PseudoFs extends ForwardingFileSystem {
         if (stat.isDefined(Stat.StatAttribute.OWNER)) {
             /*
              *
-             * According POSIX changing of owner_group for non privileged
-             * process if owner is equal to the file's user ID or (uid_t)-1.
-             * (See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html)
+             * According POSIX changing of owner_group for non privileged process if owner is equal to the file's user
+             * ID or (uid_t)-1. (See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html)
              *
-             * As we already enforce WRITE_ATTRIBUTES, e.g. file's owner matching subjects,
-             * remove required WRITE_OWNER only if new owner is different.
+             * As we already enforce WRITE_ATTRIBUTES, e.g. file's owner matching subjects, remove required WRITE_OWNER
+             * only if new owner is different.
              */
             int currentOwner = getattr(inode).getUid();
             if (currentOwner == stat.getUid() || stat.getUid() == -1) {
@@ -421,12 +420,12 @@ public class PseudoFs extends ForwardingFileSystem {
         Subject effectiveSubject = _subject;
         Access aclMatched = Access.UNDEFINED;
 
-        if (inode.isPseudoInode()&& Acls.wantModify(requestedMask)) {
+        if (inode.isPseudoInode() && Acls.wantModify(requestedMask)) {
             if (shouldLog) {
                 _log.warn("Access denied: pseudo Inode {} {} {} {}",
-                            inode, _inetAddress,
-                            acemask4.toString(requestedMask),
-                            new SubjectHolder(effectiveSubject));
+                        inode, _inetAddress,
+                        acemask4.toString(requestedMask),
+                        new SubjectHolder(effectiveSubject));
             }
             throw new RoFsException("attempt to modify pseudofs");
         }
@@ -449,28 +448,30 @@ public class PseudoFs extends ForwardingFileSystem {
             }
             checkSecurityFlavor(_auth, export.getSec());
 
-            if ( (export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
+            if ((export.ioMode() == FsExport.IO.RO) && Acls.wantModify(requestedMask)) {
                 if (shouldLog) {
                     _log.warn("Access denied: (RO export) inode {} for client {}", inode, _inetAddress);
                 }
                 throw new AccessException("read-only export");
             }
 
-            if(export.isAllRoot()) {
+            if (export.isAllRoot()) {
                 _log.debug("permission check to inode {} skipped due to all_root option for client {}",
                         inode, _inetAddress);
                 return effectiveSubject;
             }
 
-            if (isNobodySubject(_subject) || export.hasAllSquash() || (!export.isTrusted() && isRootSubject(_subject))) {
+            if (isNobodySubject(_subject) || export.hasAllSquash() || (!export.isTrusted() && isRootSubject(
+                    _subject))) {
                 effectiveSubject = toSubject(export.getAnonUid(), export.getAnonGid());
             }
 
             if (export.checkAcls()) {
                 aclMatched = _inner.getAclCheckable().checkAcl(_subject, inode, requestedMask);
                 if (aclMatched == Access.DENY) {
-                    if(shouldLog) {
-                        _log.warn("Access deny: {} {} {}", _inetAddress, acemask4.toString(requestedMask), new SubjectHolder(_subject));
+                    if (shouldLog) {
+                        _log.warn("Access deny: {} {} {}", _inetAddress, acemask4.toString(requestedMask),
+                                new SubjectHolder(_subject));
                     }
                     throw new AccessException();
                 }
@@ -478,17 +479,16 @@ public class PseudoFs extends ForwardingFileSystem {
         }
 
         /*
-         * check for unix permission if ACL did not give us an answer.
-         * Skip the check, if we ask for ACE4_READ_ATTRIBUTES as unix
-         * always allows it.
+         * check for unix permission if ACL did not give us an answer. Skip the check, if we ask for
+         * ACE4_READ_ATTRIBUTES as unix always allows it.
          */
         if ((aclMatched == Access.UNDEFINED) && (requestedMask != ACE4_READ_ATTRIBUTES)) {
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
                     _log.warn("Access denied: {} {} {} {} {}", inode, _inetAddress,
-                                acemask4.toString(requestedMask),
-                                acemask4.toString(unixAccessmask), new SubjectHolder(_subject));
+                            acemask4.toString(requestedMask),
+                            acemask4.toString(unixAccessmask), new SubjectHolder(_subject));
                 }
                 throw new AccessException("permission deny");
             }
@@ -497,8 +497,7 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     /*
-     * unix permission bits offset as defined in POSIX
-     * for st_mode filed of the stat  structure.
+     * unix permission bits offset as defined in POSIX for st_mode filed of the stat structure.
      */
     private static final int BIT_MASK_OWNER_OFFSET = 6;
     private static final int BIT_MASK_GROUP_OFFSET = 3;
@@ -602,7 +601,7 @@ public class PseudoFs extends ForwardingFileSystem {
                         Stat stat = _inner.getattr(inode);
                         DirectoryEntry e = new DirectoryEntry(s,
                                 subNode.isMountPoint()
-                                ? pseudoIdToReal(inode, getIndexId(subNode)) : inode, stat, cookie);
+                                        ? pseudoIdToReal(inode, getIndexId(subNode)) : inode, stat, cookie);
                         pseudoLs.add(e);
                         cookie++;
                     }
@@ -628,14 +627,13 @@ public class PseudoFs extends ForwardingFileSystem {
 
     private int getExportIndex(Inode inode) {
         /*
-         * NOTE, we take first export entry allowed for this client.
-         * This can be wrong, e.g. RO vs. RW.
+         * NOTE, we take first export entry allowed for this client. This can be wrong, e.g. RO vs. RW.
          */
         if (inode.handleVersion() == 0) {
             FsExport export = _exportTable.exports(_inetAddress.getAddress())
                     .findFirst()
                     .orElse(null);
-            return export == null? -1 : export.getIndex();
+            return export == null ? -1 : export.getIndex();
         }
         return inode.exportIndex();
     }
@@ -705,7 +703,7 @@ public class PseudoFs extends ForwardingFileSystem {
     private static void checkSecurityFlavor(RpcAuth auth, FsExport.Sec minFlavor) throws ChimeraNFSException {
 
         FsExport.Sec usedFlavor;
-        switch(auth.type()) {
+        switch (auth.type()) {
             case RpcAuthType.NONE:
                 usedFlavor = FsExport.Sec.NONE;
                 break;

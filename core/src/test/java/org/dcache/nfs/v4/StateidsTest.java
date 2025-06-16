@@ -19,18 +19,18 @@
  */
 package org.dcache.nfs.v4;
 
+import static org.junit.Assert.*;
+
 import java.nio.charset.StandardCharsets;
+
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  *
  * @author tigran
  */
 public class StateidsTest {
-
 
     @Test
     public void testIsAllZerosIsStateless() {
@@ -44,7 +44,7 @@ public class StateidsTest {
 
     @Test
     public void testIsRegularIsStateless() {
-        assertFalse(Stateids.isStateLess( new stateid4("a state".getBytes(StandardCharsets.UTF_8), 1)));
+        assertFalse(Stateids.isStateLess(new stateid4("a state".getBytes(StandardCharsets.UTF_8), 1)));
     }
 
 }

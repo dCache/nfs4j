@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class ssv_prot_info4 implements XdrAble {
     public state_protect_ops4 spi_ops;
@@ -30,34 +32,46 @@ public class ssv_prot_info4 implements XdrAble {
     public uint32_t spi_encr_alg;
     public uint32_t spi_ssv_len;
     public uint32_t spi_window;
-    public gsshandle4_t [] spi_handles;
+    public gsshandle4_t[] spi_handles;
 
     public ssv_prot_info4() {
     }
 
     public ssv_prot_info4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         spi_ops.xdrEncode(xdr);
         spi_hash_alg.xdrEncode(xdr);
         spi_encr_alg.xdrEncode(xdr);
         spi_ssv_len.xdrEncode(xdr);
         spi_window.xdrEncode(xdr);
-        { int $size = spi_handles.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { spi_handles[$idx].xdrEncode(xdr); } }
+        {
+            int $size = spi_handles.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                spi_handles[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         spi_ops = new state_protect_ops4(xdr);
         spi_hash_alg = new uint32_t(xdr);
         spi_encr_alg = new uint32_t(xdr);
         spi_ssv_len = new uint32_t(xdr);
         spi_window = new uint32_t(xdr);
-        { int $size = xdr.xdrDecodeInt(); spi_handles = new gsshandle4_t[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { spi_handles[$idx] = new gsshandle4_t(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            spi_handles = new gsshandle4_t[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                spi_handles[$idx] = new gsshandle4_t(xdr);
+            }
+        }
     }
 
 }

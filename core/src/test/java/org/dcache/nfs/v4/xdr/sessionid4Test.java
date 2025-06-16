@@ -19,12 +19,12 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import org.dcache.nfs.v4.xdr.sessionid4;
-import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class sessionid4Test {
+import org.dcache.nfs.v4.xdr.sessionid4;
+import org.junit.Test;
 
+public class sessionid4Test {
 
     @Test
     public void testEqualsTrue() {

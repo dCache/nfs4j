@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class mknoddata3 implements XdrAble {
     public int type;
@@ -33,41 +35,41 @@ public class mknoddata3 implements XdrAble {
     }
 
     public mknoddata3(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(type);
-        switch ( type ) {
-        case ftype3.NF3CHR:
-        case ftype3.NF3BLK:
-            device.xdrEncode(xdr);
-            break;
-        case ftype3.NF3SOCK:
-        case ftype3.NF3FIFO:
-            pipe_attributes.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (type) {
+            case ftype3.NF3CHR:
+            case ftype3.NF3BLK:
+                device.xdrEncode(xdr);
+                break;
+            case ftype3.NF3SOCK:
+            case ftype3.NF3FIFO:
+                pipe_attributes.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         type = xdr.xdrDecodeInt();
-        switch ( type ) {
-        case ftype3.NF3CHR:
-        case ftype3.NF3BLK:
-            device = new devicedata3(xdr);
-            break;
-        case ftype3.NF3SOCK:
-        case ftype3.NF3FIFO:
-            pipe_attributes = new sattr3(xdr);
-            break;
-        default:
-            break;
+        switch (type) {
+            case ftype3.NF3CHR:
+            case ftype3.NF3BLK:
+                device = new devicedata3(xdr);
+                break;
+            case ftype3.NF3SOCK:
+            case ftype3.NF3FIFO:
+                pipe_attributes = new sattr3(xdr);
+                break;
+            default:
+                break;
         }
     }
 

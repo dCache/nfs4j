@@ -19,12 +19,12 @@
  */
 package org.dcache.nfs.v4.xdr;
 
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-
-import java.io.IOException;
 
 public class nfs_cb_resop4 implements XdrAble {
     public int resop;
@@ -47,105 +47,105 @@ public class nfs_cb_resop4 implements XdrAble {
     }
 
     public nfs_cb_resop4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(resop);
-        switch ( resop ) {
-        case nfs_cb_opnum4.OP_CB_GETATTR:
-            opcbgetattr.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALL:
-            opcbrecall.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_LAYOUTRECALL:
-            opcblayoutrecall.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_NOTIFY:
-            opcbnotify.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_PUSH_DELEG:
-            opcbpush_deleg.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALL_ANY:
-            opcbrecall_any.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALLABLE_OBJ_AVAIL:
-            opcbrecallable_obj_avail.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALL_SLOT:
-            opcbrecall_slot.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_SEQUENCE:
-            opcbsequence.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_WANTS_CANCELLED:
-            opcbwants_cancelled.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_NOTIFY_LOCK:
-            opcbnotify_lock.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
-            opcbnotify_deviceid.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_OFFLOAD:
-            opcboffload.xdrEncode(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_ILLEGAL:
-            opcbillegal.xdrEncode(xdr);
-            break;
+        switch (resop) {
+            case nfs_cb_opnum4.OP_CB_GETATTR:
+                opcbgetattr.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALL:
+                opcbrecall.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_LAYOUTRECALL:
+                opcblayoutrecall.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_NOTIFY:
+                opcbnotify.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_PUSH_DELEG:
+                opcbpush_deleg.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALL_ANY:
+                opcbrecall_any.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALLABLE_OBJ_AVAIL:
+                opcbrecallable_obj_avail.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALL_SLOT:
+                opcbrecall_slot.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_SEQUENCE:
+                opcbsequence.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_WANTS_CANCELLED:
+                opcbwants_cancelled.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_NOTIFY_LOCK:
+                opcbnotify_lock.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
+                opcbnotify_deviceid.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_OFFLOAD:
+                opcboffload.xdrEncode(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_ILLEGAL:
+                opcbillegal.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         resop = xdr.xdrDecodeInt();
-        switch ( resop ) {
-        case nfs_cb_opnum4.OP_CB_GETATTR:
-            opcbgetattr = new CB_GETATTR4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALL:
-            opcbrecall = new CB_RECALL4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_LAYOUTRECALL:
-            opcblayoutrecall = new CB_LAYOUTRECALL4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_NOTIFY:
-            opcbnotify = new CB_NOTIFY4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_PUSH_DELEG:
-            opcbpush_deleg = new CB_PUSH_DELEG4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALL_ANY:
-            opcbrecall_any = new CB_RECALL_ANY4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALLABLE_OBJ_AVAIL:
-            opcbrecallable_obj_avail = new CB_RECALLABLE_OBJ_AVAIL4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_RECALL_SLOT:
-            opcbrecall_slot = new CB_RECALL_SLOT4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_SEQUENCE:
-            opcbsequence = new CB_SEQUENCE4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_WANTS_CANCELLED:
-            opcbwants_cancelled = new CB_WANTS_CANCELLED4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_NOTIFY_LOCK:
-            opcbnotify_lock = new CB_NOTIFY_LOCK4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
-            opcbnotify_deviceid = new CB_NOTIFY_DEVICEID4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_OFFLOAD:
-            opcboffload = new CB_OFFLOAD4res(xdr);
-            break;
-        case nfs_cb_opnum4.OP_CB_ILLEGAL:
-            opcbillegal = new CB_ILLEGAL4res(xdr);
-            break;
+        switch (resop) {
+            case nfs_cb_opnum4.OP_CB_GETATTR:
+                opcbgetattr = new CB_GETATTR4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALL:
+                opcbrecall = new CB_RECALL4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_LAYOUTRECALL:
+                opcblayoutrecall = new CB_LAYOUTRECALL4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_NOTIFY:
+                opcbnotify = new CB_NOTIFY4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_PUSH_DELEG:
+                opcbpush_deleg = new CB_PUSH_DELEG4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALL_ANY:
+                opcbrecall_any = new CB_RECALL_ANY4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALLABLE_OBJ_AVAIL:
+                opcbrecallable_obj_avail = new CB_RECALLABLE_OBJ_AVAIL4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_RECALL_SLOT:
+                opcbrecall_slot = new CB_RECALL_SLOT4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_SEQUENCE:
+                opcbsequence = new CB_SEQUENCE4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_WANTS_CANCELLED:
+                opcbwants_cancelled = new CB_WANTS_CANCELLED4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_NOTIFY_LOCK:
+                opcbnotify_lock = new CB_NOTIFY_LOCK4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_NOTIFY_DEVICEID:
+                opcbnotify_deviceid = new CB_NOTIFY_DEVICEID4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_OFFLOAD:
+                opcboffload = new CB_OFFLOAD4res(xdr);
+                break;
+            case nfs_cb_opnum4.OP_CB_ILLEGAL:
+                opcbillegal = new CB_ILLEGAL4res(xdr);
+                break;
         }
     }
 

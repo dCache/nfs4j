@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.status.BadOwnerException;
+
 /**
  * libnfsidmap like interface for {@link String} to uid/gid mapping.
  *
@@ -48,18 +49,18 @@ public interface NfsIdMapping {
     int principalToGid(String principal) throws BadOwnerException;
 
     /**
-     * Get {@link String} corresponding to provided numeric uid. If there is no valid
-     * mapping from uid to name, then the numerical string representing uid
-     * is returned instead.
+     * Get {@link String} corresponding to provided numeric uid. If there is no valid mapping from uid to name, then the
+     * numerical string representing uid is returned instead.
+     *
      * @param id to map
      * @return principal
      */
     String uidToPrincipal(int id);
 
     /**
-     * Get {@link String} corresponding to provided numeric gid. If there is no valid
-     * mapping from gid to name, then the numerical string representing gid
-     * is returned instead.
+     * Get {@link String} corresponding to provided numeric gid. If there is no valid mapping from gid to name, then the
+     * numerical string representing gid is returned instead.
+     *
      * @param id to map
      * @return principal
      */

@@ -18,28 +18,30 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class layoutreturn_file4 implements XdrAble {
     public offset4 lrf_offset;
     public length4 lrf_length;
     public stateid4 lrf_stateid;
-    public byte [] lrf_body;
+    public byte[] lrf_body;
 
     public layoutreturn_file4() {
     }
 
     public layoutreturn_file4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lrf_offset.xdrEncode(xdr);
         lrf_length.xdrEncode(xdr);
         lrf_stateid.xdrEncode(xdr);
@@ -47,7 +49,7 @@ public class layoutreturn_file4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lrf_offset = new offset4(xdr);
         lrf_length = new length4(xdr);
         lrf_stateid = new stateid4(xdr);

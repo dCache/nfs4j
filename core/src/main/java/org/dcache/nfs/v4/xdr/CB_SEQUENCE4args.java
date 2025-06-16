@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class CB_SEQUENCE4args implements XdrAble {
     public sessionid4 csa_sessionid;
@@ -30,34 +32,46 @@ public class CB_SEQUENCE4args implements XdrAble {
     public slotid4 csa_slotid;
     public slotid4 csa_highest_slotid;
     public boolean csa_cachethis;
-    public referring_call_list4 [] csa_referring_call_lists;
+    public referring_call_list4[] csa_referring_call_lists;
 
     public CB_SEQUENCE4args() {
     }
 
     public CB_SEQUENCE4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         csa_sessionid.xdrEncode(xdr);
         csa_sequenceid.xdrEncode(xdr);
         csa_slotid.xdrEncode(xdr);
         csa_highest_slotid.xdrEncode(xdr);
         xdr.xdrEncodeBoolean(csa_cachethis);
-        { int $size = csa_referring_call_lists.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { csa_referring_call_lists[$idx].xdrEncode(xdr); } }
+        {
+            int $size = csa_referring_call_lists.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                csa_referring_call_lists[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         csa_sessionid = new sessionid4(xdr);
         csa_sequenceid = new sequenceid4(xdr);
         csa_slotid = new slotid4(xdr);
         csa_highest_slotid = new slotid4(xdr);
         csa_cachethis = xdr.xdrDecodeBoolean();
-        { int $size = xdr.xdrDecodeInt(); csa_referring_call_lists = new referring_call_list4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { csa_referring_call_lists[$idx] = new referring_call_list4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            csa_referring_call_lists = new referring_call_list4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                csa_referring_call_lists[$idx] = new referring_call_list4(xdr);
+            }
+        }
     }
 
 }

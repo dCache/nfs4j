@@ -19,14 +19,16 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.io.BaseEncoding;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.v4.xdr.sessionid4;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.status.BadSlotException;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.sessionid4;
+
+import com.google.common.io.BaseEncoding;
 
 public class NFSv41Session {
 
@@ -44,6 +46,7 @@ public class NFSv41Session {
 
     /**
      * Create new session for the given client.
+     *
      * @param client The client that owns this session.
      * @param sessionid The session id uniquely identifying session on the server.
      * @param maxRequests The maximum number of concurrent requests.
@@ -51,7 +54,8 @@ public class NFSv41Session {
      * @param maxOps The maximum number of compound operations per requests.
      * @param maxCbOps The maximum number of compound operations per callback requests.
      */
-    public NFSv41Session(NFS4Client client, sessionid4 sessionid,  int maxRequests, int maxCbRequests, int maxOps, int maxCbOps) {
+    public NFSv41Session(NFS4Client client, sessionid4 sessionid, int maxRequests, int maxCbRequests, int maxOps,
+            int maxCbOps) {
         _client = client;
         _slots = new SessionSlot[maxRequests];
         _session = sessionid;
@@ -71,6 +75,7 @@ public class NFSv41Session {
 
     /**
      * Get maximum slot id.
+     *
      * @return max slot id.
      */
     public int getHighestSlot() {
@@ -83,14 +88,15 @@ public class NFSv41Session {
 
     /**
      * Get highest slot id used.
+     *
      * @return slot id or -1 if there are no sloths have been used yet
      */
     public int getHighestUsedSlot() {
         int id;
-        for(id = getHighestSlot(); id >= 0 && _slots[id] == null; id--) {
-           /*
-            * NOP. We only move pointer
-            */
+        for (id = getHighestSlot(); id >= 0 && _slots[id] == null; id--) {
+            /*
+             * NOP. We only move pointer
+             */
         }
         return id;
     }
@@ -102,6 +108,7 @@ public class NFSv41Session {
 
     /**
      * Get cache slot for given id.
+     *
      * @param slot
      * @return cache slot.
      * @throws ChimeraNFSException
@@ -121,10 +128,11 @@ public class NFSv41Session {
 
     /**
      * Get maximal number of operations server will accept for this session.
+     *
      * @return number of operations
      */
     public int getMaxOps() {
-	return _maxOps;
+        return _maxOps;
     }
 
     /**
@@ -133,7 +141,7 @@ public class NFSv41Session {
      * @return number of operations
      */
     public int getMaxCbOps() {
-	return _maxCbOps;
+        return _maxCbOps;
     }
 
     @Override
@@ -142,8 +150,8 @@ public class NFSv41Session {
     }
 
     /**
-     * Binds the session to a given {@link SessionConnection} on if session
-     * has no bindings,
+     * Binds the session to a given {@link SessionConnection} on if session has no bindings,
+     *
      * @param connection to bind
      */
     public synchronized void bindIfNeeded(SessionConnection connection) {
@@ -154,6 +162,7 @@ public class NFSv41Session {
 
     /**
      * Binds the session to a given {@link SessionConnection}
+     *
      * @param connection to bind
      */
     public synchronized void bindToConnection(SessionConnection connection) {
@@ -162,6 +171,7 @@ public class NFSv41Session {
 
     /**
      * Check if session can be destroyed by client on a given connection.
+     *
      * @param connection
      * @return true, if session has no bindings or is bound to given connection.
      */

@@ -19,19 +19,21 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.collect.ForwardingNavigableSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.function.Function;
+
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+
+import com.google.common.collect.ForwardingNavigableSet;
 
 /**
  *
  */
-public class DirectoryStream implements Iterable<DirectoryEntry>{
+public class DirectoryStream implements Iterable<DirectoryEntry> {
 
     // v4 and v3 have the same verifier size
     public final static byte[] ZERO_VERIFIER = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
@@ -62,12 +64,10 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
     }
 
     /**
-     * Get view of this DirectoryStream, where all entries have cookies
-     * greater than specified {@code fromCookie}.
+     * Get view of this DirectoryStream, where all entries have cookies greater than specified {@code fromCookie}.
      *
      * @param fromCookie lowest cookie, exclusive.
-     * @return view of this DirectoryStream, where all entries have cookies
-     * greater than specified {@code fromCookie}.
+     * @return view of this DirectoryStream, where all entries have cookies greater than specified {@code fromCookie}.
      */
     public DirectoryStream tail(long fromCookie) {
         final DirectoryEntry cookieEntry = new DirectoryEntry("", null, null, fromCookie);
@@ -75,8 +75,7 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
     }
 
     /**
-     * Returns a {@link DirectoryStream} that applies {@code function} to
-     * each entry in this stream.
+     * Returns a {@link DirectoryStream} that applies {@code function} to each entry in this stream.
      *
      * @param function a transformation function to apply.
      * @return the new stream with transformed elements.
@@ -90,7 +89,8 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
         private final Function<? super DirectoryEntry, DirectoryEntry> transformation;
         private final NavigableSet<DirectoryEntry> inner;
 
-        public TransformingNavigableSet(Function<? super DirectoryEntry, DirectoryEntry> transformation, NavigableSet<DirectoryEntry> inner) {
+        public TransformingNavigableSet(Function<? super DirectoryEntry, DirectoryEntry> transformation,
+                NavigableSet<DirectoryEntry> inner) {
             this.transformation = transformation;
             this.inner = inner;
         }
@@ -106,8 +106,8 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
         }
 
         /*
-         * the result of ForwardingNavigableSet#tailSet does not inherit
-         * overloaded iterator, thus we have to override it again.
+         * the result of ForwardingNavigableSet#tailSet does not inherit overloaded iterator, thus we have to override
+         * it again.
          */
         @Override
         public NavigableSet<DirectoryEntry> tailSet(DirectoryEntry fromElement, boolean inclusive) {
@@ -121,7 +121,8 @@ public class DirectoryStream implements Iterable<DirectoryEntry>{
         private final Function<? super DirectoryEntry, DirectoryEntry> transformation;
         private final Iterator<DirectoryEntry> inner;
 
-        public TransformingIterator(Function<? super DirectoryEntry, DirectoryEntry> transformation, Iterator<DirectoryEntry> inner) {
+        public TransformingIterator(Function<? super DirectoryEntry, DirectoryEntry> transformation,
+                Iterator<DirectoryEntry> inner) {
             this.transformation = transformation;
             this.inner = inner;
         }

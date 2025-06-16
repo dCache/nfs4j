@@ -1,6 +1,9 @@
 package org.dcache.nfs.v4.nlm;
 
+import static org.junit.Assert.*;
+
 import java.nio.charset.StandardCharsets;
+
 import org.dcache.nfs.v4.StateOwner;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -8,8 +11,6 @@ import org.dcache.nfs.v4.xdr.nfs_lock_type4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  *

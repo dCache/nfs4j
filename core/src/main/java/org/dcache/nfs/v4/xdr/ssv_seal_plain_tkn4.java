@@ -18,28 +18,30 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class ssv_seal_plain_tkn4 implements XdrAble {
-    public byte [] sspt_confounder;
+    public byte[] sspt_confounder;
     public uint32_t sspt_ssv_seq;
-    public byte [] sspt_orig_plain;
-    public byte [] sspt_pad;
+    public byte[] sspt_orig_plain;
+    public byte[] sspt_pad;
 
     public ssv_seal_plain_tkn4() {
     }
 
     public ssv_seal_plain_tkn4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeDynamicOpaque(sspt_confounder);
         sspt_ssv_seq.xdrEncode(xdr);
         xdr.xdrEncodeDynamicOpaque(sspt_orig_plain);
@@ -47,7 +49,7 @@ public class ssv_seal_plain_tkn4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         sspt_confounder = xdr.xdrDecodeDynamicOpaque();
         sspt_ssv_seq = new uint32_t(xdr);
         sspt_orig_plain = xdr.xdrDecodeDynamicOpaque();

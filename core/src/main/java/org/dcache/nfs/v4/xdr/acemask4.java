@@ -18,12 +18,15 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class acemask4 implements XdrAble {
 
@@ -37,7 +40,7 @@ public class acemask4 implements XdrAble {
     }
 
     public acemask4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
@@ -99,12 +102,12 @@ public class acemask4 implements XdrAble {
         if (hasBit(mask, ACE4_WRITE_ATTRIBUTES)) {
             sb.append('T');
         }
-//        if (hasBit(mask, ACE4_WRITE_RETENTION)) {
-//            sb.append('?');
-//        }
-//        if (hasBit(mask, ACE4_WRITE_RETENTION_HOLD)) {
-//            sb.append('?');
-//        }
+        // if (hasBit(mask, ACE4_WRITE_RETENTION)) {
+        // sb.append('?');
+        // }
+        // if (hasBit(mask, ACE4_WRITE_RETENTION_HOLD)) {
+        // sb.append('?');
+        // }
         if (hasBit(mask, ACE4_DELETE)) {
             sb.append('d');
         }

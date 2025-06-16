@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class sattr3 implements XdrAble {
     public set_mode3 mode;
@@ -36,12 +38,12 @@ public class sattr3 implements XdrAble {
     }
 
     public sattr3(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         mode.xdrEncode(xdr);
         uid.xdrEncode(xdr);
         gid.xdrEncode(xdr);
@@ -51,7 +53,7 @@ public class sattr3 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         mode = new set_mode3(xdr);
         uid = new set_uid3(xdr);
         gid = new set_gid3(xdr);

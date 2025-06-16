@@ -27,18 +27,19 @@ import java.time.Instant;
  * CacheElement wrapper.
  *
  * Keeps track elements creation and last access time.
+ *
  * @param <V>
  */
 public class CacheElement<V> {
 
     /**
-     * Maximum amount of time that the cache entry is allowed to be cached.
-     * After expiration of this time cache entry invalidated.
+     * Maximum amount of time that the cache entry is allowed to be cached. After expiration of this time cache entry
+     * invalidated.
      */
     private final Duration _maxLifeTime;
     /**
-     * Maximum amount of time that the cache entry is allowed to be cached since last use. After expiration of this
-     * time cache entry is invalidated.
+     * Maximum amount of time that the cache entry is allowed to be cached since last use. After expiration of this time
+     * cache entry is invalidated.
      */
     private final Duration _idleTime;
     /**
@@ -66,8 +67,8 @@ public class CacheElement<V> {
     }
 
     /**
-     * Get internal object stored in this element.
-     * This operation will update this element's last access time with the current time.
+     * Get internal object stored in this element. This operation will update this element's last access time with the
+     * current time.
      *
      * @return internal object.
      */
@@ -77,8 +78,8 @@ public class CacheElement<V> {
     }
 
     /**
-     * Get internal object stored in this element. In opposite to {@link #getObject}
-     * the last access time of the element will not be updated.
+     * Get internal object stored in this element. In opposite to {@link #getObject} the last access time of the element
+     * will not be updated.
      *
      * @return internal object.
      */
@@ -94,14 +95,14 @@ public class CacheElement<V> {
      */
     public boolean validAt(Instant instant) {
         return Duration.between(_lastAccessTime, instant).compareTo(_idleTime) <= 0 &&
-              Duration.between(_creationTime, instant).compareTo(_maxLifeTime) <= 0;
+                Duration.between(_creationTime, instant).compareTo(_maxLifeTime) <= 0;
     }
 
     @Override
     public String toString() {
         Instant now = _clock.instant();
         return String.format("Element: [%s], created: %s, last access: %s, life time %s, idle: %s, max idle: %s",
-            _inner.toString(), _creationTime, _lastAccessTime,
-            _maxLifeTime, Duration.between(_lastAccessTime, now), _idleTime);
+                _inner.toString(), _creationTime, _lastAccessTime,
+                _maxLifeTime, Duration.between(_lastAccessTime, now), _idleTime);
     }
 }

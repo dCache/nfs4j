@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,14 +36,10 @@ import java.util.concurrent.locks.StampedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
- * A Dictionary where value associated with the key may become unavailable due
- * to validity timeout.
+ * A Dictionary where value associated with the key may become unavailable due to validity timeout.
  *
- * Typical usage is:
- * <pre>
+ * Typical usage is: <pre>
  *     Cache&lt;String, String&gt; cache  = new Cache&lt;&gt;("test cache", 10, Duration.ofHours(1),
  *           Duration.ofMinutes(2);
  *
@@ -52,6 +50,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  *     }
  *
  * </pre>
+ *
  * @author Tigran Mkrtchyan
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of cached values
@@ -67,14 +66,13 @@ public class Cache<K, V> {
     private final String _name;
 
     /**
-     * Maximum amount of time that an object is allowed to be cached.
-     * After expiration of this time cache entry invalidated.
+     * Maximum amount of time that an object is allowed to be cached. After expiration of this time cache entry
+     * invalidated.
      */
     private final Duration _defaultEntryMaxLifeTime;
 
     /**
-     * Time amount since last use of the object. After expiration of this
-     * time cache entry is invalidated.
+     * Time amount since last use of the object. After expiration of this time cache entry is invalidated.
      */
     private final Duration _defaultEntryIdleTime;
 
@@ -109,8 +107,7 @@ public class Cache<K, V> {
     private final AtomicReference<Instant> _lastClean;
 
     /**
-     * Create new cache instance with default {@link CacheEventListener} and
-     * default cleanup period.
+     * Create new cache instance with default {@link CacheEventListener} and default cleanup period.
      *
      * @param name Unique id for this cache.
      * @param size maximal number of elements.
@@ -144,8 +141,7 @@ public class Cache<K, V> {
      * @param entryLifeTime maximal time that an entry allowed to stay in the cache after creation.
      * @param entryIdleTime maximal time that an entry allowed to stay in the cache after last access.
      * @param eventListener {@link CacheEventListener}
-     * @param clock {@link Clock} to use
-     * <code>timeValue</code> parameter.
+     * @param clock {@link Clock} to use <code>timeValue</code> parameter.
      */
     public Cache(final String name, int size, Duration entryLifeTime, Duration entryIdleTime,
             CacheEventListener<K, V> eventListener, Clock clock) {
@@ -165,6 +161,7 @@ public class Cache<K, V> {
 
     /**
      * Get cache's name.
+     *
      * @return name of the cache.
      */
     public String getName() {
@@ -198,7 +195,7 @@ public class Cache<K, V> {
 
         long stamp = _accessLock.writeLock();
         try {
-            if( _storage.size() >= _size && !_storage.containsKey(k)) {
+            if (_storage.size() >= _size && !_storage.containsKey(k)) {
                 _log.warn("Cache limit reached: {}", _size);
                 throw new MissingResourceException("Cache limit reached", Cache.class.getName(), "");
             }
@@ -211,8 +208,9 @@ public class Cache<K, V> {
     }
 
     /**
-     * Get stored value. If {@link Cache} does not have the associated entry or
-     * entry live time is expired <code>null</code> is returned.
+     * Get stored value. If {@link Cache} does not have the associated entry or entry live time is expired
+     * <code>null</code> is returned.
+     *
      * @param k key associated with entry.
      * @return cached value associated with specified key.
      */
@@ -234,7 +232,7 @@ public class Cache<K, V> {
             valid = element.validAt(_timeSource.instant());
             v = element.getObject();
 
-            if ( !valid ) {
+            if (!valid) {
                 _log.debug("Cache hits but entry expired for key = [{}], value = [{}]", k, v);
                 long ws = _accessLock.tryConvertToWriteLock(stamp);
                 if (ws != 0L) {
@@ -251,13 +249,13 @@ public class Cache<K, V> {
             _accessLock.unlock(stamp);
         }
 
-        if(!valid) {
+        if (!valid) {
             // notify only if this thread have removed the expired entry
             if (removed) {
                 _eventListener.notifyExpired(this, v);
             }
             v = null;
-        }else{
+        } else {
             _eventListener.notifyGet(this, v);
         }
         return v;
@@ -267,8 +265,7 @@ public class Cache<K, V> {
      * Remove entry associated with key.
      *
      * @param k key
-     * @return valid entry associated with the key or null if key not found or
-     *   expired.
+     * @return valid entry associated with the key or null if key not found or expired.
      */
     public V remove(K k) {
 
@@ -278,7 +275,8 @@ public class Cache<K, V> {
         long stamp = _accessLock.writeLock();
         try {
             CacheElement<V> element = _storage.remove(k);
-            if( element == null ) return null;
+            if (element == null)
+                return null;
             valid = element.validAt(_timeSource.instant());
             v = element.getObject();
         } finally {
@@ -302,7 +300,7 @@ public class Cache<K, V> {
 
         long stamp = _accessLock.readLock();
         try {
-          return _storage.size();
+            return _storage.size();
         } finally {
             _accessLock.unlock(stamp);
         }
@@ -367,11 +365,12 @@ public class Cache<K, V> {
             _accessLock.unlock(stamp);
         }
 
-        expiredEntries.forEach( v -> _eventListener.notifyExpired(this, v));
+        expiredEntries.forEach(v -> _eventListener.notifyExpired(this, v));
     }
 
     /**
-     * Get  {@link  List<V>} of entries.
+     * Get {@link List<V>} of entries.
+     *
      * @return list of entries.
      */
     public List<CacheElement<V>> entries() {

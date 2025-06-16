@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class callback_sec_parms4 implements XdrAble {
     public int cb_secflavor;
@@ -33,37 +35,37 @@ public class callback_sec_parms4 implements XdrAble {
     }
 
     public callback_sec_parms4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(cb_secflavor);
-        switch ( cb_secflavor ) {
-        case nfs4_prot.AUTH_NONE:
-            break;
-        case nfs4_prot.AUTH_SYS:
-            cbsp_sys_cred.xdrEncode(xdr);
-            break;
-        case nfs4_prot.RPCSEC_GSS:
-            cbsp_gss_handles.xdrEncode(xdr);
-            break;
+        switch (cb_secflavor) {
+            case nfs4_prot.AUTH_NONE:
+                break;
+            case nfs4_prot.AUTH_SYS:
+                cbsp_sys_cred.xdrEncode(xdr);
+                break;
+            case nfs4_prot.RPCSEC_GSS:
+                cbsp_gss_handles.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cb_secflavor = xdr.xdrDecodeInt();
-        switch ( cb_secflavor ) {
-        case nfs4_prot.AUTH_NONE:
-            break;
-        case nfs4_prot.AUTH_SYS:
-            cbsp_sys_cred = new authsys_parms(xdr);
-            break;
-        case nfs4_prot.RPCSEC_GSS:
-            cbsp_gss_handles = new gss_cb_handles4(xdr);
-            break;
+        switch (cb_secflavor) {
+            case nfs4_prot.AUTH_NONE:
+                break;
+            case nfs4_prot.AUTH_SYS:
+                cbsp_sys_cred = new authsys_parms(xdr);
+                break;
+            case nfs4_prot.RPCSEC_GSS:
+                cbsp_gss_handles = new gss_cb_handles4(xdr);
+                break;
         }
     }
 

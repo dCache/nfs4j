@@ -18,13 +18,15 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public class bitmap4 implements XdrAble, Iterable<Integer> {
 
@@ -34,23 +36,35 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
         this(new int[] {0, 0});
     }
 
-    public bitmap4(int [] value) {
+    public bitmap4(int[] value) {
         this.value = value;
     }
 
     public bitmap4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = value.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { xdr.xdrEncodeInt(value[$idx]); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = value.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                xdr.xdrEncodeInt(value[$idx]);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); value = new int[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx] = xdr.xdrDecodeInt(); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = xdr.xdrDecodeInt();
+            value = new int[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                value[$idx] = xdr.xdrDecodeInt();
+            }
+        }
     }
 
     /**
@@ -60,8 +74,8 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
      * @throws IllegalArgumentException if no values are provided
      * @return bitmap
      */
-    public static bitmap4 of(int ... values) {
-        if(values.length == 0) {
+    public static bitmap4 of(int... values) {
+        if (values.length == 0) {
             throw new IllegalArgumentException("No values provided");
         }
 
@@ -69,14 +83,15 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
          * find max value to calculate bitmap size
          */
         int max = values[0];
-        for(int v: values) {
-            if( v > max) max = v;
+        for (int v : values) {
+            if (v > max)
+                max = v;
         }
 
         /*
          * create a bitmap to hold values
          */
-        int n = max/Integer.SIZE + 1;
+        int n = max / Integer.SIZE + 1;
         bitmap4 bitmap = new bitmap4(new int[n]);
 
         /*
@@ -108,7 +123,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
     public boolean isSet(int bit) {
 
         int bitmapIdx = bit / Integer.SIZE;
-        if (value == null || bitmapIdx  + 1 > value.length) {
+        if (value == null || bitmapIdx + 1 > value.length) {
             return false;
         }
         return ((value[bitmapIdx] >> bit % Integer.SIZE) & 1) > 0;
@@ -129,8 +144,8 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
 
     /**
      * Returns <tt>true</tt> if, and only if, none of the bits are set.
-     * @return <tt>true</tt> if none of the bits are set, otherwise
-     * <tt>false</tt>
+     *
+     * @return <tt>true</tt> if none of the bits are set, otherwise <tt>false</tt>
      */
     public boolean isEmpty() {
 
@@ -202,8 +217,7 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
         if (value != null) {
             int n;
             // point n to last non zero element
-            for(n = value.length; n > 0 && value[n-1] == 0; n--)
-                ;
+            for (n = value.length; n > 0 && value[n - 1] == 0; n--);
 
             for (int i = 0; i < n; i++) {
                 hash = 31 * hash + value[i];
@@ -239,14 +253,14 @@ public class bitmap4 implements XdrAble, Iterable<Integer> {
             len = value.length;
         }
 
-        if(other.value != null) {
+        if (other.value != null) {
             olen = other.value.length;
         }
 
         int i;
         int match = Math.min(len, olen);
-        for(i = 0; i < match; i++) {
-            if ( value[i] != other.value[i] ) {
+        for (i = 0; i < match; i++) {
+            if (value[i] != other.value[i]) {
                 return false;
             }
         }

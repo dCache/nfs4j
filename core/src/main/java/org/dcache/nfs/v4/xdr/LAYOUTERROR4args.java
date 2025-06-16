@@ -7,38 +7,52 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LAYOUTERROR4args implements XdrAble {
     public offset4 lea_offset;
     public length4 lea_length;
     public stateid4 lea_stateid;
-    public device_error4 [] lea_errors;
+    public device_error4[] lea_errors;
 
     public LAYOUTERROR4args() {
     }
 
     public LAYOUTERROR4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lea_offset.xdrEncode(xdr);
         lea_length.xdrEncode(xdr);
         lea_stateid.xdrEncode(xdr);
-        { int $size = lea_errors.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { lea_errors[$idx].xdrEncode(xdr); } }
+        {
+            int $size = lea_errors.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                lea_errors[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lea_offset = new offset4(xdr);
         lea_length = new length4(xdr);
         lea_stateid = new stateid4(xdr);
-        { int $size = xdr.xdrDecodeInt(); lea_errors = new device_error4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { lea_errors[$idx] = new device_error4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            lea_errors = new device_error4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                lea_errors[$idx] = new device_error4(xdr);
+            }
+        }
     }
 
 }

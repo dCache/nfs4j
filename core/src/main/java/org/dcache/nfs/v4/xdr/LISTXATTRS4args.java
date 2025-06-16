@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LISTXATTRS4args implements XdrAble {
     public nfs_cookie4 lxa_cookie;
@@ -20,18 +22,18 @@ public class LISTXATTRS4args implements XdrAble {
     }
 
     public LISTXATTRS4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lxa_cookie.xdrEncode(xdr);
         lxa_maxcount.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lxa_cookie = new nfs_cookie4(xdr);
         lxa_maxcount = new count4(xdr);
     }

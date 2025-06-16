@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class BIND_CONN_TO_SESSION4resok implements XdrAble {
     public sessionid4 bctsr_sessid;
@@ -33,19 +35,19 @@ public class BIND_CONN_TO_SESSION4resok implements XdrAble {
     }
 
     public BIND_CONN_TO_SESSION4resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         bctsr_sessid.xdrEncode(xdr);
         xdr.xdrEncodeInt(bctsr_dir);
         xdr.xdrEncodeBoolean(bctsr_use_conn_in_rdma_mode);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         bctsr_sessid = new sessionid4(xdr);
         bctsr_dir = xdr.xdrDecodeInt();
         bctsr_use_conn_in_rdma_mode = xdr.xdrDecodeBoolean();

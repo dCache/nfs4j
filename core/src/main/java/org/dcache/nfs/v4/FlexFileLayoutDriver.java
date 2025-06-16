@@ -19,9 +19,12 @@
  */
 package org.dcache.nfs.v4;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.function.BiConsumer;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ServerFaultException;
@@ -47,8 +50,6 @@ import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.nfs.v4.xdr.utf8str_mixed;
 import org.dcache.oncrpc4j.xdr.Xdr;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
  * layout driver for Flexible File layout type as defined in
  * <a href="https://www.rfc-editor.org/rfc/rfc8435.txt">rfc8435</a>
@@ -56,8 +57,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class FlexFileLayoutDriver implements LayoutDriver {
 
     /**
-     * The {@code nfsVersion} and {@code nfsMinorVersion} represent the
-     * NFS protocol to be used to access the storage device.
+     * The {@code nfsVersion} and {@code nfsMinorVersion} represent the NFS protocol to be used to access the storage
+     * device.
      */
     private final int nfsVersion;
     private final int nfsMinorVersion;
@@ -68,8 +69,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final fattr4_owner userPrincipal;
 
     /**
-     * Group principal, which must be used by client when RPC packet sent to data
-     * server.
+     * Group principal, which must be used by client when RPC packet sent to data server.
      */
     private final fattr4_owner_group groupPrincipal;
 
@@ -79,8 +79,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final BiConsumer<CompoundContext, ff_layoutreturn4> layoutReturnConsumer;
 
     /**
-     * Layout flags, like no IO through MDS.
-     * See rfc8435#5.1
+     * Layout flags, like no IO through MDS. See rfc8435#5.1
      */
     private final uint32_t layoutFlags;
 
@@ -92,10 +91,9 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     private final uint32_t ioBufferSize;
 
     /**
-     * Create new FlexFile layout driver with. The @code nfsVersion} and
-     * {@code nfsMinorVersion} represent the protocol to be used to access the
-     * storage device. If client uses AUTH_SYS, then provided {@code userPrincipal}
-     * and {@code groupPrincipal} must be used for client - data server communication.
+     * Create new FlexFile layout driver with. The @code nfsVersion} and {@code nfsMinorVersion} represent the protocol
+     * to be used to access the storage device. If client uses AUTH_SYS, then provided {@code userPrincipal} and
+     * {@code groupPrincipal} must be used for client - data server communication.
      *
      * @param nfsVersion nfs version to use
      * @param nfsMinorVersion nfs minor version to use.
@@ -118,7 +116,6 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         this.ioBufferSize = new uint32_t(ioBufferSize);
         this.layoutFlags = new uint32_t(flags);
     }
-
 
     @Override
     public layouttype4 getLayoutType() {
@@ -143,7 +140,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
             flexfile_type.ffda_netaddrs.value[i] = new netaddr4(deviceAddress[i]);
         }
 
-        try(Xdr xdr = new Xdr(128)) {
+        try (Xdr xdr = new Xdr(128)) {
             xdr.beginEncoding();
             flexfile_type.xdrEncode(xdr);
             xdr.endEncoding();
@@ -155,13 +152,14 @@ public class FlexFileLayoutDriver implements LayoutDriver {
             return addr;
         } catch (IOException e) {
             /* forced by interface, should never happen. */
-            throw new RuntimeException("Unexpected IOException:"  + e.getMessage(), e);
+            throw new RuntimeException("Unexpected IOException:" + e.getMessage(), e);
         }
 
     }
 
     @Override
-    public layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4 ... deviceids) throws ChimeraNFSException {
+    public layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4... deviceids)
+            throws ChimeraNFSException {
 
         checkArgument(deviceids.length > 0, "Layout driver supports need at least one (1) device.");
 
@@ -193,7 +191,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
         ds.ffds_deviceid = deviceid;
         ds.ffds_efficiency = new uint32_t(efficiency);
         ds.ffds_stateid = stateid;
-        ds.ffds_fh_vers = new nfs_fh4[]{fileHandle};
+        ds.ffds_fh_vers = new nfs_fh4[] {fileHandle};
         ds.ffds_user = userPrincipal;
         ds.ffds_group = groupPrincipal;
         return ds;
@@ -210,8 +208,7 @@ public class FlexFileLayoutDriver implements LayoutDriver {
     }
 
     /**
-     * Consumes flexfiles specific data provided on layout return. The
-     * must be xdr encoded ff_layoutreturn4 object.
+     * Consumes flexfiles specific data provided on layout return. The must be xdr encoded ff_layoutreturn4 object.
      *
      * See: https://www.rfc-editor.org/rfc/rfc8435.txt#9
      *

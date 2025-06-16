@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class IO_ADVISE4args implements XdrAble {
     public stateid4 iaa_stateid;
@@ -22,12 +24,12 @@ public class IO_ADVISE4args implements XdrAble {
     }
 
     public IO_ADVISE4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         iaa_stateid.xdrEncode(xdr);
         iaa_offset.xdrEncode(xdr);
         iaa_count.xdrEncode(xdr);
@@ -35,7 +37,7 @@ public class IO_ADVISE4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         iaa_stateid = new stateid4(xdr);
         iaa_offset = new offset4(xdr);
         iaa_count = new length4(xdr);

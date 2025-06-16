@@ -7,13 +7,15 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
+import org.dcache.nfs.v4.xdr.nfstime4;
+import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import org.dcache.nfs.v4.xdr.nfstime4;
-import org.dcache.nfs.v4.xdr.uint64_t;
 
 public class ff_io_latency4 implements XdrAble {
 
@@ -29,12 +31,12 @@ public class ff_io_latency4 implements XdrAble {
     }
 
     public ff_io_latency4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffil_ops_requested.xdrEncode(xdr);
         ffil_bytes_requested.xdrEncode(xdr);
         ffil_ops_completed.xdrEncode(xdr);
@@ -44,7 +46,7 @@ public class ff_io_latency4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffil_ops_requested = new uint64_t(xdr);
         ffil_bytes_requested = new uint64_t(xdr);
         ffil_ops_completed = new uint64_t(xdr);

@@ -22,6 +22,7 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.CB_COMPOUND4args;
 import org.dcache.nfs.v4.xdr.CB_COMPOUND4res;
@@ -75,8 +76,7 @@ import org.dcache.oncrpc4j.xdr.XdrVoid;
 public class ClientCB {
 
     /**
-     * call-back rpc program version number.
-     * cross-vendor agreed to have '1'.
+     * call-back rpc program version number. cross-vendor agreed to have '1'.
      */
     private static final int CB_VERSION = 1;
     private final sessionid4 _session;
@@ -100,7 +100,6 @@ public class ClientCB {
      */
     private final RpcCall _rpc;
 
-
     /** Session associated with this callback channel */
     private final ClientSession _clientSession;
 
@@ -112,7 +111,7 @@ public class ClientCB {
      * @param program RPC program number to use
      * @param sec_parms supported security flavors
      */
-    ClientCB(RpcTransport transport, int program, int minorVersion,  sessionid4 session, int maxrequests,
+    ClientCB(RpcTransport transport, int program, int minorVersion, sessionid4 session, int maxrequests,
             callback_sec_parms4[] sec_parms) {
         _minorVersion = minorVersion;
         _session = session;
@@ -147,7 +146,7 @@ public class ClientCB {
         _rpc.call(nfs4_prot.CB_NULL_1, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 1, TimeUnit.SECONDS);
     }
 
-    private XdrAble generateCompound(ClientSession.SessionSlot sessionSlot, String tag, nfs_cb_argop4...cbOperations) {
+    private XdrAble generateCompound(ClientSession.SessionSlot sessionSlot, String tag, nfs_cb_argop4... cbOperations) {
 
         CB_SEQUENCE4args cbSequence = new CB_SEQUENCE4args();
         cbSequence.csa_cachethis = false;
@@ -191,7 +190,7 @@ public class ClientCB {
 
         var slot = _clientSession.acquireSlot();
         try {
-            XdrAble args = generateCompound(slot,"cb_layout_recall_fs", opArgs);
+            XdrAble args = generateCompound(slot, "cb_layout_recall_fs", opArgs);
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
         } finally {
             _clientSession.releaseSlot(slot);
@@ -221,7 +220,7 @@ public class ClientCB {
 
         var slot = _clientSession.acquireSlot();
         try {
-            XdrAble args = generateCompound(slot,"cb_recall_delegation", opArgs);
+            XdrAble args = generateCompound(slot, "cb_recall_delegation", opArgs);
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
         } finally {
             _clientSession.releaseSlot(slot);
@@ -237,7 +236,8 @@ public class ClientCB {
      * @throws OncRpcException if an RPC error occurs
      * @throws IOException if an I/O error occurs
      */
-    public void cbLayoutRecallFile(nfs_fh4 fh, stateid4 stateid, layouttype4 layouttype) throws OncRpcException, IOException {
+    public void cbLayoutRecallFile(nfs_fh4 fh, stateid4 stateid, layouttype4 layouttype) throws OncRpcException,
+            IOException {
 
         CB_LAYOUTRECALL4args cbLayoutrecall = new CB_LAYOUTRECALL4args();
         cbLayoutrecall.clora_changed = true;
@@ -256,8 +256,8 @@ public class ClientCB {
         opArgs.opcblayoutrecall = cbLayoutrecall;
 
         var slot = _clientSession.acquireSlot();
-        try{
-            XdrAble args = generateCompound(slot,"cb_layout_recall_file", opArgs);
+        try {
+            XdrAble args = generateCompound(slot, "cb_layout_recall_file", opArgs);
 
             CB_COMPOUND4res res = new CB_COMPOUND4res();
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
@@ -301,8 +301,8 @@ public class ClientCB {
         opArgs.opcbnotify_deviceid = cbDeleteDeciveId;
 
         var slot = _clientSession.acquireSlot();
-        try{
-            XdrAble args = generateCompound(slot,"cb_delete_device", opArgs);
+        try {
+            XdrAble args = generateCompound(slot, "cb_delete_device", opArgs);
 
             CB_COMPOUND4res res = new CB_COMPOUND4res();
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
@@ -315,12 +315,13 @@ public class ClientCB {
     /**
      * Notify the client that offload copy has been completed.
      *
-     * @param fh       file handle of the file
-     * @param stateid  stateid of the file
+     * @param fh file handle of the file
+     * @param stateid stateid of the file
      * @param response write response
-     * @param status   status of the offload
+     * @param status status of the offload
      */
-    public void cbOffload(nfs_fh4 fh, stateid4 stateid, write_response4 response, int status) throws OncRpcException, IOException {
+    public void cbOffload(nfs_fh4 fh, stateid4 stateid, write_response4 response, int status) throws OncRpcException,
+            IOException {
 
         CB_OFFLOAD4args copyOffload = new CB_OFFLOAD4args();
 
@@ -335,8 +336,8 @@ public class ClientCB {
         opArgs.opcboffload = copyOffload;
 
         var slot = _clientSession.acquireSlot();
-        try{
-            XdrAble args = generateCompound(slot,"cb_offload", opArgs);
+        try {
+            XdrAble args = generateCompound(slot, "cb_offload", opArgs);
 
             CB_COMPOUND4res res = new CB_COMPOUND4res();
             _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
@@ -345,6 +346,5 @@ public class ClientCB {
             _clientSession.releaseSlot(slot);
         }
     }
-
 
 }

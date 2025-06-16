@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class open_claim4 implements XdrAble {
     public int claim;
@@ -36,59 +38,59 @@ public class open_claim4 implements XdrAble {
     }
 
     public open_claim4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(claim);
-        switch ( claim ) {
-        case open_claim_type4.CLAIM_NULL:
-            file.xdrEncode(xdr);
-            break;
-        case open_claim_type4.CLAIM_PREVIOUS:
-            xdr.xdrEncodeInt(delegate_type);
-            break;
-        case open_claim_type4.CLAIM_DELEGATE_CUR:
-            delegate_cur_info.xdrEncode(xdr);
-            break;
-        case open_claim_type4.CLAIM_DELEGATE_PREV:
-            file_delegate_prev.xdrEncode(xdr);
-            break;
-        case open_claim_type4.CLAIM_FH:
-            break;
-        case open_claim_type4.CLAIM_DELEG_PREV_FH:
-            break;
-        case open_claim_type4.CLAIM_DELEG_CUR_FH:
-            oc_delegate_stateid.xdrEncode(xdr);
-            break;
+        switch (claim) {
+            case open_claim_type4.CLAIM_NULL:
+                file.xdrEncode(xdr);
+                break;
+            case open_claim_type4.CLAIM_PREVIOUS:
+                xdr.xdrEncodeInt(delegate_type);
+                break;
+            case open_claim_type4.CLAIM_DELEGATE_CUR:
+                delegate_cur_info.xdrEncode(xdr);
+                break;
+            case open_claim_type4.CLAIM_DELEGATE_PREV:
+                file_delegate_prev.xdrEncode(xdr);
+                break;
+            case open_claim_type4.CLAIM_FH:
+                break;
+            case open_claim_type4.CLAIM_DELEG_PREV_FH:
+                break;
+            case open_claim_type4.CLAIM_DELEG_CUR_FH:
+                oc_delegate_stateid.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         claim = xdr.xdrDecodeInt();
-        switch ( claim ) {
-        case open_claim_type4.CLAIM_NULL:
-            file = new component4(xdr);
-            break;
-        case open_claim_type4.CLAIM_PREVIOUS:
-            delegate_type = xdr.xdrDecodeInt();
-            break;
-        case open_claim_type4.CLAIM_DELEGATE_CUR:
-            delegate_cur_info = new open_claim_delegate_cur4(xdr);
-            break;
-        case open_claim_type4.CLAIM_DELEGATE_PREV:
-            file_delegate_prev = new component4(xdr);
-            break;
-        case open_claim_type4.CLAIM_FH:
-            break;
-        case open_claim_type4.CLAIM_DELEG_PREV_FH:
-            break;
-        case open_claim_type4.CLAIM_DELEG_CUR_FH:
-            oc_delegate_stateid = new stateid4(xdr);
-            break;
+        switch (claim) {
+            case open_claim_type4.CLAIM_NULL:
+                file = new component4(xdr);
+                break;
+            case open_claim_type4.CLAIM_PREVIOUS:
+                delegate_type = xdr.xdrDecodeInt();
+                break;
+            case open_claim_type4.CLAIM_DELEGATE_CUR:
+                delegate_cur_info = new open_claim_delegate_cur4(xdr);
+                break;
+            case open_claim_type4.CLAIM_DELEGATE_PREV:
+                file_delegate_prev = new component4(xdr);
+                break;
+            case open_claim_type4.CLAIM_FH:
+                break;
+            case open_claim_type4.CLAIM_DELEG_PREV_FH:
+                break;
+            case open_claim_type4.CLAIM_DELEG_CUR_FH:
+                oc_delegate_stateid = new stateid4(xdr);
+                break;
         }
     }
 

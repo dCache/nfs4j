@@ -7,12 +7,14 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
+import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import org.dcache.nfs.v4.xdr.uint32_t;
 
 public class ff_mirrors_hint implements XdrAble {
     public boolean ffmc_valid;
@@ -22,22 +24,22 @@ public class ff_mirrors_hint implements XdrAble {
     }
 
     public ff_mirrors_hint(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(ffmc_valid);
-        if ( ffmc_valid == true ) {
+        if (ffmc_valid == true) {
             ffmc_mirrors.xdrEncode(xdr);
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffmc_valid = xdr.xdrDecodeBoolean();
-        if ( ffmc_valid == true ) {
+        if (ffmc_valid == true) {
             ffmc_mirrors = new uint32_t(xdr);
         }
     }

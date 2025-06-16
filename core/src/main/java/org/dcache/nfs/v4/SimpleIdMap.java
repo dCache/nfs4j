@@ -20,8 +20,7 @@
 package org.dcache.nfs.v4;
 
 /**
- * Simple implementation of {@link NfsIdMapping} which converts number into
- * string representation and vice versa.
+ * Simple implementation of {@link NfsIdMapping} which converts number into string representation and vice versa.
  *
  * @since 0.0.4
  */

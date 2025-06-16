@@ -19,11 +19,11 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.stateid4;
-import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.v4.xdr.uint32_t;
+import org.junit.Test;
 
 public class stateid4Test {
 
@@ -39,7 +39,7 @@ public class stateid4Test {
         stateidB.other = "state".getBytes();
 
         assertTrue("equal keys not equal", stateidA.equals(stateidB));
-        assertTrue("equal, but different hashCode", stateidA.hashCode() == stateidB.hashCode() );
+        assertTrue("equal, but different hashCode", stateidA.hashCode() == stateidB.hashCode());
         assertTrue("not equal by other and seqid must", stateidA.equalsWithSeq(stateidB));
     }
 

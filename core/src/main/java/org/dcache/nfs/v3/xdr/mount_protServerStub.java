@@ -18,14 +18,15 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcDispatchable;
 import org.dcache.oncrpc4j.xdr.XdrVoid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  */
@@ -35,108 +36,108 @@ public abstract class mount_protServerStub implements RpcDispatchable {
 
     @Override
     public void dispatchOncRpcCall(RpcCall call)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
 
         int version = call.getProgramVersion();
         int procedure = call.getProcedure();
 
-        if ( version == 3 ) {
-            switch ( procedure ) {
-            case 0: {
-                _log.debug("MOUNTPROC3_NULL_3");
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                MOUNTPROC3_NULL_3(call);
-                call.reply( XdrVoid.XDR_VOID);
-                break;
+        if (version == 3) {
+            switch (procedure) {
+                case 0: {
+                    _log.debug("MOUNTPROC3_NULL_3");
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    MOUNTPROC3_NULL_3(call);
+                    call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 1: {
+                    _log.debug("MOUNTPROC3_MNT_3");
+                    dirpath args$ = new dirpath();
+                    call.retrieveCall(args$);
+                    mountres3 result$ = MOUNTPROC3_MNT_3(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 2: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    mountlist result$ = MOUNTPROC3_DUMP_3(call);
+                    call.reply(result$);
+                    break;
+                }
+                case 3: {
+                    dirpath args$ = new dirpath();
+                    call.retrieveCall(args$);
+                    MOUNTPROC3_UMNT_3(call, args$);
+                    call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 4: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    MOUNTPROC3_UMNTALL_3(call);
+                    call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 5: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    exports result$ = MOUNTPROC3_EXPORT_3(call);
+                    call.reply(result$);
+                    break;
+                }
+                default:
+                    call.failProcedureUnavailable();
             }
-            case 1: {
-                _log.debug("MOUNTPROC3_MNT_3");
-                dirpath args$ = new dirpath();
-                call.retrieveCall(args$);
-                mountres3 result$ = MOUNTPROC3_MNT_3(call, args$);
-                call.reply( result$);
-                break;
-            }
-            case 2: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                mountlist result$ = MOUNTPROC3_DUMP_3(call);
-                call.reply( result$);
-                break;
-            }
-            case 3: {
-                dirpath args$ = new dirpath();
-                call.retrieveCall(args$);
-                MOUNTPROC3_UMNT_3(call, args$);
-                call.reply( XdrVoid.XDR_VOID);
-                break;
-            }
-            case 4: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                MOUNTPROC3_UMNTALL_3(call);
-                call.reply( XdrVoid.XDR_VOID);
-                break;
-            }
-            case 5: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                exports result$ = MOUNTPROC3_EXPORT_3(call);
-                call.reply( result$);
-                break;
-            }
-            default:
-                call.failProcedureUnavailable();
-            }
-        } else if ( version == 1 ) {
-            switch ( procedure ) {
-            case 0: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                MOUNTPROC_NULL_1(call);
-                call.reply( XdrVoid.XDR_VOID);
-                break;
-            }
-            case 1: {
-                dirpath args$ = new dirpath();
-                call.retrieveCall(args$);
-                fhstatus result$ = MOUNTPROC_MNT_1(call, args$);
-                call.reply( result$);
-                break;
-            }
-            case 2: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                mountlist result$ = MOUNTPROC_DUMP_1(call);
-                call.reply( result$);
-                break;
-            }
-            case 3: {
-                dirpath args$ = new dirpath();
-                call.retrieveCall(args$);
-                MOUNTPROC_UMNT_1(call, args$);
-                call.reply( XdrVoid.XDR_VOID);
-                break;
-            }
-            case 4: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                MOUNTPROC_UMNTALL_1(call);
-                call.reply( XdrVoid.XDR_VOID);
-                break;
-            }
-            case 5: {
-                _log.debug("processing message MOUNTPROC_EXPORT_1");
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                exports result$ = MOUNTPROC_EXPORT_1(call);
-                call.reply( result$);
-                break;
-            }
-            case 6: {
-                call.retrieveCall(XdrVoid.XDR_VOID);
-                exports result$ = MOUNTPROC_EXPORTALL_1(call);
-                call.reply( result$);
-                break;
-            }
-            default:
-                call.failProcedureUnavailable();
+        } else if (version == 1) {
+            switch (procedure) {
+                case 0: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    MOUNTPROC_NULL_1(call);
+                    call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 1: {
+                    dirpath args$ = new dirpath();
+                    call.retrieveCall(args$);
+                    fhstatus result$ = MOUNTPROC_MNT_1(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 2: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    mountlist result$ = MOUNTPROC_DUMP_1(call);
+                    call.reply(result$);
+                    break;
+                }
+                case 3: {
+                    dirpath args$ = new dirpath();
+                    call.retrieveCall(args$);
+                    MOUNTPROC_UMNT_1(call, args$);
+                    call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 4: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    MOUNTPROC_UMNTALL_1(call);
+                    call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 5: {
+                    _log.debug("processing message MOUNTPROC_EXPORT_1");
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    exports result$ = MOUNTPROC_EXPORT_1(call);
+                    call.reply(result$);
+                    break;
+                }
+                case 6: {
+                    call.retrieveCall(XdrVoid.XDR_VOID);
+                    exports result$ = MOUNTPROC_EXPORTALL_1(call);
+                    call.reply(result$);
+                    break;
+                }
+                default:
+                    call.failProcedureUnavailable();
             }
         } else {
-            call.failProgramMismatch(1,3);
+            call.failProgramMismatch(1, 3);
         }
     }
 

@@ -19,23 +19,7 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.jimfs.Configuration;
-import com.google.common.jimfs.Jimfs;
-import com.google.common.primitives.Longs;
-import com.sun.security.auth.UnixNumericGroupPrincipal;
-import com.sun.security.auth.UnixNumericUserPrincipal;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.dcache.nfs.status.ExistException;
-import org.dcache.nfs.status.NoEntException;
-import org.dcache.nfs.status.NotEmptyException;
-import org.dcache.nfs.v4.NfsIdMapping;
-import org.dcache.nfs.v4.SimpleIdMap;
-import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.vfs.Stat.Type;
-
-import javax.security.auth.Subject;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -49,8 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
@@ -67,14 +51,30 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.security.auth.Subject;
+
+import org.dcache.nfs.status.ExistException;
+import org.dcache.nfs.status.NoEntException;
+import org.dcache.nfs.status.NotEmptyException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.PermException;
 import org.dcache.nfs.status.ServerFaultException;
+import org.dcache.nfs.v4.NfsIdMapping;
+import org.dcache.nfs.v4.SimpleIdMap;
+import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.vfs.Stat.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
+import com.google.common.primitives.Longs;
+import com.sun.security.auth.UnixNumericGroupPrincipal;
+import com.sun.security.auth.UnixNumericUserPrincipal;
 
 /**
- * Stolen from https://github.com/kofemann/simple-nfs/blob/master/src/main/java/org/dcache/simplenfs/LocalFileSystem.java
+ * Stolen from
+ * https://github.com/kofemann/simple-nfs/blob/master/src/main/java/org/dcache/simplenfs/LocalFileSystem.java
  */
 public class DummyVFS implements VirtualFileSystem {
 
@@ -115,7 +115,7 @@ public class DummyVFS implements VirtualFileSystem {
     private final Path _root;
     private final ConcurrentMap<Long, Path> inodeToPath = new ConcurrentHashMap<>();
     private final ConcurrentMap<Path, Long> pathToInode = new ConcurrentHashMap<>();
-    private final AtomicLong fileId = new AtomicLong(1); //numbering starts at 1
+    private final AtomicLong fileId = new AtomicLong(1); // numbering starts at 1
     private final NfsIdMapping _idMapper = new SimpleIdMap();
     private final UserPrincipalLookupService _lookupService;
     private final FileSystem fs;
@@ -130,11 +130,10 @@ public class DummyVFS implements VirtualFileSystem {
                 .setDefaultAttributeValue("owner:owner", "0")
                 .setDefaultAttributeValue("posix:group", "0")
                 .setDefaultAttributeValue("posix:permissions", "rwxr-xr-x")
-                .build()
-        );
+                .build());
 
         _root = fs.getPath("/");
-        map(fileId.getAndIncrement(), _root); //so root is always inode #1
+        map(fileId.getAndIncrement(), _root); // so root is always inode #1
         _lookupService = fs.getUserPrincipalLookupService();
     }
 
@@ -168,7 +167,7 @@ public class DummyVFS implements VirtualFileSystem {
         }
         Long otherInodeNumber = pathToInode.putIfAbsent(path, inodeNumber);
         if (otherInodeNumber != null) {
-            //try rollback
+            // try rollback
             if (inodeToPath.remove(inodeNumber) != path) {
                 throw new IllegalStateException("cant map, rollback failed");
             }
@@ -187,7 +186,7 @@ public class DummyVFS implements VirtualFileSystem {
     }
 
     private void remap(long inodeNumber, Path oldPath, Path newPath) {
-        //TODO - attempt rollback?
+        // TODO - attempt rollback?
         unmap(inodeNumber, oldPath);
         map(inodeNumber, newPath);
     }
@@ -218,14 +217,14 @@ public class DummyVFS implements VirtualFileSystem {
 
     @Override
     public Inode getRootInode() throws IOException {
-        return toFileHandle(1); //always #1 (see constructor)
+        return toFileHandle(1); // always #1 (see constructor)
     }
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        //TODO - several issues
-        //2. we might accidentally allow composite paths here ("/dome/dir/down")
-        //3. we dont actually check that the parent exists
+        // TODO - several issues
+        // 2. we might accidentally allow composite paths here ("/dome/dir/down")
+        // 3. we dont actually check that the parent exists
         long parentInodeNumber = toInodeNumber(parent);
         Path parentPath = resolveInode(parentInodeNumber);
         Path child;
@@ -270,13 +269,14 @@ public class DummyVFS implements VirtualFileSystem {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
         final List<DirectoryEntry> list = new ArrayList<>();
-        try ( java.nio.file.DirectoryStream<Path> ds = Files.newDirectoryStream(path)) {
+        try (java.nio.file.DirectoryStream<Path> ds = Files.newDirectoryStream(path)) {
             int cookie = 2; // first allowed cookie
             for (Path p : ds) {
                 cookie++;
                 if (cookie > l) {
                     long ino = resolvePath(p);
-                    list.add(new DirectoryEntry(p.getFileName().toString(), toFileHandle(ino), statPath(p, ino), cookie));
+                    list.add(new DirectoryEntry(p.getFileName().toString(), toFileHandle(ino), statPath(p, ino),
+                            cookie));
                 }
             }
         }
@@ -347,10 +347,10 @@ public class DummyVFS implements VirtualFileSystem {
 
     @Override
     public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
-        //TODO - several issues
-        //1. we might not deal with "." and ".." properly
-        //2. we might accidentally allow composite paths here ("/dome/dir/down")
-        //3. we return true (changed) even though in theory a file might be renamed to itself?
+        // TODO - several issues
+        // 1. we might not deal with "." and ".." properly
+        // 2. we might accidentally allow composite paths here ("/dome/dir/down")
+        // 3. we return true (changed) even though in theory a file might be renamed to itself?
         long currentParentInodeNumber = toInodeNumber(src);
         Path currentParentPath = resolveInode(currentParentInodeNumber);
         long destParentInodeNumber = toInodeNumber(dest);
@@ -371,7 +371,7 @@ public class DummyVFS implements VirtualFileSystem {
     public Inode parentOf(Inode inode) throws IOException {
         long inodeNumber = toInodeNumber(inode);
         if (inodeNumber == 1) {
-            throw new NoEntException("no parent"); //its the root
+            throw new NoEntException("no parent"); // its the root
         }
         Path path = resolveInode(inodeNumber);
         Path parentPath = path.getParent();
@@ -384,7 +384,7 @@ public class DummyVFS implements VirtualFileSystem {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
         ByteBuffer destBuffer = ByteBuffer.wrap(data, 0, count);
-        try ( FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             return channel.read(destBuffer, offset);
         }
     }
@@ -411,7 +411,8 @@ public class DummyVFS implements VirtualFileSystem {
     }
 
     @Override
-    public Inode symlink(Inode parent, String linkName, String targetName, Subject subject, int mode) throws IOException {
+    public Inode symlink(Inode parent, String linkName, String targetName, Subject subject, int mode)
+            throws IOException {
         long parentInodeNumber = toInodeNumber(parent);
         Path parentPath = resolveInode(parentInodeNumber);
         Path link = parentPath.resolve(linkName);
@@ -439,11 +440,12 @@ public class DummyVFS implements VirtualFileSystem {
     }
 
     @Override
-    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
+    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel)
+            throws IOException {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
         ByteBuffer srcBuffer = ByteBuffer.wrap(data, 0, count);
-        try ( FileChannel channel = FileChannel.open(path, StandardOpenOption.WRITE)) {
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.WRITE)) {
             int bytesWritten = channel.write(srcBuffer, offset);
             return new WriteResult(StabilityLevel.FILE_SYNC, bytesWritten);
         }
@@ -469,9 +471,10 @@ public class DummyVFS implements VirtualFileSystem {
         stat.setGid(Integer.parseInt(((Principal) Files.getAttribute(p, "posix:group", NOFOLLOW_LINKS)).getName()));
         stat.setUid(Integer.parseInt(((Principal) Files.getAttribute(p, "owner:owner", NOFOLLOW_LINKS)).getName()));
 
-        Set<PosixFilePermission> permissions = (Set<PosixFilePermission>) Files.getAttribute(p, "posix:permissions", NOFOLLOW_LINKS);
+        Set<PosixFilePermission> permissions = (Set<PosixFilePermission>) Files.getAttribute(p, "posix:permissions",
+                NOFOLLOW_LINKS);
         stat.setMode(permissionsToMode(permissions, attrs));
-//        stat.setNlink((Integer) Files.getAttribute(p, "nlink", NOFOLLOW_LINKS));
+        // stat.setNlink((Integer) Files.getAttribute(p, "nlink", NOFOLLOW_LINKS));
         stat.setDev(17);
         stat.setIno(inodeNumber);
         stat.setRdev(17);
@@ -498,7 +501,8 @@ public class DummyVFS implements VirtualFileSystem {
 
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
-        PosixFileAttributeView attributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class, NOFOLLOW_LINKS);
+        PosixFileAttributeView attributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class,
+                NOFOLLOW_LINKS);
         if (stat.isDefined(Stat.StatAttribute.OWNER)) {
             try {
                 String uid = String.valueOf(stat.getUid());
@@ -525,7 +529,7 @@ public class DummyVFS implements VirtualFileSystem {
             }
         }
         if (stat.isDefined(Stat.StatAttribute.SIZE)) {
-            try ( RandomAccessFile raf = new RandomAccessFile(path.toFile(), "w")) {
+            try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "w")) {
                 raf.setLength(stat.getSize());
             }
         }
@@ -595,8 +599,7 @@ public class DummyVFS implements VirtualFileSystem {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
 
-        UserDefinedFileAttributeView view
-                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+        UserDefinedFileAttributeView view = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
 
         ByteBuffer buf = ByteBuffer.allocate(view.size(attr));
         view.read(attr, buf);
@@ -608,8 +611,7 @@ public class DummyVFS implements VirtualFileSystem {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
 
-        UserDefinedFileAttributeView view
-                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+        UserDefinedFileAttributeView view = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
 
         ByteBuffer buf = ByteBuffer.wrap(value);
         view.write(attr, buf);
@@ -620,8 +622,7 @@ public class DummyVFS implements VirtualFileSystem {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
 
-        UserDefinedFileAttributeView view
-                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+        UserDefinedFileAttributeView view = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
 
         return view.list().toArray(new String[0]);
     }
@@ -632,12 +633,10 @@ public class DummyVFS implements VirtualFileSystem {
         long inodeNumber = toInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
 
-        UserDefinedFileAttributeView view
-                = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+        UserDefinedFileAttributeView view = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
 
         view.delete(attr);
     }
-
 
     private static Principal asUserPrincipal(int uid) {
         return new UserPrincipal() {

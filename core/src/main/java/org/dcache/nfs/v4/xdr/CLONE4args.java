@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class CLONE4args implements XdrAble {
     public stateid4 cl_src_stateid;
@@ -23,12 +25,12 @@ public class CLONE4args implements XdrAble {
     }
 
     public CLONE4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cl_src_stateid.xdrEncode(xdr);
         cl_dst_stateid.xdrEncode(xdr);
         cl_src_offset.xdrEncode(xdr);
@@ -37,7 +39,7 @@ public class CLONE4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cl_src_stateid = new stateid4(xdr);
         cl_dst_stateid = new stateid4(xdr);
         cl_src_offset = new offset4(xdr);

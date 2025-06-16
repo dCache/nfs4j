@@ -7,33 +7,47 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class read_plus_res4 implements XdrAble {
     public boolean rpr_eof;
-    public read_plus_content [] rpr_contents;
+    public read_plus_content[] rpr_contents;
 
     public read_plus_res4() {
     }
 
     public read_plus_res4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(rpr_eof);
-        { int $size = rpr_contents.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { rpr_contents[$idx].xdrEncode(xdr); } }
+        {
+            int $size = rpr_contents.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                rpr_contents[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         rpr_eof = xdr.xdrDecodeBoolean();
-        { int $size = xdr.xdrDecodeInt(); rpr_contents = new read_plus_content[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { rpr_contents[$idx] = new read_plus_content(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            rpr_contents = new read_plus_content[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                rpr_contents[$idx] = new read_plus_content(xdr);
+            }
+        }
     }
 
 }

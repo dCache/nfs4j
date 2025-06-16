@@ -7,12 +7,14 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
+import org.dcache.nfs.v4.xdr.uint32_t;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import org.dcache.nfs.v4.xdr.uint32_t;
 
 public class ff_device_versions4 implements XdrAble {
     public uint32_t ffdv_version;
@@ -25,12 +27,12 @@ public class ff_device_versions4 implements XdrAble {
     }
 
     public ff_device_versions4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffdv_version.xdrEncode(xdr);
         ffdv_minorversion.xdrEncode(xdr);
         ffdv_rsize.xdrEncode(xdr);
@@ -39,7 +41,7 @@ public class ff_device_versions4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffdv_version = new uint32_t(xdr);
         ffdv_minorversion = new uint32_t(xdr);
         ffdv_rsize = new uint32_t(xdr);

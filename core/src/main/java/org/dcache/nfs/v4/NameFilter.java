@@ -19,25 +19,28 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Utf8;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadNameException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.NameTooLongException;
+
+import com.google.common.base.Utf8;
 
 class NameFilter {
 
     private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     /* utility calls */
-    private NameFilter(){}
+    private NameFilter() {
+    }
 
     /**
-     * Validate name and convert into UTB8 {@link String}. Same as {@link NameFilter#convertPath(byte[])},
-     * except, characters '.', '..', and '/' are not will throw BadNameException.
-     * The valid name length must not exceed {@link NFSv4Defaults#NFS4_MAXFILENAME}.
+     * Validate name and convert into UTB8 {@link String}. Same as {@link NameFilter#convertPath(byte[])}, except,
+     * characters '.', '..', and '/' are not will throw BadNameException. The valid name length must not exceed
+     * {@link NFSv4Defaults#NFS4_MAXFILENAME}.
      *
      * @param bytes to convert
      * @return string
@@ -67,8 +70,7 @@ class NameFilter {
      *
      * @param bytes to convert
      * @return string
-     * @throws ChimeraNFSException if provided {@code bytes} are not a UTF8
-     * encoded.
+     * @throws ChimeraNFSException if provided {@code bytes} are not a UTF8 encoded.
      */
     public static String convertPath(byte[] bytes) throws ChimeraNFSException {
 

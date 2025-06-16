@@ -146,7 +146,8 @@ public final class nfsstat {
     public static final int NFSERR_NOXATTR = 10095;
     public static final int NFSERR_XATTR2BIG = 10096;
 
-    private nfsstat() {/* no instance allowed */};
+    private nfsstat() {
+        /* no instance allowed */};
 
     public static String toString(int errorCode) {
 

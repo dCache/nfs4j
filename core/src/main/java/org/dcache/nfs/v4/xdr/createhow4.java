@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class createhow4 implements XdrAble {
     public int mode;
@@ -34,41 +36,41 @@ public class createhow4 implements XdrAble {
     }
 
     public createhow4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(mode);
-        switch ( mode ) {
-        case createmode4.UNCHECKED4:
-        case createmode4.GUARDED4:
-            createattrs.xdrEncode(xdr);
-            break;
-        case createmode4.EXCLUSIVE4:
-            createverf.xdrEncode(xdr);
-            break;
-        case createmode4.EXCLUSIVE4_1:
-            ch_createboth.xdrEncode(xdr);
-            break;
+        switch (mode) {
+            case createmode4.UNCHECKED4:
+            case createmode4.GUARDED4:
+                createattrs.xdrEncode(xdr);
+                break;
+            case createmode4.EXCLUSIVE4:
+                createverf.xdrEncode(xdr);
+                break;
+            case createmode4.EXCLUSIVE4_1:
+                ch_createboth.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         mode = xdr.xdrDecodeInt();
-        switch ( mode ) {
-        case createmode4.UNCHECKED4:
-        case createmode4.GUARDED4:
-            createattrs = new fattr4(xdr);
-            break;
-        case createmode4.EXCLUSIVE4:
-            createverf = new verifier4(xdr);
-            break;
-        case createmode4.EXCLUSIVE4_1:
-            ch_createboth = new creatverfattr(xdr);
-            break;
+        switch (mode) {
+            case createmode4.UNCHECKED4:
+            case createmode4.GUARDED4:
+                createattrs = new fattr4(xdr);
+                break;
+            case createmode4.EXCLUSIVE4:
+                createverf = new verifier4(xdr);
+                break;
+            case createmode4.EXCLUSIVE4_1:
+                ch_createboth = new creatverfattr(xdr);
+                break;
         }
     }
 

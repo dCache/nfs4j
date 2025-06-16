@@ -19,13 +19,15 @@
  */
 package org.dcache.nfs;
 
+import static org.dcache.nfs.HostEntryComparator.*;
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.dcache.nfs.HostEntryComparator.*;
 
 public class HostEntryComparatorTest {
 
@@ -73,18 +75,16 @@ public class HostEntryComparatorTest {
                 "lab-cwn01.site.com",
                 "10.1.2.2",
                 "fe80::5e26:aff:fe78:4866",
-                "10.1.2.0/24"
-        );
+                "10.1.2.0/24");
 
         List<String> expected = Arrays.asList(
                 "fe80::5e26:aff:fe78:4866",
                 "10.1.2.2",
                 "lab-cwn01.site.com",
                 "10.1.2.0/24",
-                "lab-*wn*.site.com"
-        );
+                "lab-*wn*.site.com");
 
-        Comparator<String> hostComparator = (a,b) -> compare(a, b);
+        Comparator<String> hostComparator = (a, b) -> compare(a, b);
         Collections.sort(hosts, hostComparator);
         assertEquals(expected, hosts);
     }

@@ -21,6 +21,9 @@ package org.dcache.rquota;
 
 import static org.dcache.rquota.QuotaVfs.GROUP_QUOTA;
 import static org.dcache.rquota.QuotaVfs.USER_QUOTA;
+
+import javax.security.auth.Subject;
+
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.util.SubjectHolder;
@@ -36,8 +39,6 @@ import org.dcache.rquota.xdr.setquota_args;
 import org.dcache.rquota.xdr.setquota_rslt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.Subject;
 
 public class QuotaSvc extends rquotaServerStub {
 
@@ -105,7 +106,6 @@ public class QuotaSvc extends rquotaServerStub {
         setquota_rslt result = new setquota_rslt();
         String path = "/" + arg1.sqa_pathp; // leading slash is never sent by the client
 
-
         FsExport export = exportTable.getExport(path, call$.getTransport().getRemoteSocketAddress().getAddress());
         if (export == null) {
             result.status = qr_status.Q_EPERM;
@@ -127,7 +127,6 @@ public class QuotaSvc extends rquotaServerStub {
         setquota_rslt result = new setquota_rslt();
         String path = "/" + arg1.sqa_pathp; // leading slash is never sent by the client
 
-
         FsExport export = exportTable.getExport(path, call$.getTransport().getRemoteSocketAddress().getAddress());
         if (export == null) {
             result.status = qr_status.Q_EPERM;
@@ -148,8 +147,8 @@ public class QuotaSvc extends rquotaServerStub {
      * Check if the given subject can query the quota for the given id and type.
      *
      * @param subject the subject to check
-     * @param id      the id to check
-     * @param type    the type to check
+     * @param id the id to check
+     * @param type the type to check
      * @return true if the subject can query the quota, false otherwise
      */
     private boolean canQuery(Subject subject, int id, int type) {

@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class PATHCONF3resok implements XdrAble {
     public post_op_attr obj_attributes;
@@ -37,12 +39,12 @@ public class PATHCONF3resok implements XdrAble {
     }
 
     public PATHCONF3resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         obj_attributes.xdrEncode(xdr);
         linkmax.xdrEncode(xdr);
         name_max.xdrEncode(xdr);
@@ -53,7 +55,7 @@ public class PATHCONF3resok implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         obj_attributes = new post_op_attr(xdr);
         linkmax = new uint32(xdr);
         name_max = new uint32(xdr);

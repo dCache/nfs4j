@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class LAYOUTGET4args implements XdrAble {
     public boolean loga_signal_layout_avail;
@@ -38,12 +40,12 @@ public class LAYOUTGET4args implements XdrAble {
     }
 
     public LAYOUTGET4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(loga_signal_layout_avail);
         xdr.xdrEncodeInt(loga_layout_type);
         xdr.xdrEncodeInt(loga_iomode);
@@ -55,7 +57,7 @@ public class LAYOUTGET4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         loga_signal_layout_avail = xdr.xdrDecodeBoolean();
         loga_layout_type = xdr.xdrDecodeInt();
         loga_iomode = xdr.xdrDecodeInt();

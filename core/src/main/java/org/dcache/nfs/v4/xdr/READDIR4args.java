@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class READDIR4args implements XdrAble {
     public nfs_cookie4 cookie;
@@ -35,12 +37,12 @@ public class READDIR4args implements XdrAble {
     }
 
     public READDIR4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cookie.xdrEncode(xdr);
         cookieverf.xdrEncode(xdr);
         dircount.xdrEncode(xdr);
@@ -49,7 +51,7 @@ public class READDIR4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cookie = new nfs_cookie4(xdr);
         cookieverf = new verifier4(xdr);
         dircount = new count4(xdr);

@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class app_data_block4 implements XdrAble {
     public offset4 adb_offset;
@@ -19,18 +21,18 @@ public class app_data_block4 implements XdrAble {
     public length4 adb_reloff_blocknum;
     public count4 adb_block_num;
     public length4 adb_reloff_pattern;
-    public byte [] adb_pattern;
+    public byte[] adb_pattern;
 
     public app_data_block4() {
     }
 
     public app_data_block4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         adb_offset.xdrEncode(xdr);
         adb_block_size.xdrEncode(xdr);
         adb_block_count.xdrEncode(xdr);
@@ -41,7 +43,7 @@ public class app_data_block4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         adb_offset = new offset4(xdr);
         adb_block_size = new length4(xdr);
         adb_block_count = new length4(xdr);

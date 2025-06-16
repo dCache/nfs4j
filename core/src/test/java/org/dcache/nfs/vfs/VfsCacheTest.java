@@ -1,14 +1,15 @@
 package org.dcache.nfs.vfs;
 
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.junit.Before;
-import org.junit.Test;
+import static org.mockito.Mockito.*;
 
-import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.mockito.Mockito.*;
+import javax.security.auth.Subject;
+
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.junit.Before;
+import org.junit.Test;
 
 public class VfsCacheTest {
 
@@ -20,7 +21,7 @@ public class VfsCacheTest {
     private Inode root;
 
     @Before
-    public void setUp() throws  Exception{
+    public void setUp() throws Exception {
         vfs = spy(new DummyVFS());
         root = vfs.getRootInode();
 
@@ -238,7 +239,7 @@ public class VfsCacheTest {
     public void shouldReadThroughReaddirCacheOnUnknownVerifier() throws IOException {
 
         vfsCache.list(root, DirectoryStream.ZERO_VERIFIER, 0L);
-        vfsCache.list(root, Arrays.copyOf(new byte[]{ 0x01}, nfs4_prot.NFS4_VERIFIER_SIZE), 0L);
+        vfsCache.list(root, Arrays.copyOf(new byte[] {0x01}, nfs4_prot.NFS4_VERIFIER_SIZE), 0L);
 
         verify(vfs, times(2)).list(root, DirectoryStream.ZERO_VERIFIER, 0L);
     }

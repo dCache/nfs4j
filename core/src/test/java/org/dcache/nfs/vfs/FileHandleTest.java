@@ -16,12 +16,13 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.io.BaseEncoding;
-import org.junit.Test;
-
 import static java.nio.charset.StandardCharsets.US_ASCII;
+
 import static org.junit.Assert.*;
 
+import org.junit.Test;
+
+import com.google.common.io.BaseEncoding;
 
 /**
  *
@@ -35,19 +36,22 @@ public class FileHandleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadVersion() {
-        byte[] bytes = BaseEncoding.base16().lowerCase().decode("02caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
+        byte[] bytes = BaseEncoding.base16().lowerCase().decode(
+                "02caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         new FileHandle(bytes);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadMagic() {
-        byte[] bytes = BaseEncoding.base16().lowerCase().decode("0100000000000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
+        byte[] bytes = BaseEncoding.base16().lowerCase().decode(
+                "0100000000000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         new FileHandle(bytes);
     }
 
     @Test
     public void testValidHandleV1() {
-        byte[] bytes = BaseEncoding.base16().lowerCase().decode("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
+        byte[] bytes = BaseEncoding.base16().lowerCase().decode(
+                "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         FileHandle fh = new FileHandle(bytes);
 
         assertEquals(1, fh.getVersion());
@@ -65,9 +69,11 @@ public class FileHandleTest {
                 .setExportIdx("/export/data".hashCode())
                 .build("0:INODE:0000C37233174392456EB83E44844E8D28D6:0".getBytes(US_ASCII));
 
-        assertEquals("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
+        assertEquals(
+                "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
                 fh.toString());
-        assertArrayEquals(BaseEncoding.base16().lowerCase().decode("01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
+        assertArrayEquals(BaseEncoding.base16().lowerCase().decode(
+                "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
                 fh.bytes());
     }
 

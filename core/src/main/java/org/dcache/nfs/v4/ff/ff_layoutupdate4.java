@@ -7,14 +7,16 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
+import org.dcache.nfs.v4.xdr.netaddr4;
+import org.dcache.nfs.v4.xdr.nfs_fh4;
+import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import org.dcache.nfs.v4.xdr.netaddr4;
-import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.v4.xdr.nfstime4;
 
 public class ff_layoutupdate4 implements XdrAble {
     public netaddr4 ffl_addr;
@@ -28,12 +30,12 @@ public class ff_layoutupdate4 implements XdrAble {
     }
 
     public ff_layoutupdate4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffl_addr.xdrEncode(xdr);
         ffl_fhandle.xdrEncode(xdr);
         ffl_read.xdrEncode(xdr);
@@ -43,7 +45,7 @@ public class ff_layoutupdate4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffl_addr = new netaddr4(xdr);
         ffl_fhandle = new nfs_fh4(xdr);
         ffl_read = new ff_io_latency4(xdr);

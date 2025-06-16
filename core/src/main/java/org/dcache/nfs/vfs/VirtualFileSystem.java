@@ -22,27 +22,28 @@ package org.dcache.nfs.vfs;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
+
 import javax.security.auth.Subject;
 
-import com.google.common.annotations.Beta;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 
+import com.google.common.annotations.Beta;
+
 /**
  * An interface to file system.
  *
  * <p>
- * Object name handling:</p>
+ * Object name handling:
+ * </p>
  * <p>
- * Many operations takes object name as an argument. For all such operations
- * only a single component, relative to provided parent inode, of a file system
- * hierarchy must be considered. In addition to back end file system
+ * Many operations takes object name as an argument. For all such operations only a single component, relative to
+ * provided parent inode, of a file system hierarchy must be considered. In addition to back end file system
  * implementation restrictions, the following constrains must be applied:
  * <ul>
- * <li>"." and ".." can not be specified as the name when creating a file system
- * object</li>
+ * <li>"." and ".." can not be specified as the name when creating a file system object</li>
  * <li>name which contains "/" must be rejected.
  * </ul>
  *
@@ -114,13 +115,11 @@ public interface VirtualFileSystem {
     Inode link(Inode parent, Inode link, String name, Subject subject) throws IOException;
 
     /**
-     * Get list of file system objects in the given directory. The provided
-     * {@code cookie} identifies a logical offset of the listing, if directory
-     * listing is processed in chunks. The {@code verifier} argument used to
-     * validate cookies as directory content can be changes and earlier generated
-     * cookie cannot be used any more. For initial listing a zero cookie and verifier
-     * is used. The returned listing will contain only entries with cookies
-     * greater than specified value.
+     * Get list of file system objects in the given directory. The provided {@code cookie} identifies a logical offset
+     * of the listing, if directory listing is processed in chunks. The {@code verifier} argument used to validate
+     * cookies as directory content can be changes and earlier generated cookie cannot be used any more. For initial
+     * listing a zero cookie and verifier is used. The returned listing will contain only entries with cookies greater
+     * than specified value.
      *
      * @param inode inode of the directory to list.
      * @param verifier opaque verifier to identify {@code snapshot} to list.
@@ -131,8 +130,9 @@ public interface VirtualFileSystem {
     DirectoryStream list(Inode inode, byte[] verifier, long cookie) throws IOException;
 
     /**
-     * Generate a opaque directory verifier which is identified with can
-     * be used as identifier of directory's state snapshot.
+     * Generate a opaque directory verifier which is identified with can be used as identifier of directory's state
+     * snapshot.
+     *
      * @param inode inode of the directory to create verifier.
      * @return opaque verifier.
      * @throws IOException
@@ -166,8 +166,7 @@ public interface VirtualFileSystem {
     /**
      * Get parent directory of a given object.
      *
-     * @param inode inode of a file system object for which the parent inode is
-     * desired.
+     * @param inode inode of a file system object for which the parent inode is desired.
      * @return parent directory of the given object.
      * @throws IOException
      */
@@ -180,8 +179,7 @@ public interface VirtualFileSystem {
      * @param data byte array for writing.
      * @param offset file's position to read from.
      * @param count number of bytes to read.
-     * @return number of bytes read from the file, possibly zero. -1 if EOF is
-     * reached.
+     * @return number of bytes read from the file, possibly zero. -1 if EOF is reached.
      * @throws IOException
      * @deprecated instead use the {@code read(Inode inode, ByteBuffer data, long offset)}
      */
@@ -194,8 +192,7 @@ public interface VirtualFileSystem {
      * @param inode inode of the file to read from.
      * @param data byte array for writing.
      * @param offset file's position to read from.
-     * @return number of bytes read from the file, possibly zero. -1 if EOF is
-     * reached.
+     * @return number of bytes read from the file, possibly zero. -1 if EOF is reached.
      * @throws IOException
      */
     default int read(Inode inode, ByteBuffer data, long offset) throws IOException {
@@ -218,8 +215,7 @@ public interface VirtualFileSystem {
     String readlink(Inode inode) throws IOException;
 
     /**
-     * Remove a file system object from the given directory and possibly the
-     * object itself.
+     * Remove a file system object from the given directory and possibly the object itself.
      *
      * @param parent directory from which file system object is removed.
      * @param name object's name in the directory.
@@ -250,10 +246,12 @@ public interface VirtualFileSystem {
      * @param stabilityLevel data stability level.
      * @return write result.
      * @throws IOException
-     * @deprecated instead use the {@code write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)}
+     * @deprecated instead use the
+     *             {@code write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)}
      */
     @Deprecated
-    WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException;
+    WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel)
+            throws IOException;
 
     /**
      * Write provided {@code data} into inode with a given stability level.
@@ -265,7 +263,8 @@ public interface VirtualFileSystem {
      * @return write result.
      * @throws IOException
      */
-    default WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel) throws IOException {
+    default WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
         int count = data.remaining();
         byte[] bytes = new byte[count];
         data.get(bytes);
@@ -273,8 +272,8 @@ public interface VirtualFileSystem {
     }
 
     /**
-     * Flush data in {@code dirty} state to the stable storage. Typically
-     * follows {@link #write(Inode, ByteBuffer, long, StabilityLevel)} operation.
+     * Flush data in {@code dirty} state to the stable storage. Typically follows
+     * {@link #write(Inode, ByteBuffer, long, StabilityLevel)} operation.
      *
      * @param inode inode of the file to commit.
      * @param offset the file position to start commit at.
@@ -329,16 +328,14 @@ public interface VirtualFileSystem {
     boolean hasIOLayout(Inode inode) throws IOException;
 
     /**
-     * Get instance of a {@link AclCheckable} object which can perform access
-     * control list check.
+     * Get instance of a {@link AclCheckable} object which can perform access control list check.
      *
      * @return instance of AclCheckable.
      */
     AclCheckable getAclCheckable();
 
     /**
-     * Get instance of a {@link NfsIdMapping} object which can provide principal
-     * identity mapping.
+     * Get instance of a {@link NfsIdMapping} object which can provide principal identity mapping.
      *
      * @return instance of NfsIdMapping.
      */
@@ -346,12 +343,14 @@ public interface VirtualFileSystem {
 
     /**
      * Determins if this file system is case insensitive.
+     *
      * @return
      */
     boolean getCaseInsensitive();
 
     /**
      * Determines if this case insensitive file system is case preserving.
+     *
      * @return
      */
     boolean getCasePreserving();
@@ -388,7 +387,7 @@ public interface VirtualFileSystem {
         }
     }
 
-    //NOTE - stability values and ordinals are the same for nfs 3 and 4
+    // NOTE - stability values and ordinals are the same for nfs 3 and 4
     /**
      * Write stability level.
      */
@@ -408,14 +407,11 @@ public interface VirtualFileSystem {
         FILE_SYNC;
 
         /**
-         * Get {@link StabilityLevel} corresponding to provided {@code how}
-         * field of nfs write call.
+         * Get {@link StabilityLevel} corresponding to provided {@code how} field of nfs write call.
          *
-         * @param stableHowValue the value of nfs {@code stable_how} to get
-         * StabilityLevel.
+         * @param stableHowValue the value of nfs {@code stable_how} to get StabilityLevel.
          * @return stability Level.
-         * @throws IllegalArgumentException if enum type has no constant with
-         * corresponding value.
+         * @throws IllegalArgumentException if enum type has no constant with corresponding value.
          */
         public static StabilityLevel fromStableHow(int stableHowValue) {
             switch (stableHowValue) {
@@ -455,14 +451,14 @@ public interface VirtualFileSystem {
         REPLACE,
 
         /**
-         * Create a new extended attribute or replace the value, if the attribute
-         * exists.
+         * Create a new extended attribute or replace the value, if the attribute exists.
          */
         EITHER
     }
 
     /**
      * Get an Extended Attribute of a inode.
+     *
      * @param inode file system object.
      * @param attr extended attribute name.
      * @return value of the attribute.
@@ -474,6 +470,7 @@ public interface VirtualFileSystem {
 
     /**
      * Set or change extended attribute of a given file system object.
+     *
      * @param inode file system object.
      * @param attr extended attribute name.
      * @param value of the attribute.
@@ -507,9 +504,10 @@ public interface VirtualFileSystem {
     }
 
     /**
-     * Performs an in-filesystem copy between two open files. The result of the successfully completed {@link CompletableFuture}
-     * corresponds to the number of copied bytes. If {@code copyFileRange} operation fails, the returned CompletableFuture
-     * with complete exceptionally with corresponding error.
+     * Performs an in-filesystem copy between two open files. The result of the successfully completed
+     * {@link CompletableFuture} corresponds to the number of copied bytes. If {@code copyFileRange} operation fails,
+     * the returned CompletableFuture with complete exceptionally with corresponding error.
+     *
      * @param src inode of the source file.
      * @param srcPos starting position in the source file.
      * @param dst inode of the destination file.

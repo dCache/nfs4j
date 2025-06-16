@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class GETDEVICEINFO4args implements XdrAble {
     public deviceid4 gdia_device_id;
@@ -34,12 +36,12 @@ public class GETDEVICEINFO4args implements XdrAble {
     }
 
     public GETDEVICEINFO4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         gdia_device_id.xdrEncode(xdr);
         xdr.xdrEncodeInt(gdia_layout_type);
         gdia_maxcount.xdrEncode(xdr);
@@ -47,7 +49,7 @@ public class GETDEVICEINFO4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         gdia_device_id = new deviceid4(xdr);
         gdia_layout_type = xdr.xdrDecodeInt();
         gdia_maxcount = new count4(xdr);

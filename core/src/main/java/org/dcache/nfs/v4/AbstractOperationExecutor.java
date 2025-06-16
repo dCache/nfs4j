@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.BadSessionException;
@@ -41,8 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An abstract implementation of {@code RequestExecutor} that provides a generic
- * framework for nfs request execution.
+ * An abstract implementation of {@code RequestExecutor} that provides a generic framework for nfs request execution.
  */
 public abstract class AbstractOperationExecutor implements OperationExecutor {
 
@@ -76,11 +76,10 @@ public abstract class AbstractOperationExecutor implements OperationExecutor {
     }
 
     /**
-     * Get an implementation of {@link AbstractNFSv4Operation} that should
-     * be executed for given nfs operation.
+     * Get an implementation of {@link AbstractNFSv4Operation} that should be executed for given nfs operation.
+     *
      * @param op nfs operation arguments.
-     * @return an implementation of {@link AbstractNFSv4Operation} that should
-     * be executed for given nfs operation.
+     * @return an implementation of {@link AbstractNFSv4Operation} that should be executed for given nfs operation.
      */
     abstract protected AbstractNFSv4Operation getOperation(nfs_argop4 op);
 }

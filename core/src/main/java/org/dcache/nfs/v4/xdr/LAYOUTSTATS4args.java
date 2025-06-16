@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LAYOUTSTATS4args implements XdrAble {
     public offset4 lsa_offset;
@@ -25,12 +27,12 @@ public class LAYOUTSTATS4args implements XdrAble {
     }
 
     public LAYOUTSTATS4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lsa_offset.xdrEncode(xdr);
         lsa_length.xdrEncode(xdr);
         lsa_stateid.xdrEncode(xdr);
@@ -41,7 +43,7 @@ public class LAYOUTSTATS4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lsa_offset = new offset4(xdr);
         lsa_length = new length4(xdr);
         lsa_stateid = new stateid4(xdr);

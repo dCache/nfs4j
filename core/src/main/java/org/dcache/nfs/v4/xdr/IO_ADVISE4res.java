@@ -7,11 +7,13 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class IO_ADVISE4res implements XdrAble {
     public int ior_status;
@@ -21,31 +23,31 @@ public class IO_ADVISE4res implements XdrAble {
     }
 
     public IO_ADVISE4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(ior_status);
-        switch ( ior_status ) {
-        case nfsstat.NFS_OK:
-            resok4.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (ior_status) {
+            case nfsstat.NFS_OK:
+                resok4.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ior_status = xdr.xdrDecodeInt();
-        switch ( ior_status ) {
-        case nfsstat.NFS_OK:
-            resok4 = new IO_ADVISE4resok(xdr);
-            break;
-        default:
-            break;
+        switch (ior_status) {
+            case nfsstat.NFS_OK:
+                resok4 = new IO_ADVISE4resok(xdr);
+                break;
+            default:
+                break;
         }
     }
 

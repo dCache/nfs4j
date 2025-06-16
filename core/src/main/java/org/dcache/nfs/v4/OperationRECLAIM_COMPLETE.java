@@ -20,10 +20,10 @@
 package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.nfsstat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,20 +38,19 @@ public class OperationRECLAIM_COMPLETE extends AbstractNFSv4Operation {
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-	/*
-	 * we do not have any session state percistent store and,
-	 * as a result, there is nothing to recover. Just reply OK.
-	 */
-	result.opreclaim_complete.rcr_status = nfsstat.NFS_OK;
+        /*
+         * we do not have any session state percistent store and, as a result, there is nothing to recover. Just reply
+         * OK.
+         */
+        result.opreclaim_complete.rcr_status = nfsstat.NFS_OK;
 
-	if (_args.opreclaim_complete.rca_one_fs) {
-	    /*
-	     * this is an optional operation. We simply check that client provided
-	     * the current file handle.
-	     */
-	    context.currentInode();
-	} else {
-	    context.getSession().getClient().reclaimComplete();
-	}
+        if (_args.opreclaim_complete.rca_one_fs) {
+            /*
+             * this is an optional operation. We simply check that client provided the current file handle.
+             */
+            context.currentInode();
+        } else {
+            context.getSession().getClient().reclaimComplete();
+        }
     }
 }

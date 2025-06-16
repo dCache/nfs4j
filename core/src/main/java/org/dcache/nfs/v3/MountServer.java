@@ -19,24 +19,7 @@
  */
 package org.dcache.nfs.v3;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import java.io.IOException;
-import org.dcache.nfs.v3.xdr.exportnode;
-import org.dcache.nfs.v3.xdr.mountbody;
-import org.dcache.nfs.v3.xdr.fhandle3;
-import org.dcache.nfs.v3.xdr.mountres3;
-import org.dcache.nfs.v3.xdr.name;
-import org.dcache.nfs.v3.xdr.exports;
-import org.dcache.nfs.v3.xdr.mount_protServerStub;
-import org.dcache.nfs.v3.xdr.fhstatus;
-import org.dcache.nfs.v3.xdr.groups;
-import org.dcache.nfs.v3.xdr.dirpath;
-import org.dcache.nfs.v3.xdr.mountlist;
-import org.dcache.nfs.v3.xdr.groupnode;
-import org.dcache.nfs.v3.xdr.mountres3_ok;
-import org.dcache.nfs.v3.xdr.mountstat3;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +30,20 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.*;
+import org.dcache.nfs.v3.xdr.dirpath;
+import org.dcache.nfs.v3.xdr.exportnode;
+import org.dcache.nfs.v3.xdr.exports;
+import org.dcache.nfs.v3.xdr.fhandle3;
+import org.dcache.nfs.v3.xdr.fhstatus;
+import org.dcache.nfs.v3.xdr.groupnode;
+import org.dcache.nfs.v3.xdr.groups;
+import org.dcache.nfs.v3.xdr.mount_protServerStub;
+import org.dcache.nfs.v3.xdr.mountbody;
+import org.dcache.nfs.v3.xdr.mountlist;
+import org.dcache.nfs.v3.xdr.mountres3;
+import org.dcache.nfs.v3.xdr.mountres3_ok;
+import org.dcache.nfs.v3.xdr.mountstat3;
+import org.dcache.nfs.v3.xdr.name;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
 import org.dcache.nfs.vfs.Stat;
@@ -55,6 +52,11 @@ import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 public class MountServer extends mount_protServerStub {
 
     private static final Logger _log = LoggerFactory.getLogger(MountServer.class);
@@ -206,7 +208,6 @@ public class MountServer extends mount_protServerStub {
         return eFullList;
     }
 
-
     /*
      * MOUNT version 1 support for exports, umount and so on
      */
@@ -265,21 +266,23 @@ public class MountServer extends mount_protServerStub {
     private int[] exportSecFlavors(FsExport export) throws ChimeraNFSException {
         FsExport.Sec sec = export.getSec();
         int[] supportedFlavors;
-        switch(sec) {
+        switch (sec) {
             case KRB5:
-                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P};
+                supportedFlavors = new int[] {RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P};
                 break;
             case KRB5I:
-                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P};
+                supportedFlavors = new int[] {RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P};
                 break;
             case KRB5P:
-                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5P};
+                supportedFlavors = new int[] {RPC_AUTH_GSS_KRB5P};
                 break;
             case SYS:
-                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P, RpcAuthType.UNIX};
+                supportedFlavors = new int[] {
+                        RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P, RpcAuthType.UNIX};
                 break;
             case NONE:
-                supportedFlavors = new int[]{RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P, RpcAuthType.UNIX, RpcAuthType.NONE};
+                supportedFlavors = new int[] {
+                        RPC_AUTH_GSS_KRB5, RPC_AUTH_GSS_KRB5I, RPC_AUTH_GSS_KRB5P, RpcAuthType.UNIX, RpcAuthType.NONE};
                 break;
             default:
                 // shuold never happen

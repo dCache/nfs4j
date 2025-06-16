@@ -19,15 +19,15 @@
  */
 package org.dcache.nfs;
 
-import com.google.common.net.InetAddresses;
 import java.util.Comparator;
+
+import com.google.common.net.InetAddresses;
 
 /**
  * {@link Comparator} to compare host names.
  *
- * This {@link Comparator} should be used to compare/sort host ip and hostnames.
- * The sorting order is - more relevant first, e.q:
- * <pre>
+ * This {@link Comparator} should be used to compare/sort host ip and hostnames. The sorting order is - more relevant
+ * first, e.q: <pre>
  *   a.b.c.d
  *   sone.host.name
  *   a.b.c.d/N
@@ -68,7 +68,7 @@ public class HostEntryComparator {
                     // Reverse order to prefer longer (IPv6) addresses
                     InetAddresses.forString(addr2).getAddress().length,
                     InetAddresses.forString(addr1).getAddress().length);
-        }else if (InetAddresses.isInetAddress(addr1)) {
+        } else if (InetAddresses.isInetAddress(addr1)) {
             return -1;
         } else if (InetAddresses.isInetAddress(addr2)) {
             return 1;

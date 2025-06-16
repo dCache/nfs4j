@@ -19,20 +19,19 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.layout4;
+import org.dcache.nfs.v4.xdr.stateid4;
 
 /**
- * A Layout defines how a file's data is organized on one or more storage devices.
- * There are three layout types are defined in rfc 5661:
- * <pre>
+ * A Layout defines how a file's data is organized on one or more storage devices. There are three layout types are
+ * defined in rfc 5661: <pre>
  *    NFSV4.1 FILE (rfc 5661)
  *    BLOCK VOLUME (rfc 5663)
  *    ODS OBJECT (rfc 5664)
  * </pre>
  *
- * A Layout is expressed as an array of layout segments. The elements of the array
- * MUST be sorted in ascending order of the value of the offset field of each element.
+ * A Layout is expressed as an array of layout segments. The elements of the array MUST be sorted in ascending order of
+ * the value of the offset field of each element.
  *
  * <pre>
  *   segment1: offset 0, len 256K
@@ -43,9 +42,8 @@ import org.dcache.nfs.v4.xdr.layout4;
  *
  * There MUST be no gaps or overlaps in the range between two successive elements.
  *
- * There are a two ways to stripe a file:  across different devices or/and across
- * multiple data servers defined as a single device. Striping within a single
- * device is the one which supported by all clients (as of kernel 2.6.34 linux
+ * There are a two ways to stripe a file: across different devices or/and across multiple data servers defined as a
+ * single device. Striping within a single device is the one which supported by all clients (as of kernel 2.6.34 linux
  * client does not support multiple layout segments and uses the first entry one only).
  */
 public class Layout {
@@ -62,7 +60,8 @@ public class Layout {
 
     /**
      * Should the client return the layout prior close.
-     * @return  <code>true</code> if a client should returns the layout prior close.
+     *
+     * @return <code>true</code> if a client should returns the layout prior close.
      */
     public boolean returnOnClose() {
         return _returnOnClose;
@@ -70,6 +69,7 @@ public class Layout {
 
     /**
      * Get stateid associated with layout.
+     *
      * @return stateid
      */
     public stateid4 getStateid() {
@@ -78,6 +78,7 @@ public class Layout {
 
     /**
      * Get array of layout segments.
+     *
      * @return layout segments.
      */
     public layout4[] getLayoutSegments() {

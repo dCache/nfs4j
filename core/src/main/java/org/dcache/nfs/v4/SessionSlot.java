@@ -21,8 +21,9 @@ package org.dcache.nfs.v4;
 
 import java.util.Collections;
 import java.util.List;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
+
 import org.dcache.nfs.status.SeqMisorderedException;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,34 +38,30 @@ public class SessionSlot {
     private List<nfs_resop4> _reply;
 
     public SessionSlot() {
-       _sequence = 0;
+        _sequence = 0;
     }
 
     /**
-     * Acquire the session cache slot for a given sequence number. The
-     * value of {@code sequence} is compared to the previous sequence id, with
-     * three possible outcomes:
+     * Acquire the session cache slot for a given sequence number. The value of {@code sequence} is compared to the
+     * previous sequence id, with three possible outcomes:
      * <ul>
-     *   <li> If the provided sequence id and the previous sequence id are the
-     *         same then the request is a retry.  The previous reply is returned
-     *         or an empty List if no reply was recorded.
-     *   <li> If the provided sequence id is one greater than the previous sequence
-     *         id then this is a new request and null is returned.
-     *   <li> For all other provided sequence id values a {@link SeqMisorderedException}
-     *         is thrown.
+     * <li>If the provided sequence id and the previous sequence id are the same then the request is a retry. The
+     * previous reply is returned or an empty List if no reply was recorded.
+     * <li>If the provided sequence id is one greater than the previous sequence id then this is a new request and null
+     * is returned.
+     * <li>For all other provided sequence id values a {@link SeqMisorderedException} is thrown.
      * </ul>
      *
-     * @param sequence  the sequence number of the request for the reply cache entry
-     * @return the list of cached replies, possibly empty or {@code null}
-     * cached reply does not exist.
+     * @param sequence the sequence number of the request for the reply cache entry
+     * @return the list of cached replies, possibly empty or {@code null} cached reply does not exist.
      * @throws SeqMisorderedException if {@code sequnce} is out of order.
      */
     List<nfs_resop4> acquire(int sequence) throws SeqMisorderedException {
 
-        if( sequence == _sequence ) {
+        if (sequence == _sequence) {
 
             _log.info("retransmit detected");
-            if( _reply != null ) {
+            if (_reply != null) {
                 return _reply;
             }
 

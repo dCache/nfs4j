@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class fs4_status implements XdrAble {
     public boolean fss_absent;
@@ -36,12 +38,12 @@ public class fs4_status implements XdrAble {
     }
 
     public fs4_status(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(fss_absent);
         xdr.xdrEncodeInt(fss_type);
         fss_source.xdrEncode(xdr);
@@ -51,7 +53,7 @@ public class fs4_status implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         fss_absent = xdr.xdrDecodeBoolean();
         fss_type = xdr.xdrDecodeInt();
         fss_source = new utf8str_cs(xdr);

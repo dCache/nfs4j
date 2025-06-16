@@ -22,8 +22,6 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.common.annotations.Beta;
-import com.google.common.base.Throwables;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NotSuppException;
@@ -45,6 +43,9 @@ import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.Beta;
+import com.google.common.base.Throwables;
+
 @Beta
 /**
  * NFSv4.2 operations that handles server side copy as specified in rfc7862#section-4.
@@ -60,7 +61,7 @@ public class OperationCOPY extends AbstractNFSv4Operation {
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-        final COPY4res res =  result.opcopy;
+        final COPY4res res = result.opcopy;
 
         // inter server copy is not supported
         if (_args.opcopy.ca_source_server.length > 0) {
@@ -74,8 +75,8 @@ public class OperationCOPY extends AbstractNFSv4Operation {
         long dstPos = _args.opcopy.ca_dst_offset.value;
         long len = _args.opcopy.ca_count.value;
 
-
-        // Only consecutive copy is supported. Synchronous copy is allowed if the byte count is smaller than max IO size.
+        // Only consecutive copy is supported. Synchronous copy is allowed if the byte count is smaller than max IO
+        // size.
         if (!_args.opcopy.ca_consecutive || (_args.opcopy.ca_synchronous && len > NFSv4Defaults.NFS4_MAXIOBUFFERSIZE)) {
             res.cr_requirements = new copy_requirements4();
             res.cr_requirements.cr_consecutive = true;
@@ -90,10 +91,10 @@ public class OperationCOPY extends AbstractNFSv4Operation {
         NFS4State dstState = client.state(_args.opcopy.ca_dst_stateid);
 
         int srcAccess = context.getStateHandler().getFileTracker()
-              .getShareAccess(client, srcInode, srcState.getOpenState().stateid());
+                .getShareAccess(client, srcInode, srcState.getOpenState().stateid());
 
         int dstAccess = context.getStateHandler().getFileTracker()
-              .getShareAccess(client, dstInode, dstState.getOpenState().stateid());
+                .getShareAccess(client, dstInode, dstState.getOpenState().stateid());
 
         if ((srcAccess & nfs4_prot.OPEN4_SHARE_ACCESS_READ) == 0) {
             throw new OpenModeException("Invalid source inode open mode (required read)");
@@ -107,7 +108,6 @@ public class OperationCOPY extends AbstractNFSv4Operation {
         res.cr_resok4.cr_response = new write_response4();
         res.cr_resok4.cr_response.wr_writeverf = context.getRebootVerifier();
         res.cr_status = nfsstat.NFS_OK;
-
 
         CompletableFuture<Long> copyFuture = context.getFs().copyFileRange(srcInode, srcPos, dstInode, dstPos, len);
         if (_args.opcopy.ca_synchronous) {
@@ -123,10 +123,10 @@ public class OperationCOPY extends AbstractNFSv4Operation {
             }
 
             res.cr_resok4.cr_response.wr_count = new length4(bytes);
-            res.cr_resok4.cr_response.wr_callback_id = new stateid4[]{};
+            res.cr_resok4.cr_response.wr_callback_id = new stateid4[] {};
         } else {
             var copyState = notifyWhenComplete(client, dstInode, context.getRebootVerifier(), copyFuture);
-            res.cr_resok4.cr_response.wr_callback_id = new stateid4[]{copyState};
+            res.cr_resok4.cr_response.wr_callback_id = new stateid4[] {copyState};
             res.cr_resok4.cr_response.wr_count = new length4(0);
         }
 
@@ -136,14 +136,15 @@ public class OperationCOPY extends AbstractNFSv4Operation {
         res.cr_resok4.cr_requirements.cr_synchronous = _args.opcopy.ca_synchronous;
     }
 
-    private stateid4 notifyWhenComplete(NFS4Client client, Inode dstInode, verifier4 verifier, CompletableFuture<Long> copyFuture) throws ChimeraNFSException {
+    private stateid4 notifyWhenComplete(NFS4Client client, Inode dstInode, verifier4 verifier,
+            CompletableFuture<Long> copyFuture) throws ChimeraNFSException {
         var openState = client.state(_args.opcopy.ca_src_stateid);
         var copyState = client.createServerSideCopyState(openState.getStateOwner(), openState).stateid();
 
         copyFuture.handle((n, t) -> {
 
             var cr_response = new write_response4();
-            cr_response.wr_callback_id = new stateid4[]{};
+            cr_response.wr_callback_id = new stateid4[] {};
             cr_response.wr_committed = stable_how4.FILE_SYNC4;
             cr_response.wr_count = new length4(n);
             cr_response.wr_writeverf = verifier;

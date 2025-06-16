@@ -4,13 +4,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.time.Duration;
+
 import org.dcache.nfs.v4.NFS4Client;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.vfs.Inode;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.time.Duration;
 
 public class AdaptiveDelegationLogicTest {
 
@@ -30,7 +31,8 @@ public class AdaptiveDelegationLogicTest {
         when(client2.getId()).thenReturn(new clientid4(2L));
 
         clock = new ManualClock();
-        logic = new AdaptiveDelegationLogic(ACTIVE_QUEUE_CAPACITY, EVICTION_QUEUE_CAPACITY, Duration.ofSeconds(10), clock);
+        logic = new AdaptiveDelegationLogic(ACTIVE_QUEUE_CAPACITY, EVICTION_QUEUE_CAPACITY, Duration.ofSeconds(10),
+                clock);
     }
 
     @Test
@@ -114,7 +116,6 @@ public class AdaptiveDelegationLogicTest {
 
     }
 
-
     @Test
     public void shouldMoveToEvictionQueueIfIdle() {
         Inode inode1 = Inode.forFile("file".getBytes());
@@ -128,7 +129,6 @@ public class AdaptiveDelegationLogicTest {
 
         assertTrue("File should be in eviction queue", logic.isInEvictionQueue(client1, inode1));
     }
-
 
     @Test
     public void differentClietnsShouldNotAffectEachother() {

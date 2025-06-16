@@ -7,6 +7,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.OffloadNoReqsException;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
@@ -19,20 +24,15 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
-
 public class OperationCOPYTest {
-
 
     private NFSv4StateHandler stateHandler;
     private NFSv41Session session;
     private NFS4Client client;
     private VirtualFileSystem vfs;
 
-    private Inode srcInode = Inode.forFile(new byte[]{1, 2, 3, 4});
-    private Inode destInode = Inode.forFile(new byte[]{5, 6, 7, 8});
+    private Inode srcInode = Inode.forFile(new byte[] {1, 2, 3, 4});
+    private Inode destInode = Inode.forFile(new byte[] {5, 6, 7, 8});
     private nfs_fh4 fhSrc = new nfs_fh4(srcInode.toNfsHandle());
     private nfs_fh4 fhDest = new nfs_fh4(destInode.toNfsHandle());
 
@@ -51,8 +51,10 @@ public class OperationCOPYTest {
 
         StateOwner stateOwner = new StateOwner(owner, 1);
 
-        srcStateid = stateHandler.getFileTracker().addOpen(client, stateOwner, srcInode, nfs4_prot.OPEN4_SHARE_ACCESS_READ, nfs4_prot.OPEN4_SHARE_DENY_NONE).openStateId();
-        destStateid = stateHandler.getFileTracker().addOpen(client, stateOwner, destInode, nfs4_prot.OPEN4_SHARE_ACCESS_WRITE, nfs4_prot.OPEN4_SHARE_DENY_NONE).openStateId();
+        srcStateid = stateHandler.getFileTracker().addOpen(client, stateOwner, srcInode,
+                nfs4_prot.OPEN4_SHARE_ACCESS_READ, nfs4_prot.OPEN4_SHARE_DENY_NONE).openStateId();
+        destStateid = stateHandler.getFileTracker().addOpen(client, stateOwner, destInode,
+                nfs4_prot.OPEN4_SHARE_ACCESS_WRITE, nfs4_prot.OPEN4_SHARE_DENY_NONE).openStateId();
 
         vfs = mock(VirtualFileSystem.class);
         when(vfs.copyFileRange(any(), anyLong(), any(), anyLong(), anyLong()))
@@ -87,7 +89,8 @@ public class OperationCOPYTest {
                 .withPutfh(fhSrc)
                 .withSavefh()
                 .withPutfh(fhDest)
-                .withIntraServerCopy(srcStateid, destStateid, 0L, 0L, NFSv4Defaults.NFS4_MAXIOBUFFERSIZE + 1L, true, true)
+                .withIntraServerCopy(srcStateid, destStateid, 0L, 0L, NFSv4Defaults.NFS4_MAXIOBUFFERSIZE + 1L, true,
+                        true)
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()
@@ -128,7 +131,8 @@ public class OperationCOPYTest {
                 .withPutfh(fhSrc)
                 .withSavefh()
                 .withPutfh(fhDest)
-                .withIntraServerCopy(srcStateid, destStateid, 0L, 0L, NFSv4Defaults.NFS4_MAXIOBUFFERSIZE + 1L, false, true)
+                .withIntraServerCopy(srcStateid, destStateid, 0L, 0L, NFSv4Defaults.NFS4_MAXIOBUFFERSIZE + 1L, false,
+                        true)
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()

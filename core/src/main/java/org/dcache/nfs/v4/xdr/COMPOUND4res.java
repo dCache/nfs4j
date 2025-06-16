@@ -19,13 +19,14 @@
  */
 package org.dcache.nfs.v4.xdr;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class COMPOUND4res implements XdrAble {
 

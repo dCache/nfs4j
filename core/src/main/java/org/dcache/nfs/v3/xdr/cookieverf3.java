@@ -18,37 +18,39 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
-import org.dcache.oncrpc4j.xdr.XdrAble;
-import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
-import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import org.dcache.oncrpc4j.util.Bytes;
+
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.util.Bytes;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 public class cookieverf3 implements XdrAble {
 
-    public byte [] value;
+    public byte[] value;
 
     public cookieverf3() {
     }
 
-    public cookieverf3(byte [] value) {
+    public cookieverf3(byte[] value) {
         this.value = value;
     }
 
     public cookieverf3(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeOpaque(value, nfs3_prot.NFS3_COOKIEVERFSIZE);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         value = xdr.xdrDecodeOpaque(nfs3_prot.NFS3_COOKIEVERFSIZE);
     }
 
@@ -60,11 +62,13 @@ public class cookieverf3 implements XdrAble {
     @Override
     public boolean equals(Object obj) {
 
-        if( obj == this ) return true;
+        if (obj == this)
+            return true;
 
-        if( !(obj instanceof cookieverf3) ) return false;
+        if (!(obj instanceof cookieverf3))
+            return false;
 
-        return Arrays.equals(this.value, ((cookieverf3)obj).value );
+        return Arrays.equals(this.value, ((cookieverf3) obj).value);
     }
 
     public static cookieverf3 valueOf(long value) {

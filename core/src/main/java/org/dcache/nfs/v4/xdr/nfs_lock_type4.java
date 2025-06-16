@@ -18,6 +18,7 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
 /**
  * Enumeration (collection of constants).
  */
@@ -29,12 +30,17 @@ public interface nfs_lock_type4 {
     public static final int WRITEW_LT = 4;
 
     public static String toString(int lt) {
-        switch(lt) {
-            case READ_LT: return "READ_LT";
-            case READW_LT: return "READW_LT";
-            case WRITE_LT: return "WRITE_LT";
-            case WRITEW_LT: return "WRITEW_LT";
-            default: throw new IllegalArgumentException("bad lock type: " + lt);
+        switch (lt) {
+            case READ_LT:
+                return "READ_LT";
+            case READW_LT:
+                return "READW_LT";
+            case WRITE_LT:
+                return "WRITE_LT";
+            case WRITEW_LT:
+                return "WRITEW_LT";
+            default:
+                throw new IllegalArgumentException("bad lock type: " + lt);
         }
     }
 }

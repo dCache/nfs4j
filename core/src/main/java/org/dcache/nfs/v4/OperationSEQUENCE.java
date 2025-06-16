@@ -19,20 +19,19 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.sessionid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.slotid4;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.v4.xdr.SEQUENCE4res;
 import org.dcache.nfs.v4.xdr.SEQUENCE4resok;
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.BadSessionException;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.sessionid4;
+import org.dcache.nfs.v4.xdr.slotid4;
+import org.dcache.nfs.v4.xdr.uint32_t;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
@@ -52,10 +51,9 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         SessionSlot slot = session.getSessionSlot(_args.opsequence.sa_slotid.value);
         context.setCache(slot.acquire(_args.opsequence.sa_sequenceid.value));
 
-        session.bindIfNeeded( new SessionConnection(
+        session.bindIfNeeded(new SessionConnection(
                 context.getLocalSocketAddress(),
-                context.getRemoteSocketAddress())
-        );
+                context.getRemoteSocketAddress()));
 
         client.updateLeaseTime();
 
@@ -70,7 +68,7 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         res.sr_resok4.sr_target_highest_slotid = new slotid4(session.getHighestSlot());
         res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
 
-        //res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
+        // res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
         res.sr_resok4.sr_sequenceid = _args.opsequence.sa_sequenceid;
         res.sr_resok4.sr_status_flags = new uint32_t(0);
 

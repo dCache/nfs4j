@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class GET_DIR_DELEGATION4res_non_fatal implements XdrAble {
     public int gddrnf_status;
@@ -33,33 +35,33 @@ public class GET_DIR_DELEGATION4res_non_fatal implements XdrAble {
     }
 
     public GET_DIR_DELEGATION4res_non_fatal(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(gddrnf_status);
-        switch ( gddrnf_status ) {
-        case gddrnf4_status.GDD4_OK:
-            gddrnf_resok4.xdrEncode(xdr);
-            break;
-        case gddrnf4_status.GDD4_UNAVAIL:
-            xdr.xdrEncodeBoolean(gddrnf_will_signal_deleg_avail);
-            break;
+        switch (gddrnf_status) {
+            case gddrnf4_status.GDD4_OK:
+                gddrnf_resok4.xdrEncode(xdr);
+                break;
+            case gddrnf4_status.GDD4_UNAVAIL:
+                xdr.xdrEncodeBoolean(gddrnf_will_signal_deleg_avail);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         gddrnf_status = xdr.xdrDecodeInt();
-        switch ( gddrnf_status ) {
-        case gddrnf4_status.GDD4_OK:
-            gddrnf_resok4 = new GET_DIR_DELEGATION4resok(xdr);
-            break;
-        case gddrnf4_status.GDD4_UNAVAIL:
-            gddrnf_will_signal_deleg_avail = xdr.xdrDecodeBoolean();
-            break;
+        switch (gddrnf_status) {
+            case gddrnf4_status.GDD4_OK:
+                gddrnf_resok4 = new GET_DIR_DELEGATION4resok(xdr);
+                break;
+            case gddrnf4_status.GDD4_UNAVAIL:
+                gddrnf_will_signal_deleg_avail = xdr.xdrDecodeBoolean();
+                break;
         }
     }
 

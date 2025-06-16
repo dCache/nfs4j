@@ -19,12 +19,13 @@
  */
 package org.dcache.nfs.v3.xdr;
 
+import java.io.IOException;
+
+import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import org.dcache.nfs.nfsstat;
 
 public class GETATTR3res implements XdrAble {
     public int status;
@@ -34,31 +35,31 @@ public class GETATTR3res implements XdrAble {
     }
 
     public GETATTR3res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(status);
-        switch ( status ) {
-        case nfsstat.NFS_OK:
-            resok.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (status) {
+            case nfsstat.NFS_OK:
+                resok.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         status = xdr.xdrDecodeInt();
-        switch ( status ) {
-        case nfsstat.NFS_OK:
-            resok = new GETATTR3resok(xdr);
-            break;
-        default:
-            break;
+        switch (status) {
+            case nfsstat.NFS_OK:
+                resok = new GETATTR3resok(xdr);
+                break;
+            default:
+                break;
         }
     }
 

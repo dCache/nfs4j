@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class entryplus3 implements XdrAble {
     public fileid3 fileid;
@@ -36,12 +38,12 @@ public class entryplus3 implements XdrAble {
     }
 
     public entryplus3(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         entryplus3 $this = this;
         do {
             $this.fileid.xdrEncode(xdr);
@@ -51,11 +53,11 @@ public class entryplus3 implements XdrAble {
             $this.name_handle.xdrEncode(xdr);
             $this = $this.nextentry;
             xdr.xdrEncodeBoolean($this != null);
-        } while ( $this != null );
+        } while ($this != null);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         entryplus3 $this = this;
         entryplus3 $next;
         do {
@@ -67,7 +69,7 @@ public class entryplus3 implements XdrAble {
             $next = xdr.xdrDecodeBoolean() ? new entryplus3() : null;
             $this.nextentry = $next;
             $this = $next;
-        } while ( $this != null );
+        } while ($this != null);
     }
 
 }

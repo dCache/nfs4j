@@ -19,15 +19,15 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import com.google.common.primitives.UnsignedLong;
-
 import java.io.IOException;
 
+import org.dcache.nfs.status.InvalException;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import org.dcache.nfs.status.InvalException;
+
+import com.google.common.primitives.UnsignedLong;
 
 public class offset4 extends uint64_t {
 
@@ -41,13 +41,12 @@ public class offset4 extends uint64_t {
     }
 
     public offset4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         super(xdr);
     }
 
     /**
-     * Checks whatever extending a file from this offset with to a given length
-     * will overflow NFS4_UINT64_MAX.
+     * Checks whatever extending a file from this offset with to a given length will overflow NFS4_UINT64_MAX.
      *
      * @see #checkOverflow(long, java.lang.String)
      * @param length to verify
@@ -59,8 +58,7 @@ public class offset4 extends uint64_t {
     }
 
     /**
-     * Checks whatever extending a file from this offset with to a given length
-     * will overflow NFS4_UINT64_MAX.
+     * Checks whatever extending a file from this offset with to a given length will overflow NFS4_UINT64_MAX.
      *
      * @see #checkOverflow(long, java.lang.String)
      * @param length to verify
@@ -68,17 +66,15 @@ public class offset4 extends uint64_t {
      * @throws InvalException if offset + length will overflow
      */
     public void checkOverflow(int length, String msg) throws InvalException {
-        checkOverflow((long)length, msg);
+        checkOverflow((long) length, msg);
     }
 
     /**
-     * Checks whatever extending a file from this offset with to a given length
-     * will overflow NFS4_UINT64_MAX.
+     * Checks whatever extending a file from this offset with to a given length will overflow NFS4_UINT64_MAX.
      *
      * @param length to verify
      * @param msg included into exception
-     * @throws InvalException if offset + length will overflow
-     * {@link Long.MAX_VALUE}
+     * @throws InvalException if offset + length will overflow {@link Long.MAX_VALUE}
      */
     public void checkOverflow(long length, String msg) throws InvalException {
 

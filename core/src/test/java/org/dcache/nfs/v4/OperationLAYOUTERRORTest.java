@@ -1,21 +1,20 @@
 package org.dcache.nfs.v4;
 
-import java.io.IOException;
-import org.dcache.nfs.status.NotSuppException;
-import org.dcache.nfs.v4.xdr.COMPOUND4args;
-import org.dcache.nfs.v4.xdr.device_error4;
-import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.junit.Test;
-import org.junit.Before;
-
 import static org.dcache.nfs.v4.NfsTestUtils.execute;
 import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
+
+import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.v4.xdr.COMPOUND4args;
+import org.dcache.nfs.v4.xdr.device_error4;
+import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.junit.Before;
+import org.junit.Test;
 
 public class OperationLAYOUTERRORTest {
 
@@ -34,7 +33,7 @@ public class OperationLAYOUTERRORTest {
     public void testNoPnfsConfigured() throws IOException {
 
         COMPOUND4args layoutError = new CompoundBuilder()
-                .withLayoutError(0, 100, Stateids.OneStateId(), new device_error4[]{})
+                .withLayoutError(0, 100, Stateids.OneStateId(), new device_error4[] {})
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()
@@ -51,7 +50,7 @@ public class OperationLAYOUTERRORTest {
     public void testStatsPropagation() throws IOException {
 
         COMPOUND4args layoutError = new CompoundBuilder()
-                .withLayoutError(0, 100, Stateids.OneStateId(), new device_error4[]{})
+                .withLayoutError(0, 100, Stateids.OneStateId(), new device_error4[] {})
                 .build();
 
         CompoundContext context = new CompoundContextBuilder()

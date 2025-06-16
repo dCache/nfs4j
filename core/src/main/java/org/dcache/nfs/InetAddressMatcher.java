@@ -19,19 +19,19 @@
  */
 package org.dcache.nfs;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.Inet6Address;
-import java.net.UnknownHostException;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.net.InetAddresses.forString;
 import static com.google.common.net.InetAddresses.isInetAddress;
 import static com.google.common.primitives.Ints.fromByteArray;
 import static com.google.common.primitives.Longs.fromBytes;
+
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public abstract class InetAddressMatcher implements Predicate<InetAddress> {
 
@@ -81,7 +81,7 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
         checkArgument(hostAndMask.length < 3, "Invalid host specification: " + s);
 
         if (!isInetAddress(hostAndMask[0])) {
-            checkArgument (hostAndMask.length == 1, "Invalid host specification (hostname with mask): " + s);
+            checkArgument(hostAndMask.length == 1, "Invalid host specification (hostname with mask): " + s);
             if (s.indexOf('*') != -1 || s.indexOf('?') != -1) {
                 return new RegexpNameMatcher(toRegExp(s));
             } else {
@@ -159,9 +159,8 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
             /**
              * IPv6 can be represented as two 64 bit longs.
              *
-             * We evaluate second long only if bitmask bigger than 64. The
-             * second longs are created only if needed as it turned to be the
-             * slowest part.
+             * We evaluate second long only if bitmask bigger than 64. The second longs are created only if needed as it
+             * turned to be the slowest part.
              */
             long ipAsLong0 = fromBytes(ipBytes[0], ipBytes[1], ipBytes[2], ipBytes[3],
                     ipBytes[4], ipBytes[5], ipBytes[6], ipBytes[7]);
@@ -212,12 +211,12 @@ public abstract class InetAddressMatcher implements Predicate<InetAddress> {
             try {
                 // jvm caches DNS results. We are fine to query on each request
                 InetAddress[] addrs = InetAddress.getAllByName(getPattern());
-                for(InetAddress addr: addrs) {
+                for (InetAddress addr : addrs) {
                     if (addr.equals(ip)) {
                         return true;
                     }
                 }
-            }catch (UnknownHostException e) {
+            } catch (UnknownHostException e) {
                 return false;
             }
 

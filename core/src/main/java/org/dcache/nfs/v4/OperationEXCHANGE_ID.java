@@ -19,22 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_impl_id4;
-import org.dcache.nfs.v4.xdr.utf8str_cis;
-import org.dcache.nfs.v4.xdr.state_protect4_r;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.sequenceid4;
-import org.dcache.nfs.v4.xdr.utf8str_cs;
-import org.dcache.nfs.v4.xdr.nfstime4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import org.dcache.nfs.v4.xdr.EXCHANGE_ID4resok;
-import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.nfs.v4.xdr.state_protect_how4;
-import org.dcache.nfs.v4.xdr.EXCHANGE_ID4res;
-import org.dcache.nfs.ChimeraNFSException;
+import static org.dcache.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
+import static org.dcache.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -47,6 +34,8 @@ import java.time.format.DateTimeParseException;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.status.ClidInUseException;
@@ -54,11 +43,23 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.status.NotSameException;
 import org.dcache.nfs.status.PermException;
+import org.dcache.nfs.v4.xdr.EXCHANGE_ID4res;
+import org.dcache.nfs.v4.xdr.EXCHANGE_ID4resok;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_impl_id4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.nfstime4;
+import org.dcache.nfs.v4.xdr.sequenceid4;
+import org.dcache.nfs.v4.xdr.state_protect4_r;
+import org.dcache.nfs.v4.xdr.state_protect_how4;
+import org.dcache.nfs.v4.xdr.uint32_t;
+import org.dcache.nfs.v4.xdr.utf8str_cis;
+import org.dcache.nfs.v4.xdr.utf8str_cs;
+import org.dcache.nfs.v4.xdr.verifier4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dcache.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_DOMAIN;
-import static org.dcache.nfs.v4.NFSv4Defaults.NFS4_IMPLEMENTATION_ID;
 
 public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
@@ -89,13 +90,10 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         final EXCHANGE_ID4res res = result.opexchange_id;
 
         /*
-         * Servers MUST accept a zero length eia_client_impl_id array so this
-         * information is not always present!!!
+         * Servers MUST accept a zero length eia_client_impl_id array so this information is not always present!!!
          *
-         * for( nfs_impl_id4 impelemtation :
-         * _args.opexchange_id.eia_client_impl_id ) { _log.info("EXCHANGE_ID4: "
-         * + new String(impelemtation.nii_name.value.value) );
-            }
+         * for( nfs_impl_id4 impelemtation : _args.opexchange_id.eia_client_impl_id ) { _log.info("EXCHANGE_ID4: " + new
+         * String(impelemtation.nii_name.value.value) ); }
          */
 
         final byte[] clientOwner = _args.opexchange_id.eia_clientowner.co_ownerid;
@@ -104,13 +102,15 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
          * check the state
          */
 
-        if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV) {
+        if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE
+                && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED
+                && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV) {
             _log.debug("EXCHANGE_ID4: state protection : {}", _args.opexchange_id.eia_state_protect.spa_how);
             throw new InvalException("invalid state protection");
         }
 
-
-        if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value | EXCHGID4_FLAG_MASK) != EXCHGID4_FLAG_MASK) {
+        if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value
+                | EXCHGID4_FLAG_MASK) != EXCHGID4_FLAG_MASK) {
             throw new InvalException("invalid flag");
         }
 
@@ -122,15 +122,14 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         }
 
         /*
-         * The EXCHGID4_FLAG_CONFIRMED_R bit can only be set in eir_flags; it is
-         * always off in eia_flags.
+         * The EXCHGID4_FLAG_CONFIRMED_R bit can only be set in eir_flags; it is always off in eia_flags.
          */
-        if (_args.opexchange_id.eia_flags.value != 0 && ((_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R) == nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R)) {
+        if (_args.opexchange_id.eia_flags.value != 0 && ((_args.opexchange_id.eia_flags.value
+                & nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R) == nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R)) {
             throw new InvalException("Client used server-only flag");
         }
 
-
-        //Check if there is another ssv use -> TODO: Implement SSV
+        // Check if there is another ssv use -> TODO: Implement SSV
         if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE) {
             _log.debug("Tried the wrong security Option! {}:", _args.opexchange_id.eia_state_protect.spa_how);
             throw new AccessException("SSV other than SP4NONE to use");
@@ -148,7 +147,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
 
         int exchangeIdFlags = context.getExchangeIdFlags();
         // any v4.1 server needs callbacks, unless it's pNFS DS-only
-        boolean needCallBack = (exchangeIdFlags & nfs4_prot.EXCHGID4_FLAG_MASK_PNFS) != nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS;
+        boolean needCallBack = (exchangeIdFlags
+                & nfs4_prot.EXCHGID4_FLAG_MASK_PNFS) != nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS;
 
         if (update) {
             if (client == null || !client.isConfirmed()) {
@@ -236,7 +236,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         res.eir_resok4.eir_state_protect.spr_how = state_protect_how4.SP4_NONE;
 
         if (client.isConfirmed()) {
-            res.eir_resok4.eir_flags = new uint32_t(res.eir_resok4.eir_flags.value | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
+            res.eir_resok4.eir_flags = new uint32_t(res.eir_resok4.eir_flags.value
+                    | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
         }
     }
 }

@@ -7,34 +7,60 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class ff_layoutreturn4 implements XdrAble {
-    public ff_ioerr4 [] fflr_ioerr_report;
-    public ff_iostats4 [] fflr_iostats_report;
+    public ff_ioerr4[] fflr_ioerr_report;
+    public ff_iostats4[] fflr_iostats_report;
 
     public ff_layoutreturn4() {
     }
 
     public ff_layoutreturn4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = fflr_ioerr_report.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { fflr_ioerr_report[$idx].xdrEncode(xdr); } }
-        { int $size = fflr_iostats_report.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { fflr_iostats_report[$idx].xdrEncode(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = fflr_ioerr_report.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                fflr_ioerr_report[$idx].xdrEncode(xdr);
+            }
+        }
+        {
+            int $size = fflr_iostats_report.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                fflr_iostats_report[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); fflr_ioerr_report = new ff_ioerr4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { fflr_ioerr_report[$idx] = new ff_ioerr4(xdr); } }
-        { int $size = xdr.xdrDecodeInt(); fflr_iostats_report = new ff_iostats4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { fflr_iostats_report[$idx] = new ff_iostats4(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = xdr.xdrDecodeInt();
+            fflr_ioerr_report = new ff_ioerr4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                fflr_ioerr_report[$idx] = new ff_ioerr4(xdr);
+            }
+        }
+        {
+            int $size = xdr.xdrDecodeInt();
+            fflr_iostats_report = new ff_iostats4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                fflr_iostats_report[$idx] = new ff_iostats4(xdr);
+            }
+        }
     }
 
 }

@@ -19,12 +19,12 @@
  */
 package org.dcache.nfs.v4;
 
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.ConnNotBoundToSessionException;
+import org.dcache.nfs.v4.xdr.DESTROY_SESSION4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.DESTROY_SESSION4res;
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.ConnNotBoundToSessionException;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,8 @@ public class OperationDESTROY_SESSION extends AbstractNFSv4Operation {
                 context.getRemoteSocketAddress());
 
         if (!session.isReleasableBy(sessionConnection)) {
-            throw new ConnNotBoundToSessionException("Session not " +  session +" not bound to" + sessionConnection.getRemoteConnection());
+            throw new ConnNotBoundToSessionException("Session not " + session + " not bound to" + sessionConnection
+                    .getRemoteConnection());
         }
 
         client.removeSession(_args.opdestroy_session.dsa_sessionid);

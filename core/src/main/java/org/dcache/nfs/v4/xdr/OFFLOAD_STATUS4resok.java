@@ -7,31 +7,33 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class OFFLOAD_STATUS4resok implements XdrAble {
     public length4 osr_count;
-    public int [] osr_complete;
+    public int[] osr_complete;
 
     public OFFLOAD_STATUS4resok() {
     }
 
     public OFFLOAD_STATUS4resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         osr_count.xdrEncode(xdr);
         xdr.xdrEncodeIntVector(osr_complete);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         osr_count = new length4(xdr);
         osr_complete = xdr.xdrDecodeIntVector();
     }

@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
@@ -39,14 +40,14 @@ public abstract class AbstractNFSv4Operation {
     }
 
     /**
-     * Process current operation. The {@code result} object is used to store
-     * result of the operation execution.
+     * Process current operation. The {@code result} object is used to store result of the operation execution.
+     *
      * @param context the context of compound request of this operation.
      * @param result the operation result object to use.
      * @throws ChimeraNFSException when a specific NFS error is returned
      * @throws IOException when NFS non specific errors occur
      * @throws OncRpcException if requests arguments can't be decoded.
      */
-    public abstract void  process(CompoundContext context, nfs_resop4 result)
+    public abstract void process(CompoundContext context, nfs_resop4 result)
             throws ChimeraNFSException, IOException, OncRpcException;
 }

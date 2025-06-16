@@ -1,5 +1,13 @@
 package org.dcache.nfs.benchmarks;
 
+import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_READ;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import org.dcache.nfs.v4.FileTracker;
 import org.dcache.nfs.v4.NFS4Client;
@@ -23,15 +31,6 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-
-import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_READ;
 
 @BenchmarkMode(Mode.Throughput)
 public class FileTrackerBenchmark {
@@ -60,20 +59,19 @@ public class FileTrackerBenchmark {
         }
     }
 
-
     @Benchmark
     @Threads(48)
     @Warmup(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
     public NFS4Client fileTrackerHashMapTest(FileTrackerHolder fileTrackerHolder) throws Exception {
 
         NFS4Client client = createClient(fileTrackerHolder.getStateHandler());
-        StateOwner stateOwner = client.getOrCreateOwner(Thread.currentThread().getName().getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        StateOwner stateOwner = client.getOrCreateOwner(Thread.currentThread().getName().getBytes(
+                StandardCharsets.UTF_8), new seqid4(0));
         Inode inode = generateFileHandle();
         fileTrackerHolder.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
         fileTrackerHolder.getStateHandler().removeClient(client);
         return client;
     }
-
 
     static NFS4Client createClient(NFSv4StateHandler stateHandler) throws UnknownHostException {
         return createClient(stateHandler, 1);
@@ -91,7 +89,7 @@ public class FileTrackerBenchmark {
     public static Inode generateFileHandle() {
         byte[] b = new byte[nfs4_prot.NFS4_FHSIZE];
         ThreadLocalRandom.current().nextBytes(b);
-        return  Inode.forFile(b);
+        return Inode.forFile(b);
     }
 
     public static void main(String[] args) throws RunnerException {

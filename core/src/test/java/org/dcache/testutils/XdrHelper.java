@@ -4,10 +4,10 @@ import org.dcache.oncrpc4j.xdr.Xdr;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 
 public class XdrHelper {
-    private XdrHelper() {}
+    private XdrHelper() {
+    }
 
-
-    public static int calculateSize (XdrAble xdrAble) {
+    public static int calculateSize(XdrAble xdrAble) {
         try {
             Xdr xdr = new Xdr(128);
             xdr.beginEncoding();

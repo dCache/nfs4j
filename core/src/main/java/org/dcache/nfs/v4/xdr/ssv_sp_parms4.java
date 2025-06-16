@@ -18,16 +18,18 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class ssv_sp_parms4 implements XdrAble {
     public state_protect_ops4 ssp_ops;
-    public sec_oid4 [] ssp_hash_algs;
-    public sec_oid4 [] ssp_encr_algs;
+    public sec_oid4[] ssp_hash_algs;
+    public sec_oid4[] ssp_encr_algs;
     public uint32_t ssp_window;
     public uint32_t ssp_num_gss_handles;
 
@@ -35,24 +37,48 @@ public class ssv_sp_parms4 implements XdrAble {
     }
 
     public ssv_sp_parms4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ssp_ops.xdrEncode(xdr);
-        { int $size = ssp_hash_algs.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ssp_hash_algs[$idx].xdrEncode(xdr); } }
-        { int $size = ssp_encr_algs.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ssp_encr_algs[$idx].xdrEncode(xdr); } }
+        {
+            int $size = ssp_hash_algs.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ssp_hash_algs[$idx].xdrEncode(xdr);
+            }
+        }
+        {
+            int $size = ssp_encr_algs.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ssp_encr_algs[$idx].xdrEncode(xdr);
+            }
+        }
         ssp_window.xdrEncode(xdr);
         ssp_num_gss_handles.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ssp_ops = new state_protect_ops4(xdr);
-        { int $size = xdr.xdrDecodeInt(); ssp_hash_algs = new sec_oid4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ssp_hash_algs[$idx] = new sec_oid4(xdr); } }
-        { int $size = xdr.xdrDecodeInt(); ssp_encr_algs = new sec_oid4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ssp_encr_algs[$idx] = new sec_oid4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            ssp_hash_algs = new sec_oid4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ssp_hash_algs[$idx] = new sec_oid4(xdr);
+            }
+        }
+        {
+            int $size = xdr.xdrDecodeInt();
+            ssp_encr_algs = new sec_oid4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ssp_encr_algs[$idx] = new sec_oid4(xdr);
+            }
+        }
         ssp_window = new uint32_t(xdr);
         ssp_num_gss_handles = new uint32_t(xdr);
     }

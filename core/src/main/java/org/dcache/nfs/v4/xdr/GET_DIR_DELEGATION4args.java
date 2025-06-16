@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class GET_DIR_DELEGATION4args implements XdrAble {
     public boolean gdda_signal_deleg_avail;
@@ -36,12 +38,12 @@ public class GET_DIR_DELEGATION4args implements XdrAble {
     }
 
     public GET_DIR_DELEGATION4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeBoolean(gdda_signal_deleg_avail);
         gdda_notification_types.xdrEncode(xdr);
         gdda_child_attr_delay.xdrEncode(xdr);
@@ -51,7 +53,7 @@ public class GET_DIR_DELEGATION4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         gdda_signal_deleg_avail = xdr.xdrDecodeBoolean();
         gdda_notification_types = new bitmap4(xdr);
         gdda_child_attr_delay = new attr_notice4(xdr);

@@ -19,6 +19,17 @@
  */
 package org.dcache.nfs.v4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.File;
+import java.time.Instant;
+import java.util.Properties;
+
+import org.dcache.nfs.status.NoGraceException;
+import org.dcache.nfs.status.ReclaimBadException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sleepycat.bind.tuple.LongBinding;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.CursorConfig;
@@ -30,26 +41,14 @@ import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.time.Instant;
-import java.util.Properties;
-
-import org.dcache.nfs.status.NoGraceException;
-import org.dcache.nfs.status.ReclaimBadException;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * An implementation of {@link ClientRecoveryStore} which uses BerkeleyDB-JE to
- * store client records.
+ * An implementation of {@link ClientRecoveryStore} which uses BerkeleyDB-JE to store client records.
  *
- * <p> On the start the previously existing db will be used as recovery DB while
- * a fresh database for new clients will be created. After recover is complete, due
- * to grace period expiry or when all known clients have complete the recovery, the
- * old db will be removed and new one will take it's place.
+ * <p>
+ * On the start the previously existing db will be used as recovery DB while a fresh database for new clients will be
+ * created. After recover is complete, due to grace period expiry or when all known clients have complete the recovery,
+ * the old db will be removed and new one will take it's place.
  *
  * @since 0.18
  */
@@ -87,6 +86,7 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
 
     /**
      * Create a BerkeleyDBClientStore with db file located in the given directory.
+     *
      * @param dir the directory where berkeley DB files are stored.
      */
     public BerkeleyDBClientStore(File dir) {
@@ -96,6 +96,7 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
     /**
      * Create a BerkeleyDBClientStore with db file located in the given directory and configuration is specified by the
      * specified properties.
+     *
      * @param dir the directory where berkeley DB files are stored.
      * @param properties database configuration properties.
      */
@@ -125,8 +126,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
         clientDatabase = env.openDatabase(null, CLIENT_DB_RECOVER, dbConfig);
 
         /**
-         * if there are entries in the CLIENT_DB_RECOVER, then we hit the reboot
-         * during recovery. Copy over into client DB before we use it for recovery.
+         * if there are entries in the CLIENT_DB_RECOVER, then we hit the reboot during recovery. Copy over into client
+         * DB before we use it for recovery.
          */
         Transaction tx = env.beginTransaction(null, null);
         try (Cursor cursor = clientDatabase.openCursor(tx, config)) {
@@ -147,8 +148,7 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
     }
 
     /**
-     * Add client record into recovery store. An existing record for provided
-     * {@code client} will be updated.
+     * Add client record into recovery store. An existing record for provided {@code client} will be updated.
      *
      * @param client client's unique identifier.
      */
@@ -166,8 +166,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
     }
 
     /**
-     * Remove client record from recovery store. Called when client record is
-     * destroyed due to expiry or destroy (unmount).
+     * Remove client record from recovery store. Called when client record is destroyed due to expiry or destroy
+     * (unmount).
      *
      * @param client client's unique identifier.
      */
@@ -181,8 +181,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
     }
 
     /**
-     * Indicates that {@code owner} have finished reclaim procedure. This method
-     * is called by client even it there was no stated to reclaim.
+     * Indicates that {@code owner} have finished reclaim procedure. This method is called by client even it there was
+     * no stated to reclaim.
      *
      * @param client client's unique identifier.
      */
@@ -233,9 +233,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
     }
 
     /**
-     * Checks this client store for a pending reclaim. The does not expects any
-     * reclaims when grace period is expired or all previously existing clients
-     * have complete their reclaims.
+     * Checks this client store for a pending reclaim. The does not expects any reclaims when grace period is expired or
+     * all previously existing clients have complete their reclaims.
      *
      * @return true if store expects reclaims from previously existing clients.
      */
@@ -258,7 +257,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
             while (cursor.getNext(key, data, null) == OperationStatus.SUCCESS) {
                 Instant clientCreationTime = Instant.ofEpochMilli(LongBinding.entryToLong(data));
                 if (clientCreationTime.isBefore(bootTime)) {
-                    LOGGER.debug("Recovery: wating for client [{}] at {}", new String(key.getData(), UTF_8), clientCreationTime);
+                    LOGGER.debug("Recovery: wating for client [{}] at {}", new String(key.getData(), UTF_8),
+                            clientCreationTime);
                     return true;
                 }
             }
@@ -287,7 +287,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
              */
             while (cursor.getNext(key, data, null) == OperationStatus.SUCCESS) {
                 Instant clientCreationTime = Instant.ofEpochMilli(LongBinding.entryToLong(data));
-                LOGGER.info("NFS client record to recover: [{}], {}", new String(key.getData(), UTF_8), clientCreationTime);
+                LOGGER.info("NFS client record to recover: [{}], {}", new String(key.getData(), UTF_8),
+                        clientCreationTime);
             }
         } finally {
             tx.commit();
@@ -296,8 +297,7 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
     }
 
     /**
-     * Remove all record for client's that did not showed up during grace
-     * period. Drop recovery database.
+     * Remove all record for client's that did not showed up during grace period. Drop recovery database.
      */
     @Override
     public synchronized void reclaimComplete() {
@@ -317,7 +317,8 @@ public class BerkeleyDBClientStore implements ClientRecoveryStore {
 
                 while (cursor.getNext(key, data, null) == OperationStatus.SUCCESS) {
                     Instant clientCreationTime = Instant.ofEpochMilli(LongBinding.entryToLong(data));
-                    LOGGER.info("Dropping expired recovery record: [{}], {}", new String(key.getData(), UTF_8), clientCreationTime);
+                    LOGGER.info("Dropping expired recovery record: [{}], {}", new String(key.getData(), UTF_8),
+                            clientCreationTime);
                 }
             }
 

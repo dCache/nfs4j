@@ -38,30 +38,34 @@ public class VfsCacheConfig {
 
     /**
      * Get maximal number of entries in the cache.
+     *
      * @return maximal number of entries
      */
     public int getMaxEntries() {
-	return maxEntries;
+        return maxEntries;
     }
 
     /**
      * Get cached value validity time.
+     *
      * @return validity time
      */
     public long getLifeTime() {
-	return lifeTime;
+        return lifeTime;
     }
 
     /**
      * Get unit in which cached value validity time is expressed.
+     *
      * @return time unit
      */
     public TimeUnit getTimeUnit() {
-	return timeUnit;
+        return timeUnit;
     }
 
     /**
      * Get FsStat cached value validity time.
+     *
      * @return validity time
      */
     public long getFsStatLifeTime() {
@@ -70,13 +74,14 @@ public class VfsCacheConfig {
 
     /**
      * Get unit in which FsStat cached value validity time is expressed.
+     *
      * @return time unit
      */
     public TimeUnit getFsSataTimeUnit() {
         return fsStatTimeUnit;
     }
 
-     /**
+    /**
      * Get directory listing cache validity time.
      *
      * @return cache validity time.
@@ -87,6 +92,7 @@ public class VfsCacheConfig {
 
     /**
      * Get unit in which directory listing cache validity time is expressed.
+     *
      * @return time unit.
      */
     public TimeUnit getReaddirLifeTimeUnit() {
@@ -94,8 +100,9 @@ public class VfsCacheConfig {
     }
 
     /**
-     * Get maximal number of directory listings in the cache.
-     * Note, that this number is independent from directory listing size.
+     * Get maximal number of directory listings in the cache. Note, that this number is independent from directory
+     * listing size.
+     *
      * @return maximal number of directory listings.
      */
     public int getReaddirMaxEntries() {
@@ -104,30 +111,34 @@ public class VfsCacheConfig {
 
     /**
      * Set maximal number of entries in the cache.
+     *
      * @param maxEntries
      */
     public void setMaxEntries(int maxEntries) {
-	this.maxEntries = maxEntries;
+        this.maxEntries = maxEntries;
     }
 
     /**
      * Set cached value validity time.
+     *
      * @param lifeTime
      */
     public void setLifeTime(long lifeTime) {
-	this.lifeTime = lifeTime;
+        this.lifeTime = lifeTime;
     }
 
     /**
      * Set unit in which cached value validity time is expressed.
+     *
      * @param timeUnit
      */
     public void setTimeUnit(TimeUnit timeUnit) {
-	this.timeUnit = timeUnit;
+        this.timeUnit = timeUnit;
     }
 
     /**
      * Set FsStat cached value validity time.
+     *
      * @param lifeTime
      */
     public void setFsStatLifeTime(long lifeTime) {
@@ -136,6 +147,7 @@ public class VfsCacheConfig {
 
     /**
      * Set unit in which FsStat cached value validity time is expressed.
+     *
      * @param timeUnit
      */
     public void setFsStatTimeUnit(TimeUnit timeUnit) {
@@ -144,6 +156,7 @@ public class VfsCacheConfig {
 
     /**
      * Set directory listing cache validity time.
+     *
      * @param lifeTime
      */
     public void setReaddirLifeTime(long lifeTime) {
@@ -152,6 +165,7 @@ public class VfsCacheConfig {
 
     /**
      * Set unit in which directory listing cache validity time is expressed.
+     *
      * @param lifeTimeTimeUnit
      */
     public void setReaddirLifeTimeUnit(TimeUnit lifeTimeTimeUnit) {
@@ -160,6 +174,7 @@ public class VfsCacheConfig {
 
     /**
      * Set maximal number directory listings to cache.
+     *
      * @param maxEntries
      */
     public void setReaddirMaxEntries(int maxEntries) {

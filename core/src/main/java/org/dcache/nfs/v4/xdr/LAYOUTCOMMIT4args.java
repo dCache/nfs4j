@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class LAYOUTCOMMIT4args implements XdrAble {
     public offset4 loca_offset;
@@ -37,12 +39,12 @@ public class LAYOUTCOMMIT4args implements XdrAble {
     }
 
     public LAYOUTCOMMIT4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         loca_offset.xdrEncode(xdr);
         loca_length.xdrEncode(xdr);
         xdr.xdrEncodeBoolean(loca_reclaim);
@@ -53,7 +55,7 @@ public class LAYOUTCOMMIT4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         loca_offset = new offset4(xdr);
         loca_length = new length4(xdr);
         loca_reclaim = xdr.xdrDecodeBoolean();

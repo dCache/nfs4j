@@ -19,36 +19,37 @@
  */
 package org.dcache.nfs.v4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
 
-import com.sun.security.auth.UnixNumericUserPrincipal;
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.NoFileHandleException;
+import org.dcache.nfs.status.RestoreFhException;
+import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.nfs_impl_id4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.server_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
 import org.dcache.nfs.v4.xdr.verifier4;
+import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.net.InetSocketAddresses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
-import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosPrincipal;
-import org.dcache.nfs.vfs.Inode;
-import org.dcache.nfs.status.BadStateidException;
-import org.dcache.nfs.status.NoFileHandleException;
-import org.dcache.nfs.status.RestoreFhException;
-import org.dcache.nfs.v4.nlm.LockManager;
-import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.oncrpc4j.rpc.net.InetSocketAddresses;
-import org.dcache.oncrpc4j.rpc.RpcAuthType;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import com.sun.security.auth.UnixNumericUserPrincipal;
 
 public class CompoundContext {
 
@@ -56,24 +57,25 @@ public class CompoundContext {
 
     private static final Principal NO_PRINCIPAL = new Principal() {
 
-            private final String _name = "";
+        private final String _name = "";
 
-            @Override
-            public String getName() {
-                return _name;
-            }
+        @Override
+        public String getName() {
+            return _name;
+        }
 
-            @Override
-            public int hashCode() {
-                return getName().hashCode();
-            }
+        @Override
+        public int hashCode() {
+            return getName().hashCode();
+        }
 
-            @Override
-            public boolean equals(Object obj) {
-                if (obj == this) return true;
-                return obj != null && obj.getClass().isInstance(this);
-            }
-        };
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+            return obj != null && obj.getClass().isInstance(this);
+        }
+    };
 
     private Inode _currentInode = null;
     private Inode _savedInode = null;
@@ -142,8 +144,8 @@ public class CompoundContext {
     }
 
     /**
-     * Get NFSv4 minor version number. The version number os provided by client
-     * for each compound.
+     * Get NFSv4 minor version number. The version number os provided by client for each compound.
+     *
      * @return version number.
      */
     public int getMinorversion() {
@@ -151,14 +153,13 @@ public class CompoundContext {
     }
 
     /**
-     * Current file handle is a server side variable passed from one operation
-     * to other inside a compound.
+     * Current file handle is a server side variable passed from one operation to other inside a compound.
      *
      * @return file handle
      * @throws ChimeraNFSException
      */
     public Inode currentInode() throws ChimeraNFSException {
-        if( _currentInode == null ) {
+        if (_currentInode == null) {
             throw new NoFileHandleException("no file handle");
         }
         return _currentInode;
@@ -172,7 +173,7 @@ public class CompoundContext {
      */
     public void currentInode(Inode inode) throws ChimeraNFSException {
         _currentInode = inode;
-        _log.debug("current Inode: {}",  _currentInode );
+        _log.debug("current Inode: {}", _currentInode);
     }
 
     /**
@@ -185,44 +186,45 @@ public class CompoundContext {
     }
 
     /**
-     * Set the current file handle to the value in the saved file handle.
-     * If there is no saved filehandle then the server will return the
-     * error NFS4ERR_RESTOREFH.
+     * Set the current file handle to the value in the saved file handle. If there is no saved filehandle then the
+     * server will return the error NFS4ERR_RESTOREFH.
+     *
      * @throws ChimeraNFSException
      */
     public void restoreSavedInode() throws ChimeraNFSException {
-        if( _savedInode == null ) {
+        if (_savedInode == null) {
             throw new RestoreFhException("no saved file handle");
         }
         _currentInode = _savedInode;
         _currentStateid = _savedStateid;
-        _log.debug("restored Inode: {}",  _currentInode );
+        _log.debug("restored Inode: {}", _currentInode);
     }
 
     public Inode savedInode() throws ChimeraNFSException {
-        if( _savedInode == null ) {
+        if (_savedInode == null) {
             throw new NoFileHandleException("no file handle");
         }
         return _savedInode;
     }
 
     /**
-     * Save the current filehandle. If a previous filehandle was saved then it
-     * is no longer accessible. The saved filehandle can be restored as
-     * the current filehandle with the RESTOREFH operator.
+     * Save the current filehandle. If a previous filehandle was saved then it is no longer accessible. The saved
+     * filehandle can be restored as the current filehandle with the RESTOREFH operator.
+     *
      * @throws ChimeraNFSException
      */
     public void saveCurrentInode() throws ChimeraNFSException {
-        if( _currentInode == null ) {
+        if (_currentInode == null) {
             throw new NoFileHandleException("no file handle");
         }
         _savedInode = _currentInode;
         _savedStateid = _currentStateid;
-        _log.debug("saved Inode: {}", _savedInode );
+        _log.debug("saved Inode: {}", _savedInode);
     }
 
     /**
      * Set NFSv4.1 session of current request.
+     *
      * @param session
      */
     public void setSession(NFSv41Session session) {
@@ -231,6 +233,7 @@ public class CompoundContext {
 
     /**
      * Get {@link NFSv41Session} used by current request.
+     *
      * @return current session
      */
     public NFSv41Session getSession() {
@@ -243,6 +246,7 @@ public class CompoundContext {
 
     /**
      * Get sessions reply cache slot which must be used by this request.
+     *
      * @return session's reply cache slot
      */
     public SessionSlot getSessionSlot() {
@@ -251,6 +255,7 @@ public class CompoundContext {
 
     /**
      * Set session's reply cache slot to be used.
+     *
      * @param slot reply cache slot to be used.
      */
     public void setSessionSlot(SessionSlot slot) {
@@ -276,7 +281,7 @@ public class CompoundContext {
     }
 
     public stateid4 currentStateid() throws ChimeraNFSException {
-        if(_currentStateid == null)
+        if (_currentStateid == null)
             throw new BadStateidException("no current stateid");
         return _currentStateid;
     }
@@ -297,8 +302,7 @@ public class CompoundContext {
             public server_owner4 getOwner() {
                 server_owner4 owner = new server_owner4();
                 owner.so_minor_id = new uint64_t(0);
-                owner.so_major_id = InetSocketAddresses.uaddrOf(_callInfo.
-                        getTransport()
+                owner.so_major_id = InetSocketAddresses.uaddrOf(_callInfo.getTransport()
                         .getLocalSocketAddress())
                         .getBytes(UTF_8);
 
@@ -323,7 +327,7 @@ public class CompoundContext {
     private Principal principalOf(final RpcCall call) {
 
         Class<? extends Principal> type;
-        if(call.getCredential().type() == RpcAuthType.RPCGSS_SEC) {
+        if (call.getCredential().type() == RpcAuthType.RPCGSS_SEC) {
             type = KerberosPrincipal.class;
         } else {
             type = UnixNumericUserPrincipal.class;
@@ -337,6 +341,7 @@ public class CompoundContext {
 
     /**
      * Returns the address of local endpoint which have received the requests.
+     *
      * @return a socketAddress representing the local endpoint.
      */
     public InetSocketAddress getRemoteSocketAddress() {
@@ -354,6 +359,7 @@ public class CompoundContext {
 
     /**
      * Return verifier to indicate server reboot.
+     *
      * @return reboot verifier.
      */
     public verifier4 getRebootVerifier() {

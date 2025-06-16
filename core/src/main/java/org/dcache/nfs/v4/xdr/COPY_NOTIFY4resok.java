@@ -7,36 +7,50 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class COPY_NOTIFY4resok implements XdrAble {
     public nfstime4 cnr_lease_time;
     public stateid4 cnr_stateid;
-    public netloc4 [] cnr_source_server;
+    public netloc4[] cnr_source_server;
 
     public COPY_NOTIFY4resok() {
     }
 
     public COPY_NOTIFY4resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cnr_lease_time.xdrEncode(xdr);
         cnr_stateid.xdrEncode(xdr);
-        { int $size = cnr_source_server.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { cnr_source_server[$idx].xdrEncode(xdr); } }
+        {
+            int $size = cnr_source_server.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                cnr_source_server[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cnr_lease_time = new nfstime4(xdr);
         cnr_stateid = new stateid4(xdr);
-        { int $size = xdr.xdrDecodeInt(); cnr_source_server = new netloc4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { cnr_source_server[$idx] = new netloc4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            cnr_source_server = new netloc4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                cnr_source_server[$idx] = new netloc4(xdr);
+            }
+        }
     }
 
 }

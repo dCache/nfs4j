@@ -7,31 +7,45 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class ff_mirror4 implements XdrAble {
-    public ff_data_server4 [] ffm_data_servers;
+    public ff_data_server4[] ffm_data_servers;
 
     public ff_mirror4() {
     }
 
     public ff_mirror4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = ffm_data_servers.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ffm_data_servers[$idx].xdrEncode(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = ffm_data_servers.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ffm_data_servers[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); ffm_data_servers = new ff_data_server4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ffm_data_servers[$idx] = new ff_data_server4(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = xdr.xdrDecodeInt();
+            ffm_data_servers = new ff_data_server4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ffm_data_servers[$idx] = new ff_data_server4(xdr);
+            }
+        }
     }
 
 }

@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class open_delegation4 implements XdrAble {
     public int delegation_type;
@@ -34,43 +36,43 @@ public class open_delegation4 implements XdrAble {
     }
 
     public open_delegation4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(delegation_type);
-        switch ( delegation_type ) {
-        case open_delegation_type4.OPEN_DELEGATE_NONE:
-            break;
-        case open_delegation_type4.OPEN_DELEGATE_READ:
-            read.xdrEncode(xdr);
-            break;
-        case open_delegation_type4.OPEN_DELEGATE_WRITE:
-            write.xdrEncode(xdr);
-            break;
-        case open_delegation_type4.OPEN_DELEGATE_NONE_EXT:
-            od_whynone.xdrEncode(xdr);
-            break;
+        switch (delegation_type) {
+            case open_delegation_type4.OPEN_DELEGATE_NONE:
+                break;
+            case open_delegation_type4.OPEN_DELEGATE_READ:
+                read.xdrEncode(xdr);
+                break;
+            case open_delegation_type4.OPEN_DELEGATE_WRITE:
+                write.xdrEncode(xdr);
+                break;
+            case open_delegation_type4.OPEN_DELEGATE_NONE_EXT:
+                od_whynone.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         delegation_type = xdr.xdrDecodeInt();
-        switch ( delegation_type ) {
-        case open_delegation_type4.OPEN_DELEGATE_NONE:
-            break;
-        case open_delegation_type4.OPEN_DELEGATE_READ:
-            read = new open_read_delegation4(xdr);
-            break;
-        case open_delegation_type4.OPEN_DELEGATE_WRITE:
-            write = new open_write_delegation4(xdr);
-            break;
-        case open_delegation_type4.OPEN_DELEGATE_NONE_EXT:
-            od_whynone = new open_none_delegation4(xdr);
-            break;
+        switch (delegation_type) {
+            case open_delegation_type4.OPEN_DELEGATE_NONE:
+                break;
+            case open_delegation_type4.OPEN_DELEGATE_READ:
+                read = new open_read_delegation4(xdr);
+                break;
+            case open_delegation_type4.OPEN_DELEGATE_WRITE:
+                write = new open_write_delegation4(xdr);
+                break;
+            case open_delegation_type4.OPEN_DELEGATE_NONE_EXT:
+                od_whynone = new open_none_delegation4(xdr);
+                break;
         }
     }
 

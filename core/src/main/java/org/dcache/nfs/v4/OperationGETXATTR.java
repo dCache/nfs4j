@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NoXattrException;
@@ -38,7 +39,8 @@ public class OperationGETXATTR extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
 
         try {
             Inode inode = context.currentInode();

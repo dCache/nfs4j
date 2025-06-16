@@ -1,19 +1,19 @@
 package org.dcache.nfs.util;
 
-import com.sun.security.auth.UnixNumericGroupPrincipal;
-import com.sun.security.auth.UnixNumericUserPrincipal;
-import org.junit.Test;
-
-import javax.security.auth.Subject;
+import static org.dcache.nfs.util.UnixSubjects.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-import static org.hamcrest.MatcherAssert.*;
+import javax.security.auth.Subject;
 
-import static org.hamcrest.Matchers.*;
-import static org.dcache.nfs.util.UnixSubjects.*;
+import org.junit.Test;
+
+import com.sun.security.auth.UnixNumericGroupPrincipal;
+import com.sun.security.auth.UnixNumericUserPrincipal;
 
 public class UnixSubjectsTest {
 

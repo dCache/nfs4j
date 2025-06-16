@@ -19,21 +19,23 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import com.google.common.io.BaseEncoding;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import java.io.Serializable;
+
+import com.google.common.io.BaseEncoding;
 
 public class stateid4 implements XdrAble, Serializable {
 
     static final long serialVersionUID = -6677150504723505919L;
 
     public int seqid;
-    public byte [] other;
+    public byte[] other;
 
     public stateid4() {
     }
@@ -44,18 +46,18 @@ public class stateid4 implements XdrAble, Serializable {
     }
 
     public stateid4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(seqid);
         xdr.xdrEncodeOpaque(other, 12);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         seqid = xdr.xdrDecodeInt();
         other = xdr.xdrDecodeOpaque(12);
     }
@@ -63,8 +65,10 @@ public class stateid4 implements XdrAble, Serializable {
     @Override
     public boolean equals(Object obj) {
 
-        if( obj == this) return true;
-        if( !(obj instanceof stateid4) ) return false;
+        if (obj == this)
+            return true;
+        if (!(obj instanceof stateid4))
+            return false;
 
         final stateid4 other_id = (stateid4) obj;
 
@@ -73,9 +77,9 @@ public class stateid4 implements XdrAble, Serializable {
 
     /**
      * Check state for equality including sequence id.
+     *
      * @param otherState
-     * @return <tt>true</tt> if and only if oterhState has equal <tt>other</tt> field
-     * and sequence id.
+     * @return <tt>true</tt> if and only if oterhState has equal <tt>other</tt> field and sequence id.
      */
     public boolean equalsWithSeq(stateid4 otherState) {
 

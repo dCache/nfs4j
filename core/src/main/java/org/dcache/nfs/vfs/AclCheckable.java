@@ -20,7 +20,9 @@
 package org.dcache.nfs.vfs;
 
 import java.io.IOException;
+
 import javax.security.auth.Subject;
+
 import org.dcache.nfs.ChimeraNFSException;
 
 /**
@@ -29,20 +31,16 @@ import org.dcache.nfs.ChimeraNFSException;
 public interface AclCheckable {
 
     enum Access {
-        ALLOW,
-        DENY,
-        UNDEFINED
+        ALLOW, DENY, UNDEFINED
     }
 
     /**
-     * An implementation of {@link AclCheckable}, which all always grand the access
-     * to an inode.
+     * An implementation of {@link AclCheckable}, which all always grand the access to an inode.
      */
     public static final AclCheckable ALLOW_ALL = (Subject subject, Inode inode, int accessMask) -> Access.ALLOW;
 
     /**
-     * An implementation of {@link AclCheckable}, which all always deny the access
-     * to an inode.
+     * An implementation of {@link AclCheckable}, which all always deny the access to an inode.
      */
     public static final AclCheckable DENY_ALL = (Subject subject, Inode inode, int accessMask) -> Access.DENY;
 
@@ -58,7 +56,7 @@ public interface AclCheckable {
      * @param inode access to which is performed
      * @param accessMask mask to evaluate
      * @return <tt>ALLOW</tt>, if matching allow ACE is found, <tt>DENY</tt>, if matching deny ACE is found or
-     * <tt>UNDEFIED</tt> if no matching ACE found.
+     *         <tt>UNDEFIED</tt> if no matching ACE found.
      * @throws IOException
      */
     Access checkAcl(Subject subject, Inode inode, int accessMask) throws ChimeraNFSException, IOException;

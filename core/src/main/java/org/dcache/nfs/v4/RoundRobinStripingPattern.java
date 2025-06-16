@@ -24,12 +24,12 @@ import org.dcache.nfs.v4.xdr.uint32_t;
 /**
  * An implementation of {@link StripingPattern} with round-robin algorithm.
  */
-public class  RoundRobinStripingPattern<T> implements StripingPattern<T> {
+public class RoundRobinStripingPattern<T> implements StripingPattern<T> {
 
     @Override
     public uint32_t[] getPattern(T[] data) {
         uint32_t[] stripeIndices = new uint32_t[data.length];
-        for(int i = 0; i < data.length; i++) {
+        for (int i = 0; i < data.length; i++) {
             stripeIndices[i] = new uint32_t(i);
         }
         return stripeIndices;

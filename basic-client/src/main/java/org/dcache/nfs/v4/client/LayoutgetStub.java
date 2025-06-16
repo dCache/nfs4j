@@ -47,10 +47,10 @@ public class LayoutgetStub {
         op.oplayoutget.loga_layout_type = layout_type;
         op.oplayoutget.loga_iomode = iomode;
 
-	op.oplayoutget.loga_offset = new offset4(offset);
-	op.oplayoutget.loga_length = new length4(length);
-	op.oplayoutget.loga_minlength = new length4(minlength);
-	op.oplayoutget.loga_maxcount = new count4(maxcount);
+        op.oplayoutget.loga_offset = new offset4(offset);
+        op.oplayoutget.loga_length = new length4(length);
+        op.oplayoutget.loga_minlength = new length4(minlength);
+        op.oplayoutget.loga_maxcount = new count4(maxcount);
 
         op.oplayoutget.loga_stateid = stateid;
 

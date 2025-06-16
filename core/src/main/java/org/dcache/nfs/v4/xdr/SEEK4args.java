@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class SEEK4args implements XdrAble {
     public stateid4 sa_stateid;
@@ -21,19 +23,19 @@ public class SEEK4args implements XdrAble {
     }
 
     public SEEK4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         sa_stateid.xdrEncode(xdr);
         sa_offset.xdrEncode(xdr);
         xdr.xdrEncodeInt(sa_what);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         sa_stateid = new stateid4(xdr);
         sa_offset = new offset4(xdr);
         sa_what = xdr.xdrDecodeInt();

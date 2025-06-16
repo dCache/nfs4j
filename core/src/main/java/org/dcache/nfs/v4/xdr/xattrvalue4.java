@@ -7,34 +7,36 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class xattrvalue4 implements XdrAble {
 
-    public byte [] value;
+    public byte[] value;
 
     public xattrvalue4() {
     }
 
-    public xattrvalue4(byte [] value) {
+    public xattrvalue4(byte[] value) {
         this.value = value;
     }
 
     public xattrvalue4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeDynamicOpaque(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         value = xdr.xdrDecodeDynamicOpaque();
     }
 

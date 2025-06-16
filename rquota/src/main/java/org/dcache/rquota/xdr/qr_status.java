@@ -7,6 +7,7 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.rquota.xdr;
+
 /**
  * Enumeration (collection of constants).
  */

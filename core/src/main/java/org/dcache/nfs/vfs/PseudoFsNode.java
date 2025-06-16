@@ -24,13 +24,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.dcache.nfs.FsExport;
 
 /**
- * A Graph like structure to represent file system like tree. Each node can
- * point to one or more other nodes (subdirectories). Node without any
- * subdirectory called leaf. There are two data object attached to each node -
- * it's name and, optionally, export information.
+ * A Graph like structure to represent file system like tree. Each node can point to one or more other nodes
+ * (subdirectories). Node without any subdirectory called leaf. There are two data object attached to each node - it's
+ * name and, optionally, export information.
  *
  * @author tigran
  */

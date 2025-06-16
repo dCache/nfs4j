@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class utf8str_mixed implements XdrAble {
 
@@ -31,7 +33,7 @@ public class utf8str_mixed implements XdrAble {
     public utf8str_mixed() {
     }
 
-    public utf8str_mixed(String  s) {
+    public utf8str_mixed(String s) {
         this.value = new utf8string(s);
     }
 
@@ -40,26 +42,28 @@ public class utf8str_mixed implements XdrAble {
     }
 
     public utf8str_mixed(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         value.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         value = new utf8string(xdr);
     }
 
-     @Override
+    @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof utf8str_mixed)) return false;
+        if (obj == this)
+            return true;
+        if (!(obj instanceof utf8str_mixed))
+            return false;
 
-        return this.value.equals( ((utf8str_mixed)obj).value );
+        return this.value.equals(((utf8str_mixed) obj).value);
     }
 
     @Override

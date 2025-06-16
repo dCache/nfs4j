@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import com.google.common.util.concurrent.Striped;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -27,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+
+import com.google.common.util.concurrent.Striped;
 
 /**
  * Simple non-distributed implementation of {@link LockManager}.
@@ -36,19 +37,17 @@ import java.util.concurrent.locks.Lock;
 public class SimpleLm extends AbstractLockManager {
 
     /*
-     * Use {@link Striped} here to split synchronized block on file locks into
-     * multiple partitions to increase concurrency, while guaranteeing atomicity
-     * on a single file.
+     * Use {@link Striped} here to split synchronized block on file locks into multiple partitions to increase
+     * concurrency, while guaranteeing atomicity on a single file.
      *
-     * Use number of stripes equals to 4x#CPU. This matches to number of
-     * worker threads configured by default.
+     * Use number of stripes equals to 4x#CPU. This matches to number of worker threads configured by default.
      *
      * FIXME: get number of threads from RPC service.
      */
     private final Striped<Lock> objLock;
 
     public SimpleLm() {
-        this(Runtime.getRuntime().availableProcessors()*4);
+        this(Runtime.getRuntime().availableProcessors() * 4);
     }
 
     public SimpleLm(int concurrency) {

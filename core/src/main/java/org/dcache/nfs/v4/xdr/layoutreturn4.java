@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class layoutreturn4 implements XdrAble {
     public int lr_returntype;
@@ -32,31 +34,31 @@ public class layoutreturn4 implements XdrAble {
     }
 
     public layoutreturn4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(lr_returntype);
-        switch ( lr_returntype ) {
-        case layoutreturn_type4.LAYOUTRETURN4_FILE:
-            lr_layout.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (lr_returntype) {
+            case layoutreturn_type4.LAYOUTRETURN4_FILE:
+                lr_layout.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lr_returntype = xdr.xdrDecodeInt();
-        switch ( lr_returntype ) {
-        case layoutreturn_type4.LAYOUTRETURN4_FILE:
-            lr_layout = new layoutreturn_file4(xdr);
-            break;
-        default:
-            break;
+        switch (lr_returntype) {
+            case layoutreturn_type4.LAYOUTRETURN4_FILE:
+                lr_layout = new layoutreturn_file4(xdr);
+                break;
+            default:
+                break;
         }
     }
 

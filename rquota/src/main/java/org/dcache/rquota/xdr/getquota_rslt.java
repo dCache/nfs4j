@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.rquota.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class getquota_rslt implements XdrAble {
     public int status;
@@ -20,35 +22,35 @@ public class getquota_rslt implements XdrAble {
     }
 
     public getquota_rslt(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(status);
-        switch ( status ) {
-        case qr_status.Q_OK:
-            gqr_rquota.xdrEncode(xdr);
-            break;
-        case qr_status.Q_NOQUOTA:
-            break;
-        case qr_status.Q_EPERM:
-            break;
+        switch (status) {
+            case qr_status.Q_OK:
+                gqr_rquota.xdrEncode(xdr);
+                break;
+            case qr_status.Q_NOQUOTA:
+                break;
+            case qr_status.Q_EPERM:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         status = xdr.xdrDecodeInt();
-        switch ( status ) {
-        case qr_status.Q_OK:
-            gqr_rquota = new rquota(xdr);
-            break;
-        case qr_status.Q_NOQUOTA:
-            break;
-        case qr_status.Q_EPERM:
-            break;
+        switch (status) {
+            case qr_status.Q_OK:
+                gqr_rquota = new rquota(xdr);
+                break;
+            case qr_status.Q_NOQUOTA:
+                break;
+            case qr_status.Q_EPERM:
+                break;
         }
     }
 

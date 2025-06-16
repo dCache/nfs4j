@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -115,6 +114,8 @@ import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.Xdr;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 
+import com.google.common.base.Splitter;
+
 public class CompoundBuilder {
 
     private static final String NO_TAG = "";
@@ -132,7 +133,7 @@ public class CompoundBuilder {
         final Splitter splitter = Splitter.on('/').omitEmptyStrings();
 
         for (String s : splitter.split(path)) {
-            if( "..".equals(s)) {
+            if ("..".equals(s)) {
                 withLookupp();
                 continue;
             }
@@ -639,7 +640,7 @@ public class CompoundBuilder {
             io_info4 readInfo, io_info4 writeInfo, deviceid4 deviceid,
             layoutupdate4 layoutupdate) {
 
-        nfs_argop4 op  = new nfs_argop4();
+        nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_LAYOUTSTATS;
         op.oplayoutstats = new LAYOUTSTATS4args();
 
@@ -716,14 +717,15 @@ public class CompoundBuilder {
         return this;
     }
 
-    public CompoundBuilder withIntraServerCopy(stateid4 srcStateid, stateid4 dstStateid, long srcOffset, long dstOffset, long length, boolean sync, boolean consecutive) {
+    public CompoundBuilder withIntraServerCopy(stateid4 srcStateid, stateid4 dstStateid, long srcOffset, long dstOffset,
+            long length, boolean sync, boolean consecutive) {
 
         nfs_argop4 op = new nfs_argop4();
         op.argop = nfs_opnum4.OP_COPY;
         op.opcopy = new COPY4args();
         op.opcopy.ca_consecutive = consecutive;
         op.opcopy.ca_synchronous = sync;
-        op.opcopy.ca_source_server = new netloc4[]{};
+        op.opcopy.ca_source_server = new netloc4[] {};
         op.opcopy.ca_src_stateid = srcStateid;
         op.opcopy.ca_dst_stateid = dstStateid;
         op.opcopy.ca_src_offset = new offset4(srcOffset);
@@ -735,7 +737,6 @@ public class CompoundBuilder {
         return this;
     }
 
-
     public COMPOUND4args build() {
         final COMPOUND4args compound4args = new COMPOUND4args();
         compound4args.tag = new utf8str_cs(tag);
@@ -746,13 +747,13 @@ public class CompoundBuilder {
         return compound4args;
     }
 
-    private static byte[] encodeAttrs(XdrAble ... attrs) {
+    private static byte[] encodeAttrs(XdrAble... attrs) {
 
         try (Xdr xdr = new Xdr(1024)) {
 
             xdr.beginEncoding();
 
-            for (XdrAble attr: attrs) {
+            for (XdrAble attr : attrs) {
                 attr.xdrEncode(xdr);
             }
 

@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class copy_from_auth_priv implements XdrAble {
     public secret4 cfap_shared_secret;
@@ -21,19 +23,19 @@ public class copy_from_auth_priv implements XdrAble {
     }
 
     public copy_from_auth_priv(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cfap_shared_secret.xdrEncode(xdr);
         cfap_destination.xdrEncode(xdr);
         cfap_username.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cfap_shared_secret = new secret4(xdr);
         cfap_destination = new netloc4(xdr);
         cfap_username = new utf8str_mixed(xdr);

@@ -19,6 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
@@ -31,13 +34,9 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
 public class OperationBACKCHANNEL_CTL extends AbstractNFSv4Operation {
 
     public static final Logger LOG = LoggerFactory.getLogger(OperationBACKCHANNEL_CTL.class);
-
 
     public OperationBACKCHANNEL_CTL(nfs_argop4 op) {
         super(op, nfs_opnum4.OP_BACKCHANNEL_CTL);
@@ -46,8 +45,9 @@ public class OperationBACKCHANNEL_CTL extends AbstractNFSv4Operation {
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
 
-        if( context.getMinorversion() == 0) {
-            throw new NotSuppException("Backchannel update for minor version " + context.getMinorversion() + " not supported");
+        if (context.getMinorversion() == 0) {
+            throw new NotSuppException("Backchannel update for minor version " + context.getMinorversion()
+                    + " not supported");
         }
 
         var session = context.getSession();

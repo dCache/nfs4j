@@ -19,29 +19,13 @@
  */
 package org.dcache.nfs.v4;
 
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.BadStateidException;
-import org.dcache.nfs.status.DelayException;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.ShareDeniedException;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.vfs.Inode;
-
-import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG;
 import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import static org.dcache.nfs.v4.NfsTestUtils.generateFileHandle;
-
-import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_READ;
-import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_WRITE;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_BOTH;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_READ;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_WANT_READ_DELEG;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.OPEN4_SHARE_ACCESS_WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -53,7 +37,20 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.BadStateidException;
+import org.dcache.nfs.status.DelayException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.ShareDeniedException;
+import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.seqid4;
+import org.dcache.nfs.vfs.Inode;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
 
 public class FileTrackerTest {
 
@@ -105,7 +102,8 @@ public class FileTrackerTest {
 
         var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
         var openRecord2 = tracker.addOpen(client1, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        assertNotEquals("Same stateid for different owners returned", openRecord1.openStateId(), openRecord2.openStateId());
+        assertNotEquals("Same stateid for different owners returned", openRecord1.openStateId(), openRecord2
+                .openStateId());
     }
 
     @Test
@@ -168,7 +166,8 @@ public class FileTrackerTest {
         tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_BOTH, OPEN4_SHARE_ACCESS_READ);
         var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
 
-        tracker.downgradeOpen(client1, openRecord.openStateId(), inode, OPEN4_SHARE_ACCESS_READ, OPEN4_SHARE_ACCESS_WRITE);
+        tracker.downgradeOpen(client1, openRecord.openStateId(), inode, OPEN4_SHARE_ACCESS_READ,
+                OPEN4_SHARE_ACCESS_WRITE);
     }
 
     @Test
@@ -240,7 +239,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
         assertTrue("Read delegation not granted", openRecord.hasDelegation());
     }
 
@@ -272,10 +272,11 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
         try {
             var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE,
-                  0);
+                    0);
             fail("Delay exception expected");
         } catch (DelayException e) {
             // expected
@@ -296,8 +297,10 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
-        var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
 
         assertTrue("Read delegation not granted", openRecord2.hasDelegation());
 
@@ -328,13 +331,14 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0);
+        var openRecord1 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0);
         assertFalse("Unwanted delegation", openRecord1.hasDelegation());
 
-        var openRecord2 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0);
+        var openRecord2 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0);
         assertFalse("Unwanted delegation", openRecord2.hasDelegation());
     }
-
 
     @Test
     public void getOpenFiles() throws UnknownHostException, ChimeraNFSException {
@@ -355,7 +359,7 @@ public class FileTrackerTest {
         assertEquals("Number of open files not as expected", 1, openFiles.size());
 
         var clients = openFiles.get(inode);
-        assertThat("Expected clients not found", clients, Matchers.containsInAnyOrder(client1,client2));
+        assertThat("Expected clients not found", clients, Matchers.containsInAnyOrder(client1, client2));
     }
 
     @Test
@@ -377,6 +381,6 @@ public class FileTrackerTest {
         assertEquals("Number of open files not as expected", 1, delegations.size());
 
         var clients = delegations.get(inode);
-        assertThat("Expected clients not found", clients, Matchers.containsInAnyOrder(client1,client2));
+        assertThat("Expected clients not found", clients, Matchers.containsInAnyOrder(client1, client2));
     }
 }

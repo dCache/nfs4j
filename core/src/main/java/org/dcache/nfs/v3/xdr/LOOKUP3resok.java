@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class LOOKUP3resok implements XdrAble {
     public nfs_fh3 object;
@@ -33,19 +35,19 @@ public class LOOKUP3resok implements XdrAble {
     }
 
     public LOOKUP3resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         object.xdrEncode(xdr);
         obj_attributes.xdrEncode(xdr);
         dir_attributes.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         object = new nfs_fh3(xdr);
         obj_attributes = new post_op_attr(xdr);
         dir_attributes = new post_op_attr(xdr);

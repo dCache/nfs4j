@@ -19,18 +19,17 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.multimap.MultiMap;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.multimap.MultiMap;
 
 /**
- * An implementation of {@link LockManager} which uses Hazelcast's distributed
- * {@link MultiMap} to store locks.
+ * An implementation of {@link LockManager} which uses Hazelcast's distributed {@link MultiMap} to store locks.
  *
  * <p>
  * Example:
@@ -41,8 +40,8 @@ import java.util.concurrent.locks.Lock;
  *   LockManager lm2 = new DistributedLockManager(hz, "distributed-byte-range-lock");
  * </pre>
  *
- * The {@code lm1} and {@code lm2} will share the same set of locks as long as they
- * connected to the same Hazelcast cluster.
+ * The {@code lm1} and {@code lm2} will share the same set of locks as long as they connected to the same Hazelcast
+ * cluster.
  *
  * @since 0.16
  */
@@ -51,9 +50,8 @@ public class DistributedLockManager extends AbstractLockManager {
     private final MultiMap<String, NlmLock> locks;
 
     /**
-     * Create a new {@code DistributedLockManager} with a given {@code name}.
-     * The other instances with the same name will share the same back-end store and,
-     * as a result, will see the same set of locks.
+     * Create a new {@code DistributedLockManager} with a given {@code name}. The other instances with the same name
+     * will share the same back-end store and, as a result, will see the same set of locks.
      *
      * @param hz reference to Haselcast instance.
      * @param name name of the lock manager.
@@ -100,6 +98,7 @@ public class DistributedLockManager extends AbstractLockManager {
 
     /**
      * Get collection of currently used active locks on the object.
+     *
      * @param objId object id.
      * @return collection of active locks.
      */

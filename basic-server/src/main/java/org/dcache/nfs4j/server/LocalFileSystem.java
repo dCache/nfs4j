@@ -1,35 +1,7 @@
 package org.dcache.nfs4j.server;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
-import com.google.common.primitives.Longs;
-import com.sun.security.auth.UnixNumericGroupPrincipal;
-import com.sun.security.auth.UnixNumericUserPrincipal;
-import org.cliffc.high_scale_lib.NonBlockingHashMap;
-import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
-import org.dcache.nfs.FsExport;
-import org.dcache.nfs.status.ExistException;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.IsDirException;
-import org.dcache.nfs.status.NoEntException;
-import org.dcache.nfs.status.NotEmptyException;
-import org.dcache.nfs.status.NotSuppException;
-import org.dcache.nfs.status.PermException;
-import org.dcache.nfs.status.ServerFaultException;
-import org.dcache.nfs.v4.NfsIdMapping;
-import org.dcache.nfs.v4.SimpleIdMap;
-import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.vfs.AclCheckable;
-import org.dcache.nfs.vfs.DirectoryEntry;
-import org.dcache.nfs.vfs.DirectoryStream;
-import org.dcache.nfs.vfs.FsStat;
-import org.dcache.nfs.vfs.Inode;
-import org.dcache.nfs.vfs.Stat;
-import org.dcache.nfs.vfs.Stat.Type;
-import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.security.auth.Subject;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -58,6 +30,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.security.auth.Subject;
+
+import org.cliffc.high_scale_lib.NonBlockingHashMap;
+import org.cliffc.high_scale_lib.NonBlockingHashMapLong;
+import org.dcache.nfs.FsExport;
+import org.dcache.nfs.status.ExistException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NoEntException;
+import org.dcache.nfs.status.NotEmptyException;
+import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.status.PermException;
+import org.dcache.nfs.status.ServerFaultException;
+import org.dcache.nfs.v4.NfsIdMapping;
+import org.dcache.nfs.v4.SimpleIdMap;
+import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.vfs.AclCheckable;
+import org.dcache.nfs.vfs.DirectoryEntry;
+import org.dcache.nfs.vfs.DirectoryStream;
+import org.dcache.nfs.vfs.FsStat;
+import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.Stat.Type;
+import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.primitives.Longs;
+import com.sun.security.auth.UnixNumericGroupPrincipal;
+import com.sun.security.auth.UnixNumericUserPrincipal;
+
 /**
  *
  */
@@ -69,7 +72,7 @@ public class LocalFileSystem implements VirtualFileSystem {
     private final FileStore _store;
     private final NonBlockingHashMapLong<Path> inodeToPath = new NonBlockingHashMapLong<>();
     private final NonBlockingHashMap<Path, Long> pathToInode = new NonBlockingHashMap<>();
-    private final AtomicLong fileId = new AtomicLong(1); //numbering starts at 1
+    private final AtomicLong fileId = new AtomicLong(1); // numbering starts at 1
     private final NfsIdMapping _idMapper = new SimpleIdMap();
     private final UserPrincipalLookupService _lookupService =
             FileSystems.getDefault().getUserPrincipalLookupService();
@@ -105,6 +108,7 @@ public class LocalFileSystem implements VirtualFileSystem {
 
     /**
      * Map an inode number to a path.
+     *
      * @param inodeNumber the inode number
      * @param path the path
      * @param force if true, overwrite any existing mapping
@@ -119,7 +123,7 @@ public class LocalFileSystem implements VirtualFileSystem {
         } else {
             Long otherInodeNumber = pathToInode.putIfAbsent(path, inodeNumber);
             if (otherInodeNumber != null) {
-                //try rollback
+                // try rollback
                 if (inodeToPath.remove(inodeNumber) != path) {
                     throw new IllegalStateException("cant map, rollback failed");
                 }
@@ -143,7 +147,7 @@ public class LocalFileSystem implements VirtualFileSystem {
     }
 
     private void remap(long inodeNumber, Path oldPath, Path newPath) {
-        //TODO - attempt rollback?
+        // TODO - attempt rollback?
         unmap(inodeNumber, oldPath);
         map(inodeNumber, newPath, true);
     }
@@ -159,8 +163,8 @@ public class LocalFileSystem implements VirtualFileSystem {
                 Files.createDirectories(exportRootPath);
             }
         }
-        //map existing structure (if any)
-        map(fileId.getAndIncrement(), _root); //so root is always inode #1
+        // map existing structure (if any)
+        map(fileId.getAndIncrement(), _root); // so root is always inode #1
         Files.walkFileTree(_root, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -207,25 +211,25 @@ public class LocalFileSystem implements VirtualFileSystem {
     public FsStat getFsStat() throws IOException {
         long total = _store.getTotalSpace();
         long free = _store.getUsableSpace();
-        return new FsStat(total, Long.MAX_VALUE, total-free, pathToInode.size());
+        return new FsStat(total, Long.MAX_VALUE, total - free, pathToInode.size());
     }
 
     @Override
     public Inode getRootInode() throws IOException {
-        return toFh(1); //always #1 (see constructor)
+        return toFh(1); // always #1 (see constructor)
     }
 
     @Override
     public Inode lookup(Inode parent, String path) throws IOException {
-        //TODO - several issues
-        //2. we might accidentally allow composite paths here ("/dome/dir/down")
-        //3. we dont actually check that the parent exists
+        // TODO - several issues
+        // 2. we might accidentally allow composite paths here ("/dome/dir/down")
+        // 3. we dont actually check that the parent exists
         long parentInodeNumber = getInodeNumber(parent);
         Path parentPath = resolveInode(parentInodeNumber);
         Path child;
-        if(path.equals(".")) {
+        if (path.equals(".")) {
             child = parentPath;
-        } else if(path.equals("..")) {
+        } else if (path.equals("..")) {
             child = parentPath.getParent();
         } else {
             child = parentPath.resolve(path);
@@ -300,8 +304,7 @@ public class LocalFileSystem implements VirtualFileSystem {
         return toFh(newInodeNumber);
     }
 
-    private void setOwnershipAndMode(Path target, Subject subject, int mode)
-    {
+    private void setOwnershipAndMode(Path target, Subject subject, int mode) {
         if (!IS_UNIX) {
             // FIXME: windows must support some kind of file owhership as well
             return;
@@ -311,10 +314,10 @@ public class LocalFileSystem implements VirtualFileSystem {
         int gid = -1;
         for (Principal principal : subject.getPrincipals()) {
             if (principal instanceof UnixNumericUserPrincipal) {
-                uid = (int) ((UnixNumericUserPrincipal)principal).longValue();
+                uid = (int) ((UnixNumericUserPrincipal) principal).longValue();
             }
             if (principal instanceof UnixNumericGroupPrincipal) {
-                gid = (int) ((UnixNumericGroupPrincipal)principal).longValue();
+                gid = (int) ((UnixNumericGroupPrincipal) principal).longValue();
             }
         }
 
@@ -346,10 +349,10 @@ public class LocalFileSystem implements VirtualFileSystem {
 
     @Override
     public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
-        //TODO - several issues
-        //1. we might not deal with "." and ".." properly
-        //2. we might accidentally allow composite paths here ("/dome/dir/down")
-        //3. we return true (changed) even though in theory a file might be renamed to itself?
+        // TODO - several issues
+        // 1. we might not deal with "." and ".." properly
+        // 2. we might accidentally allow composite paths here ("/dome/dir/down")
+        // 3. we return true (changed) even though in theory a file might be renamed to itself?
         long currentParentInodeNumber = getInodeNumber(src);
         Path currentParentPath = resolveInode(currentParentInodeNumber);
         long destParentInodeNumber = getInodeNumber(dest);
@@ -370,7 +373,7 @@ public class LocalFileSystem implements VirtualFileSystem {
     public Inode parentOf(Inode inode) throws IOException {
         long inodeNumber = getInodeNumber(inode);
         if (inodeNumber == 1) {
-            throw new NoEntException("no parent"); //its the root
+            throw new NoEntException("no parent"); // its the root
         }
         Path path = resolveInode(inodeNumber);
         Path parentPath = path.getParent();
@@ -410,7 +413,8 @@ public class LocalFileSystem implements VirtualFileSystem {
     }
 
     @Override
-    public Inode symlink(Inode parent, String linkName, String targetName, Subject subject, int mode) throws IOException {
+    public Inode symlink(Inode parent, String linkName, String targetName, Subject subject, int mode)
+            throws IOException {
         long parentInodeNumber = getInodeNumber(parent);
         Path parentPath = resolveInode(parentInodeNumber);
         Path link = parentPath.resolve(linkName);
@@ -438,7 +442,8 @@ public class LocalFileSystem implements VirtualFileSystem {
     }
 
     @Override
-    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel) throws IOException {
+    public WriteResult write(Inode inode, byte[] data, long offset, int count, StabilityLevel stabilityLevel)
+            throws IOException {
         long inodeNumber = getInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
         ByteBuffer srcBuffer = ByteBuffer.wrap(data, 0, count);
@@ -455,7 +460,7 @@ public class LocalFileSystem implements VirtualFileSystem {
 
     private Stat statPath(Path p, long inodeNumber) throws IOException {
 
-        Class<? extends  BasicFileAttributeView> attributeClass =
+        Class<? extends BasicFileAttributeView> attributeClass =
                 IS_UNIX ? PosixFileAttributeView.class : DosFileAttributeView.class;
 
         BasicFileAttributes attrs = Files.getFileAttributeView(p, attributeClass, NOFOLLOW_LINKS).readAttributes();
@@ -473,11 +478,11 @@ public class LocalFileSystem implements VirtualFileSystem {
             stat.setNlink((Integer) Files.getAttribute(p, "unix:nlink", NOFOLLOW_LINKS));
             stat.setCTime(((FileTime) Files.getAttribute(p, "unix:ctime", NOFOLLOW_LINKS)).toMillis());
         } else {
-            DosFileAttributes dosAttrs = (DosFileAttributes)attrs;
+            DosFileAttributes dosAttrs = (DosFileAttributes) attrs;
             stat.setGid(0);
             stat.setUid(0);
             int type = dosAttrs.isSymbolicLink() ? Stat.S_IFLNK : dosAttrs.isDirectory() ? Stat.S_IFDIR : Stat.S_IFREG;
-            stat.setMode( type |(dosAttrs.isReadOnly()? 0400 : 0600));
+            stat.setMode(type | (dosAttrs.isReadOnly() ? 0400 : 0600));
             stat.setNlink(1);
         }
 
@@ -511,7 +516,8 @@ public class LocalFileSystem implements VirtualFileSystem {
 
         long inodeNumber = getInodeNumber(inode);
         Path path = resolveInode(inodeNumber);
-        PosixFileAttributeView attributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class, NOFOLLOW_LINKS);
+        PosixFileAttributeView attributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class,
+                NOFOLLOW_LINKS);
         if (stat.isDefined(Stat.StatAttribute.OWNER)) {
             try {
                 String uid = String.valueOf(stat.getUid());

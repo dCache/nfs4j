@@ -18,36 +18,50 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class fattr4_acl implements XdrAble {
 
-    public nfsace4 [] value;
+    public nfsace4[] value;
 
     public fattr4_acl() {
     }
 
-    public fattr4_acl(nfsace4 [] value) {
+    public fattr4_acl(nfsace4[] value) {
         this.value = value;
     }
 
     public fattr4_acl(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = value.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx].xdrEncode(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = value.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                value[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); value = new nfsace4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { value[$idx] = new nfsace4(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = xdr.xdrDecodeInt();
+            value = new nfsace4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                value[$idx] = new nfsace4(xdr);
+            }
+        }
     }
 
 }

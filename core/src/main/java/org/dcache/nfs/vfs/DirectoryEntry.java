@@ -19,7 +19,7 @@
  */
 package org.dcache.nfs.vfs;
 
-public class DirectoryEntry implements Comparable<DirectoryEntry>{
+public class DirectoryEntry implements Comparable<DirectoryEntry> {
 
     private final String _name;
     private final Stat _stat;

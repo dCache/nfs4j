@@ -24,13 +24,17 @@ package org.dcache.nfs.util;
  *
  * @param <T>
  */
-public class NopCacheEventListener<K, V> implements CacheEventListener<K,V> {
+public class NopCacheEventListener<K, V> implements CacheEventListener<K, V> {
 
-    public void notifyPut(Cache<K,V> cache, V v) {}
+    public void notifyPut(Cache<K, V> cache, V v) {
+    }
 
-    public void notifyGet(Cache<K,V> cache, V v) {}
+    public void notifyGet(Cache<K, V> cache, V v) {
+    }
 
-    public void notifyRemove(Cache<K,V> cache, V v) {}
+    public void notifyRemove(Cache<K, V> cache, V v) {
+    }
 
-    public void notifyExpired(Cache<K,V> cache, V v) {}
+    public void notifyExpired(Cache<K, V> cache, V v) {
+    }
 }

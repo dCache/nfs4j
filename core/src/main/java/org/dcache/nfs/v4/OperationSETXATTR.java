@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.BadXdrException;
@@ -40,7 +41,8 @@ public class OperationSETXATTR extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
 
         Inode inode = context.currentInode();
 
@@ -60,7 +62,7 @@ public class OperationSETXATTR extends AbstractNFSv4Operation {
     }
 
     private final VirtualFileSystem.SetXattrMode toXatterSetMode(int i) throws BadXdrException {
-        switch(i) {
+        switch (i) {
             case 0:
                 return VirtualFileSystem.SetXattrMode.EITHER;
             case 1:

@@ -18,37 +18,51 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class COMPOUND4args implements XdrAble {
     public utf8str_cs tag;
     public uint32_t minorversion;
-    public nfs_argop4 [] argarray;
+    public nfs_argop4[] argarray;
 
     public COMPOUND4args() {
     }
 
     public COMPOUND4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         tag.xdrEncode(xdr);
         minorversion.xdrEncode(xdr);
-        { int $size = argarray.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { argarray[$idx].xdrEncode(xdr); } }
+        {
+            int $size = argarray.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                argarray[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         tag = new utf8str_cs(xdr);
         minorversion = new uint32_t(xdr);
-        { int $size = xdr.xdrDecodeInt(); argarray = new nfs_argop4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { argarray[$idx] = new nfs_argop4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            argarray = new nfs_argop4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                argarray[$idx] = new nfs_argop4(xdr);
+            }
+        }
     }
 
 }

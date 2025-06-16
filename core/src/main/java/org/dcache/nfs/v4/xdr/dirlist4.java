@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class dirlist4 implements XdrAble {
     public entry4 entries;
@@ -32,18 +34,23 @@ public class dirlist4 implements XdrAble {
     }
 
     public dirlist4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        if ( entries != null ) { xdr.xdrEncodeBoolean(true); entries.xdrEncode(xdr); } else { xdr.xdrEncodeBoolean(false); }
+            throws OncRpcException, IOException {
+        if (entries != null) {
+            xdr.xdrEncodeBoolean(true);
+            entries.xdrEncode(xdr);
+        } else {
+            xdr.xdrEncodeBoolean(false);
+        }
         xdr.xdrEncodeBoolean(eof);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         entries = xdr.xdrDecodeBoolean() ? new entry4(xdr) : null;
         eof = xdr.xdrDecodeBoolean();
     }

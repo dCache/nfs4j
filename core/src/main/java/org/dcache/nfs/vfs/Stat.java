@@ -30,19 +30,7 @@ import java.util.EnumSet;
 public class Stat implements Serializable, Cloneable {
 
     public enum StatAttribute {
-        DEV,
-        INO,
-        MODE,
-        NLINK,
-        OWNER,
-        GROUP,
-        RDEV,
-        SIZE,
-        GENERATION,
-        ATIME,
-        MTIME,
-        CTIME,
-        BTIME
+        DEV, INO, MODE, NLINK, OWNER, GROUP, RDEV, SIZE, GENERATION, ATIME, MTIME, CTIME, BTIME
     };
 
     private static final long serialVersionUID = 1L;
@@ -54,7 +42,7 @@ public class Stat implements Serializable, Cloneable {
     private final EnumSet<StatAttribute> _definedAttrs = EnumSet.noneOf(StatAttribute.class);
 
     public static final int S_TYPE = 0770000; // type mask
-    public static final int S_PERMS = 0777;   // permissions mask
+    public static final int S_PERMS = 0777; // permissions mask
     /**
      * Unix domain socket
      */
@@ -86,14 +74,7 @@ public class Stat implements Serializable, Cloneable {
 
     public enum Type {
 
-        LEGACY,
-        REGULAR,
-        DIRECTORY,
-        SYMLINK,
-        CHAR,
-        BLOCK,
-        FIFO,
-        SOCK;
+        LEGACY, REGULAR, DIRECTORY, SYMLINK, CHAR, BLOCK, FIFO, SOCK;
 
         public int toMode() {
             switch (this) {
@@ -112,12 +93,12 @@ public class Stat implements Serializable, Cloneable {
                 case SOCK:
                     return S_IFSOCK;
                 default:
-                    throw new IllegalArgumentException("unhandled: "+this);
+                    throw new IllegalArgumentException("unhandled: " + this);
             }
         }
 
         public static Type fromMode(int mode) {
-            switch(mode & S_TYPE) {
+            switch (mode & S_TYPE) {
                 case S_IFREG:
                     return Type.REGULAR;
                 case S_IFDIR:
@@ -396,9 +377,9 @@ public class Stat implements Serializable, Cloneable {
             default:
                 result.append("-");
         }
-        //owner, group, other
-        for (int i=0; i<3; i++) {
-            int acl = (mode >> (6 - 3*i)) & 0000007;
+        // owner, group, other
+        for (int i = 0; i < 3; i++) {
+            int acl = (mode >> (6 - 3 * i)) & 0000007;
             switch (acl) {
                 case 00:
                     result.append("---");
@@ -429,17 +410,17 @@ public class Stat implements Serializable, Cloneable {
         return result.toString();
     }
 
-    //technically _size (java long) will overflow after ~8 exabytes, so "Z"/"Y" is unreachable
+    // technically _size (java long) will overflow after ~8 exabytes, so "Z"/"Y" is unreachable
     private final static String[] SIZE_UNITS = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
 
     public static String sizeToString(long bytes) {
-        if (bytes==0) {
+        if (bytes == 0) {
             return "0";
         }
-        int orderOfMagnitude = (int)Math.floor(Math.log(bytes) / Math.log(1024));
-        double significantSize = (double)bytes / (1L << orderOfMagnitude*10);
-        DecimalFormat sizeFormat = new DecimalFormat("#.#"); //not thread safe
-        return sizeFormat.format(significantSize)+SIZE_UNITS[orderOfMagnitude];
+        int orderOfMagnitude = (int) Math.floor(Math.log(bytes) / Math.log(1024));
+        double significantSize = (double) bytes / (1L << orderOfMagnitude * 10);
+        DecimalFormat sizeFormat = new DecimalFormat("#.#"); // not thread safe
+        return sizeFormat.format(significantSize) + SIZE_UNITS[orderOfMagnitude];
     }
 
     @Override
@@ -460,11 +441,13 @@ public class Stat implements Serializable, Cloneable {
         String humanReadableMTime = LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(_mtime), ZoneId.systemDefault())
                 .format(LS_TIME_FORMAT);
-        return modeToString(_mode)+" "+String.format("%4d %4d %4d %4s %s", _nlink, _owner, _group, humanReadableSize, humanReadableMTime);
+        return modeToString(_mode) + " " + String.format("%4d %4d %4d %4s %s", _nlink, _owner, _group,
+                humanReadableSize, humanReadableMTime);
     }
 
     /**
      * Check is attribute defined in this {@code stat} object;
+     *
      * @param attr attribute to check
      * @return true iff specified attribute is defined in this stat object.
      */
@@ -473,8 +456,8 @@ public class Stat implements Serializable, Cloneable {
     }
 
     /**
-     * Undefine attribute this {@code stat} object. Accessing an attribute
-     * after it's undefined will throw {@link IllegalStateException}.
+     * Undefine attribute this {@code stat} object. Accessing an attribute after it's undefined will throw
+     * {@link IllegalStateException}.
      *
      * @param attr attribute to undefine.
      */
@@ -484,12 +467,12 @@ public class Stat implements Serializable, Cloneable {
 
     /** Throws IllegalStateException if attribute is not defined. */
     private void guard(StatAttribute attr) throws IllegalStateException {
-        if ( !isDefined(attr)) {
+        if (!isDefined(attr)) {
             throw new IllegalStateException("Attribute is not defined: " + attr);
         }
     }
 
-    private void define(StatAttribute attr)  {
-	_definedAttrs.add(attr);
+    private void define(StatAttribute attr) {
+        _definedAttrs.add(attr);
     }
 }

@@ -50,16 +50,14 @@ public class FsStat implements Serializable {
     }
 
     /**
-     * @return total number of files. If a file has multiple replicas only one
-     *         replica is counted.
+     * @return total number of files. If a file has multiple replicas only one replica is counted.
      */
     public long getUsedFiles() {
         return _usedFiles;
     }
 
     /**
-     * @return total number of bytes off all files. If a file has a multiple
-     *         replicas only one replica is counted.
+     * @return total number of bytes off all files. If a file has a multiple replicas only one replica is counted.
      */
     public long getUsedSpace() {
         return _usedSpace;

@@ -19,29 +19,28 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.primitives.Ints;
 import java.io.IOException;
 import java.util.Iterator;
-import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.v4.xdr.entry4;
-import org.dcache.nfs.v4.xdr.dirlist4;
-import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.nfs.v4.xdr.component4;
-import org.dcache.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.READDIR4resok;
-import org.dcache.nfs.v4.xdr.READDIR4res;
-import org.dcache.nfs.ChimeraNFSException;
 
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.BadCookieException;
 import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.status.TooSmallException;
+import org.dcache.nfs.v4.xdr.READDIR4res;
+import org.dcache.nfs.v4.xdr.READDIR4resok;
 import org.dcache.nfs.v4.xdr.attrlist4;
 import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.component4;
+import org.dcache.nfs.v4.xdr.dirlist4;
+import org.dcache.nfs.v4.xdr.entry4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_cookie4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.DirectoryEntry;
 import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.Inode;
@@ -50,20 +49,20 @@ import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.primitives.Ints;
+
 public class OperationREADDIR extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationREADDIR.class);
 
     /**
-     * Smallest possible entry size.
-     * 8 (cookie) + 4 (name len) + 4 (smallest padded name) + 4 (bitmap len, always '2')
-     *  + 2x4 (bitmap) + 4 (attr len) + 4 (boolean has next)
+     * Smallest possible entry size. 8 (cookie) + 4 (name len) + 4 (smallest padded name) + 4 (bitmap len, always '2') +
+     * 2x4 (bitmap) + 4 (attr len) + 4 (boolean has next)
      */
     private static final int ENTRY4_SIZE = 36;
 
     /**
-     * Minimal readdir reply size for an empty directory.
-     * 8 (verifier) + 4 (bool has entry) + 4 (bool eol)
+     * Minimal readdir reply size for an empty directory. 8 (verifier) + 4 (bool has entry) + 4 (bool eol)
      */
     private static final int READDIR4RESOK_SIZE = 16;
 
@@ -77,21 +76,21 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(final CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(final CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
 
         final READDIR4res res = result.opreaddir;
 
         final Inode dir = context.currentInode();
 
         DirectoryStream directoryStream;
-        verifier4 verifier =_args.opreaddir.cookieverf;
+        verifier4 verifier = _args.opreaddir.cookieverf;
         long startValue = _args.opreaddir.cookie.value;
 
         /*
-         * we have to fake cookie values, while '0' and '1' is reserved so we
-         * start with 3
+         * we have to fake cookie values, while '0' and '1' is reserved so we start with 3
          */
-        if (startValue == 1 ||  startValue == 2) {
+        if (startValue == 1 || startValue == 2) {
             throw new BadCookieException("bad cookie : " + startValue);
         }
 
@@ -143,10 +142,12 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             currentEntry.cookie = new nfs_cookie4(le.getCookie() + COOKIE_OFFSET);
 
             try {
-                currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei, le.getStat(), context);
+                currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei,
+                        le.getStat(), context);
             } catch (ChimeraNFSException e) {
                 /*
                  * If the client is not interested in error per file, fail the complete request.
+                 *
                  * @see: rfc7530#section-16.24.4
                  */
                 if (!_args.opreaddir.attr_request.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
@@ -156,12 +157,14 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             }
 
             // check if writing this entry exceeds the count limit
-            int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length + currentEntry.attrs.attr_vals.value.length;
+            int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length
+                    + currentEntry.attrs.attr_vals.value.length;
             int newDirSize = name.length() + 4; // name + sizeof(long)
-            if ((currcount + newSize > _args.opreaddir.maxcount.value) || (dircount + newDirSize > _args.opreaddir.dircount.value)) {
+            if ((currcount + newSize > _args.opreaddir.maxcount.value) || (dircount
+                    + newDirSize > _args.opreaddir.dircount.value)) {
                 if (lastEntry == null) {
-                    //corner case - means we didnt have enough space to
-                    //write even a single entry.
+                    // corner case - means we didnt have enough space to
+                    // write even a single entry.
                     throw new TooSmallException("can't send even a single entry");
                 }
                 res.resok4.reply.eof = false;

@@ -18,17 +18,19 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
-import org.dcache.oncrpc4j.xdr.XdrAble;
-import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
-import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 public class utf8string implements XdrAble {
 
-    public byte [] value;
+    public byte[] value;
 
     public utf8string() {
     }
@@ -37,22 +39,22 @@ public class utf8string implements XdrAble {
         this.value = s.getBytes(StandardCharsets.UTF_8);
     }
 
-    public utf8string(byte [] value) {
+    public utf8string(byte[] value) {
         this.value = value;
     }
 
     public utf8string(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeDynamicOpaque(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         value = xdr.xdrDecodeDynamicOpaque();
     }
 

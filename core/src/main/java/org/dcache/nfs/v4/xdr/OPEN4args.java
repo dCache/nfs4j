@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class OPEN4args implements XdrAble {
     public seqid4 seqid;
@@ -36,12 +38,12 @@ public class OPEN4args implements XdrAble {
     }
 
     public OPEN4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         seqid.xdrEncode(xdr);
         share_access.xdrEncode(xdr);
         share_deny.xdrEncode(xdr);
@@ -51,7 +53,7 @@ public class OPEN4args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         seqid = new seqid4(xdr);
         share_access = new uint32_t(xdr);
         share_deny = new uint32_t(xdr);

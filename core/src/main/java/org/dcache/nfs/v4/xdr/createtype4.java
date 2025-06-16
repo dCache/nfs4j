@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class createtype4 implements XdrAble {
     public int type;
@@ -33,47 +35,47 @@ public class createtype4 implements XdrAble {
     }
 
     public createtype4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(type);
-        switch ( type ) {
-        case nfs_ftype4.NF4LNK:
-            linkdata.xdrEncode(xdr);
-            break;
-        case nfs_ftype4.NF4BLK:
-        case nfs_ftype4.NF4CHR:
-            devdata.xdrEncode(xdr);
-            break;
-        case nfs_ftype4.NF4SOCK:
-        case nfs_ftype4.NF4FIFO:
-        case nfs_ftype4.NF4DIR:
-            break;
-        default:
-            break;
+        switch (type) {
+            case nfs_ftype4.NF4LNK:
+                linkdata.xdrEncode(xdr);
+                break;
+            case nfs_ftype4.NF4BLK:
+            case nfs_ftype4.NF4CHR:
+                devdata.xdrEncode(xdr);
+                break;
+            case nfs_ftype4.NF4SOCK:
+            case nfs_ftype4.NF4FIFO:
+            case nfs_ftype4.NF4DIR:
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         type = xdr.xdrDecodeInt();
-        switch ( type ) {
-        case nfs_ftype4.NF4LNK:
-            linkdata = new linktext4(xdr);
-            break;
-        case nfs_ftype4.NF4BLK:
-        case nfs_ftype4.NF4CHR:
-            devdata = new specdata4(xdr);
-            break;
-        case nfs_ftype4.NF4SOCK:
-        case nfs_ftype4.NF4FIFO:
-        case nfs_ftype4.NF4DIR:
-            break;
-        default:
-            break;
+        switch (type) {
+            case nfs_ftype4.NF4LNK:
+                linkdata = new linktext4(xdr);
+                break;
+            case nfs_ftype4.NF4BLK:
+            case nfs_ftype4.NF4CHR:
+                devdata = new specdata4(xdr);
+                break;
+            case nfs_ftype4.NF4SOCK:
+            case nfs_ftype4.NF4FIFO:
+            case nfs_ftype4.NF4DIR:
+                break;
+            default:
+                break;
         }
     }
 

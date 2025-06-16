@@ -7,9 +7,11 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class SETXATTR4args implements XdrAble {
     public int sxa_option;
@@ -20,19 +22,19 @@ public class SETXATTR4args implements XdrAble {
     }
 
     public SETXATTR4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(sxa_option);
         xdr.xdrEncodeString(sxa_name);
         sxa_value.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         sxa_option = xdr.xdrDecodeInt();
         sxa_name = xdr.xdrDecodeString();
         sxa_value = new xattrvalue4(xdr);

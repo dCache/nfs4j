@@ -18,13 +18,15 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.net.InetSocketAddresses;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 
 public class netaddr4 implements XdrAble {
     public String na_r_netid;
@@ -39,18 +41,18 @@ public class netaddr4 implements XdrAble {
     }
 
     public netaddr4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeString(na_r_netid);
         xdr.xdrEncodeString(na_r_addr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         na_r_netid = xdr.xdrDecodeString();
         na_r_addr = xdr.xdrDecodeString();
     }

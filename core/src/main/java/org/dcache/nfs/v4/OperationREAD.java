@@ -21,16 +21,17 @@ package org.dcache.nfs.v4;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.OpenModeException;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.READ4resok;
-import org.dcache.nfs.v4.xdr.READ4res;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NfsIoException;
+import org.dcache.nfs.status.OpenModeException;
+import org.dcache.nfs.v4.xdr.READ4res;
+import org.dcache.nfs.v4.xdr.READ4resok;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Stat;
@@ -63,11 +64,9 @@ public class OperationREAD extends AbstractNFSv4Operation {
         NFS4Client client;
         if (context.getMinorversion() == 0) {
             /*
-             * The NFSv4.0 spec requires lease renewal on READ.
-             * See: https://tools.ietf.org/html/rfc7530#page-119
+             * The NFSv4.0 spec requires lease renewal on READ. See: https://tools.ietf.org/html/rfc7530#page-119
              *
-             * With introduction of sessions in v4.1 update of the
-             * lease time done through SEQUENCE operations.
+             * With introduction of sessions in v4.1 update of the lease time done through SEQUENCE operations.
              */
             context.getStateHandler().updateClientLeaseTime(stateid);
             client = context.getStateHandler().getClientIdByStateId(stateid);

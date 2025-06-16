@@ -18,34 +18,48 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class nfsacl41 implements XdrAble {
     public aclflag4 na41_flag;
-    public nfsace4 [] na41_aces;
+    public nfsace4[] na41_aces;
 
     public nfsacl41() {
     }
 
     public nfsacl41(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         na41_flag.xdrEncode(xdr);
-        { int $size = na41_aces.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { na41_aces[$idx].xdrEncode(xdr); } }
+        {
+            int $size = na41_aces.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                na41_aces[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         na41_flag = new aclflag4(xdr);
-        { int $size = xdr.xdrDecodeInt(); na41_aces = new nfsace4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { na41_aces[$idx] = new nfsace4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            na41_aces = new nfsace4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                na41_aces[$idx] = new nfsace4(xdr);
+            }
+        }
     }
 
 }

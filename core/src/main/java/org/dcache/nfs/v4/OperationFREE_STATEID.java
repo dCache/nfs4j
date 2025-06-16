@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.FREE_STATEID4res;
@@ -39,7 +40,8 @@ public class OperationFREE_STATEID extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
 
         // FIXME: we as validating spec, as a valid open-state must rerun NFS4ERR_LOCKS_HELD.
 

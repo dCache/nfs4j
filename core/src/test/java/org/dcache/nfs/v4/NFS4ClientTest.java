@@ -19,6 +19,13 @@
  */
 package org.dcache.nfs.v4;
 
+import static org.dcache.nfs.v4.NfsTestUtils.createClient;
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -33,20 +40,12 @@ import org.dcache.nfs.util.NopCacheEventListener;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.stateid4;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.dcache.nfs.vfs.Inode;
-
-import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
-import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.vfs.Inode;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NFS4ClientTest {
 
@@ -62,11 +61,11 @@ public class NFS4ClientTest {
         var leaseTime = Duration.ofSeconds(NFSv4Defaults.NFS4_LEASE_TIME);
         var clientStore = new EphemeralClientRecoveryStore();
         stateHandler = new NFSv4StateHandler(leaseTime, 0, clientStore,
-              new DefaultClientCache(leaseTime, new NopCacheEventListener<>()), clock);
+                new DefaultClientCache(leaseTime, new NopCacheEventListener<>()), clock);
 
         nfsClient = createClient(stateHandler);
         owner = nfsClient.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8),
-              new seqid4(0));
+                new seqid4(0));
     }
 
     @Test
@@ -90,7 +89,7 @@ public class NFS4ClientTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        context.currentInode( Inode.forFile( new byte[] {}));
+        context.currentInode(Inode.forFile(new byte[] {}));
         context.setSession(session);
 
         AssertNFS.assertNFS(CLOSE, context, result, nfsstat.NFS_OK);
@@ -116,7 +115,7 @@ public class NFS4ClientTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        context.currentInode(Inode.forFile(new byte[]{}));
+        context.currentInode(Inode.forFile(new byte[] {}));
 
         AssertNFS.assertNFS(CLOSE, context, result, nfsstat.NFS_OK);
         assertFalse("client state not cleaned", nfsClient.hasState());
@@ -202,4 +201,3 @@ public class NFS4ClientTest {
         assertFalse("Client can be valid with expired lease", nfsClient.isLeaseValid());
     }
 }
-

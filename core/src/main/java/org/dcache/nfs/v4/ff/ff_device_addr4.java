@@ -7,35 +7,49 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
+
+import java.io.IOException;
+
+import org.dcache.nfs.v4.xdr.multipath_list4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
-import org.dcache.nfs.v4.xdr.multipath_list4;
 
 public class ff_device_addr4 implements XdrAble {
     public multipath_list4 ffda_netaddrs;
-    public ff_device_versions4 [] ffda_versions;
+    public ff_device_versions4[] ffda_versions;
 
     public ff_device_addr4() {
     }
 
     public ff_device_addr4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffda_netaddrs.xdrEncode(xdr);
-        { int $size = ffda_versions.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ffda_versions[$idx].xdrEncode(xdr); } }
+        {
+            int $size = ffda_versions.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ffda_versions[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffda_netaddrs = new multipath_list4(xdr);
-        { int $size = xdr.xdrDecodeInt(); ffda_versions = new ff_device_versions4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ffda_versions[$idx] = new ff_device_versions4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            ffda_versions = new ff_device_versions4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ffda_versions[$idx] = new ff_device_versions4(xdr);
+            }
+        }
     }
 
 }

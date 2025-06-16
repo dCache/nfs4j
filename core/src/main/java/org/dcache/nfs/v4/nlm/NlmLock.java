@@ -19,19 +19,20 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+
 import org.dcache.nfs.v4.StateOwner;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_lock_type4;
 
-public class NlmLock implements Serializable{
+import com.google.common.base.MoreObjects;
+
+public class NlmLock implements Serializable {
 
     private static final long serialVersionUID = -839338915510175006L;
 
     /**
-     * Opaque object that identifies the host or process that is holding the
-     * lock.
+     * Opaque object that identifies the host or process that is holding the lock.
      */
     private final StateOwner owner;
     /**
@@ -116,25 +117,19 @@ public class NlmLock implements Serializable{
         }
 
         /*
-         * use subtraction to avoid positive long overflow, e.g.
-         * instead of
-         *     A + B < C
-         *  use
-         *     C - A > B
+         * use subtraction to avoid positive long overflow, e.g. instead of A + B < C use C - A > B
          */
 
         if (other.length == nfs4_prot.NFS4_UINT64_MAX) {
             /*
-             * either this lock region starts at higher offset,
-             * or lock region doesn't ends before other one starts.
+             * either this lock region starts at higher offset, or lock region doesn't ends before other one starts.
              */
             return offset > other.offset || other.offset - length < offset;
         }
 
-        if (length == nfs4_prot.NFS4_UINT64_MAX ){
+        if (length == nfs4_prot.NFS4_UINT64_MAX) {
             /**
-             * either other lock region starts at higher offset,
-             * or lock region doesn't ends before this one starts.
+             * either other lock region starts at higher offset, or lock region doesn't ends before this one starts.
              */
             return other.offset > offset || offset - other.length < other.offset;
         }
@@ -152,8 +147,8 @@ public class NlmLock implements Serializable{
     }
 
     public boolean isConflictingType(NlmLock other) {
-        return lockType == nfs_lock_type4 .WRITE_LT || lockType == nfs_lock_type4 .WRITEW_LT
-                || other.lockType == nfs_lock_type4 .WRITE_LT || other.lockType == nfs_lock_type4 .WRITEW_LT;
+        return lockType == nfs_lock_type4.WRITE_LT || lockType == nfs_lock_type4.WRITEW_LT
+                || other.lockType == nfs_lock_type4.WRITE_LT || other.lockType == nfs_lock_type4.WRITEW_LT;
     }
 
     public boolean isConflicting(NlmLock other) {

@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class gss_cb_handles4 implements XdrAble {
     public int gcbp_service;
@@ -33,19 +35,19 @@ public class gss_cb_handles4 implements XdrAble {
     }
 
     public gss_cb_handles4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(gcbp_service);
         gcbp_handle_from_server.xdrEncode(xdr);
         gcbp_handle_from_client.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         gcbp_service = xdr.xdrDecodeInt();
         gcbp_handle_from_server = new gsshandle4_t(xdr);
         gcbp_handle_from_client = new gsshandle4_t(xdr);

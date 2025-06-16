@@ -19,153 +19,151 @@
  */
 package org.dcache.nfs.v3;
 
-import org.dcache.nfs.ExportTable;
-import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.util.UnixSubjects;
-import org.dcache.nfs.v3.xdr.LOOKUP3res;
-import org.dcache.nfs.v3.xdr.WRITE3resfail;
-import org.dcache.nfs.v3.xdr.RMDIR3resok;
-import org.dcache.nfs.v3.xdr.SYMLINK3resfail;
-import org.dcache.nfs.v3.xdr.post_op_fh3;
-import org.dcache.nfs.v3.xdr.READLINK3args;
-import org.dcache.nfs.v3.xdr.uint64;
-import org.dcache.nfs.v3.xdr.MKDIR3res;
-import org.dcache.nfs.v3.xdr.WRITE3args;
-import org.dcache.nfs.v3.xdr.createmode3;
-import org.dcache.nfs.v3.xdr.post_op_attr;
-import org.dcache.nfs.v3.xdr.LINK3resfail;
-import org.dcache.nfs.v3.xdr.READ3resfail;
-import org.dcache.nfs.v3.xdr.MKDIR3resok;
-import org.dcache.nfs.v3.xdr.READDIR3args;
-import org.dcache.nfs.v3.xdr.LOOKUP3resfail;
-import org.dcache.nfs.v3.xdr.dirlistplus3;
-import org.dcache.nfs.v3.xdr.SYMLINK3resok;
-import org.dcache.nfs.v3.xdr.READDIR3resok;
-import org.dcache.nfs.v3.xdr.entry3;
-import org.dcache.nfs.v3.xdr.READ3args;
-import org.dcache.nfs.v3.xdr.LOOKUP3args;
-import org.dcache.nfs.v3.xdr.PATHCONF3res;
-import org.dcache.nfs.v3.xdr.LINK3args;
-import org.dcache.nfs.v3.xdr.REMOVE3res;
-import org.dcache.nfs.v3.xdr.READ3resok;
-import org.dcache.nfs.v3.xdr.sattr3;
-import org.dcache.nfs.v3.xdr.count3;
-import org.dcache.nfs.v3.xdr.MKNOD3args;
-import org.dcache.nfs.v3.xdr.READ3res;
-import org.dcache.nfs.v3.xdr.READLINK3resok;
-import org.dcache.nfs.v3.xdr.cookie3;
-import org.dcache.nfs.v3.xdr.LOOKUP3resok;
-import org.dcache.nfs.v3.xdr.READDIR3resfail;
-import org.dcache.nfs.v3.xdr.RMDIR3res;
-import org.dcache.nfs.v3.xdr.RMDIR3resfail;
-import org.dcache.nfs.v3.xdr.WRITE3resok;
-import org.dcache.nfs.v3.xdr.REMOVE3resfail;
-import org.dcache.nfs.v3.xdr.WRITE3res;
-import org.dcache.nfs.v3.xdr.wcc_data;
-import org.dcache.nfs.v3.xdr.nfs3_prot;
-import org.dcache.nfs.v3.xdr.MKDIR3resfail;
-import org.dcache.nfs.v3.xdr.RENAME3resok;
-import org.dcache.nfs.v3.xdr.dirlist3;
-import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
-import org.dcache.nfs.v3.xdr.MKDIR3args;
-import org.dcache.nfs.v3.xdr.fattr3;
-import org.dcache.nfs.v3.xdr.MKNOD3res;
-import org.dcache.nfs.v3.xdr.fileid3;
-import org.dcache.nfs.v3.xdr.SETATTR3resfail;
-import org.dcache.nfs.v3.xdr.uint32;
-import org.dcache.nfs.v3.xdr.entryplus3;
-import org.dcache.nfs.v3.xdr.pre_op_attr;
-import org.dcache.nfs.v3.xdr.SETATTR3args;
-import org.dcache.nfs.v3.xdr.SYMLINK3res;
-import org.dcache.nfs.v3.xdr.PATHCONF3args;
-import org.dcache.nfs.v3.xdr.writeverf3;
-import org.dcache.nfs.v3.xdr.RENAME3args;
-import org.dcache.nfs.v3.xdr.SYMLINK3args;
-import org.dcache.nfs.v3.xdr.READDIRPLUS3resfail;
-import org.dcache.nfs.v3.xdr.nfs_fh3;
-import org.dcache.nfs.v3.xdr.REMOVE3resok;
-import org.dcache.nfs.v3.xdr.READLINK3res;
-import org.dcache.nfs.v3.xdr.RENAME3res;
-import org.dcache.nfs.v3.xdr.RMDIR3args;
-import org.dcache.nfs.v3.xdr.READDIRPLUS3resok;
-import org.dcache.nfs.v3.xdr.cookieverf3;
-import org.dcache.nfs.v3.xdr.nfs3_protServerStub;
-import org.dcache.nfs.v3.xdr.READDIRPLUS3res;
-import org.dcache.nfs.v3.xdr.nfstime3;
-import org.dcache.nfs.v3.xdr.LINK3resok;
-import org.dcache.nfs.v3.xdr.size3;
-import org.dcache.nfs.v3.xdr.REMOVE3args;
-import org.dcache.nfs.v3.xdr.wcc_attr;
-import org.dcache.nfs.v3.xdr.SETATTR3res;
-import org.dcache.nfs.v3.xdr.LINK3res;
-import org.dcache.nfs.v3.xdr.SETATTR3resok;
-import org.dcache.nfs.v3.xdr.READDIR3res;
-import org.dcache.nfs.v3.xdr.PATHCONF3resok;
-import org.dcache.nfs.v3.xdr.nfspath3;
-import org.dcache.nfs.v3.xdr.filename3;
-import org.dcache.nfs.v3.xdr.FSINFO3res;
-import org.dcache.nfs.v3.xdr.GETATTR3resok;
-import org.dcache.nfs.v3.xdr.CREATE3args;
-import org.dcache.nfs.v3.xdr.CREATE3resok;
-import org.dcache.nfs.v3.xdr.FSSTAT3args;
-import org.dcache.nfs.v3.xdr.FSSTAT3resok;
-import org.dcache.nfs.v3.xdr.FSINFO3args;
-import org.dcache.nfs.v3.xdr.CREATE3res;
-import org.dcache.nfs.v3.xdr.GETATTR3args;
-import org.dcache.nfs.v3.xdr.ACCESS3resfail;
-import org.dcache.nfs.v3.xdr.GETATTR3res;
-import org.dcache.nfs.v3.xdr.COMMIT3res;
-import org.dcache.nfs.v3.xdr.FSINFO3resok;
-import org.dcache.nfs.v3.xdr.ACCESS3resok;
-import org.dcache.nfs.v3.xdr.FSSTAT3res;
-import org.dcache.nfs.v3.xdr.COMMIT3args;
-import org.dcache.nfs.v3.xdr.ACCESS3args;
-import org.dcache.nfs.v3.xdr.CREATE3resfail;
-import org.dcache.nfs.v3.xdr.FSINFO3resfail;
-import org.dcache.nfs.v3.xdr.ACCESS3res;
-import org.dcache.nfs.v3.xdr.COMMIT3resok;
-import java.util.Iterator;
-
-import org.dcache.nfs.v3.xdr.COMMIT3resfail;
-import org.dcache.nfs.v3.xdr.FSSTAT3resfail;
-import org.dcache.nfs.v3.xdr.MKNOD3resfail;
-import org.dcache.nfs.v3.xdr.READLINK3resfail;
-import org.dcache.nfs.v3.xdr.RENAME3resfail;
-import org.dcache.nfs.vfs.DirectoryEntry;
-import org.dcache.nfs.vfs.VirtualFileSystem;
-import org.dcache.nfs.vfs.Stat;
-import org.dcache.nfs.status.*;
-import org.dcache.oncrpc4j.util.Bytes;
-import org.dcache.oncrpc4j.rpc.RpcCall;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import static org.dcache.nfs.v3.Utils.checkFilename;
 import static org.dcache.nfs.v3.Utils.defaultPostOpAttr;
 import static org.dcache.nfs.v3.Utils.defaultWccData;
-import static org.dcache.nfs.v3.Utils.checkFilename;
 
+import java.util.Iterator;
+
+import javax.security.auth.Subject;
+
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.ExportTable;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.*;
+import org.dcache.nfs.util.UnixSubjects;
+import org.dcache.nfs.v3.xdr.ACCESS3args;
+import org.dcache.nfs.v3.xdr.ACCESS3res;
+import org.dcache.nfs.v3.xdr.ACCESS3resfail;
+import org.dcache.nfs.v3.xdr.ACCESS3resok;
+import org.dcache.nfs.v3.xdr.COMMIT3args;
+import org.dcache.nfs.v3.xdr.COMMIT3res;
+import org.dcache.nfs.v3.xdr.COMMIT3resfail;
+import org.dcache.nfs.v3.xdr.COMMIT3resok;
+import org.dcache.nfs.v3.xdr.CREATE3args;
+import org.dcache.nfs.v3.xdr.CREATE3res;
+import org.dcache.nfs.v3.xdr.CREATE3resfail;
+import org.dcache.nfs.v3.xdr.CREATE3resok;
+import org.dcache.nfs.v3.xdr.FSINFO3args;
+import org.dcache.nfs.v3.xdr.FSINFO3res;
+import org.dcache.nfs.v3.xdr.FSINFO3resfail;
+import org.dcache.nfs.v3.xdr.FSINFO3resok;
+import org.dcache.nfs.v3.xdr.FSSTAT3args;
+import org.dcache.nfs.v3.xdr.FSSTAT3res;
+import org.dcache.nfs.v3.xdr.FSSTAT3resfail;
+import org.dcache.nfs.v3.xdr.FSSTAT3resok;
+import org.dcache.nfs.v3.xdr.GETATTR3args;
+import org.dcache.nfs.v3.xdr.GETATTR3res;
+import org.dcache.nfs.v3.xdr.GETATTR3resok;
+import org.dcache.nfs.v3.xdr.LINK3args;
+import org.dcache.nfs.v3.xdr.LINK3res;
+import org.dcache.nfs.v3.xdr.LINK3resfail;
+import org.dcache.nfs.v3.xdr.LINK3resok;
+import org.dcache.nfs.v3.xdr.LOOKUP3args;
+import org.dcache.nfs.v3.xdr.LOOKUP3res;
+import org.dcache.nfs.v3.xdr.LOOKUP3resfail;
+import org.dcache.nfs.v3.xdr.LOOKUP3resok;
+import org.dcache.nfs.v3.xdr.MKDIR3args;
+import org.dcache.nfs.v3.xdr.MKDIR3res;
+import org.dcache.nfs.v3.xdr.MKDIR3resfail;
+import org.dcache.nfs.v3.xdr.MKDIR3resok;
+import org.dcache.nfs.v3.xdr.MKNOD3args;
+import org.dcache.nfs.v3.xdr.MKNOD3res;
+import org.dcache.nfs.v3.xdr.MKNOD3resfail;
+import org.dcache.nfs.v3.xdr.PATHCONF3args;
+import org.dcache.nfs.v3.xdr.PATHCONF3res;
+import org.dcache.nfs.v3.xdr.PATHCONF3resok;
+import org.dcache.nfs.v3.xdr.READ3args;
+import org.dcache.nfs.v3.xdr.READ3res;
+import org.dcache.nfs.v3.xdr.READ3resfail;
+import org.dcache.nfs.v3.xdr.READ3resok;
+import org.dcache.nfs.v3.xdr.READDIR3args;
+import org.dcache.nfs.v3.xdr.READDIR3res;
+import org.dcache.nfs.v3.xdr.READDIR3resfail;
+import org.dcache.nfs.v3.xdr.READDIR3resok;
+import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
+import org.dcache.nfs.v3.xdr.READDIRPLUS3res;
+import org.dcache.nfs.v3.xdr.READDIRPLUS3resfail;
+import org.dcache.nfs.v3.xdr.READDIRPLUS3resok;
+import org.dcache.nfs.v3.xdr.READLINK3args;
+import org.dcache.nfs.v3.xdr.READLINK3res;
+import org.dcache.nfs.v3.xdr.READLINK3resfail;
+import org.dcache.nfs.v3.xdr.READLINK3resok;
+import org.dcache.nfs.v3.xdr.REMOVE3args;
+import org.dcache.nfs.v3.xdr.REMOVE3res;
+import org.dcache.nfs.v3.xdr.REMOVE3resfail;
+import org.dcache.nfs.v3.xdr.REMOVE3resok;
+import org.dcache.nfs.v3.xdr.RENAME3args;
+import org.dcache.nfs.v3.xdr.RENAME3res;
+import org.dcache.nfs.v3.xdr.RENAME3resfail;
+import org.dcache.nfs.v3.xdr.RENAME3resok;
+import org.dcache.nfs.v3.xdr.RMDIR3args;
+import org.dcache.nfs.v3.xdr.RMDIR3res;
+import org.dcache.nfs.v3.xdr.RMDIR3resfail;
+import org.dcache.nfs.v3.xdr.RMDIR3resok;
+import org.dcache.nfs.v3.xdr.SETATTR3args;
+import org.dcache.nfs.v3.xdr.SETATTR3res;
+import org.dcache.nfs.v3.xdr.SETATTR3resfail;
+import org.dcache.nfs.v3.xdr.SETATTR3resok;
+import org.dcache.nfs.v3.xdr.SYMLINK3args;
+import org.dcache.nfs.v3.xdr.SYMLINK3res;
+import org.dcache.nfs.v3.xdr.SYMLINK3resfail;
+import org.dcache.nfs.v3.xdr.SYMLINK3resok;
+import org.dcache.nfs.v3.xdr.WRITE3args;
+import org.dcache.nfs.v3.xdr.WRITE3res;
+import org.dcache.nfs.v3.xdr.WRITE3resfail;
+import org.dcache.nfs.v3.xdr.WRITE3resok;
+import org.dcache.nfs.v3.xdr.cookie3;
+import org.dcache.nfs.v3.xdr.cookieverf3;
+import org.dcache.nfs.v3.xdr.count3;
+import org.dcache.nfs.v3.xdr.createmode3;
+import org.dcache.nfs.v3.xdr.dirlist3;
+import org.dcache.nfs.v3.xdr.dirlistplus3;
+import org.dcache.nfs.v3.xdr.entry3;
+import org.dcache.nfs.v3.xdr.entryplus3;
+import org.dcache.nfs.v3.xdr.fattr3;
+import org.dcache.nfs.v3.xdr.fileid3;
+import org.dcache.nfs.v3.xdr.filename3;
+import org.dcache.nfs.v3.xdr.nfs3_prot;
+import org.dcache.nfs.v3.xdr.nfs3_protServerStub;
+import org.dcache.nfs.v3.xdr.nfs_fh3;
+import org.dcache.nfs.v3.xdr.nfspath3;
+import org.dcache.nfs.v3.xdr.nfstime3;
+import org.dcache.nfs.v3.xdr.post_op_attr;
+import org.dcache.nfs.v3.xdr.post_op_fh3;
+import org.dcache.nfs.v3.xdr.pre_op_attr;
+import org.dcache.nfs.v3.xdr.sattr3;
+import org.dcache.nfs.v3.xdr.size3;
+import org.dcache.nfs.v3.xdr.uint32;
+import org.dcache.nfs.v3.xdr.uint64;
+import org.dcache.nfs.v3.xdr.wcc_attr;
+import org.dcache.nfs.v3.xdr.wcc_data;
+import org.dcache.nfs.v3.xdr.writeverf3;
+import org.dcache.nfs.vfs.DirectoryEntry;
+import org.dcache.nfs.vfs.DirectoryStream;
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.PseudoFs;
-import org.dcache.nfs.vfs.DirectoryStream;
-
-import javax.security.auth.Subject;
+import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NfsServerV3 extends nfs3_protServerStub {
 
     // needed to calculate replay size for READDIR3 and READDIRPLUS3
     /*
-     * readdir entry size + overhead
-     * 8 (cookie) + 8 (file id) + 4 (name len) + 4 (smallest padded name) + 4 (boolean has next)
+     * readdir entry size + overhead 8 (cookie) + 8 (file id) + 4 (name len) + 4 (smallest padded name) + 4 (boolean has
+     * next)
      */
     private static final int ENTRY3_SIZE = 28;
 
     /*
-     * readdir_plus entry size + overhead, without file handle
-     * 8 (cookie) + 8 (file id) + 4 (name len) + 4 (smallest padded name) + 4 (boolean has next) +
-     * 4 (boolean attrs follow, always true) + 84 (fattr3) + 4 (boolean has handle, always true) +
-     * 4 (handle len)
+     * readdir_plus entry size + overhead, without file handle 8 (cookie) + 8 (file id) + 4 (name len) + 4 (smallest
+     * padded name) + 4 (boolean has next) + 4 (boolean attrs follow, always true) + 84 (fattr3) + 4 (boolean has
+     * handle, always true) + 4 (handle len)
      */
     private static final int ENTRYPLUS3_SIZE = 124;
     private static final int READDIR3RESOK_SIZE = 104;
@@ -185,7 +183,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
     private static writeverf3 generateInstanceWriteVerifier() {
         writeverf3 verf = new writeverf3();
         verf.value = new byte[nfs3_prot.NFS3_WRITEVERFSIZE];
-        Bytes.putLong(verf.value, 0, System.currentTimeMillis()); //so long as we dont restart within the same millisecond
+        Bytes.putLong(verf.value, 0, System.currentTimeMillis()); // so long as we dont restart within the same
+                                                                  // millisecond
         return verf;
     }
 
@@ -210,7 +209,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             Utils.fill_attributes(objStat, res.resok.obj_attributes.attributes);
 
-            int realAccess = fs.access(call$.getCredential().getSubject(), inode,  arg1.access.value);
+            int realAccess = fs.access(call$.getCredential().getSubject(), inode, arg1.access.value);
 
             res.resok.access = new uint32(realAccess);
         } catch (ChimeraNFSException hne) {
@@ -310,13 +309,12 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Subject actualSubject = null;
             if (newAttr != null) {
                 fmode = newAttr.mode.mode.value.value | Stat.S_IFREG;
-                if( newAttr.uid.set_it || newAttr.gid.set_it) {
+                if (newAttr.uid.set_it || newAttr.gid.set_it) {
                     actualSubject = UnixSubjects.toSubject(newAttr.uid.uid.value, newAttr.gid.gid.value);
                 }
             }
             inode = fs.create(parent, Stat.Type.REGULAR, path, actualSubject, fmode);
             Stat inodeStat = fs.getattr(inode);
-
 
             res.status = nfsstat.NFS_OK;
             res.resok = new CREATE3resok();
@@ -466,7 +464,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         GETATTR3res res = new GETATTR3res();
 
-        try{
+        try {
             Inode inode = new Inode(arg1.object.data);
             _log.debug("NFS Request GETATTR for inode: {}", inode);
 
@@ -610,7 +608,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             Subject actualSubject = null;
             if (attr != null) {
                 mode = attr.mode.mode.value.value | Stat.S_IFDIR;
-                if( attr.uid.set_it || attr.gid.set_it) {
+                if (attr.uid.set_it || attr.gid.set_it) {
                     actualSubject = UnixSubjects.toSubject(attr.uid.uid.value, attr.gid.gid.value);
                 }
             }
@@ -698,8 +696,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
     /*
      * to simulate snapshot-like list following trick is used:
      *
-     *   1. for each new readdir(plus) ( cookie == 0 ) generate new cookie verifier
-     *   2. list result stored in timed Map, where verifier used as a key
+     * 1. for each new readdir(plus) ( cookie == 0 ) generate new cookie verifier 2. list result stored in timed Map,
+     * where verifier used as a key
      *
      */
     @Override
@@ -738,7 +736,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             Utils.fill_attributes(dirStat, res.resok.dir_attributes.attributes);
 
-
             int currcount = READDIRPLUS3RESOK_SIZE;
             int dircount = 0;
             int fcount = 0;
@@ -766,10 +763,11 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 // check if writing this entry exceeds the count limit
                 int newSize = ENTRYPLUS3_SIZE + name.length() + currentEntry.name_handle.handle.data.length;
                 int newDirSize = name.length();
-                if ((currcount + newSize > arg1.maxcount.value.value) || (dircount + newDirSize > arg1.dircount.value.value)) {
+                if ((currcount + newSize > arg1.maxcount.value.value) || (dircount
+                        + newDirSize > arg1.dircount.value.value)) {
                     if (lastEntry == null) {
-                        //corner case - means we didnt have enough space to
-                        //write even a single entry.
+                        // corner case - means we didnt have enough space to
+                        // write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
                     res.resok.reply.eof = false;
@@ -792,8 +790,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
                     fcount, currcount,
                     arg1.maxcount.value.value, dircount,
                     arg1.dircount.value.value,
-                    startValue
-            );
+                    startValue);
 
         } catch (ChimeraNFSException hne) {
             _log.debug("READDIRPLUS3 status: {}", hne.toString());
@@ -864,8 +861,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 int newSize = ENTRY3_SIZE + name.length();
                 if (currcount + newSize > arg1.count.value.value) {
                     if (lastEntry == null) {
-                        //corner case - means we didnt have enough space to
-                        //write even a single entry.
+                        // corner case - means we didnt have enough space to
+                        // write even a single entry.
                         throw new TooSmallException("can't send even a single entry");
                     }
                     res.resok.reply.eof = false;
@@ -885,8 +882,7 @@ public class NfsServerV3 extends nfs3_protServerStub {
             _log.debug("Sending {} entries ( {} bytes from {}) cookie = {}",
                     fcount, currcount,
                     arg1.count.value.value,
-                    startValue
-            );
+                    startValue);
 
         } catch (ChimeraNFSException hne) {
             _log.error("READDIR: {}", hne.toString());
@@ -908,7 +904,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
         VirtualFileSystem fs = new PseudoFs(_vfs, call$, _exports);
         READLINK3res res = new READLINK3res();
-
 
         try {
             Inode inode = new Inode(arg1.symlink.data);
@@ -1021,7 +1016,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.before.attributes = new wcc_attr();
             Utils.fill_attributes(parentStat, res.resok.dir_wcc.before.attributes);
 
-
             // correct parent modification time and nlink counter
             parentStat.setMTime(System.currentTimeMillis());
             parentStat.setNlink(parentStat.getNlink() - 1);
@@ -1030,7 +1024,6 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok.dir_wcc.after.attributes_follow = true;
             res.resok.dir_wcc.after.attributes = new fattr3();
             Utils.fill_attributes(parentStat, res.resok.dir_wcc.after.attributes);
-
 
         } catch (ChimeraNFSException hne) {
             res.resfail = new REMOVE3resfail();
@@ -1273,7 +1266,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
             res.resok = new WRITE3resok();
             res.status = nfsstat.NFS_OK;
 
-            VirtualFileSystem.StabilityLevel requiredStabilityLevel = VirtualFileSystem.StabilityLevel.fromStableHow(arg1.stable);
+            VirtualFileSystem.StabilityLevel requiredStabilityLevel = VirtualFileSystem.StabilityLevel.fromStableHow(
+                    arg1.stable);
             VirtualFileSystem.WriteResult ret = fs.write(inode, arg1.data, offset, count, requiredStabilityLevel);
             if (ret.getBytesWritten() < 0) {
                 throw new NfsIoException("IO not allowed");

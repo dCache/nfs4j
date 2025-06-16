@@ -20,8 +20,7 @@
 package org.dcache.nfs;
 
 /**
- * A base class for all NFS exceptions. We do not allow direct instances to
- * enforce correct exceptions.
+ * A base class for all NFS exceptions. We do not allow direct instances to enforce correct exceptions.
  */
 public abstract class ChimeraNFSException extends java.io.IOException {
 
@@ -32,8 +31,7 @@ public abstract class ChimeraNFSException extends java.io.IOException {
     private final int nfsStatus;
 
     /**
-     * Constructs an {@code ChimeraNFSException} with the specified nfs
-     * status code, detail message and cause.
+     * Constructs an {@code ChimeraNFSException} with the specified nfs status code, detail message and cause.
      *
      * @param status nfsstat code
      * @param msg detailed error message
@@ -46,20 +44,18 @@ public abstract class ChimeraNFSException extends java.io.IOException {
     }
 
     /**
-     * Constructs an {@code ChimeraNFSException} with the specified nfs
-     * status code and detail message.
+     * Constructs an {@code ChimeraNFSException} with the specified nfs status code and detail message.
      *
      * @param status nfsstat code
      * @param msg detailed error message
      */
     protected ChimeraNFSException(int status, String msg) {
-        super(nfsstat.toString(status) +  " : " + msg);
+        super(nfsstat.toString(status) + " : " + msg);
         nfsStatus = status;
     }
 
     /**
-     * Constructs an {@code ChimeraNFSException} with the specified nfs
-     * status code and cause.
+     * Constructs an {@code ChimeraNFSException} with the specified nfs status code and cause.
      *
      * @param status nfsstat code
      * @param cause the cause of this exception
@@ -71,8 +67,7 @@ public abstract class ChimeraNFSException extends java.io.IOException {
     }
 
     /**
-     * Constructs an {@code ChimeraNFSException} with the specified nfs
-     * status code.
+     * Constructs an {@code ChimeraNFSException} with the specified nfs status code.
      *
      * @param status nfsstat code
      */

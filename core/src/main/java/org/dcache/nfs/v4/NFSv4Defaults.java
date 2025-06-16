@@ -19,9 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.util.Misc;
-
 import java.time.Instant;
+
+import org.dcache.nfs.util.Misc;
 
 public interface NFSv4Defaults {
 
@@ -31,7 +31,7 @@ public interface NFSv4Defaults {
     /**
      * maximal read/write buffer size.
      */
-    public static final long NFS4_MAXIOBUFFERSIZE = 1024*1024*16; // 16MB
+    public static final long NFS4_MAXIOBUFFERSIZE = 1024 * 1024 * 16; // 16MB
 
     // theoretically, there is no limit on file size
     public final static long NFS4_MAXFILESIZE = Long.MAX_VALUE;
@@ -42,8 +42,7 @@ public interface NFSv4Defaults {
     public final static int NFS4_MAXLINK = 255;
 
     // setting the stripe size
-    public static final int NFS4_STRIPE_SIZE = (int)NFS4_MAXIOBUFFERSIZE;
-
+    public static final int NFS4_STRIPE_SIZE = (int) NFS4_MAXIOBUFFERSIZE;
 
     /**
      * NFSv4.1 implementation ID

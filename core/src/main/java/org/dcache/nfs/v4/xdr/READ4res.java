@@ -18,12 +18,14 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class READ4res implements XdrAble {
     public int status;
@@ -33,31 +35,31 @@ public class READ4res implements XdrAble {
     }
 
     public READ4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(status);
-        switch ( status ) {
-        case nfsstat.NFS_OK:
-            resok4.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (status) {
+            case nfsstat.NFS_OK:
+                resok4.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         status = xdr.xdrDecodeInt();
-        switch ( status ) {
-        case nfsstat.NFS_OK:
-            resok4 = new READ4resok(xdr);
-            break;
-        default:
-            break;
+        switch (status) {
+            case nfsstat.NFS_OK:
+                resok4 = new READ4resok(xdr);
+                break;
+            default:
+                break;
         }
     }
 

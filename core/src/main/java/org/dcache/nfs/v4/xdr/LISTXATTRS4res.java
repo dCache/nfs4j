@@ -7,11 +7,13 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LISTXATTRS4res implements XdrAble {
     public int lxr_status;
@@ -21,22 +23,22 @@ public class LISTXATTRS4res implements XdrAble {
     }
 
     public LISTXATTRS4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(lxr_status);
-        if (lxr_status ==  nfsstat.NFS_OK) {
+        if (lxr_status == nfsstat.NFS_OK) {
             lxr_value.xdrEncode(xdr);
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lxr_status = xdr.xdrDecodeInt();
-        if (lxr_status ==  nfsstat.NFS_OK) {
+        if (lxr_status == nfsstat.NFS_OK) {
             lxr_value = new LISTXATTRS4resok(xdr);
         }
     }

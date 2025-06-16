@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class read_plus_content implements XdrAble {
     public int rpc_content;
@@ -21,37 +23,37 @@ public class read_plus_content implements XdrAble {
     }
 
     public read_plus_content(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(rpc_content);
-        switch ( rpc_content ) {
-        case data_content4.NFS4_CONTENT_DATA:
-            rpc_data.xdrEncode(xdr);
-            break;
-        case data_content4.NFS4_CONTENT_HOLE:
-            rpc_hole.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (rpc_content) {
+            case data_content4.NFS4_CONTENT_DATA:
+                rpc_data.xdrEncode(xdr);
+                break;
+            case data_content4.NFS4_CONTENT_HOLE:
+                rpc_hole.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         rpc_content = xdr.xdrDecodeInt();
-        switch ( rpc_content ) {
-        case data_content4.NFS4_CONTENT_DATA:
-            rpc_data = new data4(xdr);
-            break;
-        case data_content4.NFS4_CONTENT_HOLE:
-            rpc_hole = new data_info4(xdr);
-            break;
-        default:
-            break;
+        switch (rpc_content) {
+            case data_content4.NFS4_CONTENT_DATA:
+                rpc_data = new data4(xdr);
+                break;
+            case data_content4.NFS4_CONTENT_HOLE:
+                rpc_hole = new data_info4(xdr);
+                break;
+            default:
+                break;
         }
     }
 

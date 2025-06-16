@@ -19,101 +19,100 @@
  */
 package org.dcache.nfs.v4;
 
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_0;
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1;
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1_NO_PNFS;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.dcache.nfs.v4.xdr.fattr4_numlinks;
-import org.dcache.nfs.v4.xdr.fattr4_aclsupport;
-import org.dcache.nfs.v4.xdr.nfs_ftype4;
-import org.dcache.nfs.v4.xdr.attrlist4;
-import org.dcache.nfs.v4.xdr.fattr4_case_insensitive;
-import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.v4.xdr.fattr4_rawdev;
-import org.dcache.nfs.v4.xdr.fattr4_maxname;
-import org.dcache.nfs.v4.xdr.fattr4_owner;
-import org.dcache.nfs.v4.xdr.fattr4_space_used;
-import org.dcache.nfs.v4.xdr.fattr4_maxlink;
-import org.dcache.nfs.v4.xdr.fattr4_unique_handles;
-import org.dcache.nfs.v4.xdr.fattr4_xattr_support;
-import org.dcache.nfs.v4.xdr.fattr4_lease_time;
-import org.dcache.nfs.v4.xdr.uint64_t;
-import org.dcache.nfs.v4.xdr.fattr4_fh_expire_type;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.v4.xdr.fattr4_named_attr;
-import org.dcache.nfs.v4.xdr.specdata4;
-import org.dcache.nfs.v4.xdr.bitmap4;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.fattr4_homogeneous;
-import org.dcache.nfs.v4.xdr.fattr4_maxread;
-import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
-import org.dcache.nfs.v4.xdr.fattr4_maxwrite;
-import org.dcache.nfs.v4.xdr.fattr4_time_create;
-import org.dcache.nfs.v4.xdr.fattr4_files_avail;
-import org.dcache.nfs.v4.xdr.fattr4_mounted_on_fileid;
-import org.dcache.nfs.v4.xdr.fattr4_space_total;
-import org.dcache.nfs.v4.xdr.fattr4_fileid;
-import org.dcache.nfs.v4.xdr.fattr4_change;
-import org.dcache.nfs.v4.xdr.fattr4_symlink_support;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.fattr4_case_preserving;
-import org.dcache.nfs.v4.xdr.fattr4_size;
-import org.dcache.nfs.v4.xdr.fattr4_files_total;
-import org.dcache.nfs.v4.xdr.fattr4_filehandle;
-import org.dcache.nfs.v4.xdr.fattr4;
-import org.dcache.nfs.v4.xdr.fattr4_link_support;
-import org.dcache.nfs.v4.xdr.fattr4_time_modify;
-import org.dcache.nfs.v4.xdr.fattr4_no_trunc;
-import org.dcache.nfs.v4.xdr.fattr4_rdattr_error;
-import org.dcache.nfs.v4.xdr.fattr4_files_free;
-import org.dcache.nfs.v4.xdr.fattr4_time_metadata;
-import org.dcache.nfs.v4.xdr.fattr4_mode;
-import org.dcache.nfs.v4.xdr.fattr4_maxfilesize;
-import org.dcache.nfs.v4.xdr.fattr4_acl;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.AccessException;
-import org.dcache.nfs.v4.xdr.fattr4_fsid;
-import org.dcache.nfs.v4.xdr.fattr4_time_access;
-import org.dcache.nfs.v4.xdr.fattr4_supported_attrs;
-import org.dcache.nfs.v4.xdr.utf8str_mixed;
-import org.dcache.nfs.v4.xdr.fattr4_space_free;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.v4.xdr.GETATTR4res;
+import org.dcache.nfs.v4.xdr.GETATTR4resok;
+import org.dcache.nfs.v4.xdr.attrlist4;
+import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.fattr4;
+import org.dcache.nfs.v4.xdr.fattr4_acl;
+import org.dcache.nfs.v4.xdr.fattr4_aclsupport;
 import org.dcache.nfs.v4.xdr.fattr4_cansettime;
+import org.dcache.nfs.v4.xdr.fattr4_case_insensitive;
+import org.dcache.nfs.v4.xdr.fattr4_case_preserving;
+import org.dcache.nfs.v4.xdr.fattr4_change;
+import org.dcache.nfs.v4.xdr.fattr4_fh_expire_type;
+import org.dcache.nfs.v4.xdr.fattr4_filehandle;
+import org.dcache.nfs.v4.xdr.fattr4_fileid;
+import org.dcache.nfs.v4.xdr.fattr4_files_avail;
+import org.dcache.nfs.v4.xdr.fattr4_files_free;
+import org.dcache.nfs.v4.xdr.fattr4_files_total;
+import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
+import org.dcache.nfs.v4.xdr.fattr4_fsid;
+import org.dcache.nfs.v4.xdr.fattr4_homogeneous;
+import org.dcache.nfs.v4.xdr.fattr4_lease_time;
+import org.dcache.nfs.v4.xdr.fattr4_link_support;
+import org.dcache.nfs.v4.xdr.fattr4_maxfilesize;
+import org.dcache.nfs.v4.xdr.fattr4_maxlink;
+import org.dcache.nfs.v4.xdr.fattr4_maxname;
+import org.dcache.nfs.v4.xdr.fattr4_maxread;
+import org.dcache.nfs.v4.xdr.fattr4_maxwrite;
+import org.dcache.nfs.v4.xdr.fattr4_mode;
+import org.dcache.nfs.v4.xdr.fattr4_mounted_on_fileid;
+import org.dcache.nfs.v4.xdr.fattr4_named_attr;
+import org.dcache.nfs.v4.xdr.fattr4_no_trunc;
+import org.dcache.nfs.v4.xdr.fattr4_numlinks;
+import org.dcache.nfs.v4.xdr.fattr4_owner;
+import org.dcache.nfs.v4.xdr.fattr4_rawdev;
+import org.dcache.nfs.v4.xdr.fattr4_rdattr_error;
+import org.dcache.nfs.v4.xdr.fattr4_size;
+import org.dcache.nfs.v4.xdr.fattr4_space_avail;
+import org.dcache.nfs.v4.xdr.fattr4_space_free;
+import org.dcache.nfs.v4.xdr.fattr4_space_total;
+import org.dcache.nfs.v4.xdr.fattr4_space_used;
+import org.dcache.nfs.v4.xdr.fattr4_supported_attrs;
+import org.dcache.nfs.v4.xdr.fattr4_symlink_support;
+import org.dcache.nfs.v4.xdr.fattr4_time_access;
+import org.dcache.nfs.v4.xdr.fattr4_time_create;
+import org.dcache.nfs.v4.xdr.fattr4_time_delta;
+import org.dcache.nfs.v4.xdr.fattr4_time_metadata;
+import org.dcache.nfs.v4.xdr.fattr4_time_modify;
 import org.dcache.nfs.v4.xdr.fattr4_type;
+import org.dcache.nfs.v4.xdr.fattr4_unique_handles;
+import org.dcache.nfs.v4.xdr.fattr4_xattr_support;
 import org.dcache.nfs.v4.xdr.fsid4;
 import org.dcache.nfs.v4.xdr.layouttype4;
-import org.dcache.nfs.v4.xdr.GETATTR4resok;
-import org.dcache.nfs.v4.xdr.GETATTR4res;
-
-import org.dcache.nfs.vfs.Stat.StatAttribute;
-import org.dcache.oncrpc4j.xdr.XdrAble;
-import org.dcache.oncrpc4j.xdr.Xdr;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.v4.xdr.fattr4_space_avail;
-import org.dcache.nfs.v4.xdr.fattr4_time_delta;
-import org.dcache.nfs.v4.xdr.nfstime4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_fh4;
+import org.dcache.nfs.v4.xdr.nfs_ftype4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.v4.xdr.nfstime4;
+import org.dcache.nfs.v4.xdr.specdata4;
+import org.dcache.nfs.v4.xdr.uint64_t;
+import org.dcache.nfs.v4.xdr.utf8str_mixed;
 import org.dcache.nfs.vfs.FsStat;
 import org.dcache.nfs.vfs.Inode;
-import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.Stat.StatAttribute;
+import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.Xdr;
+import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_0;
-import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1;
-import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1_NO_PNFS;
-
 public class OperationGETATTR extends AbstractNFSv4Operation {
 
-        private static final Logger _log = LoggerFactory.getLogger(OperationGETATTR.class);
+    private static final Logger _log = LoggerFactory.getLogger(OperationGETATTR.class);
 
-	public OperationGETATTR(nfs_argop4 args) {
-		super(args, nfs_opnum4.OP_GETATTR);
-	}
+    public OperationGETATTR(nfs_argop4 args) {
+        super(args, nfs_opnum4.OP_GETATTR);
+    }
 
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws IOException, OncRpcException {
@@ -164,7 +163,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         return attributes;
     }
 
-    static fattr4  getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context)
+    static fattr4 getAttributes(bitmap4 bitmap, VirtualFileSystem fs, Inode inode, CompoundContext context)
             throws IOException, OncRpcException {
         return getAttributes(bitmap, fs, inode, context.getFs().getattr(inode), context);
     }
@@ -177,18 +176,17 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
     }
 
     /**
-     * get inodes requested attribute and converted into RPC xdr format
-     * operates with READ and R/W attributes
+     * get inodes requested attribute and converted into RPC xdr format operates with READ and R/W attributes
      *
      * @param fattr
      * @param inode
-     * @return XdrAble of object attribute,
-     * Corresponding to fattr
+     * @return XdrAble of object attribute, Corresponding to fattr
      * @throws Exception
      */
 
     // read/read-write
-    static Optional<? extends XdrAble> fattr2xdr(int fattr, VirtualFileSystem fs, Inode inode, Stat stat, CompoundContext context) throws IOException {
+    static Optional<? extends XdrAble> fattr2xdr(int fattr, VirtualFileSystem fs, Inode inode, Stat stat,
+            CompoundContext context) throws IOException {
 
         FsStat fsStat = null;
 
@@ -199,7 +197,8 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 if (context.getMinorversion() == 0) {
                     bitmap = SUPPORTED_ATTRS_V4_0;
                 } else {
-                    bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1 : SUPPORTED_ATTRS_V4_1_NO_PNFS;
+                    bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1
+                            : SUPPORTED_ATTRS_V4_1_NO_PNFS;
                 }
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
@@ -231,7 +230,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_UNIQUE_HANDLES:
                 return Optional.of(new fattr4_unique_handles(true));
             case nfs4_prot.FATTR4_LEASE_TIME:
-                return Optional.of(new fattr4_lease_time((int)context.getStateHandler().getLeaseTime().toSeconds()));
+                return Optional.of(new fattr4_lease_time((int) context.getStateHandler().getLeaseTime().toSeconds()));
             case nfs4_prot.FATTR4_RDATTR_ERROR:
                 // this attribute provided by the readdir operation
                 return Optional.empty();
@@ -244,7 +243,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(new fattr4_acl(aces));
             case nfs4_prot.FATTR4_ACLSUPPORT:
                 fattr4_aclsupport aclSupport = new fattr4_aclsupport(
-			nfs4_prot.ACL4_SUPPORT_ALLOW_ACL| nfs4_prot.ACL4_SUPPORT_DENY_ACL);
+                        nfs4_prot.ACL4_SUPPORT_ALLOW_ACL | nfs4_prot.ACL4_SUPPORT_DENY_ACL);
                 return Optional.of(aclSupport);
             case nfs4_prot.FATTR4_ARCHIVE:
                 return Optional.empty();
@@ -339,7 +338,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(btime);
             case nfs4_prot.FATTR4_TIME_DELTA:
                 // one (1) second is a common value for time delta across nfs4 servers
-                return Optional.of(new fattr4_time_delta( new nfstime4(TimeUnit.SECONDS.toMillis(1))));
+                return Optional.of(new fattr4_time_delta(new nfstime4(TimeUnit.SECONDS.toMillis(1))));
             case nfs4_prot.FATTR4_TIME_METADATA:
                 fattr4_time_metadata mdtime = new fattr4_time_metadata(stat.getCTime());
                 return Optional.of(mdtime);
@@ -354,7 +353,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
                 long mofi = stat.getIno();
 
-                if (mofi == 0x00b0a23a /* it's a root*/) {
+                if (mofi == 0x00b0a23a /* it's a root */) {
                     mofi = 0x12345678;
                 }
 
@@ -362,8 +361,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(mounted_on_fileid);
 
             /**
-             * this is NFSv4.1 (pNFS) specific code, which is still in the
-             * development ( as protocol )
+             * this is NFSv4.1 (pNFS) specific code, which is still in the development ( as protocol )
              */
             case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
                 fattr4_fs_layout_types fs_layout_type = new fattr4_fs_layout_types();
@@ -379,20 +377,18 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                  *
                  * In case on multiple exports to a single client, like
                  *
-                 * /data *(rw,lt=nfsv4_1_files)
-                 * /home *(rw,lt=flex_files:nfsv4_1_files)
+                 * /data *(rw,lt=nfsv4_1_files) /home *(rw,lt=flex_files:nfsv4_1_files)
                  *
-                 * we can't really find out which entry to pick, as GETARRT on
-                 * FATTR4_FS_LAYOUT_TYPES usually issued on the root (/) of the tree
-                 * and we don't know which entry is effective.
+                 * we can't really find out which entry to pick, as GETARRT on FATTR4_FS_LAYOUT_TYPES usually issued on
+                 * the root (/) of the tree and we don't know which entry is effective.
                  */
 
                 List<layouttype4> exportLayouts = context
-                    .getExportTable()
-                    .exports(context.getRemoteSocketAddress().getAddress())
-                    .findFirst()
-                    .orElseThrow(AccessException::new) // should never happen as handled by PseudoFS first
-                    .getLayoutTypes();
+                        .getExportTable()
+                        .exports(context.getRemoteSocketAddress().getAddress())
+                        .findFirst()
+                        .orElseThrow(AccessException::new) // should never happen as handled by PseudoFS first
+                        .getLayoutTypes();
 
                 Set<layouttype4> supportedLayouts = pnfsDeviceManager.get().getLayoutTypes();
                 if (exportLayouts.isEmpty()) {
@@ -401,9 +397,9 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                             .toArray();
                 } else {
                     fs_layout_type.value = exportLayouts.stream()
-                        .filter(e -> supportedLayouts.contains(e))
-                        .mapToInt(layouttype4::getValue)
-                        .toArray();
+                            .filter(e -> supportedLayouts.contains(e))
+                            .mapToInt(layouttype4::getValue)
+                            .toArray();
                 }
                 return Optional.of(fs_layout_type);
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
@@ -420,222 +416,221 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
         }
     }
 
-
-	public static String attrMask2String( int offset ) {
+    public static String attrMask2String(int offset) {
 
         String maskName = "Unknown";
 
-        switch(offset) {
+        switch (offset) {
 
-            case nfs4_prot.FATTR4_SUPPORTED_ATTRS :
-                maskName="FATTR4_SUPPORTED_ATTRS";
+            case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
+                maskName = "FATTR4_SUPPORTED_ATTRS";
                 break;
-            case nfs4_prot.FATTR4_TYPE :
-                maskName="FATTR4_TYPE";
+            case nfs4_prot.FATTR4_TYPE:
+                maskName = "FATTR4_TYPE";
                 break;
-            case nfs4_prot.FATTR4_FH_EXPIRE_TYPE :
-                maskName="FATTR4_FH_EXPIRE_TYPE";
+            case nfs4_prot.FATTR4_FH_EXPIRE_TYPE:
+                maskName = "FATTR4_FH_EXPIRE_TYPE";
                 break;
-            case nfs4_prot.FATTR4_CHANGE :
-                maskName="FATTR4_CHANGE";
+            case nfs4_prot.FATTR4_CHANGE:
+                maskName = "FATTR4_CHANGE";
                 break;
-            case nfs4_prot.FATTR4_SIZE :
-                maskName="FATTR4_SIZE";
+            case nfs4_prot.FATTR4_SIZE:
+                maskName = "FATTR4_SIZE";
                 break;
-            case nfs4_prot.FATTR4_LINK_SUPPORT :
-                maskName="FATTR4_LINK_SUPPORT";
+            case nfs4_prot.FATTR4_LINK_SUPPORT:
+                maskName = "FATTR4_LINK_SUPPORT";
                 break;
-            case nfs4_prot.FATTR4_SYMLINK_SUPPORT :
-                maskName="FATTR4_SYMLINK_SUPPORT";
+            case nfs4_prot.FATTR4_SYMLINK_SUPPORT:
+                maskName = "FATTR4_SYMLINK_SUPPORT";
                 break;
-            case nfs4_prot.FATTR4_NAMED_ATTR :
-                maskName="FATTR4_NAMED_ATTR";
+            case nfs4_prot.FATTR4_NAMED_ATTR:
+                maskName = "FATTR4_NAMED_ATTR";
                 break;
-            case nfs4_prot.FATTR4_FSID :
-                maskName="FATTR4_FSID";
+            case nfs4_prot.FATTR4_FSID:
+                maskName = "FATTR4_FSID";
                 break;
-            case nfs4_prot.FATTR4_UNIQUE_HANDLES :
-                maskName="FATTR4_UNIQUE_HANDLES";
+            case nfs4_prot.FATTR4_UNIQUE_HANDLES:
+                maskName = "FATTR4_UNIQUE_HANDLES";
                 break;
-            case nfs4_prot.FATTR4_LEASE_TIME :
-                maskName="FATTR4_LEASE_TIME";
+            case nfs4_prot.FATTR4_LEASE_TIME:
+                maskName = "FATTR4_LEASE_TIME";
                 break;
-            case nfs4_prot.FATTR4_RDATTR_ERROR :
-                maskName="FATTR4_RDATTR_ERROR";
+            case nfs4_prot.FATTR4_RDATTR_ERROR:
+                maskName = "FATTR4_RDATTR_ERROR";
                 break;
-            case nfs4_prot.FATTR4_FILEHANDLE :
-                maskName="FATTR4_FILEHANDLE";
+            case nfs4_prot.FATTR4_FILEHANDLE:
+                maskName = "FATTR4_FILEHANDLE";
                 break;
-            case nfs4_prot.FATTR4_ACL :
-                maskName="FATTR4_ACL";
+            case nfs4_prot.FATTR4_ACL:
+                maskName = "FATTR4_ACL";
                 break;
-            case nfs4_prot.FATTR4_ACLSUPPORT :
-                maskName="FATTR4_ACLSUPPORT";
+            case nfs4_prot.FATTR4_ACLSUPPORT:
+                maskName = "FATTR4_ACLSUPPORT";
                 break;
-            case nfs4_prot.FATTR4_ARCHIVE :
-                maskName="FATTR4_ARCHIVE";
+            case nfs4_prot.FATTR4_ARCHIVE:
+                maskName = "FATTR4_ARCHIVE";
                 break;
-            case nfs4_prot.FATTR4_CANSETTIME :
-                maskName="FATTR4_CANSETTIME";
+            case nfs4_prot.FATTR4_CANSETTIME:
+                maskName = "FATTR4_CANSETTIME";
                 break;
-            case nfs4_prot.FATTR4_CASE_INSENSITIVE :
-                maskName="FATTR4_CASE_INSENSITIVE";
+            case nfs4_prot.FATTR4_CASE_INSENSITIVE:
+                maskName = "FATTR4_CASE_INSENSITIVE";
                 break;
-            case nfs4_prot.FATTR4_CASE_PRESERVING :
-                maskName="FATTR4_CASE_PRESERVING";
+            case nfs4_prot.FATTR4_CASE_PRESERVING:
+                maskName = "FATTR4_CASE_PRESERVING";
                 break;
-            case nfs4_prot.FATTR4_CHOWN_RESTRICTED :
-                maskName="FATTR4_CHOWN_RESTRICTED";
+            case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
+                maskName = "FATTR4_CHOWN_RESTRICTED";
                 break;
-            case nfs4_prot.FATTR4_FILEID :
-                maskName="FATTR4_FILEID";
+            case nfs4_prot.FATTR4_FILEID:
+                maskName = "FATTR4_FILEID";
                 break;
-            case nfs4_prot.FATTR4_FILES_AVAIL :
-                maskName="FATTR4_FILES_AVAIL";
+            case nfs4_prot.FATTR4_FILES_AVAIL:
+                maskName = "FATTR4_FILES_AVAIL";
                 break;
-            case nfs4_prot.FATTR4_FILES_FREE :
-                maskName="FATTR4_FILES_FREE";
+            case nfs4_prot.FATTR4_FILES_FREE:
+                maskName = "FATTR4_FILES_FREE";
                 break;
-            case nfs4_prot.FATTR4_FILES_TOTAL :
-                maskName="FATTR4_FILES_TOTAL";
+            case nfs4_prot.FATTR4_FILES_TOTAL:
+                maskName = "FATTR4_FILES_TOTAL";
                 break;
-            case nfs4_prot.FATTR4_FS_LOCATIONS :
-                maskName="FATTR4_FS_LOCATIONS";
+            case nfs4_prot.FATTR4_FS_LOCATIONS:
+                maskName = "FATTR4_FS_LOCATIONS";
                 break;
-            case nfs4_prot.FATTR4_HIDDEN :
-                maskName="FATTR4_HIDDEN";
+            case nfs4_prot.FATTR4_HIDDEN:
+                maskName = "FATTR4_HIDDEN";
                 break;
-            case nfs4_prot.FATTR4_HOMOGENEOUS :
-                maskName="FATTR4_HOMOGENEOUS";
+            case nfs4_prot.FATTR4_HOMOGENEOUS:
+                maskName = "FATTR4_HOMOGENEOUS";
                 break;
-            case nfs4_prot.FATTR4_MAXFILESIZE :
-                maskName="FATTR4_MAXFILESIZE";
+            case nfs4_prot.FATTR4_MAXFILESIZE:
+                maskName = "FATTR4_MAXFILESIZE";
                 break;
-            case nfs4_prot.FATTR4_MAXLINK :
-                maskName="FATTR4_MAXLINK";
+            case nfs4_prot.FATTR4_MAXLINK:
+                maskName = "FATTR4_MAXLINK";
                 break;
-            case nfs4_prot.FATTR4_MAXNAME :
-                maskName="FATTR4_MAXNAME";
+            case nfs4_prot.FATTR4_MAXNAME:
+                maskName = "FATTR4_MAXNAME";
                 break;
-            case nfs4_prot.FATTR4_MAXREAD :
-                maskName="FATTR4_MAXREAD";
+            case nfs4_prot.FATTR4_MAXREAD:
+                maskName = "FATTR4_MAXREAD";
                 break;
-            case nfs4_prot.FATTR4_MAXWRITE :
-                maskName="FATTR4_MAXWRITE";
+            case nfs4_prot.FATTR4_MAXWRITE:
+                maskName = "FATTR4_MAXWRITE";
                 break;
-            case nfs4_prot.FATTR4_MIMETYPE :
-                maskName="FATTR4_MIMETYPE";
+            case nfs4_prot.FATTR4_MIMETYPE:
+                maskName = "FATTR4_MIMETYPE";
                 break;
-            case nfs4_prot.FATTR4_MODE :
-                maskName="FATTR4_MODE";
+            case nfs4_prot.FATTR4_MODE:
+                maskName = "FATTR4_MODE";
                 break;
-            case nfs4_prot.FATTR4_NO_TRUNC :
-                maskName="FATTR4_NO_TRUNC";
+            case nfs4_prot.FATTR4_NO_TRUNC:
+                maskName = "FATTR4_NO_TRUNC";
                 break;
-            case nfs4_prot.FATTR4_NUMLINKS :
-                maskName="FATTR4_NUMLINKS";
+            case nfs4_prot.FATTR4_NUMLINKS:
+                maskName = "FATTR4_NUMLINKS";
                 break;
-            case nfs4_prot.FATTR4_OWNER :
-                maskName="FATTR4_OWNER";
+            case nfs4_prot.FATTR4_OWNER:
+                maskName = "FATTR4_OWNER";
                 break;
-            case nfs4_prot.FATTR4_OWNER_GROUP :
-                maskName="FATTR4_OWNER_GROUP";
+            case nfs4_prot.FATTR4_OWNER_GROUP:
+                maskName = "FATTR4_OWNER_GROUP";
                 break;
-            case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD :
-                maskName="FATTR4_QUOTA_AVAIL_HARD";
+            case nfs4_prot.FATTR4_QUOTA_AVAIL_HARD:
+                maskName = "FATTR4_QUOTA_AVAIL_HARD";
                 break;
-            case nfs4_prot.FATTR4_QUOTA_AVAIL_SOFT :
-                maskName="FATTR4_QUOTA_AVAIL_SOFT";
+            case nfs4_prot.FATTR4_QUOTA_AVAIL_SOFT:
+                maskName = "FATTR4_QUOTA_AVAIL_SOFT";
                 break;
-            case nfs4_prot.FATTR4_QUOTA_USED :
-                maskName="FATTR4_QUOTA_USED";
+            case nfs4_prot.FATTR4_QUOTA_USED:
+                maskName = "FATTR4_QUOTA_USED";
                 break;
-            case nfs4_prot.FATTR4_RAWDEV :
-                maskName="FATTR4_RAWDEV";
+            case nfs4_prot.FATTR4_RAWDEV:
+                maskName = "FATTR4_RAWDEV";
                 break;
-            case nfs4_prot.FATTR4_SPACE_AVAIL :
-                maskName="FATTR4_SPACE_AVAIL";
+            case nfs4_prot.FATTR4_SPACE_AVAIL:
+                maskName = "FATTR4_SPACE_AVAIL";
                 break;
-            case nfs4_prot.FATTR4_SPACE_FREE :
-                maskName="FATTR4_SPACE_FREE";
+            case nfs4_prot.FATTR4_SPACE_FREE:
+                maskName = "FATTR4_SPACE_FREE";
                 break;
-            case nfs4_prot.FATTR4_SPACE_TOTAL :
-                maskName="FATTR4_SPACE_TOTAL";
+            case nfs4_prot.FATTR4_SPACE_TOTAL:
+                maskName = "FATTR4_SPACE_TOTAL";
                 break;
-            case nfs4_prot.FATTR4_SPACE_USED :
-                maskName="FATTR4_SPACE_USED";
+            case nfs4_prot.FATTR4_SPACE_USED:
+                maskName = "FATTR4_SPACE_USED";
                 break;
-            case nfs4_prot.FATTR4_SYSTEM :
-                maskName="FATTR4_SYSTEM";
+            case nfs4_prot.FATTR4_SYSTEM:
+                maskName = "FATTR4_SYSTEM";
                 break;
-            case nfs4_prot.FATTR4_TIME_ACCESS :
-                maskName="FATTR4_TIME_ACCESS";
+            case nfs4_prot.FATTR4_TIME_ACCESS:
+                maskName = "FATTR4_TIME_ACCESS";
                 break;
-            case nfs4_prot.FATTR4_TIME_ACCESS_SET :
-                maskName="FATTR4_TIME_ACCESS_SET";
+            case nfs4_prot.FATTR4_TIME_ACCESS_SET:
+                maskName = "FATTR4_TIME_ACCESS_SET";
                 break;
-            case nfs4_prot.FATTR4_TIME_BACKUP :
-                maskName="FATTR4_TIME_BACKUP";
+            case nfs4_prot.FATTR4_TIME_BACKUP:
+                maskName = "FATTR4_TIME_BACKUP";
                 break;
-            case nfs4_prot.FATTR4_TIME_CREATE :
-                maskName="FATTR4_TIME_CREATE";
+            case nfs4_prot.FATTR4_TIME_CREATE:
+                maskName = "FATTR4_TIME_CREATE";
                 break;
-            case nfs4_prot.FATTR4_TIME_DELTA :
-                maskName="FATTR4_TIME_DELTA";
+            case nfs4_prot.FATTR4_TIME_DELTA:
+                maskName = "FATTR4_TIME_DELTA";
                 break;
-            case nfs4_prot.FATTR4_TIME_METADATA :
-                maskName="FATTR4_TIME_METADATA";
+            case nfs4_prot.FATTR4_TIME_METADATA:
+                maskName = "FATTR4_TIME_METADATA";
                 break;
-            case nfs4_prot.FATTR4_TIME_MODIFY :
-                maskName="FATTR4_TIME_MODIFY";
+            case nfs4_prot.FATTR4_TIME_MODIFY:
+                maskName = "FATTR4_TIME_MODIFY";
                 break;
-            case nfs4_prot.FATTR4_TIME_MODIFY_SET :
-                maskName="FATTR4_TIME_MODIFY_SET";
+            case nfs4_prot.FATTR4_TIME_MODIFY_SET:
+                maskName = "FATTR4_TIME_MODIFY_SET";
                 break;
-            case nfs4_prot.FATTR4_MOUNTED_ON_FILEID :
-                maskName="FATTR4_MOUNTED_ON_FILEID";
+            case nfs4_prot.FATTR4_MOUNTED_ON_FILEID:
+                maskName = "FATTR4_MOUNTED_ON_FILEID";
                 break;
-            case nfs4_prot.FATTR4_FS_LAYOUT_TYPES :
-                maskName="FATTR4_FS_LAYOUT_TYPE";
+            case nfs4_prot.FATTR4_FS_LAYOUT_TYPES:
+                maskName = "FATTR4_FS_LAYOUT_TYPE";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_HINT:
-                maskName="FATTR4_LAYOUT_HINT";
+                maskName = "FATTR4_LAYOUT_HINT";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_TYPE:
-                maskName="FATTR4_LAYOUT_TYPE";
+                maskName = "FATTR4_LAYOUT_TYPE";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_BLKSIZE:
-                maskName="FATTR4_LAYOUT_BLKSIZE";
+                maskName = "FATTR4_LAYOUT_BLKSIZE";
                 break;
             case nfs4_prot.FATTR4_LAYOUT_ALIGNMENT:
-                maskName="FATTR4_LAYOUT_ALIGNMENT";
+                maskName = "FATTR4_LAYOUT_ALIGNMENT";
                 break;
             case nfs4_prot.FATTR4_FS_LOCATIONS_INFO:
-                maskName="FATTR4_FS_LOCATIONS_INFO";
+                maskName = "FATTR4_FS_LOCATIONS_INFO";
                 break;
             case nfs4_prot.FATTR4_MDSTHRESHOLD:
-                maskName="FATTR4_MDSTHRESHOLD";
+                maskName = "FATTR4_MDSTHRESHOLD";
                 break;
             case nfs4_prot.FATTR4_RETENTION_GET:
-                maskName="FATTR4_RETENTION_GET";
+                maskName = "FATTR4_RETENTION_GET";
                 break;
             case nfs4_prot.FATTR4_RETENTION_SET:
-                maskName="FATTR4_RETENTION_SET";
+                maskName = "FATTR4_RETENTION_SET";
                 break;
             case nfs4_prot.FATTR4_RETENTEVT_GET:
-                maskName="FATTR4_RETENTEVT_GET";
+                maskName = "FATTR4_RETENTEVT_GET";
                 break;
             case nfs4_prot.FATTR4_RETENTEVT_SET:
-                maskName="FATTR4_RETENTEVT_SET";
+                maskName = "FATTR4_RETENTEVT_SET";
                 break;
             case nfs4_prot.FATTR4_RETENTION_HOLD:
-                maskName="FATTR4_RETENTION_HOLD";
+                maskName = "FATTR4_RETENTION_HOLD";
                 break;
             case nfs4_prot.FATTR4_MODE_SET_MASKED:
-                maskName="FATTR4_MODE_SET_MASKED";
+                maskName = "FATTR4_MODE_SET_MASKED";
                 break;
             case nfs4_prot.FATTR4_FS_CHARSET_CAP:
-                maskName="FATTR4_FS_CHARSET_CAP";
+                maskName = "FATTR4_FS_CHARSET_CAP";
                 break;
             case nfs4_prot.FATTR4_SUPPATTR_EXCLCREAT:
                 maskName = "FATTR4_SUPPATTR_EXCLCREAT";
@@ -648,14 +643,13 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
     }
 
-
-    static int unixType2NFS( int type ) {
+    static int unixType2NFS(int type) {
 
         int ret = 0;
 
-        int mask =  0770000;
+        int mask = 0770000;
 
-        switch ( type & mask  ) {
+        switch (type & mask) {
 
             case Stat.S_IFREG:
                 ret = nfs_ftype4.NF4REG;
@@ -679,7 +673,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 ret = nfs_ftype4.NF4FIFO;
                 break;
             default:
-                _log.info("Unknown mode [{}]",  Integer.toOctalString(type));
+                _log.info("Unknown mode [{}]", Integer.toOctalString(type));
                 ret = 0;
 
         }

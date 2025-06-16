@@ -19,14 +19,14 @@
  */
 package org.dcache.nfs.v4.xdr;
 
+import static org.junit.Assert.*;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
+
 import org.dcache.nfs.status.InvalException;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 
 public class nfstime4Test {
 
@@ -39,15 +39,14 @@ public class nfstime4Test {
     }
 
     /**
-     * openjdk-1.8 + maven fail to compile. Suppress warning until
-     * a working alternative is found.
+     * openjdk-1.8 + maven fail to compile. Suppress warning until a working alternative is found.
      */
     @SuppressWarnings("deprecation")
     @Test
     public void testValidTime() throws Exception {
         nfstime4 time = new nfstime4();
         time.seconds = 1;
-        time.nseconds = (int)TimeUnit.MILLISECONDS.toNanos(5);
+        time.nseconds = (int) TimeUnit.MILLISECONDS.toNanos(5);
 
         long date = LocalDateTime.of(1970, 1, 1, 0, 0, 1, 0).toInstant(ZoneOffset.UTC).toEpochMilli();
 

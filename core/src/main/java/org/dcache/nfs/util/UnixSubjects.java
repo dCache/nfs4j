@@ -19,24 +19,27 @@
  */
 package org.dcache.nfs.util;
 
-import com.sun.security.auth.UnixNumericGroupPrincipal;
-import com.sun.security.auth.UnixNumericUserPrincipal;
-
-import javax.security.auth.Subject;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.security.auth.Subject;
+
+import com.sun.security.auth.UnixNumericGroupPrincipal;
+import com.sun.security.auth.UnixNumericUserPrincipal;
 
 /**
  * A collection of utility methods to manipulate with Unix based subjects.
  */
 public class UnixSubjects {
 
-    private UnixSubjects() {}
+    private UnixSubjects() {
+    }
 
     /**
      * Returns true if and only if subjects contains UnixNumericUserPrincipal with uid 0 (zero).
+     *
      * @param subject subject to evaluate.
      * @return true if subjects contains UnixNumericUserPrincipal with uid 0.
      */
@@ -46,6 +49,7 @@ public class UnixSubjects {
 
     /**
      * Returns true if and only if subjects doesn't contain any UnixNumericUserPrincipal.
+     *
      * @param subject subject to evaluate.
      * @return true if subjects doesn't contain any UnixNumericUserPrincipal.
      */
@@ -53,6 +57,7 @@ public class UnixSubjects {
         return subject.getPrincipals().stream()
                 .noneMatch(UnixNumericUserPrincipal.class::isInstance);
     }
+
     /**
      * Returns true if and only if the subject has the given uid.
      *
@@ -84,6 +89,7 @@ public class UnixSubjects {
 
     /**
      * Create subject with given uid and gid.
+     *
      * @param uid users numeric id.
      * @param gid users primary group numeric id.
      * @return subject with given uid, gid.
@@ -97,24 +103,25 @@ public class UnixSubjects {
 
     /**
      * Create subject with given uid, primary gid and secondary gids.
+     *
      * @param uid users numeric id.
      * @param gid users primary group numeric id.
      * @param gids array of users secondary group numeric ids.
      * @return subject with given uid, gid and gids.
      */
-    public static Subject toSubject(long uid, long gid, long ... gids) {
+    public static Subject toSubject(long uid, long gid, long... gids) {
         Subject subject = toSubject(uid, gid);
         subject.getPrincipals()
                 .addAll(
                         Arrays.stream(gids)
                                 .mapToObj(l -> new UnixNumericGroupPrincipal(l, false))
-                                .collect(Collectors.toSet())
-                );
+                                .collect(Collectors.toSet()));
         return subject;
     }
 
     /**
      * Returns the user ID represented by UnixNumericUserPrincipal.
+     *
      * @param subject subject to evaluate.
      * @return the user id.
      */
@@ -129,6 +136,7 @@ public class UnixSubjects {
 
     /**
      * Returns the primary group ID of a subject represented by UnixNumericGroupPrincipal.
+     *
      * @param subject subject to evaluate.
      * @return the primary group ID.
      */
@@ -143,6 +151,7 @@ public class UnixSubjects {
 
     /**
      * Returns the secondary group IDs of a subject represented by UnixNumericGroupPrincipal.
+     *
      * @param subject subject to evaluate.
      * @return an array with secondary group IDs, possibly empty.
      */

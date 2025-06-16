@@ -19,14 +19,14 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  *
  */
 public class bitmap4Test {
-
 
     @Test
     public void testIterratorNoValues() {
@@ -36,7 +36,7 @@ public class bitmap4Test {
 
     @Test
     public void testIterratorZeroValues() {
-        bitmap4 bitmap = new bitmap4( new int[] {0, 0});
+        bitmap4 bitmap = new bitmap4(new int[] {0, 0});
         assertFalse(bitmap.iterator().hasNext());
     }
 
@@ -51,16 +51,16 @@ public class bitmap4Test {
         bitmap4 bitmap = bitmap4.of(5, 34, 80, 129);
         int count = 0;
 
-        for(Integer i: bitmap) {
-            count ++;
+        for (Integer i : bitmap) {
+            count++;
         }
         assertEquals(4, count);
     }
 
     @Test
     public void testValues() {
-        int[] values = new int[] { 7, 15, 62, 63, 129 };
-        int[] testArray  = new int[values.length];
+        int[] values = new int[] {7, 15, 62, 63, 129};
+        int[] testArray = new int[values.length];
 
         bitmap4 bitmap = bitmap4.of(values);
         int count = 0;
@@ -98,16 +98,16 @@ public class bitmap4Test {
 
     @Test
     public void testSameBitsDifferentSize() {
-        bitmap4 b1 = new bitmap4 ( new int[] {8, 0, 5, 0, 0});
-        bitmap4 b2 = new bitmap4 ( new int[] {8, 0, 5});
+        bitmap4 b1 = new bitmap4(new int[] {8, 0, 5, 0, 0});
+        bitmap4 b2 = new bitmap4(new int[] {8, 0, 5});
         assertEquals("arrays size must be ignored", b1, b2);
         assertEquals("arrays size must be ignored", b1.hashCode(), b2.hashCode());
     }
 
     @Test
     public void testSameSizeDifferentBits() {
-        bitmap4 b1 = new bitmap4(new int[]{0, 1});
-        bitmap4 b2 = new bitmap4(new int[]{1});
+        bitmap4 b1 = new bitmap4(new int[] {0, 1});
+        bitmap4 b2 = new bitmap4(new int[] {1});
         assertNotEquals("different bits not respected", b1, b2);
         assertNotEquals("different bits not respected", b1.hashCode(), b2.hashCode());
     }

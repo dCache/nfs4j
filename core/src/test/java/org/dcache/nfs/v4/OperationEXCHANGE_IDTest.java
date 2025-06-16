@@ -19,10 +19,13 @@
  */
 package org.dcache.nfs.v4;
 
-import java.time.Duration;
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import static org.junit.Assert.*;
 
+import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -36,9 +39,6 @@ import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-import static org.junit.Assert.*;
 
 public class OperationEXCHANGE_IDTest {
 
@@ -126,7 +126,6 @@ public class OperationEXCHANGE_IDTest {
                         result.opexchange_id.eir_resok4.eir_sequenceid)
                 .build().argarray[0];
 
-
         OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
@@ -134,9 +133,9 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
-         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -171,15 +170,15 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
 
-         nfs_argop4 exchangeid_reboot_args = new CompoundBuilder()
+        nfs_argop4 exchangeid_reboot_args = new CompoundBuilder()
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-         EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_reboot_args);
-         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_reboot_args);
+        result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -214,25 +213,25 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-         AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
 
-         TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(3);
 
-         nfs_argop4 sequence_args = new CompoundBuilder()
-                 .withSequence(
+        nfs_argop4 sequence_args = new CompoundBuilder()
+                .withSequence(
                         false,
                         result.opcreate_session.csr_resok4.csr_sessionid,
                         0,
                         0,
                         0).build().argarray[0];
 
-         OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
-         result = nfs_resop4.resopFor(nfs_opnum4.OP_SEQUENCE);
-         AssertNFS.assertNFS(SEQUENCE, context, result, nfsstat.NFSERR_EXPIRED);
+        OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
+        result = nfs_resop4.resopFor(nfs_opnum4.OP_SEQUENCE);
+        AssertNFS.assertNFS(SEQUENCE, context, result, nfsstat.NFSERR_EXPIRED);
 
-         EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
-         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -253,7 +252,8 @@ public class OperationEXCHANGE_IDTest {
                 .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
-        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS, result.opexchange_id.eir_resok4.eir_flags.value);
+        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS,
+                result.opexchange_id.eir_resok4.eir_flags.value);
     }
 
     @Test
@@ -275,7 +275,8 @@ public class OperationEXCHANGE_IDTest {
                 .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
-        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS, result.opexchange_id.eir_resok4.eir_flags.value);
+        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS,
+                result.opexchange_id.eir_resok4.eir_flags.value);
     }
 
     @Test
@@ -297,7 +298,8 @@ public class OperationEXCHANGE_IDTest {
                 .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
-        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS, result.opexchange_id.eir_resok4.eir_flags.value);
+        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS,
+                result.opexchange_id.eir_resok4.eir_flags.value);
     }
 
     @Test
@@ -319,7 +321,8 @@ public class OperationEXCHANGE_IDTest {
                 .build();
 
         AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
-        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS, result.opexchange_id.eir_resok4.eir_flags.value);
+        assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS,
+                result.opexchange_id.eir_resok4.eir_flags.value);
     }
 
     @Test
@@ -346,7 +349,6 @@ public class OperationEXCHANGE_IDTest {
                 nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
     }
-
 
     @Test
     public void testCustomImplementationId() throws Exception {

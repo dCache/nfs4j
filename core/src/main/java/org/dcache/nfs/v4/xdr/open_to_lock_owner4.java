@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class open_to_lock_owner4 implements XdrAble {
     public seqid4 open_seqid;
@@ -34,12 +36,12 @@ public class open_to_lock_owner4 implements XdrAble {
     }
 
     public open_to_lock_owner4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         open_seqid.xdrEncode(xdr);
         open_stateid.xdrEncode(xdr);
         lock_seqid.xdrEncode(xdr);
@@ -47,7 +49,7 @@ public class open_to_lock_owner4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         open_seqid = new seqid4(xdr);
         open_stateid = new stateid4(xdr);
         lock_seqid = new seqid4(xdr);

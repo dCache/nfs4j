@@ -18,28 +18,30 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class READ3resok implements XdrAble {
     public post_op_attr file_attributes;
     public count3 count;
     public boolean eof;
-    public byte [] data;
+    public byte[] data;
 
     public READ3resok() {
     }
 
     public READ3resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         file_attributes.xdrEncode(xdr);
         count.xdrEncode(xdr);
         xdr.xdrEncodeBoolean(eof);
@@ -47,7 +49,7 @@ public class READ3resok implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         file_attributes = new post_op_attr(xdr);
         count = new count3(xdr);
         eof = xdr.xdrDecodeBoolean();

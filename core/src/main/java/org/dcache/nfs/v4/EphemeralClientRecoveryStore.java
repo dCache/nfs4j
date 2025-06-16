@@ -25,13 +25,16 @@ package org.dcache.nfs.v4;
 public class EphemeralClientRecoveryStore implements ClientRecoveryStore {
 
     @Override
-    public void addClient(byte[] client) {}
+    public void addClient(byte[] client) {
+    }
 
     @Override
-    public void reclaimClient(byte[] client) {}
+    public void reclaimClient(byte[] client) {
+    }
 
     @Override
-    public void removeClient(byte[] client) {}
+    public void removeClient(byte[] client) {
+    }
 
     @Override
     public boolean waitingForReclaim() {
@@ -39,11 +42,14 @@ public class EphemeralClientRecoveryStore implements ClientRecoveryStore {
     }
 
     @Override
-    public void wantReclaim(byte[] client) {}
+    public void wantReclaim(byte[] client) {
+    }
 
     @Override
-    public void reclaimComplete() {}
+    public void reclaimComplete() {
+    }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
 }

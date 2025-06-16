@@ -83,7 +83,8 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
             }
             StateOwner lockOwner = new StateOwner(hypotheticLockOwner, 0);
 
-            NlmLock lock = new NlmLock(lockOwner, _args.oplockt.locktype, _args.oplockt.offset.value, _args.oplockt.length.value);
+            NlmLock lock = new NlmLock(lockOwner, _args.oplockt.locktype, _args.oplockt.offset.value,
+                    _args.oplockt.length.value);
             context.getLm().test(inode.getFileId(), lock);
 
             result.oplockt.status = nfsstat.NFS_OK;

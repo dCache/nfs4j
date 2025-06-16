@@ -19,11 +19,11 @@
  */
 package org.dcache.nfs.status;
 
-import org.dcache.nfs.ChimeraNFSException;
 import static org.dcache.nfs.nfsstat.*;
 
-public class NotSyncException extends ChimeraNFSException {
+import org.dcache.nfs.ChimeraNFSException;
 
+public class NotSyncException extends ChimeraNFSException {
 
     private static final long serialVersionUID = 1L;
 
@@ -39,4 +39,3 @@ public class NotSyncException extends ChimeraNFSException {
         super(NFSERR_NOT_SYNC, msg, cause);
     }
 }
-

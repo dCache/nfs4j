@@ -19,13 +19,13 @@
  */
 package org.dcache.nfs.v4.client;
 
-import com.google.common.base.MoreObjects;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 
-public class Stripe {
+import com.google.common.base.MoreObjects;
 
+public class Stripe {
 
     private final long _offset;
     private final long _len;
@@ -34,7 +34,6 @@ public class Stripe {
     private final long _pattern_offset;
     private final int _unit;
     private final int _first_stripe_index;
-
 
     /**
      * Construct new stripe unit.
@@ -49,17 +48,17 @@ public class Stripe {
      * @throws IllegalArgumentException
      */
     public Stripe(deviceid4 deviceId, nfs_fh4 fh, long len, long offset,
-                  long pattern_offset,
-                  int unit, int first_stripe_index)
+            long pattern_offset,
+            int unit, int first_stripe_index)
             throws IllegalArgumentException {
 
-        if( deviceId == null ) {
+        if (deviceId == null) {
             throw new IllegalArgumentException("device id is null");
         }
 
         _deviceId = deviceId;
 
-        if( fh == null ) {
+        if (fh == null) {
             throw new IllegalArgumentException("NFS file hadle is null");
         }
 
@@ -68,7 +67,7 @@ public class Stripe {
         /*
          * handle special case: -1 is reserved value for entire file
          */
-        this._len = len == -1 ? Long.MAX_VALUE: len;
+        this._len = len == -1 ? Long.MAX_VALUE : len;
         this._offset = offset;
         _pattern_offset = pattern_offset;
         _unit = unit;
@@ -93,18 +92,21 @@ public class Stripe {
     public long getOffset() {
         return _offset;
     }
+
     /**
      * @return the len
      */
     public long getLen() {
         return _len;
     }
+
     /**
      * @return the deviceId
      */
     public deviceid4 getDeviceId() {
         return _deviceId;
     }
+
     /**
      * @return the _fh
      */
@@ -116,7 +118,9 @@ public class Stripe {
         return (_unit & nfs4_prot.NFL4_UFLG_COMMIT_THRU_MDS) != 0;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -131,20 +135,27 @@ public class Stripe {
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if ( !(obj instanceof Stripe) ) return false;
+        if (this == obj)
+            return true;
+        if (!(obj instanceof Stripe))
+            return false;
 
         Stripe other = (Stripe) obj;
         // FIXME:
 
-        if( !_deviceId.equals(other._deviceId)) return false;
-        if (_len != other._len) return false;
-        if (_offset != other._offset) return false;
+        if (!_deviceId.equals(other._deviceId))
+            return false;
+        if (_len != other._len)
+            return false;
+        if (_offset != other._offset)
+            return false;
         return true;
     }
 

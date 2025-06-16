@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.util;
 
-
 /**
  * Interface CacheMXBeanImplMXBean
  *
@@ -27,11 +26,14 @@ package org.dcache.nfs.util;
 public interface CacheMXBean<V> {
 
     void clear();
+
     long getEntryIdleTime();
+
     long getEntryLiveTime();
+
     int getSize();
+
     String[] getEntries();
+
     long getLastClean();
 }
-
-

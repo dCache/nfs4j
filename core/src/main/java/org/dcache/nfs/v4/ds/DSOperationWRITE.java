@@ -22,19 +22,19 @@ package org.dcache.nfs.v4.ds;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
+import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.CompoundContext;
+import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.WRITE4res;
 import org.dcache.nfs.v4.xdr.WRITE4resok;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.IsDirException;
-import org.dcache.nfs.status.NfsIoException;
-import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
@@ -72,12 +72,12 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             throw new InvalException("Invalid object type");
         }
 
-        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opwrite.stateid) && !Stateids.OneStateId().equalsWithSeq(_args.opwrite.stateid)) {
+        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opwrite.stateid)
+                && !Stateids.OneStateId().equalsWithSeq(_args.opwrite.stateid)) {
             /*
-             *  The NFSv4.0 spec requires to update lease time as long as client
-             * needs the file. This is done through READ, WRITE and RENEW
-             * opertations. With introduction of sessions in v4.1 update of the
-             * lease time done through SEQUENCE operation.
+             * The NFSv4.0 spec requires to update lease time as long as client needs the file. This is done through
+             * READ, WRITE and RENEW opertations. With introduction of sessions in v4.1 update of the lease time done
+             * through SEQUENCE operation.
              */
             context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
         }
@@ -99,7 +99,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.resok4.committed = _args.opwrite.stable;
         res.resok4.writeverf = context.getRebootVerifier();
 
-        synchronized(out) {
+        synchronized (out) {
             if ((_args.opwrite.stable != stable_how4.UNSTABLE4) && (offset + bytesWritten > lastSize)) {
                 Stat newStat = new Stat();
                 newStat.setSize(out.size());

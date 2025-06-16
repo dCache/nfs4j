@@ -19,18 +19,18 @@
  */
 package org.dcache.nfs.v4.acl;
 
-import org.dcache.nfs.v4.xdr.acemask4;
-import org.dcache.nfs.v4.xdr.utf8str_mixed;
-import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.v4.xdr.acetype4;
-import org.dcache.nfs.v4.xdr.aceflag4;
-import org.dcache.nfs.v4.xdr.uint32_t;
-import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
 import static org.dcache.nfs.v4.acl.Acls.*;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
+import static org.junit.Assert.*;
+
+import org.dcache.nfs.v4.xdr.aceflag4;
+import org.dcache.nfs.v4.xdr.acemask4;
+import org.dcache.nfs.v4.xdr.acetype4;
+import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.v4.xdr.uint32_t;
+import org.dcache.nfs.v4.xdr.utf8str_mixed;
 import org.junit.Ignore;
+import org.junit.Test;
 
 public class AclsTest {
 
@@ -77,8 +77,8 @@ public class AclsTest {
     public void testAllRead() {
         int rwx = 0444;
 
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.EVERYONE, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA)
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.EVERYONE, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA)
         };
 
         assertEquals(rwx, toMode(acl));
@@ -101,12 +101,12 @@ public class AclsTest {
     @Ignore
     @Test
     public void testUpdateUnixMode() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.GROUP, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_ACL),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_RETENTION_HOLD),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_DELETE)
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.GROUP, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_ACL),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_RETENTION_HOLD),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_DELETE)
         };
         int mode = 0755;
         assertMode(mode, toMode(adjust(acl, mode)));
@@ -114,11 +114,11 @@ public class AclsTest {
 
     @Test
     public void testCompactByPrincipal() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.GROUP, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_ACL),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_DELETE_CHILD)
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.GROUP, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_ACL),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_DELETE_CHILD)
         };
 
         assertEquals(2, Acls.compact(acl).length);
@@ -126,9 +126,9 @@ public class AclsTest {
 
     @Test
     public void testCompactByPrincipal2() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.GROUP, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.GROUP, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
         };
 
         assertEquals(2, Acls.compact(acl).length);
@@ -136,11 +136,11 @@ public class AclsTest {
 
     @Test
     public void testCompactByPrincipal3() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_WRITE_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_WRITE_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
         };
 
         assertEquals(2, Acls.compact(acl).length);
@@ -148,37 +148,37 @@ public class AclsTest {
 
     @Test
     public void testCompactByPrincipal4() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_DELETE_CHILD),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_DELETE_CHILD),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
 
         assertEquals(2, Acls.compact(acl).length);
     }
 
     @Test
     public void testCompactByPrincipal5() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
-            toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),
+                toACE(Acls.OWNER, ACE4_ACCESS_ALLOWED_ACE_TYPE, ACE4_WRITE_DATA),};
 
         assertEquals(2, Acls.compact(acl).length);
     }
 
     @Test
     public void testCompactByPrincipal6() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(new utf8str_mixed("user1"), ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_IDENTIFIER_GROUP),
-            toACE(new utf8str_mixed("user1"), ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),};
+        nfsace4[] acl = new nfsace4[] {
+                toACE(new utf8str_mixed("user1"), ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_IDENTIFIER_GROUP),
+                toACE(new utf8str_mixed("user1"), ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA),};
 
         assertEquals(2, Acls.compact(acl).length);
     }
 
     @Test
     public void testCompactByFlags() {
-        nfsace4[] acl = new nfsace4[]{
-            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_FILE_INHERIT_ACE),
-            toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_DIRECTORY_INHERIT_ACE),};
+        nfsace4[] acl = new nfsace4[] {
+                toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_FILE_INHERIT_ACE),
+                toACE(Acls.OWNER, ACE4_ACCESS_DENIED_ACE_TYPE, ACE4_READ_DATA, ACE4_DIRECTORY_INHERIT_ACE),};
 
         assertEquals(2, Acls.compact(acl).length);
     }

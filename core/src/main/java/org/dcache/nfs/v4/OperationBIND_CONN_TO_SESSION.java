@@ -24,9 +24,8 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 
-
 public class OperationBIND_CONN_TO_SESSION extends AbstractNFSv4Operation {
-    
+
     public OperationBIND_CONN_TO_SESSION(nfs_argop4 args) {
         super(args, nfs_opnum4.OP_BIND_CONN_TO_SESSION);
     }

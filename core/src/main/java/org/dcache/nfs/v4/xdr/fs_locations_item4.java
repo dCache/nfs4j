@@ -18,33 +18,47 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class fs_locations_item4 implements XdrAble {
-    public fs_locations_server4 [] fli_entries;
+    public fs_locations_server4[] fli_entries;
     public pathname4 fli_rootpath;
 
     public fs_locations_item4() {
     }
 
     public fs_locations_item4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = fli_entries.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { fli_entries[$idx].xdrEncode(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = fli_entries.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                fli_entries[$idx].xdrEncode(xdr);
+            }
+        }
         fli_rootpath.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); fli_entries = new fs_locations_server4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { fli_entries[$idx] = new fs_locations_server4(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = xdr.xdrDecodeInt();
+            fli_entries = new fs_locations_server4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                fli_entries[$idx] = new fs_locations_server4(xdr);
+            }
+        }
         fli_rootpath = new pathname4(xdr);
     }
 

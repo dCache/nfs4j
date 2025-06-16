@@ -1,17 +1,19 @@
 package org.dcache.nfs.v4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.Before;
 
-import org.dcache.nfs.status.ReclaimBadException;
 import org.dcache.nfs.status.NoGraceException;
+import org.dcache.nfs.status.ReclaimBadException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  *
  */
@@ -30,7 +32,7 @@ public class BerkeleyDBClientStoreTest {
         clientRecoveryStore.close();
         Files.list(storeDirectory).forEach(f -> {
             try {
-            Files.delete(f);
+                Files.delete(f);
             } catch (IOException e) {
                 // as we fail to delete, directory remove will fail as well
             }

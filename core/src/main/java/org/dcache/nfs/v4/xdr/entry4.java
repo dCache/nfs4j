@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class entry4 implements XdrAble {
     public nfs_cookie4 cookie;
@@ -34,12 +36,12 @@ public class entry4 implements XdrAble {
     }
 
     public entry4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         entry4 $this = this;
         do {
             $this.cookie.xdrEncode(xdr);
@@ -47,11 +49,11 @@ public class entry4 implements XdrAble {
             $this.attrs.xdrEncode(xdr);
             $this = $this.nextentry;
             xdr.xdrEncodeBoolean($this != null);
-        } while ( $this != null );
+        } while ($this != null);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         entry4 $this = this;
         entry4 $next;
         do {
@@ -61,7 +63,7 @@ public class entry4 implements XdrAble {
             $next = xdr.xdrDecodeBoolean() ? new entry4() : null;
             $this.nextentry = $next;
             $this = $next;
-        } while ( $this != null );
+        } while ($this != null);
     }
 
 }

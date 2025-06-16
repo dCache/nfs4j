@@ -18,12 +18,14 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class TEST_STATEID4res implements XdrAble {
     public int tsr_status;
@@ -33,31 +35,31 @@ public class TEST_STATEID4res implements XdrAble {
     }
 
     public TEST_STATEID4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(tsr_status);
-        switch ( tsr_status ) {
-        case nfsstat.NFS_OK:
-            tsr_resok4.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (tsr_status) {
+            case nfsstat.NFS_OK:
+                tsr_resok4.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         tsr_status = xdr.xdrDecodeInt();
-        switch ( tsr_status ) {
-        case nfsstat.NFS_OK:
-            tsr_resok4 = new TEST_STATEID4resok(xdr);
-            break;
-        default:
-            break;
+        switch (tsr_status) {
+            case nfsstat.NFS_OK:
+                tsr_resok4 = new TEST_STATEID4resok(xdr);
+                break;
+            default:
+                break;
         }
     }
 

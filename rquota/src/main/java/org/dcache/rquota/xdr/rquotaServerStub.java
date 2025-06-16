@@ -7,84 +7,86 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.rquota.xdr;
-import org.dcache.oncrpc4j.rpc.*;
+
 import java.io.IOException;
+
+import org.dcache.oncrpc4j.rpc.*;
 
 /**
  */
 public abstract class rquotaServerStub implements RpcDispatchable {
 
     public void dispatchOncRpcCall(RpcCall call)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
 
         int version = call.getProgramVersion();
         int procedure = call.getProcedure();
 
-        if ( version == 1 ) {
-            switch ( procedure ) {
-            case 1: {
-                getquota_args args$ = new getquota_args();
-                call.retrieveCall(args$);
-                getquota_rslt result$ = RQUOTAPROC_GETQUOTA_1(call, args$);
-                call.reply(result$);
-                break;
+        if (version == 1) {
+            switch (procedure) {
+                case 1: {
+                    getquota_args args$ = new getquota_args();
+                    call.retrieveCall(args$);
+                    getquota_rslt result$ = RQUOTAPROC_GETQUOTA_1(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 2: {
+                    getquota_args args$ = new getquota_args();
+                    call.retrieveCall(args$);
+                    getquota_rslt result$ = RQUOTAPROC_GETACTIVEQUOTA_1(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 3: {
+                    setquota_args args$ = new setquota_args();
+                    call.retrieveCall(args$);
+                    setquota_rslt result$ = RQUOTAPROC_SETQUOTA_1(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 4: {
+                    setquota_args args$ = new setquota_args();
+                    call.retrieveCall(args$);
+                    setquota_rslt result$ = RQUOTAPROC_SETACTIVEQUOTA_1(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                default:
+                    call.failProcedureUnavailable();
             }
-            case 2: {
-                getquota_args args$ = new getquota_args();
-                call.retrieveCall(args$);
-                getquota_rslt result$ = RQUOTAPROC_GETACTIVEQUOTA_1(call, args$);
-                call.reply(result$);
-                break;
-            }
-            case 3: {
-                setquota_args args$ = new setquota_args();
-                call.retrieveCall(args$);
-                setquota_rslt result$ = RQUOTAPROC_SETQUOTA_1(call, args$);
-                call.reply(result$);
-                break;
-            }
-            case 4: {
-                setquota_args args$ = new setquota_args();
-                call.retrieveCall(args$);
-                setquota_rslt result$ = RQUOTAPROC_SETACTIVEQUOTA_1(call, args$);
-                call.reply(result$);
-                break;
-            }
-            default:
-                call.failProcedureUnavailable();
-            }
-        } else if ( version == 2 ) {
-            switch ( procedure ) {
-            case 1: {
-                ext_getquota_args args$ = new ext_getquota_args();
-                call.retrieveCall(args$);
-                getquota_rslt result$ = RQUOTAPROC_GETQUOTA_2(call, args$);
-                call.reply(result$);
-                break;
-            }
-            case 2: {
-                ext_getquota_args args$ = new ext_getquota_args();
-                call.retrieveCall(args$);
-                getquota_rslt result$ = RQUOTAPROC_GETACTIVEQUOTA_2(call, args$);
-                call.reply(result$);
-                break;
-            }
-            case 3: {
-                ext_setquota_args args$ = new ext_setquota_args();
-                call.retrieveCall(args$);
-                setquota_rslt result$ = RQUOTAPROC_SETQUOTA_2(call, args$);
-                call.reply(result$);
-                break;
-            }
-            case 4: {
-                ext_setquota_args args$ = new ext_setquota_args();
-                call.retrieveCall(args$);
-                setquota_rslt result$ = RQUOTAPROC_SETACTIVEQUOTA_2(call, args$);
-                call.reply(result$);
-                break;
-            }
-            default:
-                call.failProcedureUnavailable();
+        } else if (version == 2) {
+            switch (procedure) {
+                case 1: {
+                    ext_getquota_args args$ = new ext_getquota_args();
+                    call.retrieveCall(args$);
+                    getquota_rslt result$ = RQUOTAPROC_GETQUOTA_2(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 2: {
+                    ext_getquota_args args$ = new ext_getquota_args();
+                    call.retrieveCall(args$);
+                    getquota_rslt result$ = RQUOTAPROC_GETACTIVEQUOTA_2(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 3: {
+                    ext_setquota_args args$ = new ext_setquota_args();
+                    call.retrieveCall(args$);
+                    setquota_rslt result$ = RQUOTAPROC_SETQUOTA_2(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                case 4: {
+                    ext_setquota_args args$ = new ext_setquota_args();
+                    call.retrieveCall(args$);
+                    setquota_rslt result$ = RQUOTAPROC_SETACTIVEQUOTA_2(call, args$);
+                    call.reply(result$);
+                    break;
+                }
+                default:
+                    call.failProcedureUnavailable();
             }
         } else {
             call.failProgramUnavailable();

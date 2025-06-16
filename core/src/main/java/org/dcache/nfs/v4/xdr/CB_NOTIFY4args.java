@@ -18,37 +18,51 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class CB_NOTIFY4args implements XdrAble {
     public stateid4 cna_stateid;
     public nfs_fh4 cna_fh;
-    public notify4 [] cna_changes;
+    public notify4[] cna_changes;
 
     public CB_NOTIFY4args() {
     }
 
     public CB_NOTIFY4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cna_stateid.xdrEncode(xdr);
         cna_fh.xdrEncode(xdr);
-        { int $size = cna_changes.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { cna_changes[$idx].xdrEncode(xdr); } }
+        {
+            int $size = cna_changes.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                cna_changes[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cna_stateid = new stateid4(xdr);
         cna_fh = new nfs_fh4(xdr);
-        { int $size = xdr.xdrDecodeInt(); cna_changes = new notify4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { cna_changes[$idx] = new notify4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            cna_changes = new notify4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                cna_changes[$idx] = new notify4(xdr);
+            }
+        }
     }
 
 }

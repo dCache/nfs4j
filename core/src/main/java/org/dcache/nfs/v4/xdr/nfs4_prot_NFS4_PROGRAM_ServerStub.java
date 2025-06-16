@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4.xdr;
 
 import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcDispatchable;
@@ -31,11 +32,11 @@ public abstract class nfs4_prot_NFS4_PROGRAM_ServerStub implements RpcDispatchab
 
     @Override
     public void dispatchOncRpcCall(RpcCall call)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
 
         int procedure = call.getProcedure();
 
-        switch ( procedure ) {
+        switch (procedure) {
             case 0: {
                 call.retrieveCall(XdrVoid.XDR_VOID);
                 NFSPROC4_NULL_4(call);

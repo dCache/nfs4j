@@ -19,31 +19,31 @@
  */
 package org.dcache.nfs.v3.xdr;
 
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
-import java.io.IOException;
-
 public class nfs_fh3 implements XdrAble {
-    public byte [] data;
+    public byte[] data;
 
     public nfs_fh3() {
     }
 
     public nfs_fh3(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeDynamicOpaque(data);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         data = xdr.xdrDecodeDynamicOpaque();
     }
 

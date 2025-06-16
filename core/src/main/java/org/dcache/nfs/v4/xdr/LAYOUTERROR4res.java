@@ -18,9 +18,11 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LAYOUTERROR4res implements XdrAble {
     public int status;
@@ -29,17 +31,17 @@ public class LAYOUTERROR4res implements XdrAble {
     }
 
     public LAYOUTERROR4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(status);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         status = xdr.xdrDecodeInt();
     }
 

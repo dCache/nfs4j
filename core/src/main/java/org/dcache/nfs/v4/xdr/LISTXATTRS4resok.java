@@ -7,34 +7,48 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LISTXATTRS4resok implements XdrAble {
     public nfs_cookie4 lxr_cookie;
-    public String [] lxr_names;
+    public String[] lxr_names;
     public boolean lxr_eof;
 
     public LISTXATTRS4resok() {
     }
 
     public LISTXATTRS4resok(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lxr_cookie.xdrEncode(xdr);
-        { int $size = lxr_names.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { xdr.xdrEncodeString(lxr_names[$idx]); } }
+        {
+            int $size = lxr_names.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                xdr.xdrEncodeString(lxr_names[$idx]);
+            }
+        }
         xdr.xdrEncodeBoolean(lxr_eof);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         lxr_cookie = new nfs_cookie4(xdr);
-        { int $size = xdr.xdrDecodeInt(); lxr_names = new String[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { lxr_names[$idx] = xdr.xdrDecodeString(); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            lxr_names = new String[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                lxr_names[$idx] = xdr.xdrDecodeString();
+            }
+        }
         lxr_eof = xdr.xdrDecodeBoolean();
     }
 

@@ -19,42 +19,42 @@
  */
 package org.dcache.nfs.v4;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.time.Clock;
-import java.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.time.Clock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+
+import javax.annotation.concurrent.GuardedBy;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
+import org.dcache.nfs.util.Cache;
+import org.dcache.nfs.util.NopCacheEventListener;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.oncrpc4j.util.Bytes;
-import org.dcache.nfs.util.Cache;
-import org.dcache.nfs.util.NopCacheEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.annotation.concurrent.GuardedBy;
-
-import static com.google.common.base.Preconditions.checkState;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class NFSv4StateHandler {
 
@@ -114,23 +114,26 @@ public class NFSv4StateHandler {
     }
 
     /**
-     * Create NFSv4 state handler with given lease time, instance id and client store.
-     * The {@code instanceId} should uniquely identify this state handler.
+     * Create NFSv4 state handler with given lease time, instance id and client store. The {@code instanceId} should
+     * uniquely identify this state handler.
      *
      * @param leaseTime time duration of a lease.
      * @param instanceId the nfs server instance id within deployment.
      * @param clientStore store used by state handler to keep track of valid clients.
      */
     public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore) {
-        this(leaseTime, instanceId, clientStore, new DefaultClientCache(leaseTime, new DeadClientCollector(clientStore)));
+        this(leaseTime, instanceId, clientStore, new DefaultClientCache(leaseTime, new DeadClientCollector(
+                clientStore)));
     }
 
-    public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId) {
+    public NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore,
+            ClientCache clientsByServerId) {
         this(leaseTime, instanceId, clientStore, clientsByServerId, Clock.systemDefaultZone());
     }
 
     @VisibleForTesting
-    NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore, ClientCache clientsByServerId, Clock clock) {
+    NFSv4StateHandler(Duration leaseTime, int instanceId, ClientRecoveryStore clientStore,
+            ClientCache clientsByServerId, Clock clock) {
         _leaseTime = leaseTime;
         _clientsByServerId = clientsByServerId;
         _clock = clock;
@@ -143,8 +146,7 @@ public class NFSv4StateHandler {
                 new ThreadFactoryBuilder()
                         .setNameFormat("NFSv41 client periodic cleanup")
                         .setDaemon(true)
-                        .build()
-        );
+                        .build());
 
         // periodic dead client scan
         _cleanerScheduler.scheduleAtFixedRate(() -> _clientsByServerId.cleanUp(),
@@ -185,8 +187,7 @@ public class NFSv4StateHandler {
      *
      * @param clientid short-hand client id.
      * @return nfs client associated with clientid.
-     * @throws StaleClientidException if there are no corresponding verified
-     * valid record exist.
+     * @throws StaleClientidException if there are no corresponding verified valid record exist.
      */
     public NFS4Client getConfirmedClient(clientid4 clientid) throws StaleClientidException {
 
@@ -198,13 +199,11 @@ public class NFSv4StateHandler {
     }
 
     /**
-     * Get valid client by short-hand {@code clientid}. The returned {@link NFS4Client}
-     * can be not confirmed.
+     * Get valid client by short-hand {@code clientid}. The returned {@link NFS4Client} can be not confirmed.
      *
      * @param clientid short-hand client id.
      * @return nfs client associated with clientid.
-     * @throws StaleClientidException if there are no corresponding verified
-     * valid record exist.
+     * @throws StaleClientidException if there are no corresponding verified valid record exist.
      */
     public NFS4Client getValidClient(clientid4 clientid) throws StaleClientidException {
 
@@ -216,8 +215,7 @@ public class NFSv4StateHandler {
     }
 
     /**
-     * Get by short-hand {@code clientid}. The returned {@link NFS4Client}
-     * can be not valid and not verified.
+     * Get by short-hand {@code clientid}. The returned {@link NFS4Client} can be not valid and not verified.
      *
      * @param clientid short-hand client id.
      * @return nfs client associated with clientid.
@@ -273,7 +271,9 @@ public class NFSv4StateHandler {
     }
 
     /**
-     * Get existing, possibly not valid, client record that matches given client side generated long-hand owner identifier.
+     * Get existing, possibly not valid, client record that matches given client side generated long-hand owner
+     * identifier.
+     *
      * @param ownerid client side generated long-hand owner identifier.
      *
      * @return an existing client record or null, if not matching record found.
@@ -292,14 +292,14 @@ public class NFSv4StateHandler {
         }
     }
 
-    public void updateClientLeaseTime(stateid4  stateid) throws ChimeraNFSException {
+    public void updateClientLeaseTime(stateid4 stateid) throws ChimeraNFSException {
 
         checkState(_running, "NFS state handler not running");
         NFS4Client client = getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
 
-        if( !state.isConfimed() ) {
-            throw new BadStateidException("State is not confirmed"  );
+        if (!state.isConfimed()) {
+            throw new BadStateidException("State is not confirmed");
         }
 
         Stateids.checkStateId(state.stateid(), stateid);
@@ -321,14 +321,15 @@ public class NFSv4StateHandler {
     public NFS4Client createClient(InetSocketAddress clientAddress, InetSocketAddress localAddress, int minorVersion,
             byte[] ownerID, verifier4 verifier, Principal principal, boolean callbackNeeded) {
         NFS4Client client = new NFS4Client(this, nextClientId(),
-		minorVersion, clientAddress, localAddress, ownerID, verifier,
-		principal, _leaseTime, callbackNeeded);
+                minorVersion, clientAddress, localAddress, ownerID, verifier,
+                principal, _leaseTime, callbackNeeded);
         addClient(client);
         return client;
     }
 
     /**
      * Get open files tacker.
+     *
      * @return open files tracker
      */
     public FileTracker getFileTracker() {
@@ -337,6 +338,7 @@ public class NFSv4StateHandler {
 
     /**
      * Clock used to time related operations.
+     *
      * @return
      */
     Clock getClock() {
@@ -360,6 +362,7 @@ public class NFSv4StateHandler {
 
     /**
      * Check is the GRACE period expired.
+     *
      * @return true, if server in grace period.
      */
     public boolean isGracePeriod() {
@@ -369,6 +372,7 @@ public class NFSv4StateHandler {
 
     /**
      * Indicate that given client complete state reclaims.
+     *
      * @param owner client
      */
     public synchronized void reclaimComplete(byte[] owner) {
@@ -377,6 +381,7 @@ public class NFSv4StateHandler {
 
     /**
      * Indicate that given client wants to reclaim states held before server reboot.
+     *
      * @param owner client
      */
     public synchronized void wantReclaim(byte[] owner) throws ChimeraNFSException {
@@ -411,6 +416,7 @@ public class NFSv4StateHandler {
 
     /**
      * Returns {@code true} iff this state handler is running.
+     *
      * @return true, it state handler is running.
      */
     public synchronized boolean isRunning() {
@@ -419,6 +425,7 @@ public class NFSv4StateHandler {
 
     /**
      * Get system wide unique id to identify this state handler.
+     *
      * @return system wide unique id
      */
     public int getInstanceId() {
@@ -427,22 +434,21 @@ public class NFSv4StateHandler {
 
     /**
      * Get system wide unique state handler id which have issued provided stateid.
+     *
      * @param stateid issuer of which have to be discovered
      * @return state hander id.
      */
     public static int getInstanceId(stateid4 stateid) {
         long clientid = Bytes.getLong(stateid.other, 0);
-        return (int)(clientid >> 16) & 0xFFFF;
+        return (int) (clientid >> 16) & 0xFFFF;
     }
+
     /*
-     * Generate next client id. A composite number consist of timestamp, counter,
-     * instance id:
+     * Generate next client id. A composite number consist of timestamp, counter, instance id:
      *
-     * 0..........................31|32.......... 47|48.......63|
-     * |-     timestamp            -| - instance id -|-  counter -|
+     * 0..........................31|32.......... 47|48.......63| |- timestamp -| - instance id -|- counter -|
      *
-     * This schema allows us to have 2^16 unique client per second and
-     * 2^16 instances of state handler.
+     * This schema allows us to have 2^16 unique client per second and 2^16 instances of state handler.
      */
     private clientid4 nextClientId() {
         long now = _clock.instant().getEpochSecond();
@@ -452,10 +458,8 @@ public class NFSv4StateHandler {
     /**
      * Generate new state id associated with a given {@code client}.
      *
-     * we construct 'other' field of state IDs as following:
-     * |0 -  7| : client id
-     * |8 - 10| : clients state counter
-     * |11|     : type of state id
+     * we construct 'other' field of state IDs as following: |0 - 7| : client id |8 - 10| : clients state counter |11| :
+     * type of state id
      *
      * @param client nfs client for which state is generated.
      * @param type the type of state id.
@@ -474,10 +478,7 @@ public class NFSv4StateHandler {
     /**
      * Create new session identifier for a given {@code client}.
      *
-     * we create session identifier as:
-     * |0 -  7| : client id
-     * |8 - 11| : reserved
-     * |12 -15| : sequence id
+     * we create session identifier as: |0 - 7| : client id |8 - 11| : reserved |12 -15| : sequence id
      *
      * @param client nfs client for which new session id is generated.
      * @param sequence the count of already generated sessions for given client.
@@ -492,6 +493,7 @@ public class NFSv4StateHandler {
 
     /**
      * Get lease time value in seconds used by this state handler.
+     *
      * @return lease time value in seconds.
      */
     public Duration getLeaseTime() {

@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class fhstatus implements XdrAble {
     public int fhs_status;
@@ -32,31 +34,31 @@ public class fhstatus implements XdrAble {
     }
 
     public fhstatus(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(fhs_status);
-        switch ( fhs_status ) {
-        case 0:
-            fhs_fhandle.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (fhs_status) {
+            case 0:
+                fhs_fhandle.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         fhs_status = xdr.xdrDecodeInt();
-        switch ( fhs_status ) {
-        case 0:
-            fhs_fhandle = new fhandle2(xdr);
-            break;
-        default:
-            break;
+        switch (fhs_status) {
+            case 0:
+                fhs_fhandle = new fhandle2(xdr);
+                break;
+            default:
+                break;
         }
     }
 

@@ -18,12 +18,14 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class GETDEVICEINFO4res implements XdrAble {
     public int gdir_status;
@@ -34,37 +36,37 @@ public class GETDEVICEINFO4res implements XdrAble {
     }
 
     public GETDEVICEINFO4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(gdir_status);
-        switch ( gdir_status ) {
-        case nfsstat.NFS_OK:
-            gdir_resok4.xdrEncode(xdr);
-            break;
-        case nfsstat.NFSERR_TOOSMALL:
-            gdir_mincount.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (gdir_status) {
+            case nfsstat.NFS_OK:
+                gdir_resok4.xdrEncode(xdr);
+                break;
+            case nfsstat.NFSERR_TOOSMALL:
+                gdir_mincount.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         gdir_status = xdr.xdrDecodeInt();
-        switch ( gdir_status ) {
-        case nfsstat.NFS_OK:
-            gdir_resok4 = new GETDEVICEINFO4resok(xdr);
-            break;
-        case nfsstat.NFSERR_TOOSMALL:
-            gdir_mincount = new count4(xdr);
-            break;
-        default:
-            break;
+        switch (gdir_status) {
+            case nfsstat.NFS_OK:
+                gdir_resok4 = new GETDEVICEINFO4resok(xdr);
+                break;
+            case nfsstat.NFSERR_TOOSMALL:
+                gdir_mincount = new count4(xdr);
+                break;
+            default:
+                break;
         }
     }
 

@@ -19,14 +19,9 @@
  */
 package org.dcache.nfs;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
-import java.util.Comparator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Throwables.throwIfInstanceOf;
+import static com.google.common.base.Throwables.throwIfUnchecked;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,21 +31,27 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.dcache.nfs.v4.xdr.layouttype4;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Throwables.throwIfInstanceOf;
-import static com.google.common.base.Throwables.throwIfUnchecked;
+import org.dcache.nfs.v4.xdr.layouttype4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 /**
- * An implementation of {@link ExportTable} that backed with file. The
- * export file format matches one that used by Linux nfsd server.
+ * An implementation of {@link ExportTable} that backed with file. The export file format matches one that used by Linux
+ * nfsd server.
  */
 public class ExportFile implements ExportTable {
 
@@ -70,10 +71,8 @@ public class ExportFile implements ExportTable {
     }
 
     /**
-     * /**
-     * Construct server export table from a given file. The {@code dir} points
-     * to a directory with extra export tables. Only files ending in .exports
-     * are considered. Files beginning with a dot are ignored.
+     * /** Construct server export table from a given file. The {@code dir} points to a directory with extra export
+     * tables. Only files ending in .exports are considered. Files beginning with a dot are ignored.
      *
      * @param file the file that contains the export table.
      * @param dir the directory with extra export tables.
@@ -93,7 +92,7 @@ public class ExportFile implements ExportTable {
                 }
                 return exportFiles;
             } else {
-                return new URI[]{file.toURI()};
+                return new URI[] {file.toURI()};
             }
         };
         rescan();
@@ -101,7 +100,7 @@ public class ExportFile implements ExportTable {
 
     public ExportFile(URI uri) throws IOException {
         _exportFileProvider = () -> {
-            return new URI[]{uri};
+            return new URI[] {uri};
         };
         rescan();
     }
@@ -138,8 +137,8 @@ public class ExportFile implements ExportTable {
          * sort in reverse order to get the smallest network first
          */
         return exportsBuilder
-              .orderValuesBy(Comparator.comparing(FsExport::client, HostEntryComparator::compare))
-              .build();
+                .orderValuesBy(Comparator.comparing(FsExport::client, HostEntryComparator::compare))
+                .build();
     }
 
     private static ImmutableMultimap<Integer, FsExport> parseExportLines(Iterable<String> lines) throws IOException {
@@ -307,8 +306,8 @@ public class ExportFile implements ExportTable {
          * sort in reverse order to get the smallest network first
          */
         return exportsBuilder
-              .orderValuesBy(Comparator.comparing(FsExport::client, HostEntryComparator::compare))
-              .build();
+                .orderValuesBy(Comparator.comparing(FsExport::client, HostEntryComparator::compare))
+                .build();
     }
 
     @Override
@@ -331,7 +330,7 @@ public class ExportFile implements ExportTable {
     public Stream<FsExport> exports(InetAddress client) {
         return _exports.values().stream()
                 .filter(e -> e.isAllowed(client))
-                .sorted(Comparator.comparing(FsExport::client,HostEntryComparator::compare));
+                .sorted(Comparator.comparing(FsExport::client, HostEntryComparator::compare));
     }
 
     public final void rescan() throws IOException {

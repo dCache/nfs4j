@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class state_protect4_a implements XdrAble {
     public int spa_how;
@@ -33,37 +35,37 @@ public class state_protect4_a implements XdrAble {
     }
 
     public state_protect4_a(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(spa_how);
-        switch ( spa_how ) {
-        case state_protect_how4.SP4_NONE:
-            break;
-        case state_protect_how4.SP4_MACH_CRED:
-            spa_mach_ops.xdrEncode(xdr);
-            break;
-        case state_protect_how4.SP4_SSV:
-            spa_ssv_parms.xdrEncode(xdr);
-            break;
+        switch (spa_how) {
+            case state_protect_how4.SP4_NONE:
+                break;
+            case state_protect_how4.SP4_MACH_CRED:
+                spa_mach_ops.xdrEncode(xdr);
+                break;
+            case state_protect_how4.SP4_SSV:
+                spa_ssv_parms.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         spa_how = xdr.xdrDecodeInt();
-        switch ( spa_how ) {
-        case state_protect_how4.SP4_NONE:
-            break;
-        case state_protect_how4.SP4_MACH_CRED:
-            spa_mach_ops = new state_protect_ops4(xdr);
-            break;
-        case state_protect_how4.SP4_SSV:
-            spa_ssv_parms = new ssv_sp_parms4(xdr);
-            break;
+        switch (spa_how) {
+            case state_protect_how4.SP4_NONE:
+                break;
+            case state_protect_how4.SP4_MACH_CRED:
+                spa_mach_ops = new state_protect_ops4(xdr);
+                break;
+            case state_protect_how4.SP4_SSV:
+                spa_ssv_parms = new ssv_sp_parms4(xdr);
+                break;
         }
     }
 

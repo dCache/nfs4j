@@ -1,10 +1,14 @@
 package org.dcache.nfs.v3;
 
-import com.google.common.base.Splitter;
-import com.google.common.net.InetAddresses;
+import static com.google.common.primitives.Ints.contains;
+import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.v3.xdr.dirpath;
@@ -17,13 +21,11 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 
-import static com.google.common.primitives.Ints.contains;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.BDDMockito.given;
+import com.google.common.base.Splitter;
+import com.google.common.net.InetAddresses;
 
 /**
  *
@@ -49,9 +51,7 @@ public class MountServerTest {
         mountres3 res = mountServer()
                 .withPath(path)
                 .exportedTo("192.168.178.33")
-                .withSecurity(FsExport.Sec.KRB5).
-                accessedFrom("192.168.178.33").
-                toMount(path);
+                .withSecurity(FsExport.Sec.KRB5).accessedFrom("192.168.178.33").toMount(path);
 
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
 
@@ -68,9 +68,7 @@ public class MountServerTest {
         mountres3 res = mountServer()
                 .withPath(path)
                 .exportedTo("192.168.178.33")
-                .withSecurity(FsExport.Sec.SYS).
-                accessedFrom("192.168.178.33").
-                toMount(path);
+                .withSecurity(FsExport.Sec.SYS).accessedFrom("192.168.178.33").toMount(path);
 
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
     }
@@ -83,9 +81,7 @@ public class MountServerTest {
                 .withPath(path)
                 .withSymlink(symlink)
                 .exportedTo("192.168.178.33")
-                .withSecurity(FsExport.Sec.SYS).
-                accessedFrom("192.168.178.33").
-                toMount(symlink);
+                .withSecurity(FsExport.Sec.SYS).accessedFrom("192.168.178.33").toMount(symlink);
 
         assertEquals(mountstat3.MNT3_OK, res.fhs_status);
     }
@@ -101,9 +97,7 @@ public class MountServerTest {
         mountres3 res = mountServer()
                 .withPath(path)
                 .exportedTo("192.168.178.33")
-                .withSecurity(FsExport.Sec.SYS).
-                accessedFrom("192.168.178.33").
-                toMount(path);
+                .withSecurity(FsExport.Sec.SYS).accessedFrom("192.168.178.33").toMount(path);
 
         assertTrue(mountServer().hasMounts());
     }
@@ -114,9 +108,7 @@ public class MountServerTest {
         mountres3 res = mountServer()
                 .withPath(path)
                 .exportedTo("192.168.178.33")
-                .withSecurity(FsExport.Sec.SYS).
-                accessedFrom("192.168.178.33").
-                toMount(path);
+                .withSecurity(FsExport.Sec.SYS).accessedFrom("192.168.178.33").toMount(path);
 
         assertTrue(mountServer().hasMounts());
 

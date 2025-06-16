@@ -1,26 +1,26 @@
 package org.dcache.nfs.v4;
 
+import static org.dcache.nfs.v4.NfsTestUtils.*;
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import static org.mockito.Mockito.*;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.vfs.Inode;
-import org.junit.Test;
-import org.junit.Before;
-
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
-
-import static org.mockito.Mockito.*;
-import static org.dcache.nfs.v4.NfsTestUtils.*;
-import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import org.junit.Before;
+import org.junit.Test;
 
 public class OperationREADTest {
 
-    private Inode inode = Inode.forFile(new byte[]{1, 2, 3, 4});
+    private Inode inode = Inode.forFile(new byte[] {1, 2, 3, 4});
     private nfs_fh4 fh = new nfs_fh4(inode.toNfsHandle());
     private VirtualFileSystem vfs;
     private Stat fileStat;

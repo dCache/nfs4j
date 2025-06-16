@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.TEST_STATEID4res;
@@ -40,14 +41,15 @@ public class OperationTEST_STATEID extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
         final TEST_STATEID4res res = result.optest_stateid;
         res.tsr_resok4 = new TEST_STATEID4resok();
         res.tsr_resok4.tsr_status_codes = new int[_args.optest_stateid.ts_stateids.length];
         res.tsr_status = nfsstat.NFS_OK;
 
         NFS4Client client = context.getSession().getClient();
-        for(int i = 0; i < _args.optest_stateid.ts_stateids.length; i++) {
+        for (int i = 0; i < _args.optest_stateid.ts_stateids.length; i++) {
             stateid4 statid = _args.optest_stateid.ts_stateids[i];
             try {
                 NFS4State state = client.state(statid);

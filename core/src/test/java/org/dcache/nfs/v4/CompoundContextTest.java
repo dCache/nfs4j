@@ -1,17 +1,17 @@
 package org.dcache.nfs.v4;
 
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.NoFileHandleException;
 import org.dcache.nfs.status.RestoreFhException;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
-import org.junit.Test;
 import org.junit.Before;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import org.junit.Test;
 
 public class CompoundContextTest {
 

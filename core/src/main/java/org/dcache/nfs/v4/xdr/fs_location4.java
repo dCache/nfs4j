@@ -18,33 +18,47 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class fs_location4 implements XdrAble {
-    public utf8str_cis [] server;
+    public utf8str_cis[] server;
     public pathname4 rootpath;
 
     public fs_location4() {
     }
 
     public fs_location4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = server.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { server[$idx].xdrEncode(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = server.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                server[$idx].xdrEncode(xdr);
+            }
+        }
         rootpath.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
-        { int $size = xdr.xdrDecodeInt(); server = new utf8str_cis[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { server[$idx] = new utf8str_cis(xdr); } }
+            throws OncRpcException, IOException {
+        {
+            int $size = xdr.xdrDecodeInt();
+            server = new utf8str_cis[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                server[$idx] = new utf8str_cis(xdr);
+            }
+        }
         rootpath = new pathname4(xdr);
     }
 

@@ -7,35 +7,49 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class copy_to_auth_priv implements XdrAble {
     public secret4 ctap_shared_secret;
-    public netloc4 [] ctap_source;
+    public netloc4[] ctap_source;
     public utf8str_mixed ctap_username;
 
     public copy_to_auth_priv() {
     }
 
     public copy_to_auth_priv(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ctap_shared_secret.xdrEncode(xdr);
-        { int $size = ctap_source.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ctap_source[$idx].xdrEncode(xdr); } }
+        {
+            int $size = ctap_source.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ctap_source[$idx].xdrEncode(xdr);
+            }
+        }
         ctap_username.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ctap_shared_secret = new secret4(xdr);
-        { int $size = xdr.xdrDecodeInt(); ctap_source = new netloc4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ctap_source[$idx] = new netloc4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            ctap_source = new netloc4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ctap_source[$idx] = new netloc4(xdr);
+            }
+        }
         ctap_username = new utf8str_mixed(xdr);
     }
 

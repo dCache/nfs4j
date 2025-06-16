@@ -21,6 +21,7 @@ package org.dcache.nfs.v4;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadNameException;
 import org.dcache.nfs.status.InvalException;
@@ -29,24 +30,26 @@ import org.junit.Test;
 
 public class NameFilterTest {
 
-    private static final byte[] BAD_UTF8 = new byte[]{
-        (byte) 0xfc,
-        (byte) 0x80,
-        (byte) 0x80,
-        (byte) 0x80,
-        (byte) 0x80,
-        (byte) 0xaf
+    private static final byte[] BAD_UTF8 = new byte[] {
+            (byte) 0xfc,
+            (byte) 0x80,
+            (byte) 0x80,
+            (byte) 0x80,
+            (byte) 0x80,
+            (byte) 0xaf
     };
-    private static final byte[] UTF8_WITH_SURROGAT = new byte[]{
-        (byte) 0xed,
-        (byte) 0xa0,
-        (byte) 0x80
+    private static final byte[] UTF8_WITH_SURROGAT = new byte[] {
+            (byte) 0xed,
+            (byte) 0xa0,
+            (byte) 0x80
     };
     private static final byte[] GOOD_UTF8 = "a normal string".getBytes(StandardCharsets.UTF_8);
     private static final byte[] EMPTY_NAME = new byte[0];
 
     private static final byte[] NAME_TOO_LONG = new byte[NFSv4Defaults.NFS4_MAXFILENAME + 1];
-    static { Arrays.fill(NAME_TOO_LONG, (byte)'a'); }
+    static {
+        Arrays.fill(NAME_TOO_LONG, (byte) 'a');
+    }
 
     private static final byte[] DOT = ".".getBytes(StandardCharsets.UTF_8);
     private static final byte[] DOT_DOT = "..".getBytes(StandardCharsets.UTF_8);

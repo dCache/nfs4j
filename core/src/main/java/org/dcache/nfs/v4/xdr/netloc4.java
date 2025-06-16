@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class netloc4 implements XdrAble {
     public int nl_type;
@@ -22,39 +24,39 @@ public class netloc4 implements XdrAble {
     }
 
     public netloc4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(nl_type);
-        switch ( nl_type ) {
-        case netloc_type4.NL4_NAME:
-            nl_name.xdrEncode(xdr);
-            break;
-        case netloc_type4.NL4_URL:
-            nl_url.xdrEncode(xdr);
-            break;
-        case netloc_type4.NL4_NETADDR:
-            nl_addr.xdrEncode(xdr);
-            break;
+        switch (nl_type) {
+            case netloc_type4.NL4_NAME:
+                nl_name.xdrEncode(xdr);
+                break;
+            case netloc_type4.NL4_URL:
+                nl_url.xdrEncode(xdr);
+                break;
+            case netloc_type4.NL4_NETADDR:
+                nl_addr.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         nl_type = xdr.xdrDecodeInt();
-        switch ( nl_type ) {
-        case netloc_type4.NL4_NAME:
-            nl_name = new utf8str_cis(xdr);
-            break;
-        case netloc_type4.NL4_URL:
-            nl_url = new utf8str_cis(xdr);
-            break;
-        case netloc_type4.NL4_NETADDR:
-            nl_addr = new netaddr4(xdr);
-            break;
+        switch (nl_type) {
+            case netloc_type4.NL4_NAME:
+                nl_name = new utf8str_cis(xdr);
+                break;
+            case netloc_type4.NL4_URL:
+                nl_url = new utf8str_cis(xdr);
+                break;
+            case netloc_type4.NL4_NETADDR:
+                nl_addr = new netaddr4(xdr);
+                break;
         }
     }
 

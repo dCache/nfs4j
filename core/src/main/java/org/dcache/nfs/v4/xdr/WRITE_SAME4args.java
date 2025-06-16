@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class WRITE_SAME4args implements XdrAble {
     public stateid4 wsa_stateid;
@@ -21,19 +23,19 @@ public class WRITE_SAME4args implements XdrAble {
     }
 
     public WRITE_SAME4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         wsa_stateid.xdrEncode(xdr);
         xdr.xdrEncodeInt(wsa_stable);
         wsa_adb.xdrEncode(xdr);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         wsa_stateid = new stateid4(xdr);
         wsa_stable = xdr.xdrDecodeInt();
         wsa_adb = new app_data_block4(xdr);

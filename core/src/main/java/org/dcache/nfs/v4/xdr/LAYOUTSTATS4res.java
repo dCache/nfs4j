@@ -7,9 +7,11 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class LAYOUTSTATS4res implements XdrAble {
     public int status;
@@ -18,7 +20,7 @@ public class LAYOUTSTATS4res implements XdrAble {
     }
 
     public LAYOUTSTATS4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 

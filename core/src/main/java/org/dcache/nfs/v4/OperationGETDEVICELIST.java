@@ -19,31 +19,31 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.GETDEVICELIST4resok;
-import org.dcache.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.GETDEVICELIST4res;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
-import org.dcache.nfs.v4.xdr.deviceid4;
 import java.io.IOException;
-import org.dcache.nfs.nfsstat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
+
+import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.TooSmallException;
+import org.dcache.nfs.v4.xdr.GETDEVICELIST4res;
+import org.dcache.nfs.v4.xdr.GETDEVICELIST4resok;
+import org.dcache.nfs.v4.xdr.deviceid4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_cookie4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.verifier4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICELIST.class);
 
     public OperationGETDEVICELIST(nfs_argop4 args) {
-    super(args, nfs_opnum4.OP_GETDEVICELIST);
+        super(args, nfs_opnum4.OP_GETDEVICELIST);
     }
 
     @Override
@@ -55,10 +55,8 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
                 .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
         /*
-         * GETDEVICELIST This operation returns an array of items
-         * (devlist_item4) that establish the association between the short
-         * deviceid4 and the addressing information for that device, for a
-         * particular layout type.
+         * GETDEVICELIST This operation returns an array of items (devlist_item4) that establish the association between
+         * the short deviceid4 and the addressing information for that device, for a particular layout type.
          */
 
         if (_args.opgetdevicelist.gdla_maxdevices.value < 0) {

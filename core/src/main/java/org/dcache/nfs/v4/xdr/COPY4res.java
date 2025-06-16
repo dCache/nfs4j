@@ -7,11 +7,13 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class COPY4res implements XdrAble {
     public int cr_status;
@@ -22,37 +24,37 @@ public class COPY4res implements XdrAble {
     }
 
     public COPY4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(cr_status);
-        switch ( cr_status ) {
-        case nfsstat.NFS_OK:
-            cr_resok4.xdrEncode(xdr);
-            break;
-        case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
-            cr_requirements.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (cr_status) {
+            case nfsstat.NFS_OK:
+                cr_resok4.xdrEncode(xdr);
+                break;
+            case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
+                cr_requirements.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         cr_status = xdr.xdrDecodeInt();
-        switch ( cr_status ) {
-        case nfsstat.NFS_OK:
-            cr_resok4 = new COPY4resok(xdr);
-            break;
-        case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
-            cr_requirements = new copy_requirements4(xdr);
-            break;
-        default:
-            break;
+        switch (cr_status) {
+            case nfsstat.NFS_OK:
+                cr_resok4 = new COPY4resok(xdr);
+                break;
+            case nfsstat.NFS4ERR_OFFLOAD_NO_REQS:
+                cr_requirements = new copy_requirements4(xdr);
+                break;
+            default:
+                break;
         }
     }
 

@@ -1,5 +1,13 @@
 package org.dcache.nfs.v3;
 
+import static org.dcache.testutils.XdrHelper.calculateSize;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,21 +24,13 @@ import org.dcache.nfs.vfs.FileHandle;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.testutils.AssertXdr;
 import org.dcache.testutils.NfsV3Ops;
 import org.dcache.testutils.RpcCallBuilder;
-import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.dcache.testutils.XdrHelper.calculateSize;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class NfsServerV3READDIRPLUS_3Test {
     private FileHandle dirHandle;
@@ -41,10 +41,10 @@ public class NfsServerV3READDIRPLUS_3Test {
 
     @Before
     public void setup() throws Exception {
-        dirHandle = new FileHandle(0, 1, 0, new byte[] { 0, 0, 0, 1 }); // the dir we want to read
+        dirHandle = new FileHandle(0, 1, 0, new byte[] {0, 0, 0, 1}); // the dir we want to read
         dirInode = new Inode(dirHandle);
         dirStat = new Stat(); // the stat marking it as a dir
-        //noinspection OctalInteger
+        // noinspection OctalInteger
         dirStat.setMode(Stat.S_IFDIR | 0755);
         dirStat.setMTime(System.currentTimeMillis());
         dirStat.setATime(System.currentTimeMillis());
@@ -58,7 +58,8 @@ public class NfsServerV3READDIRPLUS_3Test {
         dirStat.setSize(512);
         vfs = mock(VirtualFileSystem.class); // the vfs serving it
         when(vfs.getattr(eq(dirInode))).thenReturn(dirStat);
-        ExportFile exportFile = new ExportFile(this.getClass().getResource("simpleExports").toURI()); // same package as us
+        ExportFile exportFile = new ExportFile(this.getClass().getResource("simpleExports").toURI()); // same package as
+                                                                                                      // us
         nfsServer = new NfsServerV3(exportFile, vfs);
     }
 
@@ -68,7 +69,8 @@ public class NfsServerV3READDIRPLUS_3Test {
         byte[] cookieVerifier = cookieverf3.valueOf(0).value;
 
         // vfs will return an empty list from the vfs for dir (technically legal)
-        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, Collections.emptyList()));
+        when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, Collections
+                .emptyList()));
 
         // set up and execute the call
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
@@ -76,8 +78,8 @@ public class NfsServerV3READDIRPLUS_3Test {
         READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
         Assert.assertEquals(nfsstat.NFS_OK, result.status);
-        Assert.assertNull(result.resok.reply.entries); //no entries
-        Assert.assertTrue(result.resok.reply.eof); //eof
+        Assert.assertNull(result.resok.reply.entries); // no entries
+        Assert.assertTrue(result.resok.reply.eof); // eof
         AssertXdr.assertXdrEncodable(result);
     }
 
@@ -94,10 +96,10 @@ public class NfsServerV3READDIRPLUS_3Test {
 
         // set up and execute the 1st call - no cookie, but very tight size limit
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, 10); //10 bytes - not enough for anything
+        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, 10); // 10 bytes - not enough for anything
         READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
-        Assert.assertEquals(nfsstat.NFSERR_TOOSMALL, result.status); //error response
+        Assert.assertEquals(nfsstat.NFSERR_TOOSMALL, result.status); // error response
     }
 
     @Test
@@ -116,8 +118,8 @@ public class NfsServerV3READDIRPLUS_3Test {
         READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle);
         READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
-        Assert.assertEquals(nfsstat.NFS_OK, result.status); //response ok
-        Assert.assertTrue(result.resok.reply.eof); //eof
+        Assert.assertEquals(nfsstat.NFS_OK, result.status); // response ok
+        Assert.assertTrue(result.resok.reply.eof); // eof
         AssertXdr.assertXdrEncodable(result);
 
         // re-read after EOF
@@ -126,8 +128,8 @@ public class NfsServerV3READDIRPLUS_3Test {
         args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
         result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
-        Assert.assertEquals(nfsstat.NFS_OK, result.status); //response ok
-        Assert.assertTrue(result.resok.reply.eof); //eof
+        Assert.assertEquals(nfsstat.NFS_OK, result.status); // response ok
+        Assert.assertTrue(result.resok.reply.eof); // eof
         AssertXdr.assertXdrEncodable(result);
     }
 
@@ -149,7 +151,7 @@ public class NfsServerV3READDIRPLUS_3Test {
         READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, cookie, cookieVerifier);
         READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
-        Assert.assertEquals(nfsstat.NFS_OK, result.status); //error response
+        Assert.assertEquals(nfsstat.NFS_OK, result.status); // error response
         AssertXdr.assertXdrEncodable(result);
     }
 
@@ -170,7 +172,8 @@ public class NfsServerV3READDIRPLUS_3Test {
         when(vfs.list(eq(dirInode), any(), anyLong())).thenReturn(new DirectoryStream(cookieVerifier, dirContents));
 
         RpcCall call = new RpcCallBuilder().from("1.2.3.4", "someHost.acme.com", 42).nfs3().noAuth().build();
-        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, 0, cookieVerifier, 3480, 1024); // only 22 entries will fit
+        READDIRPLUS3args args = NfsV3Ops.readDirPlus(dirHandle, 0, cookieVerifier, 3480, 1024); // only 22 entries will
+                                                                                                // fit
         READDIRPLUS3res result = nfsServer.NFSPROC3_READDIRPLUS_3(call, args);
 
         int n = 0;

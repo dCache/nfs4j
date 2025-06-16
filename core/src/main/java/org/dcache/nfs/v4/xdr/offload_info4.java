@@ -7,11 +7,13 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class offload_info4 implements XdrAble {
     public int coa_status;
@@ -22,33 +24,33 @@ public class offload_info4 implements XdrAble {
     }
 
     public offload_info4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(coa_status);
-        switch ( coa_status ) {
-        case nfsstat.NFS_OK:
-            coa_resok4.xdrEncode(xdr);
-            break;
-        default:
-            coa_bytes_copied.xdrEncode(xdr);
-            break;
+        switch (coa_status) {
+            case nfsstat.NFS_OK:
+                coa_resok4.xdrEncode(xdr);
+                break;
+            default:
+                coa_bytes_copied.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         coa_status = xdr.xdrDecodeInt();
-        switch ( coa_status ) {
-        case nfsstat.NFS_OK:
-            coa_resok4 = new write_response4(xdr);
-            break;
-        default:
-            coa_bytes_copied = new length4(xdr);
-            break;
+        switch (coa_status) {
+            case nfsstat.NFS_OK:
+                coa_resok4 = new write_response4(xdr);
+                break;
+            default:
+                coa_bytes_copied = new length4(xdr);
+                break;
         }
     }
 

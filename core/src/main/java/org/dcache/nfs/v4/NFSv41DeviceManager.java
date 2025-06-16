@@ -41,9 +41,8 @@ import org.dcache.nfs.v4.xdr.layouttype4;
 public interface NFSv41DeviceManager {
 
     /**
-     * Get a file {@link Layout}. An state is associated with the returned layout.
-     * The layout is considered to be in use until <code>layoutReturn</code>
-     * method is not called.
+     * Get a file {@link Layout}. An state is associated with the returned layout. The layout is considered to be in use
+     * until <code>layoutReturn</code> method is not called.
      *
      * @param context the context of the nfs request.
      * @param args layout get operation arguments.
@@ -74,8 +73,8 @@ public interface NFSv41DeviceManager {
     public List<deviceid4> getDeviceList(CompoundContext context, GETDEVICELIST4args args) throws IOException;
 
     /**
-     * Release layout associated with state id. The returned layout specific
-     * {@code body} used by client to report IO errors or layout usage statistic.
+     * Release layout associated with state id. The returned layout specific {@code body} used by client to report IO
+     * errors or layout usage statistic.
      *
      * @param context the context of the nfs request.
      * @param args layout return operation arguments.
@@ -113,6 +112,7 @@ public interface NFSv41DeviceManager {
 
     /**
      * Returns the array of layout types supported by this device manager.
+     *
      * @return supported layout types.
      */
     public Set<layouttype4> getLayoutTypes();

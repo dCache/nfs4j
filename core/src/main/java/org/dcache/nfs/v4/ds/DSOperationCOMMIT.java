@@ -20,8 +20,12 @@
 package org.dcache.nfs.v4.ds;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.CompoundContext;
 import org.dcache.nfs.v4.xdr.COMMIT4res;
@@ -30,9 +34,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.FsCache;
-import java.nio.channels.FileChannel;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
@@ -47,22 +48,23 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
         // FIXME: sync the data
 
         _args.opcommit.offset.checkOverflow(_args.opcommit.count.value, "offset + length overflow");
         final COMMIT4res res = result.opcommit;
         if (context.getFs() != null) {
-	    Inode inode = context.currentInode();
+            Inode inode = context.currentInode();
             Stat stat = context.getFs().getattr(inode);
 
-	    if (stat.type() == Stat.Type.DIRECTORY) {
-		throw new IsDirException("Invalid can't commit a directory");
-	    }
+            if (stat.type() == Stat.Type.DIRECTORY) {
+                throw new IsDirException("Invalid can't commit a directory");
+            }
 
-	    if (stat.type() != Stat.Type.REGULAR) {
-		throw new InvalException("Invalid object type");
-	    }
+            if (stat.type() != Stat.Type.REGULAR) {
+                throw new InvalException("Invalid object type");
+            }
 
             FileChannel out = _fsCache.get(inode);
 

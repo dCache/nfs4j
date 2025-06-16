@@ -18,12 +18,14 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class LAYOUTCOMMIT4res implements XdrAble {
     public int locr_status;
@@ -33,31 +35,31 @@ public class LAYOUTCOMMIT4res implements XdrAble {
     }
 
     public LAYOUTCOMMIT4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(locr_status);
-        switch ( locr_status ) {
-        case nfsstat.NFS_OK:
-            locr_resok4.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (locr_status) {
+            case nfsstat.NFS_OK:
+                locr_resok4.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         locr_status = xdr.xdrDecodeInt();
-        switch ( locr_status ) {
-        case nfsstat.NFS_OK:
-            locr_resok4 = new LAYOUTCOMMIT4resok(xdr);
-            break;
-        default:
-            break;
+        switch (locr_status) {
+            case nfsstat.NFS_OK:
+                locr_resok4 = new LAYOUTCOMMIT4resok(xdr);
+                break;
+            default:
+                break;
         }
     }
 

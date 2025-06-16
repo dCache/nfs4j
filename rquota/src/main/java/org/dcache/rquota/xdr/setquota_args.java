@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.rquota.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class setquota_args implements XdrAble {
     public int sqa_qcmd;
@@ -22,12 +24,12 @@ public class setquota_args implements XdrAble {
     }
 
     public setquota_args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(sqa_qcmd);
         xdr.xdrEncodeString(sqa_pathp);
         xdr.xdrEncodeInt(sqa_id);
@@ -35,7 +37,7 @@ public class setquota_args implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         sqa_qcmd = xdr.xdrDecodeInt();
         sqa_pathp = xdr.xdrDecodeString();
         sqa_id = xdr.xdrDecodeInt();

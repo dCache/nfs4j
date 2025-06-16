@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class deleg_claim4 implements XdrAble {
     public int dc_claim;
@@ -32,35 +34,35 @@ public class deleg_claim4 implements XdrAble {
     }
 
     public deleg_claim4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(dc_claim);
-        switch ( dc_claim ) {
-        case open_claim_type4.CLAIM_FH:
-            break;
-        case open_claim_type4.CLAIM_DELEG_PREV_FH:
-            break;
-        case open_claim_type4.CLAIM_PREVIOUS:
-            xdr.xdrEncodeInt(dc_delegate_type);
-            break;
+        switch (dc_claim) {
+            case open_claim_type4.CLAIM_FH:
+                break;
+            case open_claim_type4.CLAIM_DELEG_PREV_FH:
+                break;
+            case open_claim_type4.CLAIM_PREVIOUS:
+                xdr.xdrEncodeInt(dc_delegate_type);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         dc_claim = xdr.xdrDecodeInt();
-        switch ( dc_claim ) {
-        case open_claim_type4.CLAIM_FH:
-            break;
-        case open_claim_type4.CLAIM_DELEG_PREV_FH:
-            break;
-        case open_claim_type4.CLAIM_PREVIOUS:
-            dc_delegate_type = xdr.xdrDecodeInt();
-            break;
+        switch (dc_claim) {
+            case open_claim_type4.CLAIM_FH:
+                break;
+            case open_claim_type4.CLAIM_DELEG_PREV_FH:
+                break;
+            case open_claim_type4.CLAIM_PREVIOUS:
+                dc_delegate_type = xdr.xdrDecodeInt();
+                break;
         }
     }
 

@@ -19,13 +19,15 @@
  */
 package org.dcache.nfs.v4.acl;
 
-import org.dcache.nfs.v4.xdr.utf8str_mixed;
-import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.v4.xdr.aceflag4;
-import org.dcache.nfs.v4.xdr.acetype4;
-import org.dcache.nfs.v4.xdr.acemask4;
-import java.util.Arrays;
 import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
+
+import java.util.Arrays;
+
+import org.dcache.nfs.v4.xdr.aceflag4;
+import org.dcache.nfs.v4.xdr.acemask4;
+import org.dcache.nfs.v4.xdr.acetype4;
+import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.v4.xdr.utf8str_mixed;
 
 /**
  * Utility class to calculate unix permission mask from NFSv4 ACL and vise versa.
@@ -35,8 +37,7 @@ import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
 public class Acls {
 
     /*
-     * unix permission bits offset as defined in POSIX
-     * for st_mode filed of the stat  structure.
+     * unix permission bits offset as defined in POSIX for st_mode filed of the stat structure.
      */
     private static final int BIT_MASK_OWNER_OFFSET = 6;
     private static final int BIT_MASK_GROUP_OFFSET = 3;
@@ -44,10 +45,10 @@ public class Acls {
 
     static public final int RBIT = 04; // read bit
     static public final int WBIT = 02; // write bit
-    static public final int XBIT = 01; //execute bit
+    static public final int XBIT = 01; // execute bit
 
-    public final static utf8str_mixed OWNER =    new utf8str_mixed("OWNER@");
-    public final static utf8str_mixed GROUP =    new utf8str_mixed("GROUP@");
+    public final static utf8str_mixed OWNER = new utf8str_mixed("OWNER@");
+    public final static utf8str_mixed GROUP = new utf8str_mixed("GROUP@");
     public final static utf8str_mixed EVERYONE = new utf8str_mixed("EVERYONE@");
 
     private final static aceflag4 NO_FLAGS = new aceflag4(0);
@@ -62,12 +63,12 @@ public class Acls {
             | ACE4_DELETE
             | ACE4_ADD_SUBDIRECTORY;
 
-    private Acls() {}
+    private Acls() {
+    }
 
     /**
-     * Add access control list to specified access control entry.
-     * Effectively, creates a new ACL where specified ace is added to the beginning
-     * of provided acl
+     * Add access control list to specified access control entry. Effectively, creates a new ACL where specified ace is
+     * added to the beginning of provided acl
      *
      * @param ace to add to
      * @param acl to append
@@ -81,9 +82,8 @@ public class Acls {
     }
 
     /**
-     * Add specified access control entry to access control list.
-     * Effectively, creates a new ACL where specified ace is added to the end
-     * of provided acl
+     * Add specified access control entry to access control list. Effectively, creates a new ACL where specified ace is
+     * added to the end of provided acl
      *
      * @param acl to add to
      * @param ace to append
@@ -139,12 +139,12 @@ public class Acls {
         otherAceAllow.type = ALLOW;
         otherAceAllow.flag = NO_FLAGS;
 
-        return compact( new nfsace4[] {
-            ownerAceAllow,
-            ownerAceDeny,
-            groupAceAllow,
-            groupAceDeny,
-            otherAceAllow
+        return compact(new nfsace4[] {
+                ownerAceAllow,
+                ownerAceDeny,
+                groupAceAllow,
+                groupAceDeny,
+                otherAceAllow
         });
     }
 
@@ -190,8 +190,8 @@ public class Acls {
     }
 
     /**
-     * Calculate unix permissions mode from provided access control list.
-     * Only aces for {@code OWNER@}, {@code GROUP@} and {@code EVERYONE@} is considered.
+     * Calculate unix permissions mode from provided access control list. Only aces for {@code OWNER@}, {@code GROUP@}
+     * and {@code EVERYONE@} is considered.
      *
      * @param acl to evaluate
      * @return mode
@@ -214,8 +214,8 @@ public class Acls {
 
         nfsace4[] newAcl = new nfsace4[acl.length];
         int i = 0;
-        for(nfsace4 ace: acl) {
-            if( !isSpecialPrincipal(ace.who) ) {
+        for (nfsace4 ace : acl) {
+            if (!isSpecialPrincipal(ace.who)) {
                 newAcl[i] = ace;
                 i++;
             }
@@ -224,22 +224,22 @@ public class Acls {
     }
 
     private static int getBitR(int acemask) {
-        if( (acemask & ACE4_READ_DATA) != 0)
-          return RBIT;
+        if ((acemask & ACE4_READ_DATA) != 0)
+            return RBIT;
         return 0;
     }
 
     private static int getBitW(int acemask) {
-        if((acemask & (ACE4_WRITE_DATA |
-                    ACE4_APPEND_DATA)) != 0 )
-          return WBIT;
+        if ((acemask & (ACE4_WRITE_DATA |
+                ACE4_APPEND_DATA)) != 0)
+            return WBIT;
         return 0;
     }
 
     private static int getBitX(int acemask) {
-      if ((acemask & ACE4_EXECUTE) != 0)
-        return XBIT;
-      return 0;
+        if ((acemask & ACE4_EXECUTE) != 0)
+            return XBIT;
+        return 0;
     }
 
     /*
@@ -250,7 +250,7 @@ public class Acls {
         /*
          * walk acl in reverse order and apply masks for OWNER and EVERYONE
          */
-        for(int i = acl.length -1; i >= 0; i--) {
+        for (int i = acl.length - 1; i >= 0; i--) {
             final nfsace4 ace = acl[i];
 
             /*
@@ -261,9 +261,9 @@ public class Acls {
                 continue;
             }
 
-            if( ace.who.equals(EVERYONE) || ace.who.equals(principal)) {
+            if (ace.who.equals(EVERYONE) || ace.who.equals(principal)) {
                 int acemask = ace.access_mask.value;
-                int rwx = getBitR(acemask) |  getBitW(acemask) | getBitX(acemask);
+                int rwx = getBitR(acemask) | getBitW(acemask) | getBitX(acemask);
                 if (ace.type.value == ACE4_ACCESS_ALLOWED_ACE_TYPE) {
                     mode |= rwx;
                 } else {
@@ -288,14 +288,14 @@ public class Acls {
             return acl;
         }
 
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             nfsace4 a = acl[i];
             utf8str_mixed pricipal = a.who;
 
             int processedMask = a.access_mask.value;
-            for(int j = i+1; j < size; j++) {
+            for (int j = i + 1; j < size; j++) {
                 nfsace4 b = acl[j];
-                if (a.flag.value != b.flag.value|| !pricipal.equals(b.who)) {
+                if (a.flag.value != b.flag.value || !pricipal.equals(b.who)) {
                     continue;
                 }
 
@@ -303,12 +303,12 @@ public class Acls {
                 b.access_mask.value &= ~processedMask;
                 int maskToProcess = b.access_mask.value;
 
-                if(maskToProcess != 0) {
+                if (maskToProcess != 0) {
                     if (a.type.value == b.type.value) {
                         a.access_mask.value |= maskToProcess;
-                        b.access_mask.value &=  ~maskToProcess;
+                        b.access_mask.value &= ~maskToProcess;
                     } else {
-                        //b.access_mask.value.value &=  ~maskToProcess;
+                        // b.access_mask.value.value &= ~maskToProcess;
                     }
                 }
                 processedMask |= maskToProcess;
@@ -335,15 +335,14 @@ public class Acls {
 
     private static boolean isSpecialPrincipal(utf8str_mixed who) {
         String w = who.toString();
-        return w.charAt(w.length() -1) == '@';
+        return w.charAt(w.length() - 1) == '@';
     }
 
     /**
      * Check given access mask for a modification request.
      *
      * @param accessMask mast to evaluate
-     * @return {@code true} if access mask as a request for modification and
-     *     {@code false} other wise.
+     * @return {@code true} if access mask as a request for modification and {@code false} other wise.
      */
     public static boolean wantModify(int accessMask) {
         return (accessMask & WANT_MODITY) != 0;

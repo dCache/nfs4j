@@ -18,34 +18,36 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class threshold_item4 implements XdrAble {
     public int thi_layout_type;
     public bitmap4 thi_hintset;
-    public byte [] thi_hintlist;
+    public byte[] thi_hintlist;
 
     public threshold_item4() {
     }
 
     public threshold_item4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(thi_layout_type);
         thi_hintset.xdrEncode(xdr);
         xdr.xdrEncodeDynamicOpaque(thi_hintlist);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         thi_layout_type = xdr.xdrDecodeInt();
         thi_hintset = new bitmap4(xdr);
         thi_hintlist = xdr.xdrDecodeDynamicOpaque();

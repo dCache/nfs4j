@@ -22,6 +22,7 @@ package org.dcache.nfs.v4;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Comparator;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
@@ -55,15 +56,16 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+            OncRpcException {
 
         try {
             SECINFO_NO_NAME4res res = result.opsecinfo_no_name;
             Inode inode = context.currentInode();
             switch (_args.opsecinfo_no_name.value) {
                 case secinfo_style4.SECINFO_STYLE4_PARENT:
-		    inode = context.getFs().parentOf(inode);
-		    // fall through
+                    inode = context.getFs().parentOf(inode);
+                    // fall through
                 case secinfo_style4.SECINFO_STYLE4_CURRENT_FH:
                     res.status = nfsstat.NFS_OK;
                     res.resok4 = new SECINFO4resok();
@@ -75,11 +77,11 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
         } catch (GSSException e) {
             throw new NfsIoException(e.getMessage());
         }
-	context.clearCurrentInode();
+        context.clearCurrentInode();
     }
 
     static secinfo4[] secinfosOf(Inode inode, CompoundContext context) throws GSSException {
-        //final sec_oid4 k5Oid = new sec_oid4
+        // final sec_oid4 k5Oid = new sec_oid4
 
         final InetAddress remote = context.getRemoteSocketAddress().getAddress();
         final FsExport.Sec[] exports = context.getExportTable().exports(remote)
@@ -118,7 +120,7 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
 
     private static secinfo4 toSecinfo(FsExport.Sec sec) throws GSSException {
         secinfo4 secinfo = new secinfo4();
-        switch(sec) {
+        switch (sec) {
             case NONE:
                 secinfo.flavor = RpcAuthType.NONE;
                 break;

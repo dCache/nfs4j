@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.rquota.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class sq_dqblk implements XdrAble {
     public int rq_bhardlimit;
@@ -26,12 +28,12 @@ public class sq_dqblk implements XdrAble {
     }
 
     public sq_dqblk(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(rq_bhardlimit);
         xdr.xdrEncodeInt(rq_bsoftlimit);
         xdr.xdrEncodeInt(rq_curblocks);
@@ -43,7 +45,7 @@ public class sq_dqblk implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         rq_bhardlimit = xdr.xdrDecodeInt();
         rq_bsoftlimit = xdr.xdrDecodeInt();
         rq_curblocks = xdr.xdrDecodeInt();

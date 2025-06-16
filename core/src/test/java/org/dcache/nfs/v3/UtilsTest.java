@@ -19,16 +19,16 @@
  */
 package org.dcache.nfs.v3;
 
+import static org.dcache.nfs.v3.Utils.checkFilename;
+
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.NameTooLongException;
 import org.dcache.nfs.v3.xdr.nfstime3;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-
-import static org.dcache.nfs.v3.Utils.checkFilename;
 
 public class UtilsTest {
 
@@ -45,8 +45,8 @@ public class UtilsTest {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         long timestamp = dateFormat.parse("01/02/2003 04:06:06.789").getTime();
         nfstime3 converted = Utils.convertTimestamp(timestamp);
-        Assert.assertEquals(timestamp/1000, converted.seconds.value);
-        Assert.assertEquals(1000000 * (timestamp%1000), converted.nseconds.value);
+        Assert.assertEquals(timestamp / 1000, converted.seconds.value);
+        Assert.assertEquals(1000000 * (timestamp % 1000), converted.nseconds.value);
         long decoded = Utils.convertTimestamp(converted);
         Assert.assertEquals(timestamp, decoded);
     }
@@ -60,6 +60,7 @@ public class UtilsTest {
     public void testWithGoodArmName() throws AccessException, NameTooLongException {
         checkFilename(GOOD_UTF8_ARM);
     }
+
     @Test
     public void testWithGoodHbrName() throws AccessException, NameTooLongException {
         checkFilename(GOOD_UTF8_HBR);

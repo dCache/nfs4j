@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.net.InetSocketAddress;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.v4.xdr.device_addr4;
@@ -36,22 +37,24 @@ public interface LayoutDriver {
 
     /**
      * Returns layout type supported by this layout driver.
+     *
      * @return layout type.
      */
     layouttype4 getLayoutType();
 
     /**
-     * Construct device address specific for layout type supported by the
-     * driver. The {@code deviceAddress} must contain array of network addresses
-     * pointing to the same data server.
+     * Construct device address specific for layout type supported by the driver. The {@code deviceAddress} must contain
+     * array of network addresses pointing to the same data server.
+     *
      * @param deviceAddress array of multipath addresses.
      * @return device addresses.
      * @throws ChimeraNFSException if fails
      */
-    device_addr4 getDeviceAddress(InetSocketAddress ... deviceAddress) throws ChimeraNFSException;
+    device_addr4 getDeviceAddress(InetSocketAddress... deviceAddress) throws ChimeraNFSException;
 
     /**
      * Construct a layout type specific content.
+     *
      * @param stateid open stateid used for file.
      * @param stripeSize stripe unit size
      * @param fh file handle to use when IO requests sent to the data server
@@ -59,11 +62,12 @@ public interface LayoutDriver {
      * @return layout content
      * @throws ChimeraNFSException if fails
      */
-    layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4 ... deviceids) throws ChimeraNFSException;
-
+    layout_content4 getLayoutContent(stateid4 stateid, int stripeSize, nfs_fh4 fh, deviceid4... deviceids)
+            throws ChimeraNFSException;
 
     /**
      * Consume the type-specific data provided on layout return.
+     *
      * @param context compound context associated with the client request.
      * @param data layout type specific data
      * @throws BadXdrException if provided data can't be decoded.

@@ -19,26 +19,25 @@
  */
 package org.dcache.nfs.v4;
 
-import java.time.Duration;
-import org.dcache.nfs.v4.xdr.stateid4;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import static org.junit.Assert.*;
 
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.StaleClientidException;
-import org.dcache.nfs.v4.xdr.seqid4;
-
-import static org.dcache.nfs.v4.NfsTestUtils.createClient;
 import org.dcache.nfs.v4.xdr.clientid4;
+import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.sessionid4;
+import org.dcache.nfs.v4.xdr.stateid4;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NFSv4StateHandlerTest {
 
@@ -50,12 +49,12 @@ public class NFSv4StateHandlerTest {
     public void setUp() throws UnknownHostException, BadSeqidException {
         _stateHandler = new NFSv4StateHandler();
         _client = createClient(_stateHandler);
-        _owner =  _client.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+        _owner = _client.getOrCreateOwner("client test".getBytes(StandardCharsets.UTF_8), new seqid4(0));
     }
 
     @After
     public void tearDown() throws Exception {
-        if(_stateHandler.isRunning()) {
+        if (_stateHandler.isRunning()) {
             _stateHandler.shutdown();
         }
     }
@@ -66,15 +65,15 @@ public class NFSv4StateHandlerTest {
         _stateHandler.getClientIdByStateId(state);
     }
 
-    @Test(expected=StaleClientidException.class)
+    @Test(expected = StaleClientidException.class)
     public void testGetClientNotExists() throws Exception {
         _stateHandler.getClient(new clientid4(1L));
     }
 
     @Test
     public void testGetClientExists() throws Exception {
-         _client = createClient(_stateHandler);
-        assertEquals(_client,  _stateHandler.getClient(_client.getId()));
+        _client = createClient(_stateHandler);
+        assertEquals(_client, _stateHandler.getClient(_client.getId()));
     }
 
     @Test
@@ -85,7 +84,7 @@ public class NFSv4StateHandlerTest {
         _stateHandler.updateClientLeaseTime(stateid);
     }
 
-    @Test(expected=BadStateidException.class)
+    @Test(expected = BadStateidException.class)
     public void testUpdateLeaseTimeNotConfirmed() throws Exception {
         NFS4State state = _client.createOpenState(_owner);
         stateid4 stateid = state.stateid();
@@ -93,7 +92,7 @@ public class NFSv4StateHandlerTest {
         _stateHandler.updateClientLeaseTime(stateid);
     }
 
-    @Test(expected=BadStateidException.class)
+    @Test(expected = BadStateidException.class)
     public void testUpdateLeaseTimeNotExists() throws Exception {
         stateid4 state = _client.createOpenState(_owner).stateid();
         _stateHandler.updateClientLeaseTime(state);
@@ -111,7 +110,8 @@ public class NFSv4StateHandlerTest {
     @Test
     public void testInstanceId() throws Exception {
         int instanceId = 18;
-        NFSv4StateHandler stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), instanceId, new EphemeralClientRecoveryStore());
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), instanceId,
+                new EphemeralClientRecoveryStore());
         try {
             assertEquals("Invalid instance id returned", instanceId, stateHandler.getInstanceId());
         } finally {
@@ -122,7 +122,8 @@ public class NFSv4StateHandlerTest {
     @Test
     public void testInstanceIdByStateid() throws UnknownHostException, ChimeraNFSException, Exception {
         int instanceId = 117;
-        NFSv4StateHandler stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), instanceId, new EphemeralClientRecoveryStore());
+        NFSv4StateHandler stateHandler = new NFSv4StateHandler(Duration.ofSeconds(2), instanceId,
+                new EphemeralClientRecoveryStore());
         try {
             NFS4State state = createClient(stateHandler).createOpenState(_owner);
             assertEquals("Invalid instance id returned", instanceId, NFSv4StateHandler.getInstanceId(state.stateid()));

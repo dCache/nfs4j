@@ -19,12 +19,6 @@
  */
 package org.dcache.nfs.util;
 
-
-import com.google.common.annotations.VisibleForTesting;
-import org.dcache.nfs.v4.NFS4Client;
-import org.dcache.nfs.v4.xdr.clientid4;
-import org.dcache.nfs.vfs.Inode;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -33,6 +27,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.dcache.nfs.v4.NFS4Client;
+import org.dcache.nfs.v4.xdr.clientid4;
+import org.dcache.nfs.vfs.Inode;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * <pre>
@@ -100,10 +100,9 @@ import java.util.concurrent.locks.ReentrantLock;
 ///
 ///
  </pre>
-*/
+ */
 
 public class AdaptiveDelegationLogic {
-
 
     /**
      * Per NFS client queues for file delegation.
@@ -146,7 +145,6 @@ public class AdaptiveDelegationLogic {
         }
     }
 
-
     /**
      * Maximum size of eviction queue.
      */
@@ -163,22 +161,20 @@ public class AdaptiveDelegationLogic {
     private final Map<clientid4, ClientQueues> clientQueuesMap = new ConcurrentHashMap<>();
 
     /**
-     * Maximum idle time for files in the active queue.
-     * Files that exceed this time will be discarded by-passing eviction queue.
+     * Maximum idle time for files in the active queue. Files that exceed this time will be discarded by-passing
+     * eviction queue.
      */
     private final Duration maxIdleTime;
 
-
     /**
-     * Time source for generating timestamps.
-     * This allows for easier testing and mocking of time-related functionality.
+     * Time source for generating timestamps. This allows for easier testing and mocking of time-related functionality.
      */
     private final Clock clock;
 
     /**
      * Creates a new instance of DelegationQueueSystem
      *
-     * @param maxActiveQueueSize   Maximum size of active queue.
+     * @param maxActiveQueueSize Maximum size of active queue.
      * @param maxEvictionQueueSize Maximum size of eviction queue.
      * @param maxIdleTime Maximum idle time for files in the active queue.
      */
@@ -189,7 +185,7 @@ public class AdaptiveDelegationLogic {
     /**
      * Creates a new instance of DelegationQueueSystem. For internal use only.
      *
-     * @param maxActiveQueueSize   Maximum size of active queue.
+     * @param maxActiveQueueSize Maximum size of active queue.
      * @param maxEvictionQueueSize Maximum size of eviction queue.
      * @param maxIdleTime Maximum idle time for files in the active queue.
      * @param clock Clock to use for timestamp generation, for testing purposes.
@@ -212,12 +208,11 @@ public class AdaptiveDelegationLogic {
         return clientQueuesMap.computeIfAbsent(
                 client.getId(),
                 k -> {
-                    client.addDisposeListener( (c) -> {
+                    client.addDisposeListener((c) -> {
                         clientQueuesMap.remove(c.getId());
                     });
                     return new ClientQueues(maxEvictionQueueSize, maxActiveQueueSize);
-                }
-        );
+                });
     }
 
     /**

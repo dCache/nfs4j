@@ -37,7 +37,7 @@ public class GetdeviceinfoStub {
         op.opgetdeviceinfo.gdia_device_id = devId;
         op.opgetdeviceinfo.gdia_layout_type = layouttype4.LAYOUT4_NFSV4_1_FILES.getValue();
         op.opgetdeviceinfo.gdia_maxcount = new count4(0xffffff);
-        op.opgetdeviceinfo.gdia_notify_types = new bitmap4( new int[] {0});
+        op.opgetdeviceinfo.gdia_notify_types = new bitmap4(new int[] {0});
 
         return op;
 

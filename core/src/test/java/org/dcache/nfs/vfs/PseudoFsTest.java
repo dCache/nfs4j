@@ -19,13 +19,21 @@
  */
 package org.dcache.nfs.vfs;
 
+import static org.dcache.nfs.util.UnixSubjects.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
+import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
+
 import javax.security.auth.Subject;
 
-import com.google.common.primitives.Longs;
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.AccessException;
@@ -38,17 +46,10 @@ import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
 import org.dcache.oncrpc4j.rpc.gss.RpcAuthGss;
 import org.dcache.oncrpc4j.rpc.gss.RpcGssService;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
-import static org.mockito.BDDMockito.given;
-import static org.junit.Assert.*;
-import static org.hamcrest.collection.IsEmptyIterable.emptyIterable;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.dcache.nfs.util.UnixSubjects.*;
-
-import org.junit.Before;
+import com.google.common.primitives.Longs;
 
 /**
  *
@@ -352,9 +353,8 @@ public class PseudoFsTest {
         DirectoryStream directoryStream = pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, 0);
         assertThat("Empty directory listing", directoryStream, not(emptyIterable()));
 
-
         long lastCookie = 0;
-        for(DirectoryEntry e: directoryStream) {
+        for (DirectoryEntry e : directoryStream) {
             lastCookie = e.getCookie();
         }
 
@@ -386,9 +386,8 @@ public class PseudoFsTest {
 
         Inode inode = new Inode(
                 new FileHandle.FileHandleBuilder()
-                    .setExportIdx(1)
-                    .build(Longs.toByteArray(1L))
-            );
+                        .setExportIdx(1)
+                        .build(Longs.toByteArray(1L)));
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(null);
 
@@ -667,7 +666,8 @@ public class PseudoFsTest {
         Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
         Inode inode = pseudoFs.lookup(dir, "aFile");
 
-        pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8), VirtualFileSystem.SetXattrMode.CREATE);
+        pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8),
+                VirtualFileSystem.SetXattrMode.CREATE);
     }
 
     @Test(expected = AccessException.class)
@@ -698,7 +698,8 @@ public class PseudoFsTest {
         Inode pseudoRoot = pseudoFs.getRootInode();
         Inode dir = pseudoFs.lookup(pseudoRoot, "dir");
         Inode inode = pseudoFs.lookup(dir, "aFile");
-        pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8), VirtualFileSystem.SetXattrMode.CREATE);
+        pseudoFs.setXattr(inode, "xattr1", "value1".getBytes(StandardCharsets.UTF_8),
+                VirtualFileSystem.SetXattrMode.CREATE);
     }
 
     @Test(expected = AccessException.class)

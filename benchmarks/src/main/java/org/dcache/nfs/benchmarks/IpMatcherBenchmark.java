@@ -1,8 +1,8 @@
 package org.dcache.nfs.benchmarks;
 
-import com.google.common.net.InetAddresses;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import org.dcache.nfs.InetAddressMatcher;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -11,6 +11,8 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+
+import com.google.common.net.InetAddresses;
 
 /**
  *

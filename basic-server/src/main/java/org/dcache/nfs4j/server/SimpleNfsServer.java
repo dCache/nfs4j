@@ -1,5 +1,13 @@
 package org.dcache.nfs4j.server;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Collectors;
+
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v3.MountServer;
 import org.dcache.nfs.v3.NfsServerV3;
@@ -12,14 +20,6 @@ import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.oncrpc4j.rpc.OncRpcProgram;
 import org.dcache.oncrpc4j.rpc.OncRpcSvc;
 import org.dcache.oncrpc4j.rpc.OncRpcSvcBuilder;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.stream.Collectors;
 
 public class SimpleNfsServer implements Closeable {
     private final OncRpcSvc nfsSvc;
@@ -39,7 +39,8 @@ public class SimpleNfsServer implements Closeable {
             boolean startNfsV4 = ((nfsVers == 0) || (nfsVers == 4));
 
             if (exportFile == null) {
-                exportFile = new ExportFile(new InputStreamReader(SimpleNfsServer.class.getClassLoader().getResourceAsStream("exports")));
+                exportFile = new ExportFile(new InputStreamReader(SimpleNfsServer.class.getClassLoader()
+                        .getResourceAsStream("exports")));
             }
 
             this.port = port;

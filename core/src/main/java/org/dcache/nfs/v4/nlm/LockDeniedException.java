@@ -27,6 +27,7 @@ public class LockDeniedException extends LockException {
     private static final long serialVersionUID = 1522978305157124264L;
 
     private final NlmLock conflict;
+
     public LockDeniedException(String message, NlmLock conflict) {
         super(message);
         this.conflict = conflict;

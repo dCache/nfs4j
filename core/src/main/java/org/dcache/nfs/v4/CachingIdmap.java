@@ -19,11 +19,13 @@
  */
 package org.dcache.nfs.v4;
 
+import java.util.concurrent.TimeUnit;
+
+import org.dcache.nfs.status.BadOwnerException;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import java.util.concurrent.TimeUnit;
-import org.dcache.nfs.status.BadOwnerException;
 
 /**
  * {@link NfsIdMapping} implementation which caches results from defined source.
@@ -58,29 +60,17 @@ public class CachingIdmap implements NfsIdMapping {
     public CachingIdmap(NfsIdMapping idmapd, int size, long timeout) {
         _inner = idmapd;
 
-        _uidByNameCache = CacheBuilder.newBuilder().
-                expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softValues().
-                maximumSize(size).
-                build( new ForwardUidMapping());
+        _uidByNameCache = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.SECONDS).softValues()
+                .maximumSize(size).build(new ForwardUidMapping());
 
-        _gidByNameCache  = CacheBuilder.newBuilder().
-                expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softValues().
-                maximumSize(size).
-                build( new ForwardGidMapping());
+        _gidByNameCache = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.SECONDS).softValues()
+                .maximumSize(size).build(new ForwardGidMapping());
 
-         _userNameByIdCache = CacheBuilder.newBuilder().
-                expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softValues().
-                maximumSize(size).
-                build(new ReverseUidMapping());
+        _userNameByIdCache = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.SECONDS).softValues()
+                .maximumSize(size).build(new ReverseUidMapping());
 
-        _groupNameByIdCache = CacheBuilder.newBuilder().
-                expireAfterWrite(timeout, TimeUnit.SECONDS).
-                softValues().
-                maximumSize(size).
-                build(new ReverseGidMapping());
+        _groupNameByIdCache = CacheBuilder.newBuilder().expireAfterWrite(timeout, TimeUnit.SECONDS).softValues()
+                .maximumSize(size).build(new ReverseGidMapping());
     }
 
     @Override

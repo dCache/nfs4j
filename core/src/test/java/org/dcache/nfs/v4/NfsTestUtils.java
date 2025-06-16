@@ -19,12 +19,16 @@
  */
 package org.dcache.nfs.v4;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Random;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
@@ -35,22 +39,21 @@ import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
-import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthTypeUnix;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.BDDMockito.given;
+import org.dcache.oncrpc4j.util.Bytes;
 
 class NfsTestUtils {
 
     private final static Random RANDOM = new Random();
-    private NfsTestUtils() { /* utility class */}
+
+    private NfsTestUtils() {
+        /* utility class */}
 
     static NFS4Client createClient() throws UnknownHostException {
-        return createClient( new NFSv4StateHandler());
+        return createClient(new NFSv4StateHandler());
     }
 
     static NFS4Client createClient(NFSv4StateHandler stateHandler) throws UnknownHostException {
@@ -69,13 +72,14 @@ class NfsTestUtils {
         Bytes.putLong(bootTime, 0, System.currentTimeMillis());
 
         ClientCB mockCallBack = mock(ClientCB.class);
-        var client =  stateHandler.createClient(address, address, minor, owner, new verifier4(bootTime), null, false);
+        var client = stateHandler.createClient(address, address, minor, owner, new verifier4(bootTime), null, false);
         client.setCB(mockCallBack);
 
         return client;
     }
 
-    public static COMPOUND4res executeWithStatus(CompoundContext context, COMPOUND4args args, int expectedStatus) throws IOException {
+    public static COMPOUND4res executeWithStatus(CompoundContext context, COMPOUND4args args, int expectedStatus)
+            throws IOException {
 
         MDSOperationExecutor opFactory = new MDSOperationExecutor();
         COMPOUND4res res = new COMPOUND4res();
@@ -130,7 +134,6 @@ class NfsTestUtils {
 
         return call;
     }
-
 
     public static stateid4 generateStateId() {
         byte[] b = new byte[12];

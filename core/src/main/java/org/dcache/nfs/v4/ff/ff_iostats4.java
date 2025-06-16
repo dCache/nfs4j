@@ -7,10 +7,7 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.ff;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
-import org.dcache.oncrpc4j.xdr.XdrAble;
-import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
-import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
+
 import java.io.IOException;
 
 import org.dcache.nfs.v4.xdr.deviceid4;
@@ -18,6 +15,10 @@ import org.dcache.nfs.v4.xdr.io_info4;
 import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.xdr.XdrAble;
+import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
+import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
 public class ff_iostats4 implements XdrAble {
     public offset4 ffis_offset;
@@ -32,12 +33,12 @@ public class ff_iostats4 implements XdrAble {
     }
 
     public ff_iostats4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffis_offset.xdrEncode(xdr);
         ffis_length.xdrEncode(xdr);
         ffis_stateid.xdrEncode(xdr);
@@ -48,7 +49,7 @@ public class ff_iostats4 implements XdrAble {
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ffis_offset = new offset4(xdr);
         ffis_length = new length4(xdr);
         ffis_stateid = new stateid4(xdr);

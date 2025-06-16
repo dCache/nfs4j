@@ -19,14 +19,9 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.layoutiomode4;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.LAYOUTGET4res;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.LAYOUTGET4resok;
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
@@ -38,8 +33,14 @@ import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.status.TooSmallException;
+import org.dcache.nfs.v4.xdr.LAYOUTGET4res;
+import org.dcache.nfs.v4.xdr.LAYOUTGET4resok;
 import org.dcache.nfs.v4.xdr.layout4;
+import org.dcache.nfs.v4.xdr.layoutiomode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
     private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTGET.class);
 
     public OperationLAYOUTGET(nfs_argop4 args) {
-    super(args, nfs_opnum4.OP_LAYOUTGET);
+        super(args, nfs_opnum4.OP_LAYOUTGET);
     }
 
     @Override
@@ -71,7 +72,8 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
         }
 
         if (_args.oplayoutget.loga_minlength.value != nfs4_prot.NFS4_UINT64_MAX) {
-            _args.oplayoutget.loga_offset.checkOverflow(_args.oplayoutget.loga_minlength, "offset + minlength overflow");
+            _args.oplayoutget.loga_offset.checkOverflow(_args.oplayoutget.loga_minlength,
+                    "offset + minlength overflow");
         }
 
         if (!(_args.oplayoutget.loga_iomode == layoutiomode4.LAYOUTIOMODE4_RW
@@ -113,12 +115,12 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         int n = 0;
         /*
-         count how many segments client can accept
-        */
+         * count how many segments client can accept
+         */
         int layoutBodySize = 0;
-        for(layout4 layout: layoutSegments) {
+        for (layout4 layout : layoutSegments) {
             layoutBodySize += layout.lo_content.loc_body.length;
-            if ( layoutBodySize > _args.oplayoutget.loga_maxcount.value) {
+            if (layoutBodySize > _args.oplayoutget.loga_maxcount.value) {
                 break;
             }
             n++;
@@ -126,14 +128,14 @@ public class OperationLAYOUTGET extends AbstractNFSv4Operation {
 
         if (n == 0) {
             /*
-              there is no room even for one segment
-            */
+             * there is no room even for one segment
+             */
             throw new TooSmallException("layout body size is bigger than client can accept");
         }
 
         /*
-          truncate number of segments if needed;
-        */
+         * truncate number of segments if needed;
+         */
         layoutSegments = n == layoutSegments.length ? layoutSegments : Arrays.copyOf(layoutSegments, n);
 
         res.logr_resok4 = new LAYOUTGET4resok();

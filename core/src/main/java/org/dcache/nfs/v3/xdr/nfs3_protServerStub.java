@@ -18,11 +18,12 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v3.xdr;
+
 import java.io.IOException;
 
 import org.dcache.oncrpc4j.rpc.OncRpcException;
-import org.dcache.oncrpc4j.rpc.RpcDispatchable;
 import org.dcache.oncrpc4j.rpc.RpcCall;
+import org.dcache.oncrpc4j.rpc.RpcDispatchable;
 import org.dcache.oncrpc4j.xdr.XdrVoid;
 
 /**
@@ -35,7 +36,7 @@ public abstract class nfs3_protServerStub implements RpcDispatchable {
 
         int procedure = call.getProcedure();
 
-        switch ( procedure ) {
+        switch (procedure) {
             case 0: {
                 call.retrieveCall(XdrVoid.XDR_VOID);
                 NFSPROC3_NULL_3(call);

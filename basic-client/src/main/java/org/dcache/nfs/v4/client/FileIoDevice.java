@@ -22,6 +22,7 @@ package org.dcache.nfs.v4.client;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+
 import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
 import org.dcache.oncrpc4j.rpc.net.InetSocketAddresses;
@@ -40,8 +41,8 @@ public class FileIoDevice {
         }
         _ds_list = new InetSocketAddress[addr.nflda_multipath_ds_list.length];
         for (int i = 0; i < _ds_list.length; i++) {
-            for(netaddr4 na : addr.nflda_multipath_ds_list[i].value) {
-                if (na.na_r_netid.equals("tcp") || na.na_r_netid.equals("tcp6") ) {
+            for (netaddr4 na : addr.nflda_multipath_ds_list[i].value) {
+                if (na.na_r_netid.equals("tcp") || na.na_r_netid.equals("tcp6")) {
                     _ds_list[i] = InetSocketAddresses.forUaddrString(na.na_r_addr);
                     break;
                 }

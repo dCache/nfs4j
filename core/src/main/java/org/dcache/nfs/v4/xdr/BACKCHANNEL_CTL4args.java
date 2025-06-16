@@ -18,34 +18,48 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class BACKCHANNEL_CTL4args implements XdrAble {
     public uint32_t bca_cb_program;
-    public callback_sec_parms4 [] bca_sec_parms;
+    public callback_sec_parms4[] bca_sec_parms;
 
     public BACKCHANNEL_CTL4args() {
     }
 
     public BACKCHANNEL_CTL4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         bca_cb_program.xdrEncode(xdr);
-        { int $size = bca_sec_parms.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { bca_sec_parms[$idx].xdrEncode(xdr); } }
+        {
+            int $size = bca_sec_parms.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                bca_sec_parms[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         bca_cb_program = new uint32_t(xdr);
-        { int $size = xdr.xdrDecodeInt(); bca_sec_parms = new callback_sec_parms4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { bca_sec_parms[$idx] = new callback_sec_parms4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            bca_sec_parms = new callback_sec_parms4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                bca_sec_parms[$idx] = new callback_sec_parms4(xdr);
+            }
+        }
     }
 
 }

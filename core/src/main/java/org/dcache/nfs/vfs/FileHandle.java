@@ -16,9 +16,10 @@
  */
 package org.dcache.nfs.vfs;
 
-import com.google.common.io.BaseEncoding;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import com.google.common.io.BaseEncoding;
 
 /**
  * NFS file handle on wire representation format v1.
@@ -32,7 +33,7 @@ import java.nio.ByteOrder;
  *   byte fh_olen;         // length of opaque data
  *   byte[] fh_opaque;     // FS specific opaque data <= 114
  * </pre>
-*/
+ */
 public class FileHandle {
 
     private final static int MIN_LEN = 14;
@@ -57,7 +58,6 @@ public class FileHandle {
         this.type = type;
         this.fs_opaque = fs_opaque;
     }
-
 
     public FileHandle(byte[] bytes) {
         if (bytes.length < MIN_LEN) {
@@ -90,12 +90,12 @@ public class FileHandle {
             type = bytes[1] == FH_V0_REG[1] ? 0 : 1;
             if (type == 1) {
                 /*
-                 * convert pseudo inode into real one: '255:' => '0:'
-                 * NOTICE: the converted handle will present himself as version 1
+                 * convert pseudo inode into real one: '255:' => '0:' NOTICE: the converted handle will present himself
+                 * as version 1
                  */
                 version = 1;
                 exportIdx = 0;
-                fs_opaque = new byte[bytes.length -2];
+                fs_opaque = new byte[bytes.length - 2];
                 System.arraycopy(bytes, 2, fs_opaque, 0, fs_opaque.length);
                 fs_opaque[0] = 0x30;
             } else {
@@ -153,7 +153,8 @@ public class FileHandle {
     }
 
     private static boolean arrayEquals(byte[] a1, byte[] a2, int len) {
-        if (a1.length < len || a2.length < len) return false;
+        if (a1.length < len || a2.length < len)
+            return false;
         for (int i = 0; i < len; i++) {
             if (a1[i] != a2[i]) {
                 return false;
@@ -190,9 +191,9 @@ public class FileHandle {
             return this;
         }
 
-
         /**
          * A shortcut with defaults
+         *
          * @param opaque
          * @return
          */

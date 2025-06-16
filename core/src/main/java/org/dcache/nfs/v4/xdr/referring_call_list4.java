@@ -18,34 +18,48 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class referring_call_list4 implements XdrAble {
     public sessionid4 rcl_sessionid;
-    public referring_call4 [] rcl_referring_calls;
+    public referring_call4[] rcl_referring_calls;
 
     public referring_call_list4() {
     }
 
     public referring_call_list4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         rcl_sessionid.xdrEncode(xdr);
-        { int $size = rcl_referring_calls.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { rcl_referring_calls[$idx].xdrEncode(xdr); } }
+        {
+            int $size = rcl_referring_calls.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                rcl_referring_calls[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         rcl_sessionid = new sessionid4(xdr);
-        { int $size = xdr.xdrDecodeInt(); rcl_referring_calls = new referring_call4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { rcl_referring_calls[$idx] = new referring_call4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            rcl_referring_calls = new referring_call4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                rcl_referring_calls[$idx] = new referring_call4(xdr);
+            }
+        }
     }
 
 }

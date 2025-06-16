@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class secinfo4 implements XdrAble {
     public int flavor;
@@ -32,31 +34,31 @@ public class secinfo4 implements XdrAble {
     }
 
     public secinfo4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(flavor);
-        switch ( flavor ) {
-        case nfs4_prot.RPCSEC_GSS:
-            flavor_info.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (flavor) {
+            case nfs4_prot.RPCSEC_GSS:
+                flavor_info.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         flavor = xdr.xdrDecodeInt();
-        switch ( flavor ) {
-        case nfs4_prot.RPCSEC_GSS:
-            flavor_info = new rpcsec_gss_info(xdr);
-            break;
-        default:
-            break;
+        switch (flavor) {
+            case nfs4_prot.RPCSEC_GSS:
+                flavor_info = new rpcsec_gss_info(xdr);
+                break;
+            default:
+                break;
         }
     }
 

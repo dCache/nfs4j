@@ -22,13 +22,9 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 
 /**
- * Interface to an algorithm of how data access is organized across
- * multiple data servers.
- * For example, if we have an array of data servers:
- *   [A, B, C, D],
- * then indeces [0, 1, 2, 3] will simply describes round-robin
- * pattern. As soon as last index is used client starts from beginning.
- * In example above, the fifth block will use data server A.
+ * Interface to an algorithm of how data access is organized across multiple data servers. For example, if we have an
+ * array of data servers: [A, B, C, D], then indeces [0, 1, 2, 3] will simply describes round-robin pattern. As soon as
+ * last index is used client starts from beginning. In example above, the fifth block will use data server A.
  *
  * @param <T>
  */

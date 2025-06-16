@@ -7,6 +7,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.util.UnixSubjects;
@@ -20,9 +24,6 @@ import org.dcache.rquota.xdr.qr_status;
 import org.dcache.rquota.xdr.setquota_rslt;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 
 public class QuotaSvcTest {
 

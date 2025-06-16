@@ -19,8 +19,9 @@
  */
 package org.dcache.nfs.status;
 
-import org.dcache.nfs.ChimeraNFSException;
 import static org.dcache.nfs.nfsstat.*;
+
+import org.dcache.nfs.ChimeraNFSException;
 
 public class FhExpiredException extends ChimeraNFSException {
 
@@ -38,4 +39,3 @@ public class FhExpiredException extends ChimeraNFSException {
         super(NFSERR_FHEXPIRED, msg, cause);
     }
 }
-

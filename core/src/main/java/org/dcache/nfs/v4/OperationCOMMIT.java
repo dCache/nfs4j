@@ -20,6 +20,7 @@
 package org.dcache.nfs.v4;
 
 import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.COMMIT4res;
@@ -38,7 +39,7 @@ public class OperationCOMMIT extends AbstractNFSv4Operation {
     @Override
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-        final COMMIT4res res =  result.opcommit;
+        final COMMIT4res res = result.opcommit;
         Inode inode = context.currentInode();
 
         _args.opcommit.offset.checkOverflow(_args.opcommit.count.value, "offset + length overflow");

@@ -55,7 +55,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
-        if(_args.oplock.length.value == 0) {
+        if (_args.oplock.length.value == 0) {
             throw new InvalException("zero lock len");
         }
 
@@ -69,8 +69,9 @@ public class OperationLOCK extends AbstractNFSv4Operation {
         if (_args.oplock.locker.new_lock_owner) {
             oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.open_owner.open_stateid);
 
-            if(context.getMinorversion() == 0) {
-                client = context.getStateHandler().getConfirmedClient(_args.oplock.locker.open_owner.lock_owner.clientid);
+            if (context.getMinorversion() == 0) {
+                client = context.getStateHandler().getConfirmedClient(
+                        _args.oplock.locker.open_owner.lock_owner.clientid);
             } else {
                 client = context.getSession().getClient();
             }
@@ -82,7 +83,8 @@ public class OperationLOCK extends AbstractNFSv4Operation {
                 client.updateLeaseTime();
             }
 
-            lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner, _args.oplock.locker.open_owner.lock_seqid);
+            lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner,
+                    _args.oplock.locker.open_owner.lock_seqid);
             lock_state = client.createLockState(lockOwner, openState);
 
             // lock states do not requires extra confirmation
@@ -103,18 +105,19 @@ public class OperationLOCK extends AbstractNFSv4Operation {
 
         try {
 
-            // reject write lock  on read-only open
+            // reject write lock on read-only open
             if (_args.oplock.locktype == nfs_lock_type4.WRITEW_LT || _args.oplock.locktype == nfs_lock_type4.WRITE_LT) {
 
                 int shareAccess = context.getStateHandler().getFileTracker()
-                    .getShareAccess(client, inode, lock_state.getOpenState().stateid());
+                        .getShareAccess(client, inode, lock_state.getOpenState().stateid());
 
                 if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
                     throw new OpenModeException("Invalid open mode");
                 }
             }
 
-            NlmLock lock = new NlmLock(lockOwner, _args.oplock.locktype,  _args.oplock.offset.value, _args.oplock.length.value);
+            NlmLock lock = new NlmLock(lockOwner, _args.oplock.locktype, _args.oplock.offset.value,
+                    _args.oplock.length.value);
             context.getLm().lock(inode.getFileId(), lock);
 
             // ensure, that on close locks will be released

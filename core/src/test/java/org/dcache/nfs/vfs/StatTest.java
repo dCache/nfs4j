@@ -1,6 +1,6 @@
 package org.dcache.nfs.vfs;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,8 +9,8 @@ import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class StatTest {
     @Test
@@ -21,7 +21,7 @@ public class StatTest {
         stat.setGid(2);
         stat.setSize(3L);
         // 01-feb-2003 14:15
-        Calendar localCal = Calendar.getInstance(); //machine-specific time zone
+        Calendar localCal = Calendar.getInstance(); // machine-specific time zone
         localCal.set(Calendar.YEAR, 2003);
         localCal.set(Calendar.DAY_OF_MONTH, 1);
         localCal.set(Calendar.MONTH, Calendar.FEBRUARY);
@@ -32,31 +32,31 @@ public class StatTest {
         stat.setMTime(localCal.getTimeInMillis());
         stat.setMode(0755 | Stat.S_IFDIR);
         SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm");
-        assertEquals("drwxr-xr-x    7    1    2    3 "+formatter.format(localCal.getTime()), stat.toString());
+        assertEquals("drwxr-xr-x    7    1    2    3 " + formatter.format(localCal.getTime()), stat.toString());
         stat.setMode(0401 | Stat.S_IFREG);
         stat.setNlink(6666);
-        stat.setSize(1024*16);
+        stat.setSize(1024 * 16);
         localCal.set(Calendar.DAY_OF_MONTH, 29);
         localCal.set(Calendar.HOUR_OF_DAY, 1);
         stat.setMTime(localCal.getTimeInMillis());
-        assertEquals("-r-------x 6666    1    2  16K "+formatter.format(localCal.getTime()), stat.toString());
+        assertEquals("-r-------x 6666    1    2  16K " + formatter.format(localCal.getTime()), stat.toString());
         stat.setMode(0070 | Stat.S_IFLNK);
-        stat.setSize(1024*1024*1024*1024L - 1); //one byte short of 1TB
-        assertEquals("l---rwx--- 6666    1    2 1024G "+formatter.format(localCal.getTime()), stat.toString());
+        stat.setSize(1024 * 1024 * 1024 * 1024L - 1); // one byte short of 1TB
+        assertEquals("l---rwx--- 6666    1    2 1024G " + formatter.format(localCal.getTime()), stat.toString());
     }
 
     @Test
     public void testSizeToString() {
-        assertEquals("0",Stat.sizeToString(0));
-        assertEquals("1023",Stat.sizeToString(1024-1));
-        assertEquals("1K",Stat.sizeToString(1024));
-        assertEquals("1K",Stat.sizeToString(1024+1));
-        assertEquals("1K",Stat.sizeToString(1024+51));
+        assertEquals("0", Stat.sizeToString(0));
+        assertEquals("1023", Stat.sizeToString(1024 - 1));
+        assertEquals("1K", Stat.sizeToString(1024));
+        assertEquals("1K", Stat.sizeToString(1024 + 1));
+        assertEquals("1K", Stat.sizeToString(1024 + 51));
         // localized format to handle ',' vs '.' (German vs US English)
-        assertEquals(String.format("%.1fK", 1.1),Stat.sizeToString(1024+52)); //just after 1.05, round up
-        assertEquals("1024M",Stat.sizeToString(1024*1024*1024-1));
-        assertEquals("1G",Stat.sizeToString(1024*1024*1024));
-        assertEquals("8E",Stat.sizeToString(Long.MAX_VALUE));
+        assertEquals(String.format("%.1fK", 1.1), Stat.sizeToString(1024 + 52)); // just after 1.05, round up
+        assertEquals("1024M", Stat.sizeToString(1024 * 1024 * 1024 - 1));
+        assertEquals("1G", Stat.sizeToString(1024 * 1024 * 1024));
+        assertEquals("8E", Stat.sizeToString(Long.MAX_VALUE));
     }
 
     @Test
@@ -70,9 +70,9 @@ public class StatTest {
         stat.setMode(0755 | Stat.S_IFDIR);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-	try (ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream)) {
-	    os.writeObject(stat);
-	}
+        try (ObjectOutputStream os = new ObjectOutputStream(byteArrayOutputStream)) {
+            os.writeObject(stat);
+        }
 
         byte[] serialized = byteArrayOutputStream.toByteArray();
         ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(serialized));
@@ -258,7 +258,7 @@ public class StatTest {
         stat.setUid(1);
         stat.setMode(0755 | Stat.S_IFDIR);
         Stat clone = stat.clone();
-        Assert.assertFalse(stat==clone);
+        Assert.assertFalse(stat == clone);
         Assert.assertEquals(stat.getUid(), clone.getUid());
         clone.setUid(42);
         Assert.assertEquals(1, stat.getUid());

@@ -22,6 +22,7 @@ package org.dcache.nfs.v4.client;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.dcache.nfs.v4.xdr.stateid4;
 
 /**
@@ -32,9 +33,11 @@ import org.dcache.nfs.v4.xdr.stateid4;
 public class StripeMap {
 
     private stateid4 _stateid;
+
     public StripeMap(stateid4 stateid) {
         _stateid = stateid;
     }
+
     /**
      * List off all know stripes.
      */
@@ -42,20 +45,21 @@ public class StripeMap {
 
     /**
      * Get list of stripes for the range.
+     *
      * @param offset
      * @param len
      * @return list of stripes or empty list if the is no stripes found.
      */
-    public List<Stripe> getStripe(long offset , long len) {
+    public List<Stripe> getStripe(long offset, long len) {
 
         List<Stripe> ioStripe = new LinkedList<>();
 
-        for(Stripe stripe: _fileStripeLsit) {
+        for (Stripe stripe : _fileStripeLsit) {
 
-            if( stripe.getOffset() + stripe.getLen() >= offset ) {
+            if (stripe.getOffset() + stripe.getLen() >= offset) {
                 ioStripe.add(stripe);
 
-                if( stripe.getOffset() + stripe.getLen() >= offset + len ) {
+                if (stripe.getOffset() + stripe.getLen() >= offset + len) {
                     break;
                 }
             }

@@ -19,13 +19,14 @@
  */
 package org.dcache.nfs.v4.xdr;
 
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.LOCK4denied;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class LOCKT4res implements XdrAble {
     public int status;
@@ -35,35 +36,35 @@ public class LOCKT4res implements XdrAble {
     }
 
     public LOCKT4res(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(status);
-        switch ( status ) {
-        case nfsstat.NFSERR_DENIED:
-            denied.xdrEncode(xdr);
-            break;
-        case nfsstat.NFS_OK:
-            break;
-        default:
-            break;
+        switch (status) {
+            case nfsstat.NFSERR_DENIED:
+                denied.xdrEncode(xdr);
+                break;
+            case nfsstat.NFS_OK:
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         status = xdr.xdrDecodeInt();
-        switch ( status ) {
-        case nfsstat.NFSERR_DENIED:
-            denied = new LOCK4denied(xdr);
-            break;
-        case nfsstat.NFS_OK:
-            break;
-        default:
-            break;
+        switch (status) {
+            case nfsstat.NFSERR_DENIED:
+                denied = new LOCK4denied(xdr);
+                break;
+            case nfsstat.NFS_OK:
+                break;
+            default:
+                break;
         }
     }
 

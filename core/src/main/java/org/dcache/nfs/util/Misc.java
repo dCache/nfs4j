@@ -33,11 +33,12 @@ import java.util.jar.Manifest;
 
 public class Misc {
 
-    private Misc() {}
+    private Misc() {
+    }
 
     /**
-     * Get package build time. This method uses {@code Build-Time} attribute in the
-     * jar Manifest file.
+     * Get package build time. This method uses {@code Build-Time} attribute in the jar Manifest file.
+     *
      * @return optional instant of package build time.
      */
     public static Optional<Instant> getBuildTime() {

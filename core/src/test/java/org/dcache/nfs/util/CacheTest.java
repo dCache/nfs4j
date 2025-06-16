@@ -19,13 +19,14 @@
  */
 package org.dcache.nfs.util;
 
+import static org.junit.Assert.*;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class CacheTest {
 
@@ -105,8 +106,8 @@ public class CacheTest {
 
     @Test
     public void testBigLifeTime() {
-         _cache.put("key1", "value1", Duration.ofSeconds(Instant.MAX.getEpochSecond()), Duration.ofSeconds(180));
-          assertNotNull("Object expired", _cache.get("key1"));
+        _cache.put("key1", "value1", Duration.ofSeconds(Instant.MAX.getEpochSecond()), Duration.ofSeconds(180));
+        assertNotNull("Object expired", _cache.get("key1"));
     }
 
     @Test

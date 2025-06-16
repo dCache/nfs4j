@@ -1,25 +1,24 @@
 package org.dcache.nfs.v4;
 
+import static org.dcache.nfs.v4.xdr.layouttype4.LAYOUT4_BLOCK_VOLUME;
+import static org.dcache.nfs.v4.xdr.layouttype4.LAYOUT4_OSD2_OBJECTS;
+import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.Optional;
+
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.oncrpc4j.rpc.RpcAuthTypeNone;
 import org.dcache.oncrpc4j.rpc.RpcCall;
 import org.dcache.oncrpc4j.rpc.RpcTransport;
-
 import org.junit.Test;
-
-import static org.dcache.nfs.v4.xdr.layouttype4.LAYOUT4_BLOCK_VOLUME;
-import static org.dcache.nfs.v4.xdr.layouttype4.LAYOUT4_OSD2_OBJECTS;
-import static org.junit.Assert.assertArrayEquals;
-import static org.mockito.Mockito.mock;
-
-import static org.mockito.BDDMockito.given;
 
 /**
  *
@@ -46,7 +45,8 @@ public class OperationGETATTRTest {
                 .withExportTable(exportFile)
                 .build();
 
-        Optional<fattr4_fs_layout_types> res = (Optional<fattr4_fs_layout_types>) OperationGETATTR.fattr2xdr(nfs4_prot.FATTR4_FS_LAYOUT_TYPES, null, null, null, context);
+        Optional<fattr4_fs_layout_types> res = (Optional<fattr4_fs_layout_types>) OperationGETATTR.fattr2xdr(
+                nfs4_prot.FATTR4_FS_LAYOUT_TYPES, null, null, null, context);
 
         assertArrayEquals("export without explicit layout type must return all configures layout types",
                 new int[] {LAYOUT4_OSD2_OBJECTS.getValue(), LAYOUT4_BLOCK_VOLUME.getValue()}, res.get().value);

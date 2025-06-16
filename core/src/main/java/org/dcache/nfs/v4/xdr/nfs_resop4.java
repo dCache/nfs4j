@@ -19,13 +19,13 @@
  */
 package org.dcache.nfs.v4.xdr;
 
+import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-
-import java.io.IOException;
 
 public class nfs_resop4 implements XdrAble {
     public int resop;
@@ -109,465 +109,465 @@ public class nfs_resop4 implements XdrAble {
     }
 
     public nfs_resop4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(resop);
-        switch ( resop ) {
-        case nfs_opnum4.OP_ACCESS:
-            opaccess.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_CLOSE:
-            opclose.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_COMMIT:
-            opcommit.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_CREATE:
-            opcreate.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_DELEGPURGE:
-            opdelegpurge.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_DELEGRETURN:
-            opdelegreturn.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_GETATTR:
-            opgetattr.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_GETFH:
-            opgetfh.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LINK:
-            oplink.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LOCK:
-            oplock.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LOCKT:
-            oplockt.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LOCKU:
-            oplocku.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LOOKUP:
-            oplookup.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LOOKUPP:
-            oplookupp.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_NVERIFY:
-            opnverify.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_OPEN:
-            opopen.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_OPENATTR:
-            opopenattr.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_OPEN_CONFIRM:
-            opopen_confirm.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_OPEN_DOWNGRADE:
-            opopen_downgrade.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_PUTFH:
-            opputfh.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_PUTPUBFH:
-            opputpubfh.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_PUTROOTFH:
-            opputrootfh.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_READ:
-            opread.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_READDIR:
-            opreaddir.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_READLINK:
-            opreadlink.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_REMOVE:
-            opremove.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_RENAME:
-            oprename.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_RENEW:
-            oprenew.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_RESTOREFH:
-            oprestorefh.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SAVEFH:
-            opsavefh.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SECINFO:
-            opsecinfo.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SETATTR:
-            opsetattr.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SETCLIENTID:
-            opsetclientid.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
-            opsetclientid_confirm.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_VERIFY:
-            opverify.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_WRITE:
-            opwrite.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_RELEASE_LOCKOWNER:
-            oprelease_lockowner.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_BACKCHANNEL_CTL:
-            opbackchannel_ctl.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
-            opbind_conn_to_session.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_EXCHANGE_ID:
-            opexchange_id.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_CREATE_SESSION:
-            opcreate_session.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_DESTROY_SESSION:
-            opdestroy_session.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_FREE_STATEID:
-            opfree_stateid.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_GET_DIR_DELEGATION:
-            opget_dir_delegation.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_GETDEVICEINFO:
-            opgetdeviceinfo.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_GETDEVICELIST:
-            opgetdevicelist.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTCOMMIT:
-            oplayoutcommit.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTERROR:
-            oplayouterror.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTGET:
-            oplayoutget.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTRETURN:
-            oplayoutreturn.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTSTATS:
-            oplayoutstats.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SECINFO_NO_NAME:
-            opsecinfo_no_name.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SEQUENCE:
-            opsequence.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SET_SSV:
-            opset_ssv.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_TEST_STATEID:
-            optest_stateid.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_WANT_DELEGATION:
-            opwant_delegation.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_DESTROY_CLIENTID:
-            opdestroy_clientid.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_RECLAIM_COMPLETE:
-            opreclaim_complete.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_ALLOCATE:
-            opallocate.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_COPY:
-            opcopy.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_COPY_NOTIFY:
-            opcopy_notify.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_DEALLOCATE:
-            opdeallocate.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_IO_ADVISE:
-            opio_advise.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_OFFLOAD_CANCEL:
-            opoffload_cancel.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_OFFLOAD_STATUS:
-            opoffload_status.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_READ_PLUS:
-            opread_plus.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SEEK:
-            opseek.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_WRITE_SAME:
-            opwrite_same.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_CLONE:
-            opclone.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_GETXATTR:
-            opgetxattr.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_SETXATTR:
-            opsetxattr.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_LISTXATTRS:
-            oplistxattrs.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_REMOVEXATTR:
-            opremovexattr.xdrEncode(xdr);
-            break;
-        case nfs_opnum4.OP_ILLEGAL:
-            opillegal.xdrEncode(xdr);
-            break;
+        switch (resop) {
+            case nfs_opnum4.OP_ACCESS:
+                opaccess.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_CLOSE:
+                opclose.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_COMMIT:
+                opcommit.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_CREATE:
+                opcreate.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_DELEGPURGE:
+                opdelegpurge.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_DELEGRETURN:
+                opdelegreturn.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_GETATTR:
+                opgetattr.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_GETFH:
+                opgetfh.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LINK:
+                oplink.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LOCK:
+                oplock.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LOCKT:
+                oplockt.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LOCKU:
+                oplocku.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LOOKUP:
+                oplookup.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LOOKUPP:
+                oplookupp.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_NVERIFY:
+                opnverify.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_OPEN:
+                opopen.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_OPENATTR:
+                opopenattr.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_OPEN_CONFIRM:
+                opopen_confirm.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_OPEN_DOWNGRADE:
+                opopen_downgrade.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_PUTFH:
+                opputfh.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_PUTPUBFH:
+                opputpubfh.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_PUTROOTFH:
+                opputrootfh.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_READ:
+                opread.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_READDIR:
+                opreaddir.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_READLINK:
+                opreadlink.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_REMOVE:
+                opremove.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_RENAME:
+                oprename.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_RENEW:
+                oprenew.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_RESTOREFH:
+                oprestorefh.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SAVEFH:
+                opsavefh.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SECINFO:
+                opsecinfo.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SETATTR:
+                opsetattr.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SETCLIENTID:
+                opsetclientid.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
+                opsetclientid_confirm.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_VERIFY:
+                opverify.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_WRITE:
+                opwrite.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
+                oprelease_lockowner.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                opbackchannel_ctl.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                opbind_conn_to_session.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_EXCHANGE_ID:
+                opexchange_id.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_CREATE_SESSION:
+                opcreate_session.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_DESTROY_SESSION:
+                opdestroy_session.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_FREE_STATEID:
+                opfree_stateid.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
+                opget_dir_delegation.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_GETDEVICEINFO:
+                opgetdeviceinfo.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_GETDEVICELIST:
+                opgetdevicelist.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTCOMMIT:
+                oplayoutcommit.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTERROR:
+                oplayouterror.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTGET:
+                oplayoutget.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTRETURN:
+                oplayoutreturn.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                oplayoutstats.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                opsecinfo_no_name.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SEQUENCE:
+                opsequence.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SET_SSV:
+                opset_ssv.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_TEST_STATEID:
+                optest_stateid.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_WANT_DELEGATION:
+                opwant_delegation.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                opdestroy_clientid.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                opreclaim_complete.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_ALLOCATE:
+                opallocate.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_COPY:
+                opcopy.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_COPY_NOTIFY:
+                opcopy_notify.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_DEALLOCATE:
+                opdeallocate.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_IO_ADVISE:
+                opio_advise.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+                opoffload_cancel.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+                opoffload_status.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_READ_PLUS:
+                opread_plus.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SEEK:
+                opseek.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_WRITE_SAME:
+                opwrite_same.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_CLONE:
+                opclone.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_GETXATTR:
+                opgetxattr.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_SETXATTR:
+                opsetxattr.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_LISTXATTRS:
+                oplistxattrs.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_REMOVEXATTR:
+                opremovexattr.xdrEncode(xdr);
+                break;
+            case nfs_opnum4.OP_ILLEGAL:
+                opillegal.xdrEncode(xdr);
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         resop = xdr.xdrDecodeInt();
-        switch ( resop ) {
-        case nfs_opnum4.OP_ACCESS:
-            opaccess = new ACCESS4res(xdr);
-            break;
-        case nfs_opnum4.OP_CLOSE:
-            opclose = new CLOSE4res(xdr);
-            break;
-        case nfs_opnum4.OP_COMMIT:
-            opcommit = new COMMIT4res(xdr);
-            break;
-        case nfs_opnum4.OP_CREATE:
-            opcreate = new CREATE4res(xdr);
-            break;
-        case nfs_opnum4.OP_DELEGPURGE:
-            opdelegpurge = new DELEGPURGE4res(xdr);
-            break;
-        case nfs_opnum4.OP_DELEGRETURN:
-            opdelegreturn = new DELEGRETURN4res(xdr);
-            break;
-        case nfs_opnum4.OP_GETATTR:
-            opgetattr = new GETATTR4res(xdr);
-            break;
-        case nfs_opnum4.OP_GETFH:
-            opgetfh = new GETFH4res(xdr);
-            break;
-        case nfs_opnum4.OP_LINK:
-            oplink = new LINK4res(xdr);
-            break;
-        case nfs_opnum4.OP_LOCK:
-            oplock = new LOCK4res(xdr);
-            break;
-        case nfs_opnum4.OP_LOCKT:
-            oplockt = new LOCKT4res(xdr);
-            break;
-        case nfs_opnum4.OP_LOCKU:
-            oplocku = new LOCKU4res(xdr);
-            break;
-        case nfs_opnum4.OP_LOOKUP:
-            oplookup = new LOOKUP4res(xdr);
-            break;
-        case nfs_opnum4.OP_LOOKUPP:
-            oplookupp = new LOOKUPP4res(xdr);
-            break;
-        case nfs_opnum4.OP_NVERIFY:
-            opnverify = new NVERIFY4res(xdr);
-            break;
-        case nfs_opnum4.OP_OPEN:
-            opopen = new OPEN4res(xdr);
-            break;
-        case nfs_opnum4.OP_OPENATTR:
-            opopenattr = new OPENATTR4res(xdr);
-            break;
-        case nfs_opnum4.OP_OPEN_CONFIRM:
-            opopen_confirm = new OPEN_CONFIRM4res(xdr);
-            break;
-        case nfs_opnum4.OP_OPEN_DOWNGRADE:
-            opopen_downgrade = new OPEN_DOWNGRADE4res(xdr);
-            break;
-        case nfs_opnum4.OP_PUTFH:
-            opputfh = new PUTFH4res(xdr);
-            break;
-        case nfs_opnum4.OP_PUTPUBFH:
-            opputpubfh = new PUTPUBFH4res(xdr);
-            break;
-        case nfs_opnum4.OP_PUTROOTFH:
-            opputrootfh = new PUTROOTFH4res(xdr);
-            break;
-        case nfs_opnum4.OP_READ:
-            opread = new READ4res(xdr);
-            break;
-        case nfs_opnum4.OP_READDIR:
-            opreaddir = new READDIR4res(xdr);
-            break;
-        case nfs_opnum4.OP_READLINK:
-            opreadlink = new READLINK4res(xdr);
-            break;
-        case nfs_opnum4.OP_REMOVE:
-            opremove = new REMOVE4res(xdr);
-            break;
-        case nfs_opnum4.OP_RENAME:
-            oprename = new RENAME4res(xdr);
-            break;
-        case nfs_opnum4.OP_RENEW:
-            oprenew = new RENEW4res(xdr);
-            break;
-        case nfs_opnum4.OP_RESTOREFH:
-            oprestorefh = new RESTOREFH4res(xdr);
-            break;
-        case nfs_opnum4.OP_SAVEFH:
-            opsavefh = new SAVEFH4res(xdr);
-            break;
-        case nfs_opnum4.OP_SECINFO:
-            opsecinfo = new SECINFO4res(xdr);
-            break;
-        case nfs_opnum4.OP_SETATTR:
-            opsetattr = new SETATTR4res(xdr);
-            break;
-        case nfs_opnum4.OP_SETCLIENTID:
-            opsetclientid = new SETCLIENTID4res(xdr);
-            break;
-        case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
-            opsetclientid_confirm = new SETCLIENTID_CONFIRM4res(xdr);
-            break;
-        case nfs_opnum4.OP_VERIFY:
-            opverify = new VERIFY4res(xdr);
-            break;
-        case nfs_opnum4.OP_WRITE:
-            opwrite = new WRITE4res(xdr);
-            break;
-        case nfs_opnum4.OP_RELEASE_LOCKOWNER:
-            oprelease_lockowner = new RELEASE_LOCKOWNER4res(xdr);
-            break;
-        case nfs_opnum4.OP_BACKCHANNEL_CTL:
-            opbackchannel_ctl = new BACKCHANNEL_CTL4res(xdr);
-            break;
-        case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
-            opbind_conn_to_session = new BIND_CONN_TO_SESSION4res(xdr);
-            break;
-        case nfs_opnum4.OP_EXCHANGE_ID:
-            opexchange_id = new EXCHANGE_ID4res(xdr);
-            break;
-        case nfs_opnum4.OP_CREATE_SESSION:
-            opcreate_session = new CREATE_SESSION4res(xdr);
-            break;
-        case nfs_opnum4.OP_DESTROY_SESSION:
-            opdestroy_session = new DESTROY_SESSION4res(xdr);
-            break;
-        case nfs_opnum4.OP_FREE_STATEID:
-            opfree_stateid = new FREE_STATEID4res(xdr);
-            break;
-        case nfs_opnum4.OP_GET_DIR_DELEGATION:
-            opget_dir_delegation = new GET_DIR_DELEGATION4res(xdr);
-            break;
-        case nfs_opnum4.OP_GETDEVICEINFO:
-            opgetdeviceinfo = new GETDEVICEINFO4res(xdr);
-            break;
-        case nfs_opnum4.OP_GETDEVICELIST:
-            opgetdevicelist = new GETDEVICELIST4res(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTCOMMIT:
-            oplayoutcommit = new LAYOUTCOMMIT4res(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTERROR:
-            oplayouterror = new LAYOUTERROR4res();
-            break;
-        case nfs_opnum4.OP_LAYOUTGET:
-            oplayoutget = new LAYOUTGET4res(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTSTATS:
-            oplayoutstats = new LAYOUTSTATS4res(xdr);
-            break;
-        case nfs_opnum4.OP_LAYOUTRETURN:
-            oplayoutreturn = new LAYOUTRETURN4res(xdr);
-            break;
-        case nfs_opnum4.OP_SECINFO_NO_NAME:
-            opsecinfo_no_name = new SECINFO_NO_NAME4res(xdr);
-            break;
-        case nfs_opnum4.OP_SEQUENCE:
-            opsequence = new SEQUENCE4res(xdr);
-            break;
-        case nfs_opnum4.OP_SET_SSV:
-            opset_ssv = new SET_SSV4res(xdr);
-            break;
-        case nfs_opnum4.OP_TEST_STATEID:
-            optest_stateid = new TEST_STATEID4res(xdr);
-            break;
-        case nfs_opnum4.OP_WANT_DELEGATION:
-            opwant_delegation = new WANT_DELEGATION4res(xdr);
-            break;
-        case nfs_opnum4.OP_DESTROY_CLIENTID:
-            opdestroy_clientid = new DESTROY_CLIENTID4res(xdr);
-            break;
-        case nfs_opnum4.OP_RECLAIM_COMPLETE:
-            opreclaim_complete = new RECLAIM_COMPLETE4res(xdr);
-            break;
-        case nfs_opnum4.OP_GETXATTR:
-            opgetxattr = new GETXATTR4res(xdr);
-            break;
-        case nfs_opnum4.OP_SETXATTR:
-            opsetxattr = new SETXATTR4res(xdr);
-            break;
-        case nfs_opnum4.OP_LISTXATTRS:
-            oplistxattrs = new LISTXATTRS4res(xdr);
-            break;
-        case nfs_opnum4.OP_REMOVEXATTR:
-            opremovexattr = new REMOVEXATTR4res(xdr);
-            break;
-        case nfs_opnum4.OP_ALLOCATE:
-            opallocate = new ALLOCATE4res(xdr);
-            break;
-        case nfs_opnum4.OP_COPY:
-            opcopy = new COPY4res(xdr);
-            break;
-        case nfs_opnum4.OP_COPY_NOTIFY:
-            opcopy_notify = new COPY_NOTIFY4res(xdr);
-            break;
-        case nfs_opnum4.OP_DEALLOCATE:
-            opdeallocate = new DEALLOCATE4res(xdr);
-            break;
-        case nfs_opnum4.OP_IO_ADVISE:
-            opio_advise = new IO_ADVISE4res(xdr);
-            break;
-        case nfs_opnum4.OP_OFFLOAD_CANCEL:
-            opoffload_cancel = new OFFLOAD_CANCEL4res(xdr);
-            break;
-        case nfs_opnum4.OP_OFFLOAD_STATUS:
-            opoffload_status = new OFFLOAD_STATUS4res(xdr);
-            break;
-        case nfs_opnum4.OP_READ_PLUS:
-            opread_plus = new READ_PLUS4res(xdr);
-            break;
-        case nfs_opnum4.OP_SEEK:
-            opseek = new SEEK4res(xdr);
-            break;
-        case nfs_opnum4.OP_WRITE_SAME:
-            opwrite_same = new WRITE_SAME4res(xdr);
-            break;
-        case nfs_opnum4.OP_CLONE:
-            opclone = new CLONE4res(xdr);
-            break;
-        case nfs_opnum4.OP_ILLEGAL:
-            opillegal = new ILLEGAL4res(xdr);
-            break;
+        switch (resop) {
+            case nfs_opnum4.OP_ACCESS:
+                opaccess = new ACCESS4res(xdr);
+                break;
+            case nfs_opnum4.OP_CLOSE:
+                opclose = new CLOSE4res(xdr);
+                break;
+            case nfs_opnum4.OP_COMMIT:
+                opcommit = new COMMIT4res(xdr);
+                break;
+            case nfs_opnum4.OP_CREATE:
+                opcreate = new CREATE4res(xdr);
+                break;
+            case nfs_opnum4.OP_DELEGPURGE:
+                opdelegpurge = new DELEGPURGE4res(xdr);
+                break;
+            case nfs_opnum4.OP_DELEGRETURN:
+                opdelegreturn = new DELEGRETURN4res(xdr);
+                break;
+            case nfs_opnum4.OP_GETATTR:
+                opgetattr = new GETATTR4res(xdr);
+                break;
+            case nfs_opnum4.OP_GETFH:
+                opgetfh = new GETFH4res(xdr);
+                break;
+            case nfs_opnum4.OP_LINK:
+                oplink = new LINK4res(xdr);
+                break;
+            case nfs_opnum4.OP_LOCK:
+                oplock = new LOCK4res(xdr);
+                break;
+            case nfs_opnum4.OP_LOCKT:
+                oplockt = new LOCKT4res(xdr);
+                break;
+            case nfs_opnum4.OP_LOCKU:
+                oplocku = new LOCKU4res(xdr);
+                break;
+            case nfs_opnum4.OP_LOOKUP:
+                oplookup = new LOOKUP4res(xdr);
+                break;
+            case nfs_opnum4.OP_LOOKUPP:
+                oplookupp = new LOOKUPP4res(xdr);
+                break;
+            case nfs_opnum4.OP_NVERIFY:
+                opnverify = new NVERIFY4res(xdr);
+                break;
+            case nfs_opnum4.OP_OPEN:
+                opopen = new OPEN4res(xdr);
+                break;
+            case nfs_opnum4.OP_OPENATTR:
+                opopenattr = new OPENATTR4res(xdr);
+                break;
+            case nfs_opnum4.OP_OPEN_CONFIRM:
+                opopen_confirm = new OPEN_CONFIRM4res(xdr);
+                break;
+            case nfs_opnum4.OP_OPEN_DOWNGRADE:
+                opopen_downgrade = new OPEN_DOWNGRADE4res(xdr);
+                break;
+            case nfs_opnum4.OP_PUTFH:
+                opputfh = new PUTFH4res(xdr);
+                break;
+            case nfs_opnum4.OP_PUTPUBFH:
+                opputpubfh = new PUTPUBFH4res(xdr);
+                break;
+            case nfs_opnum4.OP_PUTROOTFH:
+                opputrootfh = new PUTROOTFH4res(xdr);
+                break;
+            case nfs_opnum4.OP_READ:
+                opread = new READ4res(xdr);
+                break;
+            case nfs_opnum4.OP_READDIR:
+                opreaddir = new READDIR4res(xdr);
+                break;
+            case nfs_opnum4.OP_READLINK:
+                opreadlink = new READLINK4res(xdr);
+                break;
+            case nfs_opnum4.OP_REMOVE:
+                opremove = new REMOVE4res(xdr);
+                break;
+            case nfs_opnum4.OP_RENAME:
+                oprename = new RENAME4res(xdr);
+                break;
+            case nfs_opnum4.OP_RENEW:
+                oprenew = new RENEW4res(xdr);
+                break;
+            case nfs_opnum4.OP_RESTOREFH:
+                oprestorefh = new RESTOREFH4res(xdr);
+                break;
+            case nfs_opnum4.OP_SAVEFH:
+                opsavefh = new SAVEFH4res(xdr);
+                break;
+            case nfs_opnum4.OP_SECINFO:
+                opsecinfo = new SECINFO4res(xdr);
+                break;
+            case nfs_opnum4.OP_SETATTR:
+                opsetattr = new SETATTR4res(xdr);
+                break;
+            case nfs_opnum4.OP_SETCLIENTID:
+                opsetclientid = new SETCLIENTID4res(xdr);
+                break;
+            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
+                opsetclientid_confirm = new SETCLIENTID_CONFIRM4res(xdr);
+                break;
+            case nfs_opnum4.OP_VERIFY:
+                opverify = new VERIFY4res(xdr);
+                break;
+            case nfs_opnum4.OP_WRITE:
+                opwrite = new WRITE4res(xdr);
+                break;
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
+                oprelease_lockowner = new RELEASE_LOCKOWNER4res(xdr);
+                break;
+            case nfs_opnum4.OP_BACKCHANNEL_CTL:
+                opbackchannel_ctl = new BACKCHANNEL_CTL4res(xdr);
+                break;
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
+                opbind_conn_to_session = new BIND_CONN_TO_SESSION4res(xdr);
+                break;
+            case nfs_opnum4.OP_EXCHANGE_ID:
+                opexchange_id = new EXCHANGE_ID4res(xdr);
+                break;
+            case nfs_opnum4.OP_CREATE_SESSION:
+                opcreate_session = new CREATE_SESSION4res(xdr);
+                break;
+            case nfs_opnum4.OP_DESTROY_SESSION:
+                opdestroy_session = new DESTROY_SESSION4res(xdr);
+                break;
+            case nfs_opnum4.OP_FREE_STATEID:
+                opfree_stateid = new FREE_STATEID4res(xdr);
+                break;
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
+                opget_dir_delegation = new GET_DIR_DELEGATION4res(xdr);
+                break;
+            case nfs_opnum4.OP_GETDEVICEINFO:
+                opgetdeviceinfo = new GETDEVICEINFO4res(xdr);
+                break;
+            case nfs_opnum4.OP_GETDEVICELIST:
+                opgetdevicelist = new GETDEVICELIST4res(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTCOMMIT:
+                oplayoutcommit = new LAYOUTCOMMIT4res(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTERROR:
+                oplayouterror = new LAYOUTERROR4res();
+                break;
+            case nfs_opnum4.OP_LAYOUTGET:
+                oplayoutget = new LAYOUTGET4res(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTSTATS:
+                oplayoutstats = new LAYOUTSTATS4res(xdr);
+                break;
+            case nfs_opnum4.OP_LAYOUTRETURN:
+                oplayoutreturn = new LAYOUTRETURN4res(xdr);
+                break;
+            case nfs_opnum4.OP_SECINFO_NO_NAME:
+                opsecinfo_no_name = new SECINFO_NO_NAME4res(xdr);
+                break;
+            case nfs_opnum4.OP_SEQUENCE:
+                opsequence = new SEQUENCE4res(xdr);
+                break;
+            case nfs_opnum4.OP_SET_SSV:
+                opset_ssv = new SET_SSV4res(xdr);
+                break;
+            case nfs_opnum4.OP_TEST_STATEID:
+                optest_stateid = new TEST_STATEID4res(xdr);
+                break;
+            case nfs_opnum4.OP_WANT_DELEGATION:
+                opwant_delegation = new WANT_DELEGATION4res(xdr);
+                break;
+            case nfs_opnum4.OP_DESTROY_CLIENTID:
+                opdestroy_clientid = new DESTROY_CLIENTID4res(xdr);
+                break;
+            case nfs_opnum4.OP_RECLAIM_COMPLETE:
+                opreclaim_complete = new RECLAIM_COMPLETE4res(xdr);
+                break;
+            case nfs_opnum4.OP_GETXATTR:
+                opgetxattr = new GETXATTR4res(xdr);
+                break;
+            case nfs_opnum4.OP_SETXATTR:
+                opsetxattr = new SETXATTR4res(xdr);
+                break;
+            case nfs_opnum4.OP_LISTXATTRS:
+                oplistxattrs = new LISTXATTRS4res(xdr);
+                break;
+            case nfs_opnum4.OP_REMOVEXATTR:
+                opremovexattr = new REMOVEXATTR4res(xdr);
+                break;
+            case nfs_opnum4.OP_ALLOCATE:
+                opallocate = new ALLOCATE4res(xdr);
+                break;
+            case nfs_opnum4.OP_COPY:
+                opcopy = new COPY4res(xdr);
+                break;
+            case nfs_opnum4.OP_COPY_NOTIFY:
+                opcopy_notify = new COPY_NOTIFY4res(xdr);
+                break;
+            case nfs_opnum4.OP_DEALLOCATE:
+                opdeallocate = new DEALLOCATE4res(xdr);
+                break;
+            case nfs_opnum4.OP_IO_ADVISE:
+                opio_advise = new IO_ADVISE4res(xdr);
+                break;
+            case nfs_opnum4.OP_OFFLOAD_CANCEL:
+                opoffload_cancel = new OFFLOAD_CANCEL4res(xdr);
+                break;
+            case nfs_opnum4.OP_OFFLOAD_STATUS:
+                opoffload_status = new OFFLOAD_STATUS4res(xdr);
+                break;
+            case nfs_opnum4.OP_READ_PLUS:
+                opread_plus = new READ_PLUS4res(xdr);
+                break;
+            case nfs_opnum4.OP_SEEK:
+                opseek = new SEEK4res(xdr);
+                break;
+            case nfs_opnum4.OP_WRITE_SAME:
+                opwrite_same = new WRITE_SAME4res(xdr);
+                break;
+            case nfs_opnum4.OP_CLONE:
+                opclone = new CLONE4res(xdr);
+                break;
+            case nfs_opnum4.OP_ILLEGAL:
+                opillegal = new ILLEGAL4res(xdr);
+                break;
         }
     }
 
@@ -1258,7 +1258,7 @@ public class nfs_resop4 implements XdrAble {
                 resop.opillegal = new ILLEGAL4res();
                 break;
             default:
-		resop.resop = nfs_opnum4.OP_ILLEGAL;
+                resop.resop = nfs_opnum4.OP_ILLEGAL;
                 resop.opillegal = new ILLEGAL4res();
         }
         return resop;

@@ -2,6 +2,8 @@ package org.dcache.nfs.benchmarks;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
 import org.dcache.nfs.util.Cache;
 import org.dcache.nfs.util.NopCacheEventListener;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -17,8 +19,6 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
 public class CacheBenchmark {

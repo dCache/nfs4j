@@ -23,18 +23,18 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.CompoundContext;
-import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.READ4res;
 import org.dcache.nfs.v4.xdr.READ4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.IsDirException;
-import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class DSOperationREAD extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
-     private final FsCache _fsCache;
+    private final FsCache _fsCache;
 
     public DSOperationREAD(nfs_argop4 args, FsCache fsCache) {
         super(args, nfs_opnum4.OP_READ);
@@ -66,12 +66,12 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
             throw new InvalException("Invalid object type");
         }
 
-        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opread.stateid) && !Stateids.OneStateId().equalsWithSeq(_args.opread.stateid)) {
+        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opread.stateid) && !Stateids
+                .OneStateId().equalsWithSeq(_args.opread.stateid)) {
             /*
-             *  The NFSv4.0 spec requires to update lease time as long as client
-             * needs the file. This is done through READ, WRITE and RENEW
-             * opertations. With introduction of sessions in v4.1 update of the
-             * lease time done through SEQUENCE operation.
+             * The NFSv4.0 spec requires to update lease time as long as client needs the file. This is done through
+             * READ, WRITE and RENEW opertations. With introduction of sessions in v4.1 update of the lease time done
+             * through SEQUENCE operation.
              */
             context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
         }

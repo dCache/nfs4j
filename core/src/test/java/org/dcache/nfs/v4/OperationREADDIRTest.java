@@ -1,20 +1,32 @@
 package org.dcache.nfs.v4;
 
-import com.google.common.primitives.Ints;
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import static org.dcache.testutils.XdrHelper.calculateSize;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.MovedException;
 import org.dcache.nfs.status.TooSmallException;
 import org.dcache.nfs.v4.xdr.entry4;
 import org.dcache.nfs.v4.xdr.fattr4_rdattr_error;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.DirectoryEntry;
@@ -24,20 +36,10 @@ import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.dcache.oncrpc4j.xdr.Xdr;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-import static org.dcache.testutils.XdrHelper.calculateSize;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import com.google.common.primitives.Ints;
 
 public class OperationREADDIRTest {
 
@@ -58,10 +60,10 @@ public class OperationREADDIRTest {
 
     @Before
     public void setup() throws Exception {
-        dirHandle = new FileHandle(0, 0, 0, new byte[]{0, 0, 0, 0}); // the dir we want to read
+        dirHandle = new FileHandle(0, 0, 0, new byte[] {0, 0, 0, 0}); // the dir we want to read
         dirInode = new Inode(dirHandle);
         dirStat = new Stat(); // the stat marking it as a dir
-        //noinspection OctalInteger
+        // noinspection OctalInteger
         dirStat.setMode(Stat.S_IFDIR | 0755);
         dirStat.setMTime(System.currentTimeMillis());
         dirStat.setATime(System.currentTimeMillis());
@@ -137,7 +139,8 @@ public class OperationREADDIRTest {
     public void testReaddirErrorAttributeSingleEntry() throws Exception {
 
         givenDirectory(file("file"));
-        when(vfs.getAcl(any(Inode.class))).thenThrow(new MovedException()); // can't use MovedException.class as status value not initialized
+        when(vfs.getAcl(any(Inode.class))).thenThrow(new MovedException()); // can't use MovedException.class as status
+                                                                            // value not initialized
 
         listed(nfs4_prot.FATTR4_ACL, nfs4_prot.FATTR4_RDATTR_ERROR);
 
@@ -156,7 +159,7 @@ public class OperationREADDIRTest {
 
         // discover nfs server cookie as it may be different.
         long highestCookie = 0;
-        while(entries != null) {
+        while (entries != null) {
             highestCookie = entries.cookie.value;
             entries = entries.nextentry;
         }
@@ -173,7 +176,7 @@ public class OperationREADDIRTest {
         FileHandle handle = new FileHandle(0, 1, 0, Ints.toByteArray(cookie));
         Inode inode = new Inode(handle);
         Stat stat = new Stat(); // the stat marking it as a dir
-        //noinspection OctalInteger
+        // noinspection OctalInteger
         stat.setMode(Stat.S_IFDIR | 0755);
         stat.setMTime(System.currentTimeMillis());
         stat.setATime(System.currentTimeMillis());
@@ -201,7 +204,7 @@ public class OperationREADDIRTest {
         FileHandle handle = new FileHandle(0, 1, 0, Ints.toByteArray(cookie));
         Inode inode = new Inode(handle);
         Stat stat = new Stat(); // the stat marking it as a dir
-        //noinspection OctalInteger
+        // noinspection OctalInteger
         stat.setMode(Stat.S_IFREG | 0644);
         stat.setMTime(System.currentTimeMillis());
         stat.setATime(System.currentTimeMillis());
@@ -224,7 +227,7 @@ public class OperationREADDIRTest {
 
     private void givenDirectory(DirectoryEntry... enties) throws IOException {
 
-          verifier4 cookieVerifier = verifier4.valueOf(1);
+        verifier4 cookieVerifier = verifier4.valueOf(1);
 
         // vfs will return only "." and ".." as contents, both leading to itself
         List<DirectoryEntry> dirContents = new ArrayList<>();
@@ -242,7 +245,7 @@ public class OperationREADDIRTest {
                 .thenReturn(new DirectoryStream(cookieVerifier.value, Collections.emptyList()));
 
         // sublist cookie based
-        for(DirectoryEntry e: dirContents) {
+        for (DirectoryEntry e : dirContents) {
             when(vfs.list(eq(dirInode), any(), eq(e.getCookie())))
                     .thenReturn(new DirectoryStream(cookieVerifier.value, dirContents).tail(e.getCookie()));
         }

@@ -19,13 +19,13 @@
  */
 package org.dcache.nfs.util;
 
-import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import com.google.common.io.BaseEncoding;
+
 /**
- * A helper class for opaque data manipulations.
- * Enabled opaque date to be used as a key in {@link java.util.Collection}
+ * A helper class for opaque data manipulations. Enabled opaque date to be used as a key in {@link java.util.Collection}
  */
 public class Opaque implements Serializable {
 

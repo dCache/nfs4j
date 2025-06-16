@@ -19,8 +19,9 @@
  */
 package org.dcache.nfs.status;
 
-import org.dcache.nfs.ChimeraNFSException;
 import static org.dcache.nfs.nfsstat.*;
+
+import org.dcache.nfs.ChimeraNFSException;
 
 public class BackChanBusyException extends ChimeraNFSException {
 
@@ -38,4 +39,3 @@ public class BackChanBusyException extends ChimeraNFSException {
         super(NFSERR_BACK_CHAN_BUSY, msg, cause);
     }
 }
-

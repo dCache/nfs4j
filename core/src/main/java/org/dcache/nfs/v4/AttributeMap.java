@@ -41,8 +41,8 @@ import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.settime4;
 import org.dcache.nfs.v4.xdr.utf8str_cs;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
-import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.Xdr;
+import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 
 /**
@@ -108,7 +108,8 @@ public class AttributeMap {
         return attrs;
     }
 
-    private static void xdr2fattr(Map<Integer, XdrAble> attrs, int fattr, XdrDecodingStream xdr) throws OncRpcException, IOException {
+    private static void xdr2fattr(Map<Integer, XdrAble> attrs, int fattr, XdrDecodingStream xdr) throws OncRpcException,
+            IOException {
         XdrAble attr;
         switch (fattr) {
             case nfs4_prot.FATTR4_SIZE:

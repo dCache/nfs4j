@@ -34,21 +34,21 @@ public class LocalIoOperationExecutor extends MDSOperationExecutor {
     private final FsCache _fs;
 
     public LocalIoOperationExecutor(FsCache fs) {
-	_fs = fs;
+        _fs = fs;
     }
 
     @Override
     public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
-	switch (op.argop) {
-	    case nfs_opnum4.OP_READ:
-		return new DSOperationREAD(op, _fs);
-	    case nfs_opnum4.OP_COMMIT:
-		return new DSOperationCOMMIT(op, _fs);
-	    case nfs_opnum4.OP_WRITE:
-		return new DSOperationWRITE(op, _fs);
-	    default:
-		return super.getOperation(op);
-	}
+        switch (op.argop) {
+            case nfs_opnum4.OP_READ:
+                return new DSOperationREAD(op, _fs);
+            case nfs_opnum4.OP_COMMIT:
+                return new DSOperationCOMMIT(op, _fs);
+            case nfs_opnum4.OP_WRITE:
+                return new DSOperationWRITE(op, _fs);
+            default:
+                return super.getOperation(op);
+        }
     }
 
 }

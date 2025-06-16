@@ -18,11 +18,14 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.util;
+
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+
 import javax.management.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,20 +33,20 @@ import org.slf4j.LoggerFactory;
  * Class CacheMXBeanImpl
  *
  */
-public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
+public class CacheMXBeanImpl<K, V> implements CacheMXBean<V> {
 
     private static final Logger _log = LoggerFactory.getLogger(CacheMXBeanImpl.class);
 
-    private final Cache<K,V> _cache;
+    private final Cache<K, V> _cache;
 
-    public CacheMXBeanImpl(Cache<K,V> cache){
+    public CacheMXBeanImpl(Cache<K, V> cache) {
         _cache = cache;
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         try {
             String name = String.format("%s:type=Cache,name=%s",
                     _cache.getClass().getPackage().getName(), _cache.getName());
             ObjectName mxBeanName = new ObjectName(name);
-            if( !server.isRegistered(mxBeanName)) {
+            if (!server.isRegistered(mxBeanName)) {
                 server.registerMBean(this, new ObjectName(name));
             }
         } catch (MalformedObjectNameException | InstanceAlreadyExistsException
@@ -63,7 +66,7 @@ public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
         List<CacheElement<V>> entries = _cache.entries();
         String[] asArray = new String[entries.size()];
         int i = 0;
-        for(CacheElement<V> v: entries) {
+        for (CacheElement<V> v : entries) {
             asArray[i] = v.toString();
             i++;
         }
@@ -90,5 +93,3 @@ public class CacheMXBeanImpl<K,V> implements CacheMXBean<V> {
         return Duration.between(Instant.now(), _cache.lastClean()).toMillis();
     }
 }
-
-

@@ -18,11 +18,13 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-import java.io.IOException;
 
 public class openflag4 implements XdrAble {
     public int opentype;
@@ -32,31 +34,31 @@ public class openflag4 implements XdrAble {
     }
 
     public openflag4(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdr.xdrEncodeInt(opentype);
-        switch ( opentype ) {
-        case opentype4.OPEN4_CREATE:
-            how.xdrEncode(xdr);
-            break;
-        default:
-            break;
+        switch (opentype) {
+            case opentype4.OPEN4_CREATE:
+                how.xdrEncode(xdr);
+                break;
+            default:
+                break;
         }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         opentype = xdr.xdrDecodeInt();
-        switch ( opentype ) {
-        case opentype4.OPEN4_CREATE:
-            how = new createhow4(xdr);
-            break;
-        default:
-            break;
+        switch (opentype) {
+            case opentype4.OPEN4_CREATE:
+                how = new createhow4(xdr);
+                break;
+            default:
+                break;
         }
     }
 

@@ -19,24 +19,24 @@
  */
 package org.dcache.nfs.v4;
 
-import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.v4.xdr.bitmap4;
-import org.dcache.nfs.v4.xdr.nfs_resop4;
-import org.dcache.nfs.v4.xdr.GETDEVICEINFO4res;
-import org.dcache.nfs.v4.xdr.GETDEVICEINFO4resok;
-import org.dcache.nfs.v4.xdr.deviceid4;
-import org.dcache.nfs.v4.xdr.device_addr4;
+import static org.dcache.nfs.v4.xdr.notify_deviceid_type4.*;
+
 import java.io.IOException;
+
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.v4.xdr.GETDEVICEINFO4res;
+import org.dcache.nfs.v4.xdr.GETDEVICEINFO4resok;
+import org.dcache.nfs.v4.xdr.bitmap4;
+import org.dcache.nfs.v4.xdr.device_addr4;
+import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layouttype4;
-
+import org.dcache.nfs.v4.xdr.nfs_argop4;
+import org.dcache.nfs.v4.xdr.nfs_opnum4;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dcache.nfs.v4.xdr.notify_deviceid_type4.*;
 
 public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
@@ -50,8 +50,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         /*
-         * GETDEVICEINFO. returns the mapping of device ID to storage device
-         * address.
+         * GETDEVICEINFO. returns the mapping of device ID to storage device address.
          */
         final GETDEVICEINFO4res res = result.opgetdeviceinfo;
         final NFSv41DeviceManager pnfsDeviceManager = context
@@ -68,7 +67,7 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
         device_addr4 deviceInfo = pnfsDeviceManager.getDeviceInfo(context, _args.opgetdeviceinfo);
 
         if (deviceInfo == null) {
-            throw new NoEntException("invalid deviceInfo id [" + deviceId +"]");
+            throw new NoEntException("invalid deviceInfo id [" + deviceId + "]");
         }
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;

@@ -19,6 +19,19 @@
  */
 package org.dcache.nfs.vfs;
 
+import static java.util.Objects.requireNonNull;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.Subject;
+
+import org.dcache.nfs.util.GuavaCacheMXBeanImpl;
+import org.dcache.nfs.util.Opaque;
+
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
@@ -26,16 +39,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import javax.security.auth.Subject;
-import org.dcache.nfs.util.GuavaCacheMXBeanImpl;
-import org.dcache.nfs.util.Opaque;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Caching decorator.
@@ -53,19 +56,19 @@ public class VfsCache extends ForwardingFileSystem {
 
     public VfsCache(VirtualFileSystem inner, VfsCacheConfig cacheConfig) {
         _inner = inner;
-	_lookupCache = CacheBuilder.newBuilder()
-		.maximumSize(cacheConfig.getMaxEntries())
-		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
-		.softValues()
+        _lookupCache = CacheBuilder.newBuilder()
+                .maximumSize(cacheConfig.getMaxEntries())
+                .expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
+                .softValues()
                 .recordStats()
-		.build(new LoockupLoader());
+                .build(new LoockupLoader());
 
-	_statCache = CacheBuilder.newBuilder()
-		.maximumSize(cacheConfig.getMaxEntries())
-		.expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
-		.softValues()
+        _statCache = CacheBuilder.newBuilder()
+                .maximumSize(cacheConfig.getMaxEntries())
+                .expireAfterWrite(cacheConfig.getLifeTime(), cacheConfig.getTimeUnit())
+                .softValues()
                 .recordStats()
-		.build();
+                .build();
 
         _parentCache = CacheBuilder.newBuilder()
                 .maximumSize(cacheConfig.getMaxEntries())
@@ -81,9 +84,8 @@ public class VfsCache extends ForwardingFileSystem {
                 .recordStats()
                 .build();
 
-        _fsStatSupplier = cacheConfig.getFsStatLifeTime() > 0 ?
-                Suppliers.memoizeWithExpiration(new FsStatSupplier(), cacheConfig.getFsStatLifeTime(), cacheConfig.getFsSataTimeUnit()) :
-                new FsStatSupplier();
+        _fsStatSupplier = cacheConfig.getFsStatLifeTime() > 0 ? Suppliers.memoizeWithExpiration(new FsStatSupplier(),
+                cacheConfig.getFsStatLifeTime(), cacheConfig.getFsSataTimeUnit()) : new FsStatSupplier();
 
         new GuavaCacheMXBeanImpl("vfs-stat", _statCache);
         new GuavaCacheMXBeanImpl("vfs-parent", _parentCache);
@@ -105,17 +107,17 @@ public class VfsCache extends ForwardingFileSystem {
     @Override
     public Inode symlink(Inode parent, String path, String link, Subject subject, int mode) throws IOException {
         Inode inode = _inner.symlink(parent, path, link, subject, mode);
-	invalidateStatCache(parent);
-	return inode;
+        invalidateStatCache(parent);
+        return inode;
     }
 
     @Override
     public void remove(Inode parent, String path) throws IOException {
-	Inode inode = lookup(parent, path);
+        Inode inode = lookup(parent, path);
         _inner.remove(parent, path);
         invalidateLookupCache(parent, path);
-	invalidateStatCache(parent);
-	invalidateStatCache(inode);
+        invalidateStatCache(parent);
+        invalidateStatCache(inode);
     }
 
     @Override
@@ -127,20 +129,20 @@ public class VfsCache extends ForwardingFileSystem {
     public boolean move(Inode src, String oldName, Inode dest, String newName) throws IOException {
 
         boolean isChanged = _inner.move(src, oldName, dest, newName);
-	if (isChanged) {
-	    invalidateLookupCache(src, oldName);
-	    invalidateLookupCache(dest, newName);
-	    invalidateStatCache(src);
-	    invalidateStatCache(dest);
-	}
-	return isChanged;
+        if (isChanged) {
+            invalidateLookupCache(src, oldName);
+            invalidateLookupCache(dest, newName);
+            invalidateStatCache(src);
+            invalidateStatCache(dest);
+        }
+        return isChanged;
     }
 
     @Override
     public Inode mkdir(Inode parent, String path, Subject subject, int mode) throws IOException {
         Inode inode = _inner.mkdir(parent, path, subject, mode);
         updateLookupCache(parent, path, inode);
-	invalidateStatCache(parent);
+        invalidateStatCache(parent);
         return inode;
     }
 
@@ -148,8 +150,8 @@ public class VfsCache extends ForwardingFileSystem {
     public Inode link(Inode parent, Inode link, String path, Subject subject) throws IOException {
         Inode inode = _inner.link(parent, link, path, subject);
         updateLookupCache(parent, path, inode);
-	invalidateStatCache(parent);
-	invalidateStatCache(inode);
+        invalidateStatCache(parent);
+        invalidateStatCache(inode);
         return inode;
     }
 
@@ -167,7 +169,7 @@ public class VfsCache extends ForwardingFileSystem {
     public Inode create(Inode parent, Stat.Type type, String path, Subject subject, int mode) throws IOException {
         Inode inode = _inner.create(parent, type, path, subject, mode);
         updateLookupCache(parent, path, inode);
-	invalidateStatCache(parent);
+        invalidateStatCache(parent);
         updateParentCache(inode, parent);
         return inode;
     }
@@ -180,7 +182,7 @@ public class VfsCache extends ForwardingFileSystem {
     @Override
     public void setattr(Inode inode, Stat stat) throws IOException {
         _inner.setattr(inode, stat);
-	invalidateStatCache(inode);
+        invalidateStatCache(inode);
     }
 
     @Override
@@ -194,7 +196,7 @@ public class VfsCache extends ForwardingFileSystem {
     }
 
     /*
-       Utility methods for cache manipulation.
+     * Utility methods for cache manipulation.
      */
 
     /**
@@ -204,11 +206,11 @@ public class VfsCache extends ForwardingFileSystem {
      * @param path to invalidate
      */
     public void invalidateLookupCache(Inode parent, String path) {
-	_lookupCache.invalidate(new CacheKey(parent, path));
+        _lookupCache.invalidate(new CacheKey(parent, path));
     }
 
     private void updateLookupCache(Inode parent, String path, Inode inode) {
-	_lookupCache.put(new CacheKey(parent, path), inode);
+        _lookupCache.put(new CacheKey(parent, path), inode);
     }
 
     /**
@@ -217,7 +219,7 @@ public class VfsCache extends ForwardingFileSystem {
      * @param inode The inode for which cached state value should be invalidated.
      */
     public void invalidateStatCache(final Inode inode) {
-	_statCache.invalidate(new Opaque(inode.getFileId()));
+        _statCache.invalidate(new Opaque(inode.getFileId()));
     }
 
     private void updateParentCache(Inode inode, Inode parent) {
@@ -233,23 +235,23 @@ public class VfsCache extends ForwardingFileSystem {
     }
 
     private Inode lookupFromCacheOrLoad(final Inode parent, final String path) throws IOException {
-	try {
-	    return _lookupCache.get(new CacheKey(parent, path));
-	} catch (ExecutionException e) {
-	    Throwable t = e.getCause();
-	    Throwables.throwIfInstanceOf(t, IOException.class);
-	    throw new IOException(e.getMessage(), t);
-	}
+        try {
+            return _lookupCache.get(new CacheKey(parent, path));
+        } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            Throwables.throwIfInstanceOf(t, IOException.class);
+            throw new IOException(e.getMessage(), t);
+        }
     }
 
     private Stat statFromCacheOrLoad(final Inode inode) throws IOException {
-	try {
-	    return _statCache.get(new Opaque(inode.getFileId()), () -> _inner.getattr(inode));
-	} catch (ExecutionException e) {
-	    Throwable t = e.getCause();
-	    Throwables.throwIfInstanceOf(t, IOException.class);
-	    throw new IOException(e.getMessage(), t);
-	}
+        try {
+            return _statCache.get(new Opaque(inode.getFileId()), () -> _inner.getattr(inode));
+        } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            Throwables.throwIfInstanceOf(t, IOException.class);
+            throw new IOException(e.getMessage(), t);
+        }
     }
 
     private class ParentLoader extends CacheLoader<Inode, Inode> {
@@ -269,6 +271,7 @@ public class VfsCache extends ForwardingFileSystem {
             throw new IOException(e.getMessage(), t);
         }
     }
+
     /**
      * Cache entry key based on parent id and name
      */
@@ -350,7 +353,7 @@ public class VfsCache extends ForwardingFileSystem {
         public FsStat get() {
             try {
                 return _inner.getFsStat();
-            }catch (IOException e) {
+            } catch (IOException e) {
                 // not true, but good enough.
                 return new FsStat(0, 0, 0, 0);
             }
@@ -363,8 +366,7 @@ public class VfsCache extends ForwardingFileSystem {
         InodeCacheEntry cacheKey;
         if (cookie == 0L && Arrays.equals(verifier, DirectoryStream.ZERO_VERIFIER)) {
             /*
-             * Initial listing. Lets try cache first. Use the same key as if we had
-             * executed directory listing.
+             * Initial listing. Lets try cache first. Use the same key as if we had executed directory listing.
              */
             cacheKey = new InodeCacheEntry(inode, delegate().directoryVerifier(inode));
         } else {

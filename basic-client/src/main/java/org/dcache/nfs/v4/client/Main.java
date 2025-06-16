@@ -19,12 +19,6 @@
  */
 package org.dcache.nfs.v4.client;
 
-import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.io.BaseEncoding;
-import com.google.common.net.HostAndPort;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -46,41 +40,33 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.dcache.nfs.status.BadLayoutException;
-import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.UserInterruptException;
-import org.jline.reader.impl.completer.StringsCompleter;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-
-import org.dcache.nfs.v4.xdr.COMPOUND4args;
-import org.dcache.nfs.v4.xdr.COMPOUND4res;
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.BadLayoutException;
+import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.v4.AttributeMap;
+import org.dcache.nfs.v4.ClientSession;
 import org.dcache.nfs.v4.CompoundBuilder;
 import org.dcache.nfs.v4.Stateids;
+import org.dcache.nfs.v4.xdr.COMPOUND4args;
+import org.dcache.nfs.v4.xdr.COMPOUND4res;
+import org.dcache.nfs.v4.xdr.SEQUENCE4args;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.entry4;
+import org.dcache.nfs.v4.xdr.fattr4_fs_layout_types;
 import org.dcache.nfs.v4.xdr.fattr4_fs_locations;
+import org.dcache.nfs.v4.xdr.fattr4_lease_time;
+import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.fattr4_type;
 import org.dcache.nfs.v4.xdr.layout4;
 import org.dcache.nfs.v4.xdr.layoutiomode4;
 import org.dcache.nfs.v4.xdr.layouttype4;
+import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
-import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.NotSuppException;
-import org.dcache.nfs.v4.AttributeMap;
-import org.dcache.nfs.v4.ClientSession;
-import org.dcache.nfs.v4.xdr.SEQUENCE4args;
-import org.dcache.nfs.v4.xdr.fattr4_lease_time;
-import org.dcache.nfs.v4.xdr.fattr4_size;
-import org.dcache.nfs.v4.xdr.mode4;
-import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout4;
 import org.dcache.nfs.v4.xdr.nfsv4_1_file_layout_ds_addr4;
@@ -91,8 +77,22 @@ import org.dcache.nfs.v4.xdr.state_protect_how4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.Stat;
-import org.dcache.oncrpc4j.rpc.net.IpProtocolType;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.rpc.net.IpProtocolType;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
+import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.io.BaseEncoding;
+import com.google.common.net.HostAndPort;
 
 public class Main {
 
@@ -129,22 +129,22 @@ public class Main {
         Main nfsClient = null;
 
         final String[] commands = {
-            "mount",
-            "cd",
-            "ls",
-            "lookup",
-            "lookup-fh",
-            "mkdir",
-            "read",
-            "readatonce",
-            "filebomb",
-            "remove",
-            "umount",
-            "write",
-            "fs_locations",
-            "getattr",
-            "openbomb",
-            "read-nostate"
+                "mount",
+                "cd",
+                "ls",
+                "lookup",
+                "lookup-fh",
+                "mkdir",
+                "read",
+                "readatonce",
+                "filebomb",
+                "remove",
+                "umount",
+                "write",
+                "fs_locations",
+                "getattr",
+                "openbomb",
+                "read-nostate"
         };
 
         if (args.length > 0) {
@@ -166,7 +166,7 @@ public class Main {
 
         try (PrintWriter out = new PrintWriter(terminal.output())) {
 
- cloop: while ((line = reader.readLine(PROMPT)) != null) {
+            cloop : while ((line = reader.readLine(PROMPT)) != null) {
                 line = line.trim();
                 if (line.length() == 0) {
                     continue;
@@ -421,6 +421,7 @@ public class Main {
 
     /**
      * generate set of files and delete them after words
+     *
      * @param string
      * @param string2
      * @throws IOException
@@ -456,7 +457,7 @@ public class Main {
      */
     private void openbomb(String path, int count) throws OncRpcException, IOException {
 
-        for(int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++) {
             open(path);
         }
     }
@@ -546,17 +547,18 @@ public class Main {
                 + ProcessHandle.current().pid() + "@" + InetAddress.getLocalHost().getHostName();
 
         COMPOUND4args args = new CompoundBuilder()
-                .withExchangeId(domain, name, clientid, 0, state_protect_how4.SP4_NONE )
+                .withExchangeId(domain, name, clientid, 0, state_protect_how4.SP4_NONE)
                 .withTag("exchange_id")
                 .build();
 
         COMPOUND4res compound4res = sendCompound(args);
 
         if (compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id.length > 0) {
-            String serverId = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name.toString();
+            String serverId = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_name
+                    .toString();
             nfstime4 buildTime = compound4res.resarray.get(0).opexchange_id.eir_resok4.eir_server_impl_id[0].nii_date;
             System.out.println("Connected to: " + serverId + ", built at: "
-                    + (buildTime.seconds > 0 ? new Date(buildTime.seconds*1000): "<Unknon>"));
+                    + (buildTime.seconds > 0 ? new Date(buildTime.seconds * 1000) : "<Unknon>"));
         } else {
             System.out.println("Connected to: Mr. X");
         }
@@ -590,7 +592,8 @@ public class Main {
 
         sessionid4 sessionid = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_sessionid;
         _sequenceID.value = 0;
-        int maxRequests = compound4res.resarray.get(0).opcreate_session.csr_resok4.csr_fore_chan_attrs.ca_maxrequests.value;
+        int maxRequests = compound4res.resarray.get(
+                0).opcreate_session.csr_resok4.csr_fore_chan_attrs.ca_maxrequests.value;
         System.out.println("Using slots: " + maxRequests);
         _clientSession = new ClientSession(sessionid, maxRequests);
         if (_isMDS) {
@@ -602,7 +605,8 @@ public class Main {
 
             compound4res = sendCompoundInSession(args);
 
-            AttributeMap attributeMap = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+            AttributeMap attributeMap = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size()
+                    - 1).opgetattr.resok4.obj_attributes);
             Optional<fattr4_lease_time> fattr4_lease_timeAttr = attributeMap.get(nfs4_prot.FATTR4_LEASE_TIME);
             int leaseTimeInSeconds = fattr4_lease_timeAttr.get().value;
             System.out.println("server lease time: " + leaseTimeInSeconds + " sec.");
@@ -720,7 +724,8 @@ public class Main {
             verifier = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.cookieverf;
             done = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.eof;
 
-            entry4 dirEntry = compound4res.resarray.get(compound4res.resarray.size() - 1).opreaddir.resok4.reply.entries;
+            entry4 dirEntry = compound4res.resarray.get(compound4res.resarray.size()
+                    - 1).opreaddir.resok4.reply.entries;
             while (dirEntry != null) {
                 cookie = dirEntry.cookie.value;
                 list.add(new String(dirEntry.name.value));
@@ -757,14 +762,16 @@ public class Main {
 
         COMPOUND4res compound4res = sendCompoundInSession(args);
 
-        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size()
+                - 1).opgetattr.resok4.obj_attributes);
 
         Optional<fattr4_fs_locations> locationsAttr = attrs.get(nfs4_prot.FATTR4_FS_LOCATIONS);
         if (locationsAttr.isPresent()) {
-	    fattr4_fs_locations locations = locationsAttr.get();
+            fattr4_fs_locations locations = locationsAttr.get();
             System.out.println("fs_locations fs_root: " + locations.value.fs_root.value[0]);
             System.out.println("fs_locations locations rootpath: " + locations.value.locations[0].rootpath.value[0]);
-            System.out.println("fs_locations locations server: " + new String(locations.value.locations[0].server[0].value.value));
+            System.out.println("fs_locations locations server: " + new String(
+                    locations.value.locations[0].server[0].value.value));
 
         }
     }
@@ -790,7 +797,7 @@ public class Main {
 
         COMPOUND4args args = new CompoundBuilder()
                 .withPutfh(fh)
-                .withGetattr(nfs4_prot.FATTR4_SIZE,nfs4_prot.FATTR4_TYPE)
+                .withGetattr(nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TYPE)
                 .withTag("getattr (stat)")
                 .build();
         COMPOUND4res compound4res = sendCompoundInSession(args);
@@ -821,7 +828,7 @@ public class Main {
             FileIoDevice ioDevice = _knowDevices.get(device);
             InetSocketAddress deviceAddr =
                     ioDevice.of(stripe.getPatternOffset(), stripe.getUnit(),
-                                0, 4096, stripe.getFirstStripeIndex());
+                            0, 4096, stripe.getFirstStripeIndex());
             Main dsClient = _servers.getUnchecked(deviceAddr);
 
             dsClient.nfsRead(stripe.getFh(), or.stateid());
@@ -836,15 +843,15 @@ public class Main {
     }
 
     private void readNoState(String path) throws OncRpcException, IOException {
-	OpenReply or = open(path);
+        OpenReply or = open(path);
         nfsRead(or.fh(), Stateids.ZeroStateId());
-	close(or.fh(), or.stateid());
+        close(or.fh(), or.stateid());
     }
 
     private void readatonce(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withPutfh(path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
                 .withRead(4096, 0, Stateids.currentStateId())
@@ -903,10 +910,9 @@ public class Main {
                     // offset points to current file size
                     if (stripe.isCommitThroughMDS()) {
                         layoutCommit(stripe.getFh(), or.stateid(), 0, offset,
-                            OptionalLong.of(offset - 1), new byte[0]);
+                                OptionalLong.of(offset - 1), new byte[0]);
                     }
                 }
-
 
             } catch (IOException ie) {
                 System.out.println("Write failed: " + ie.getMessage());
@@ -924,7 +930,7 @@ public class Main {
     private OpenReply open(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withPutfh(path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpen(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_READ)
                 .withGetfh()
@@ -944,7 +950,7 @@ public class Main {
     private OpenReply create(String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withPutfh( path.charAt(0) == '/' ? _rootFh : _cwd)
+                .withPutfh(path.charAt(0) == '/' ? _rootFh : _cwd)
                 .withLookup(dirname(path))
                 .withOpenCreate(basename(path), _sequenceID.value, _clientIdByServer, nfs4_prot.OPEN4_SHARE_ACCESS_BOTH)
                 .withGetfh()
@@ -976,9 +982,9 @@ public class Main {
         COMPOUND4args args = new CompoundBuilder()
                 .withPutfh(fh)
                 .withLayoutget(false,
-                clientLayoutType,
-                layoutiomode, 0, 0xffffffff, 0xff, 4096,
-                stateid)
+                        clientLayoutType,
+                        layoutiomode, 0, 0xffffffff, 0xff, 4096,
+                        stateid)
                 .withTag("layoutget")
                 .build();
         COMPOUND4res compound4res = sendCompoundInSession(args);
@@ -1123,20 +1129,19 @@ public class Main {
             case nfsstat.NFSERR_DELAY:
             case nfsstat.NFSERR_LAYOUTTRYLATER:
             case nfsstat.NFSERR_GRACE:
-                    System.out.println("Retrying " + compound + " on " + nfsstat.toString(status));
-                    try {
-                        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(5));
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return false;
-                    }
+                System.out.println("Retrying " + compound + " on " + nfsstat.toString(status));
+                try {
+                    TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(5));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
                 return true;
             default:
                 return false;
 
         }
     }
-
 
     private void get_deviceinfo(deviceid4 deviceId) throws OncRpcException,
             IOException {
@@ -1148,7 +1153,8 @@ public class Main {
         COMPOUND4res compound4res = sendCompoundInSession(args);
 
         nfsv4_1_file_layout_ds_addr4 addr = GetDeviceListStub
-                .decodeFileDevice(compound4res.resarray.get(1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
+                .decodeFileDevice(compound4res.resarray.get(
+                        1).opgetdeviceinfo.gdir_resok4.gdir_device_addr.da_addr_body);
 
         _knowDevices.put(deviceId, new FileIoDevice(addr));
     }
@@ -1161,10 +1167,11 @@ public class Main {
                 .withTag("get_supported_layout_types")
                 .build();
 
-            COMPOUND4res compound4res = sendCompoundInSession(args);
+        COMPOUND4res compound4res = sendCompoundInSession(args);
 
-            AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
-            Optional<fattr4_fs_layout_types> layoutTypes = attrs.get(nfs4_prot.FATTR4_FS_LAYOUT_TYPES);
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size()
+                - 1).opgetattr.resok4.obj_attributes);
+        Optional<fattr4_fs_layout_types> layoutTypes = attrs.get(nfs4_prot.FATTR4_FS_LAYOUT_TYPES);
 
         List<layouttype4> serverLayoutTypes = Arrays.stream(layoutTypes.get().value)
                 .mapToObj(t -> {
@@ -1286,10 +1293,10 @@ public class Main {
                 .withLookup(path)
                 .withGetfh()
                 .withGetattr(nfs4_prot.FATTR4_CHANGE,
-                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY)
+                        nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY)
                 .withRestorefh()
                 .withGetattr(nfs4_prot.FATTR4_CHANGE,
-                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY)
+                        nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY)
                 .withTag("lookup-sun")
                 .build();
 
@@ -1299,14 +1306,15 @@ public class Main {
     private void lookup(String fh, String path) throws OncRpcException, IOException {
 
         COMPOUND4args args = new CompoundBuilder()
-                .withPutfh( new nfs_fh4(fh.getBytes()))
+                .withPutfh(new nfs_fh4(fh.getBytes()))
                 .withLookup(path)
                 .withGetfh()
                 .withTag("lookup-with-id")
                 .build();
 
         COMPOUND4res compound4res = sendCompoundInSession(args);
-        System.out.println("fh = " + BaseEncoding.base16().lowerCase().encode(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetfh.resok4.object.value));
+        System.out.println("fh = " + BaseEncoding.base16().lowerCase().encode(compound4res.resarray.get(
+                compound4res.resarray.size() - 1).opgetfh.resok4.object.value));
     }
 
     private void getattr(String path) throws OncRpcException, IOException {
@@ -1315,13 +1323,14 @@ public class Main {
                 .withPutfh(_cwd)
                 .withLookup(path)
                 .withGetattr(nfs4_prot.FATTR4_CHANGE,
-                nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY, nfs4_prot.FATTR4_MODE)
+                        nfs4_prot.FATTR4_SIZE, nfs4_prot.FATTR4_TIME_MODIFY, nfs4_prot.FATTR4_MODE)
                 .withTag("getattr")
                 .build();
 
         COMPOUND4res compound4res = sendCompoundInSession(args);
 
-        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size() - 1).opgetattr.resok4.obj_attributes);
+        AttributeMap attrs = new AttributeMap(compound4res.resarray.get(compound4res.resarray.size()
+                - 1).opgetattr.resok4.obj_attributes);
 
         Optional<mode4> mode = attrs.get(nfs4_prot.FATTR4_MODE);
         if (mode.isPresent()) {

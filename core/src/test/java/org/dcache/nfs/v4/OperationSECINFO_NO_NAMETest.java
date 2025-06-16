@@ -19,7 +19,12 @@
  */
 package org.dcache.nfs.v4;
 
+import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
+
 import org.dcache.nfs.ExportFile;
 import org.dcache.nfs.v4.xdr.SECINFO_NO_NAME4args;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
@@ -27,12 +32,8 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Before;
-import static org.mockito.Mockito.mock;
-
-import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
+import org.junit.Test;
 
 public class OperationSECINFO_NO_NAMETest {
 
@@ -42,14 +43,15 @@ public class OperationSECINFO_NO_NAMETest {
     @Before
     public void setUp() throws IOException {
 
-        nfs_argop4 arg =  new nfs_argop4();
+        nfs_argop4 arg = new nfs_argop4();
         arg.argop = nfs_opnum4.OP_SECINFO_NO_NAME;
         arg.opsecinfo_no_name = new SECINFO_NO_NAME4args(0);
 
-        op  = new OperationSECINFO_NO_NAME(arg);
+        op = new OperationSECINFO_NO_NAME(arg);
         inode = mock(Inode.class);
 
     }
+
     @Test
     public void testSecUnix() throws Exception {
 

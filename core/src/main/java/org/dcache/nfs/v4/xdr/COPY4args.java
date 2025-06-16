@@ -7,10 +7,12 @@
  * See http://www.dCache.ORG for details
  */
 package org.dcache.nfs.v4.xdr;
+
+import java.io.IOException;
+
 import org.dcache.oncrpc4j.rpc.*;
 import org.dcache.oncrpc4j.rpc.net.*;
 import org.dcache.oncrpc4j.xdr.*;
-import java.io.IOException;
 
 public class COPY4args implements XdrAble {
     public stateid4 ca_src_stateid;
@@ -20,18 +22,18 @@ public class COPY4args implements XdrAble {
     public length4 ca_count;
     public boolean ca_consecutive;
     public boolean ca_synchronous;
-    public netloc4 [] ca_source_server;
+    public netloc4[] ca_source_server;
 
     public COPY4args() {
     }
 
     public COPY4args(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ca_src_stateid.xdrEncode(xdr);
         ca_dst_stateid.xdrEncode(xdr);
         ca_src_offset.xdrEncode(xdr);
@@ -39,11 +41,17 @@ public class COPY4args implements XdrAble {
         ca_count.xdrEncode(xdr);
         xdr.xdrEncodeBoolean(ca_consecutive);
         xdr.xdrEncodeBoolean(ca_synchronous);
-        { int $size = ca_source_server.length; xdr.xdrEncodeInt($size); for ( int $idx = 0; $idx < $size; ++$idx ) { ca_source_server[$idx].xdrEncode(xdr); } }
+        {
+            int $size = ca_source_server.length;
+            xdr.xdrEncodeInt($size);
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ca_source_server[$idx].xdrEncode(xdr);
+            }
+        }
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
-           throws OncRpcException, IOException {
+            throws OncRpcException, IOException {
         ca_src_stateid = new stateid4(xdr);
         ca_dst_stateid = new stateid4(xdr);
         ca_src_offset = new offset4(xdr);
@@ -51,7 +59,13 @@ public class COPY4args implements XdrAble {
         ca_count = new length4(xdr);
         ca_consecutive = xdr.xdrDecodeBoolean();
         ca_synchronous = xdr.xdrDecodeBoolean();
-        { int $size = xdr.xdrDecodeInt(); ca_source_server = new netloc4[$size]; for ( int $idx = 0; $idx < $size; ++$idx ) { ca_source_server[$idx] = new netloc4(xdr); } }
+        {
+            int $size = xdr.xdrDecodeInt();
+            ca_source_server = new netloc4[$size];
+            for (int $idx = 0; $idx < $size; ++$idx) {
+                ca_source_server[$idx] = new netloc4(xdr);
+            }
+        }
     }
 
 }
