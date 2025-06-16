@@ -19,15 +19,16 @@
  */
 package org.dcache.nfs;
 
-import java.net.UnknownHostException;
-import java.net.InetAddress;
-import org.junit.Test;
-
 import static com.google.common.net.InetAddresses.forString;
-import static org.mockito.Mockito.*;
-import static org.mockito.BDDMockito.given;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.junit.Ignore;
+import org.junit.Test;
 
 public class InetAddressMatcherTest {
 
@@ -162,12 +163,7 @@ public class InetAddressMatcherTest {
         assertFalse("incorrect host matched by domain", ipMatcher.match(addr));
     }
 
-    private InetAddress mockInetAddress(String  dnsName, String...ips) throws UnknownHostException {
-
-        InetAddress mockedAddress = mock(InetAddress.class);
-        given(mockedAddress.getHostName()).willReturn(dnsName);
-        given(mockedAddress.getCanonicalHostName()).willReturn(dnsName);
-
-        return mockedAddress;
+    private InetAddress mockInetAddress(String dnsName, String... ips) throws UnknownHostException {
+        return InetAddress.getByAddress(dnsName, InetAddress.getByName(ips[0]).getAddress());
     }
 }
