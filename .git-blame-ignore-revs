@@ -1,0 +1,7 @@
+# This file contains a list of commits that should be ignored by `git blame` command.
+#
+# $ git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# core reformat on 2025-06-16
+97b693c920b37f903e6f736f84999b54f2470d2c
+
