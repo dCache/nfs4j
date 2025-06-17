@@ -201,6 +201,10 @@ public class FileHandle {
             return new FileHandle(generation, export_idx, type, opaque);
         }
 
+        public Inode buildInode(byte[] opaque) {
+            return new Inode(generation, export_idx, type, opaque);
+        }
+
         public FileHandle build() {
             return build(fs_opaque);
         }

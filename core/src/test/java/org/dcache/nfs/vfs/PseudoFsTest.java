@@ -384,10 +384,9 @@ public class PseudoFsTest {
         given(mockedRpc.getTransport()).willReturn(mockedTransport);
         given(mockedRpc.getCredential()).willReturn(mockedAuth);
 
-        Inode inode = new Inode(
-                new FileHandle.FileHandleBuilder()
+        Inode inode = new FileHandle.FileHandleBuilder()
                         .setExportIdx(1)
-                        .build(Longs.toByteArray(1L)));
+                        .buildInode(Longs.toByteArray(1L));
 
         given(mockedExportFile.getExport(1, localAddress.getAddress())).willReturn(null);
 

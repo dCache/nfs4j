@@ -547,7 +547,7 @@ public class PseudoFs extends ForwardingFileSystem {
                 .setExportIdx(index)
                 .setType(0)
                 .build(inode.getFileId());
-        return new Inode(fh);
+        return Inode.forFileHandle(fh);
     }
 
     private int getIndexId(PseudoFsNode node) {
@@ -618,7 +618,7 @@ public class PseudoFs extends ForwardingFileSystem {
                 .setExportIdx(index)
                 .setType(0)
                 .build(inode.getFileId());
-        return new Inode(fh);
+        return Inode.forFileHandle(fh);
     }
 
     private Inode pushExportIndex(Inode parent, Inode inode) {
@@ -648,7 +648,7 @@ public class PseudoFs extends ForwardingFileSystem {
                 .setExportIdx(idx)
                 .setType(1)
                 .build(inode.getFileId());
-        return new Inode(fh);
+        return Inode.forFileHandle(fh);
     }
 
     private void pathToPseudoFs(final PseudoFsNode root, Set<PseudoFsNode> all, FsExport e) {

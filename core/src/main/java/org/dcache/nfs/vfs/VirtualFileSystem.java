@@ -520,4 +520,15 @@ public interface VirtualFileSystem {
     default CompletableFuture<Long> copyFileRange(Inode src, long srcPos, Inode dst, long dstPos, long len) {
         return CompletableFuture.failedFuture(new NotSuppException());
     }
+
+    /**
+     * Converts an NFS file handle to an {@link Inode}.
+     * 
+     * @param bytes The NFS file handle.
+     * @return The {@link Inode}; must not be {@code null}.
+     * @throws IOException on error
+     */
+    default Inode inodeForNfsHandle(byte[] bytes) throws IOException {
+        return Inode.forNfsHandle(bytes);
+    }
 }

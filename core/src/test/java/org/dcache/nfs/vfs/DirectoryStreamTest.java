@@ -26,7 +26,7 @@ public class DirectoryStreamTest {
 
         for (int i = 0; i < 10; i++) {
             FileHandle fh = new FileHandle(0, 0, 0, Ints.toByteArray(i));
-            Inode inode = new Inode(fh);
+            Inode inode = Inode.forFileHandle(fh);
             Stat stat = new Stat();
 
             stat.setMode(Stat.S_IFDIR | 0755);

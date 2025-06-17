@@ -21,33 +21,52 @@ package org.dcache.nfs.vfs;
 
 import java.util.Arrays;
 
-public class Inode {
-
-    private final FileHandle fh;
-
+public class Inode extends FileHandle {
+    /**
+     * This constructor will become marked {@code protected} in a future version.
+     *
+     * @param bytes The VFS-specific bytes.
+     */
+    @Deprecated
     public Inode(byte[] bytes) {
-        this(new FileHandle(bytes));
+        super(bytes);
     }
 
-    public Inode(FileHandle h) {
-        fh = h;
+    @Deprecated(forRemoval = true)
+    public Inode(FileHandle fh) {
+        this(fh.bytes());
+    }
+
+    Inode(int generation, int exportIdx, int type, byte[] fs_opaque) {
+        super(generation, exportIdx, type, fs_opaque);
+    }
+
+    public static Inode forFileHandle(FileHandle fh) {
+        if (fh instanceof Inode) {
+            return ((Inode) fh);
+        }
+        return new Inode(fh.bytes());
+    }
+
+    public static Inode forNfsHandle(byte[] bytes) {
+        return new Inode(bytes);
     }
 
     public static Inode forFile(byte[] bytes) {
-        return new Inode(new FileHandle.FileHandleBuilder().build(bytes));
+        return new FileHandle.FileHandleBuilder().buildInode(bytes);
     }
 
     public byte[] getFileId() {
-        return fh.getFsOpaque();
+        return getFsOpaque();
     }
 
     public byte[] toNfsHandle() {
-        return fh.bytes();
+        return bytes();
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(fh.bytes());
+        return Arrays.hashCode(bytes());
     }
 
     @Override
@@ -59,23 +78,18 @@ public class Inode {
             return false;
         }
         final Inode other = (Inode) obj;
-        return Arrays.equals(fh.bytes(), other.fh.bytes());
+        return Arrays.equals(bytes(), other.bytes());
     }
 
     public boolean isPseudoInode() {
-        return fh.getType() == 1;
+        return getType() == 1;
     }
 
     public int exportIndex() {
-        return fh.getExportIdx();
+        return getExportIdx();
     }
 
     public int handleVersion() {
-        return fh.getVersion();
-    }
-
-    @Override
-    public String toString() {
-        return fh.toString();
+        return getVersion();
     }
 }
