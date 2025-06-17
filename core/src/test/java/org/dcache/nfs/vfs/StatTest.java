@@ -168,7 +168,9 @@ public class StatTest {
     @Test
     public void testGetIno() {
         Stat stat = new Stat();
+        assertFalse(stat.hasIno());
         stat.setIno(1);
+        assertTrue(stat.hasIno());
         assertEquals(1, stat.getIno());
 
     }
