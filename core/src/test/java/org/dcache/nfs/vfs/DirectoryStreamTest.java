@@ -25,7 +25,7 @@ public class DirectoryStreamTest {
         byte[] verifier = verifier4.valueOf(System.currentTimeMillis()).value;
 
         for (int i = 0; i < 10; i++) {
-            Inode inode = new FileHandle(0, 0, 0, Ints.toByteArray(i));
+            Inode inode = Inode.forFile(Ints.toByteArray(i));
             Stat stat = new Stat();
 
             stat.setMode(Stat.S_IFDIR | 0755);

@@ -43,7 +43,6 @@ import com.google.common.primitives.Ints;
 
 public class OperationREADDIRTest {
 
-    private FileHandle dirHandle;
     private Inode dirInode;
     private Stat dirStat;
     private VirtualFileSystem vfs;
@@ -60,8 +59,7 @@ public class OperationREADDIRTest {
 
     @Before
     public void setup() throws Exception {
-        dirHandle = new FileHandle(0, 0, 0, new byte[] {0, 0, 0, 0}); // the dir we want to read
-        dirInode = dirHandle;
+        dirInode = new Inode(0, 0, 0, new byte[] {0, 0, 0, 0}); // the dir we want to read;
         dirStat = new Stat(); // the stat marking it as a dir
         // noinspection OctalInteger
         dirStat.setMode(Stat.S_IFDIR | 0755);
@@ -173,8 +171,7 @@ public class OperationREADDIRTest {
 
         int cookie = ino++;
 
-        FileHandle handle = new FileHandle(0, 1, 0, Ints.toByteArray(cookie));
-        Inode inode = handle;
+        Inode inode = new Inode(0, 1, 0, Ints.toByteArray(cookie));;
         Stat stat = new Stat(); // the stat marking it as a dir
         // noinspection OctalInteger
         stat.setMode(Stat.S_IFDIR | 0755);
@@ -201,8 +198,7 @@ public class OperationREADDIRTest {
 
         int cookie = ino++;
 
-        FileHandle handle = new FileHandle(0, 1, 0, Ints.toByteArray(cookie));
-        Inode inode = handle;
+        Inode inode = new Inode(0, 1, 0, Ints.toByteArray(cookie));
         Stat stat = new Stat(); // the stat marking it as a dir
         // noinspection OctalInteger
         stat.setMode(Stat.S_IFREG | 0644);
