@@ -1,8 +1,7 @@
 package org.dcache.testutils;
 
 import java.net.InetAddress;
-
-import org.mockito.Mockito;
+import java.net.UnknownHostException;
 
 public class InetAddressBuilder {
     private String ipAddress;
@@ -19,9 +18,10 @@ public class InetAddressBuilder {
     }
 
     public InetAddress build() {
-        InetAddress address = Mockito.mock(InetAddress.class);
-        Mockito.when(address.getHostAddress()).thenReturn(ipAddress);
-        Mockito.when(address.getHostName()).thenReturn(hostName);
-        return address;
+        try {
+            return InetAddress.getByAddress(hostName, InetAddress.getByName(ipAddress).getAddress());
+        } catch (UnknownHostException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
