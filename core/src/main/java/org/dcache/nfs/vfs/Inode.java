@@ -130,48 +130,34 @@ public class Inode {
         }
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public int getMagic() {
+    @Deprecated(forRemoval = true)
+    protected int getMagic() {
         return magic;
     }
 
-    public int getGeneration() {
+    @Deprecated(forRemoval = true)
+    protected int getGeneration() {
         return generation;
     }
 
-    public int getExportIdx() {
+    @Deprecated(forRemoval = true)
+    protected int getExportIdx() {
         return exportIdx;
     }
 
-    public int getType() {
+    @Deprecated(forRemoval = true)
+    protected int getType() {
         return type;
     }
 
-    public byte[] getFsOpaque() {
+    @Deprecated(forRemoval = true)
+    protected byte[] getFsOpaque() {
         return fs_opaque;
-    }
-
-    public byte[] bytes() {
-        int len = fs_opaque.length + MIN_LEN;
-        byte[] bytes = new byte[len];
-        ByteBuffer b = ByteBuffer.wrap(bytes);
-        b.order(ByteOrder.BIG_ENDIAN);
-
-        b.putInt(version << 24 | magic);
-        b.putInt(generation);
-        b.putInt(exportIdx);
-        b.put((byte) type);
-        b.put((byte) fs_opaque.length);
-        b.put(fs_opaque);
-        return bytes;
     }
 
     @Override
     public String toString() {
-        return BaseEncoding.base16().lowerCase().encode(this.bytes());
+        return BaseEncoding.base16().lowerCase().encode(this.toNfsHandle());
     }
 
     private static boolean arrayEquals(byte[] a1, byte[] a2, int len) {
@@ -198,12 +184,23 @@ public class Inode {
     }
 
     public byte[] toNfsHandle() {
-        return bytes();
-    }
+        int len = fs_opaque.length + MIN_LEN;
+        byte[] bytes = new byte[len];
+        ByteBuffer b = ByteBuffer.wrap(bytes);
+        b.order(ByteOrder.BIG_ENDIAN);
+
+        b.putInt(version << 24 | magic);
+        b.putInt(generation);
+        b.putInt(exportIdx);
+        b.put((byte) type);
+        b.put((byte) fs_opaque.length);
+        b.put(fs_opaque);
+        return bytes;
+     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(bytes());
+        return Arrays.hashCode(toNfsHandle());
     }
 
     @Override
@@ -215,7 +212,7 @@ public class Inode {
             return false;
         }
         final Inode other = (Inode) obj;
-        return Arrays.equals(bytes(), other.bytes());
+        return Arrays.equals(toNfsHandle(), other.toNfsHandle());
     }
 
     public boolean isPseudoInode() {
@@ -226,7 +223,8 @@ public class Inode {
         return getExportIdx();
     }
 
+    @Deprecated
     public int handleVersion() {
-        return getVersion();
+        return version;
     }
 }

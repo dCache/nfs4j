@@ -63,4 +63,32 @@ public class FileHandle extends Inode {
             return build(fs_opaque);
         }
     }
+
+    public int getVersion() {
+        return handleVersion();
+    }
+
+    public int getMagic() {
+        return super.getMagic();
+    }
+
+    public int getGeneration() {
+        return super.getGeneration();
+    }
+
+    public int getExportIdx() {
+        return super.getExportIdx();
+    }
+
+    public int getType() {
+        return super.getType();
+    }
+
+    public byte[] getFsOpaque() {
+        return super.getFsOpaque();
+    }
+
+    public byte[] bytes() {
+        return toNfsHandle();
+    }
 }
