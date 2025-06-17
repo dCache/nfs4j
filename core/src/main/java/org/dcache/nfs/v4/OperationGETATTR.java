@@ -66,7 +66,6 @@ import org.dcache.nfs.v4.xdr.fattr4_no_trunc;
 import org.dcache.nfs.v4.xdr.fattr4_numlinks;
 import org.dcache.nfs.v4.xdr.fattr4_owner;
 import org.dcache.nfs.v4.xdr.fattr4_rawdev;
-import org.dcache.nfs.v4.xdr.fattr4_rdattr_error;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.fattr4_space_avail;
 import org.dcache.nfs.v4.xdr.fattr4_space_free;
@@ -256,7 +255,11 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
                 return Optional.empty();
             case nfs4_prot.FATTR4_FILEID:
-                return Optional.of(new fattr4_fileid(stat.getIno()));
+                if (stat.hasIno()) {
+                    return Optional.of(new fattr4_fileid(stat.getIno()));
+                } else {
+                    return Optional.empty();
+                }
             case nfs4_prot.FATTR4_FILES_AVAIL:
                 fsStat = getFsStat(fsStat, fs);
                 fattr4_files_avail files_avail = new fattr4_files_avail(fsStat.getTotalFiles() - fsStat.getUsedFiles());
@@ -351,6 +354,9 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                  * TODO!!!:
                  */
 
+                if (!stat.hasIno()) {
+                    return Optional.empty();
+                }
                 long mofi = stat.getIno();
 
                 if (mofi == 0x00b0a23a /* it's a root */) {
