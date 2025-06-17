@@ -542,12 +542,7 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     public static Inode pseudoIdToReal(Inode inode, int index) {
-
-        FileHandle fh = new FileHandle.FileHandleBuilder()
-                .setExportIdx(index)
-                .setType(0)
-                .build(inode.getFileId());
-        return Inode.forFileHandle(fh);
+        return new Inode(0, index, 0, inode.getFileId());
     }
 
     private int getIndexId(PseudoFsNode node) {
@@ -613,12 +608,7 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private Inode pushExportIndex(Inode inode, int index) {
-
-        FileHandle fh = new FileHandle.FileHandleBuilder()
-                .setExportIdx(index)
-                .setType(0)
-                .build(inode.getFileId());
-        return Inode.forFileHandle(fh);
+        return pseudoIdToReal(inode, index);
     }
 
     private Inode pushExportIndex(Inode parent, Inode inode) {
@@ -642,13 +632,8 @@ public class PseudoFs extends ForwardingFileSystem {
         return realToPseudo(inode, 0);
     }
 
-    private Inode realToPseudo(Inode inode, int idx) {
-
-        FileHandle fh = new FileHandle.FileHandleBuilder()
-                .setExportIdx(idx)
-                .setType(1)
-                .build(inode.getFileId());
-        return Inode.forFileHandle(fh);
+    private Inode realToPseudo(Inode inode, int index) {
+        return new Inode(0, index, 1, inode.getFileId());
     }
 
     private void pathToPseudoFs(final PseudoFsNode root, Set<PseudoFsNode> all, FsExport e) {

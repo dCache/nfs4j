@@ -78,6 +78,19 @@ public class FileHandleTest {
     }
 
     @Test
+    public void testFileHandleConstructor() {
+        Inode fh = new Inode(0, "/export/data".hashCode(), 0, "0:INODE:0000C37233174392456EB83E44844E8D28D6:0".getBytes(
+                US_ASCII));
+
+        assertEquals(
+                "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
+                fh.toString());
+        assertArrayEquals(BaseEncoding.base16().lowerCase().decode(
+                "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
+                fh.bytes());
+    }
+
+    @Test
     public void testValidHandleV0Regular() {
         String oldId = "0:INODE:0000C37233174392456EB83E44844E8D28D6:0";
 
