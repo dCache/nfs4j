@@ -77,7 +77,7 @@ public class FileHandle extends Inode {
     }
 
     public int getExportIdx() {
-        return super.getExportIdx();
+        return exportIndex();
     }
 
     public int getType() {
@@ -85,7 +85,7 @@ public class FileHandle extends Inode {
     }
 
     public byte[] getFsOpaque() {
-        return super.getFsOpaque();
+        return getFileId();
     }
 
     public byte[] bytes() {

@@ -147,18 +147,8 @@ public class Inode {
     }
 
     @Deprecated(forRemoval = true)
-    protected int getExportIdx() {
-        return exportIdx;
-    }
-
-    @Deprecated(forRemoval = true)
     protected int getType() {
         return type;
-    }
-
-    @Deprecated(forRemoval = true)
-    protected byte[] getFsOpaque() {
-        return fs_opaque;
     }
 
     @Override
@@ -186,7 +176,7 @@ public class Inode {
     }
 
     public byte[] getFileId() {
-        return getFsOpaque();
+        return fs_opaque;
     }
 
     public byte[] toNfsHandle() {
@@ -226,14 +216,13 @@ public class Inode {
     }
 
     public boolean isPseudoInode() {
-        return getType() == 1;
+        return type == 1;
     }
 
     public int exportIndex() {
-        return getExportIdx();
+        return exportIdx;
     }
 
-    @Deprecated
     public int handleVersion() {
         return version;
     }
