@@ -97,7 +97,11 @@ public class LocalFileSystem implements VirtualFileSystem {
     private Inode resolvePath(Path path) throws NoEntException {
         Inode inodeNumber = pathToInode.get(path);
         if (inodeNumber == null) {
-            throw new NoEntException("path " + path);
+            if (!Files.exists(path)) {
+                throw new NoEntException("path " + path);
+            }
+            inodeNumber = newInode();
+            map(inodeNumber, path);
         }
         return inodeNumber;
     }
@@ -281,7 +285,13 @@ public class LocalFileSystem implements VirtualFileSystem {
             for (Path p : ds) {
                 cookie++;
                 if (cookie > l) {
-                    Inode ino = resolvePath(p);
+                    Inode ino;
+                    try {
+                        ino = resolvePath(p);
+                    } catch (NoEntException e) {
+                        // File was briefly available, but deleted before we could allocate an inode
+                        continue;
+                    }
                     list.add(new DirectoryEntry(p.getFileName().toString(), ino, statPath(p, ino), cookie));
                 }
             }
