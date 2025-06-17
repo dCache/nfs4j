@@ -51,6 +51,7 @@ public class Inode {
     private final int exportIdx;
     private final int type;
     private final byte[] fs_opaque;
+    private final byte[] nfsHandle;
 
     @Deprecated(forRemoval = true)
     public Inode(FileHandle fh) {
@@ -73,6 +74,8 @@ public class Inode {
         this.exportIdx = exportIdx;
         this.type = type;
         this.fs_opaque = fs_opaque;
+
+        this.nfsHandle = buildNfsHandle();
     }
 
     /**
@@ -105,6 +108,7 @@ public class Inode {
             fs_opaque = new byte[olen];
             b.get(fs_opaque);
 
+            this.nfsHandle = bytes.clone();
         } else if (arrayEquals(bytes, FH_V0_REG, FH_V0_REG.length)
                 || arrayEquals(bytes, FH_V0_PFS, FH_V0_PFS.length)) {
             magic = MAGIC;
@@ -125,6 +129,8 @@ public class Inode {
                 exportIdx = -1;
                 fs_opaque = bytes;
             }
+
+            this.nfsHandle = buildNfsHandle();
         } else {
             throw new IllegalArgumentException("Unsupported version: " + geussVersion);
         }
@@ -157,7 +163,7 @@ public class Inode {
 
     @Override
     public String toString() {
-        return BaseEncoding.base16().lowerCase().encode(this.toNfsHandle());
+        return BaseEncoding.base16().lowerCase().encode(nfsHandle);
     }
 
     private static boolean arrayEquals(byte[] a1, byte[] a2, int len) {
@@ -184,6 +190,10 @@ public class Inode {
     }
 
     public byte[] toNfsHandle() {
+        return nfsHandle.clone();
+    }
+
+    private byte[] buildNfsHandle() {
         int len = fs_opaque.length + MIN_LEN;
         byte[] bytes = new byte[len];
         ByteBuffer b = ByteBuffer.wrap(bytes);
@@ -196,11 +206,11 @@ public class Inode {
         b.put((byte) fs_opaque.length);
         b.put(fs_opaque);
         return bytes;
-     }
+    }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(toNfsHandle());
+        return Arrays.hashCode(nfsHandle);
     }
 
     @Override
@@ -212,7 +222,7 @@ public class Inode {
             return false;
         }
         final Inode other = (Inode) obj;
-        return Arrays.equals(toNfsHandle(), other.toNfsHandle());
+        return Arrays.equals(nfsHandle, other.nfsHandle);
     }
 
     public boolean isPseudoInode() {
