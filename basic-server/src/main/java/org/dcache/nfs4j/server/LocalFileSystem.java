@@ -34,6 +34,7 @@ import java.util.UUID;
 import javax.security.auth.Subject;
 
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
+import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.ExistException;
 import org.dcache.nfs.status.InvalException;
@@ -43,6 +44,7 @@ import org.dcache.nfs.status.NotEmptyException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.PermException;
 import org.dcache.nfs.status.ServerFaultException;
+import org.dcache.nfs.status.StaleException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.SimpleIdMap;
 import org.dcache.nfs.v4.xdr.nfsace4;
@@ -86,10 +88,10 @@ public class LocalFileSystem implements VirtualFileSystem {
         return Inode.forFile(toByteArray(inodeNumber));
     }
 
-    private Path resolveInode(Inode inodeNumber) throws NoEntException {
+    private Path resolveInode(Inode inodeNumber) throws ChimeraNFSException {
         Path path = inodeToPath.get(inodeNumber);
         if (path == null) {
-            throw new NoEntException("inode #" + inodeNumber);
+            throw new StaleException("inode #" + inodeNumber);
         }
         return path;
     }
