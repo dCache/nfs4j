@@ -95,10 +95,11 @@ public class UnixSubjects {
      * @return subject with given uid, gid.
      */
     public static Subject toSubject(long uid, long gid) {
-        return new Subject(false,
-                Set.of(new UnixNumericUserPrincipal(uid), new UnixNumericGroupPrincipal(gid, true)),
-                Set.of(),
-                Set.of());
+        var subject = new Subject();
+        subject.getPrincipals().add(new UnixNumericUserPrincipal(uid));
+        subject.getPrincipals().add(new UnixNumericGroupPrincipal(gid, true));
+
+        return subject;
     }
 
     /**
@@ -110,12 +111,10 @@ public class UnixSubjects {
      * @return subject with given uid, gid and gids.
      */
     public static Subject toSubject(long uid, long gid, long... gids) {
-        Subject subject = toSubject(uid, gid);
-        subject.getPrincipals()
-                .addAll(
-                        Arrays.stream(gids)
-                                .mapToObj(l -> new UnixNumericGroupPrincipal(l, false))
-                                .collect(Collectors.toSet()));
+        var subject = toSubject(uid, gid);
+        for (long aux : gids) {
+            subject.getPrincipals().add(new UnixNumericGroupPrincipal(aux, false));
+        }
         return subject;
     }
 
