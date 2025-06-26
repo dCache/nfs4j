@@ -242,7 +242,7 @@ public class FileTracker {
         // client explicitly requested write delegation
         boolean wantWriteDelegation = (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_WRITE_DELEG) != 0;
 
-        Opaque fileId = new Opaque(inode.getFileId());
+        Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
@@ -376,7 +376,7 @@ public class FileTracker {
     public stateid4 downgradeOpen(NFS4Client client, stateid4 stateid, Inode inode, int shareAccess, int shareDeny)
             throws ChimeraNFSException {
 
-        Opaque fileId = new Opaque(inode.getFileId());
+        Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
@@ -426,7 +426,7 @@ public class FileTracker {
     public void delegationReturn(NFS4Client client, stateid4 stateid, Inode inode)
             throws ChimeraNFSException {
 
-        Opaque fileId = new Opaque(inode.getFileId());
+        Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
@@ -464,7 +464,7 @@ public class FileTracker {
     public int getShareAccess(NFS4Client client, Inode inode, stateid4 stateid)
             throws ChimeraNFSException {
 
-        Opaque fileId = new Opaque(inode.getFileId());
+        Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
@@ -527,7 +527,7 @@ public class FileTracker {
      */
     void removeOpen(Inode inode, stateid4 stateid) {
 
-        Opaque fileId = new Opaque(inode.getFileId());
+        Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {

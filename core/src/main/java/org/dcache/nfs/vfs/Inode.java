@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import org.dcache.nfs.util.Opaque;
+
 import com.google.common.io.BaseEncoding;
 
 /**
@@ -48,8 +50,9 @@ public class Inode {
     private final int generation;
     private final int exportIdx;
     private final int type;
-    private final byte[] fs_opaque;
     private final byte[] nfsHandle;
+
+    private final Opaque opaqueKey;
 
     @Deprecated(forRemoval = true)
     public Inode(FileHandle fh) {
@@ -71,9 +74,9 @@ public class Inode {
         this.generation = generation;
         this.exportIdx = exportIdx;
         this.type = type;
-        this.fs_opaque = fs_opaque;
+        this.opaqueKey = new Opaque(fs_opaque.clone());
 
-        this.nfsHandle = buildNfsHandle();
+        this.nfsHandle = buildNfsHandle(fs_opaque);
     }
 
     /**
@@ -106,8 +109,9 @@ public class Inode {
         exportIdx = b.getInt();
         type = (int) b.get();
         int olen = (int) b.get();
-        fs_opaque = new byte[olen];
+        byte[] fs_opaque = new byte[olen];
         b.get(fs_opaque);
+        this.opaqueKey = new Opaque(fs_opaque);
 
         this.nfsHandle = bytes.clone();
     }
@@ -141,14 +145,25 @@ public class Inode {
     }
 
     public byte[] getFileId() {
-        return fs_opaque;
+        return opaqueKey.getOpaque().clone();
+    }
+
+    /**
+     * Returns a key suitable for identifying the underlying inode/file referred to by this instance, providing a
+     * {@link Object#equals(Object)} and {@link Object#hashCode()} implementation that may or may not be different from
+     * {@link Inode#equals(Object)} and {@link Inode#hashCode()}.
+     * 
+     * @return The fileId key.
+     */
+    public Opaque getFileIdKey() {
+        return opaqueKey;
     }
 
     public byte[] toNfsHandle() {
         return nfsHandle.clone();
     }
 
-    private byte[] buildNfsHandle() {
+    private byte[] buildNfsHandle(byte[] fs_opaque) {
         int len = fs_opaque.length + MIN_LEN;
         byte[] bytes = new byte[len];
         ByteBuffer b = ByteBuffer.wrap(bytes);
