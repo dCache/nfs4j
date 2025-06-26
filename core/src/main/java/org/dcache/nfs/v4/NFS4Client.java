@@ -89,9 +89,14 @@ public class NFS4Client {
     private final byte[] _ownerId;
 
     /**
-     * Verifier that is used to detect client reboots.
+     * Client side generated verifier that is used to detect client reboots.
      */
-    private final verifier4 _verifier;
+    private final verifier4 _clientVerifier;
+
+    /**
+     * Server side generated verifier that is used to detect retry.
+     */
+    private verifier4 _serverVerifier;
 
     /**
      * The RPCSEC_GSS principal sent via the RPC headers.
@@ -194,7 +199,8 @@ public class NFS4Client {
         _stateHandler = stateHandler;
         _clock = _stateHandler.getClock();
         _ownerId = Arrays.copyOf(ownerID, ownerID.length);
-        _verifier = verifier;
+        _clientVerifier = verifier;
+        _serverVerifier = verifier4.valueOf(System.currentTimeMillis());
         _principal = principal;
         _clientId = clientId;
 
@@ -236,8 +242,8 @@ public class NFS4Client {
      *
      * @return client generated verifier
      */
-    public verifier4 verifier() {
-        return _verifier;
+    public verifier4 serverGeneratedVerifier() {
+        return _serverVerifier;
     }
 
     /**
@@ -248,9 +254,14 @@ public class NFS4Client {
         return _clientId;
     }
 
-    public boolean verifierEquals(verifier4 verifier) {
-        return _verifier.equals(verifier);
+    public boolean clientGeneratedVerifierEquals(verifier4 verifier) {
+        return _clientVerifier.equals(verifier);
     }
+
+    public boolean serverGeneratedVerifierEquals(verifier4 verifier) {
+        return _serverVerifier.equals(verifier);
+    }
+
 
     public synchronized boolean isConfirmed() {
         return _isConfirmed;
@@ -294,6 +305,7 @@ public class NFS4Client {
     public synchronized void reset() {
         refreshLeaseTime();
         _isConfirmed = false;
+        _serverVerifier = verifier4.valueOf(System.currentTimeMillis());
     }
 
     /**

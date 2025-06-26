@@ -156,7 +156,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 throw new NoEntException("no such client");
             }
 
-            if (!client.verifierEquals(verifier)) {
+            if (!client.clientGeneratedVerifierEquals(verifier)) {
                 _log.debug("case 8: Update but Wrong Verifier");
                 throw new NotSameException("Update but Wrong Verifier");
             }
@@ -181,7 +181,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             } else {
 
                 if (client.isConfirmed()) {
-                    if (client.verifierEquals(verifier) && principal.equals(client.principal())) {
+                    if (client.clientGeneratedVerifierEquals(verifier) && principal.equals(client.principal())) {
                         _log.debug("Case 2: Non-Update on Existing Client ID");
                         client.refreshLeaseTime();
                     } else if (principal.equals(client.principal())) {

@@ -55,28 +55,53 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
         final byte[] id = _args.opsetclientid.client.id;
         NFS4Client client = context.getStateHandler().clientByOwner(id);
 
-        if (client != null && client.isConfirmed() && client.isLeaseValid()) {
 
-            if (!client.principal().equals(context.getPrincipal())) {
-                netaddr4 addr = new netaddr4(client.getRemoteAddress());
-                res.status = nfsstat.NFSERR_CLID_INUSE;
-                res.client_using = new clientaddr4(addr);
-                throw new ClidInUseException();
-            }
-            client.reset();
-
-        } else {
+        if (client == null) {
+            // new client
             client = context.getStateHandler().createClient(
                     context.getRemoteSocketAddress(),
                     context.getLocalSocketAddress(),
                     context.getMinorversion(),
                     _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
                     context.getPrincipal(), false);
+        } else if (!client.isConfirmed()) {
+
+            // existing client, but not confirmed. either retry or client restarted before confirmation
+            context.getStateHandler().removeClient(client);
+            client = context.getStateHandler().createClient(
+                    context.getRemoteSocketAddress(),
+                    context.getLocalSocketAddress(),
+                    context.getMinorversion(),
+                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
+                    context.getPrincipal(), false);
+
+        } else if (!client.clientGeneratedVerifierEquals(verifier)) {
+
+            // existing client, different verifier. Client rebooted.
+            // create new record, keep the old one as required by the RFC 7530
+            client = context.getStateHandler().createClient(
+                    context.getRemoteSocketAddress(),
+                    context.getLocalSocketAddress(),
+                    context.getMinorversion(),
+                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
+                    context.getPrincipal(), false);
+
+        } else if (client.isLeaseValid()) {
+
+            // can't be reused, if principal have changes and client has state
+            if (!client.principal().equals(context.getPrincipal()) && client.hasState()) {
+                netaddr4 addr = new netaddr4(client.getRemoteAddress());
+                res.status = nfsstat.NFSERR_CLID_INUSE;
+                res.client_using = new clientaddr4(addr);
+                throw new ClidInUseException();
+            }
+
+            client.reset();
         }
 
         res.resok4 = new SETCLIENTID4resok();
         res.resok4.clientid = client.getId();
-        res.resok4.setclientid_confirm = client.verifier();
+        res.resok4.setclientid_confirm = client.serverGeneratedVerifier();
         res.status = nfsstat.NFS_OK;
     }
 }
