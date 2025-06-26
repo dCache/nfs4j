@@ -2,6 +2,7 @@ package org.dcache.nfs.v4.nlm;
 
 import java.nio.charset.StandardCharsets;
 
+import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.v4.StateOwner;
 import org.dcache.nfs.v4.xdr.clientid4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -16,14 +17,14 @@ import org.junit.Test;
 public class SimpleLmTest {
 
     private LockManager nlm;
-    private byte[] file1;
-    private byte[] file2;
+    private Opaque file1;
+    private Opaque file2;
 
     @Before
     public void setUp() throws Exception {
         nlm = new SimpleLm();
-        file1 = "file1".getBytes(StandardCharsets.UTF_8);
-        file2 = "file2".getBytes(StandardCharsets.UTF_8);
+        file1 = Opaque.forBytes("file1".getBytes(StandardCharsets.UTF_8));
+        file2 = Opaque.forBytes("file2".getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
