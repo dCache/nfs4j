@@ -29,132 +29,74 @@ import java.util.stream.Collectors;
 import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 
-/**
- * An abstract implementation of {@link LockManager} that handles lock conflict, lock merge and lock split, but lets its
- * subclasses to manage thread safety and lock storage.
- *
- * @since 0.16
- */
-public abstract class AbstractLockManager implements LockManager {
+abstract class AbstractLockManager2 extends AbstractLockManager {
+    private static final boolean DEBUG_DEPRECATED_CALLS = false;
 
-    /**
-     * Get exclusive lock on objects locks.
-     *
-     * @param objId object id.
-     * @return exclusive lock.
-     */
+    @Override
     @Deprecated(forRemoval = true)
-    abstract protected Lock getObjectLock(byte[] objId);
-
-    /**
-     * Get exclusive lock on objects locks.
-     *
-     * @param objId object id.
-     * @return exclusive lock.
-     */
-    protected Lock getObjectLock(Opaque objId) {
-        return getObjectLock(objId.asBytes());
-    }
-
-    /**
-     * Get collection of currently used active locks on the object.
-     *
-     * @param objId object id.
-     * @return collection of active locks.
-     */
-    @Deprecated(forRemoval = true)
-    abstract protected Collection<NlmLock> getActiveLocks(byte[] objId);
-
-    /**
-     * Get collection of currently used active locks on the object.
-     *
-     * @param objId object id.
-     * @return collection of active locks.
-     */
-    protected Collection<NlmLock> getActiveLocks(Opaque objId) {
-        return getActiveLocks(objId.asBytes());
-    }
-
-    /**
-     * Add {@code lock} to an object.
-     *
-     * @param objId object id.
-     * @param lock lock to add.
-     */
-    @Deprecated(forRemoval = true)
-    abstract protected void add(byte[] objId, NlmLock lock);
-
-    /**
-     * Add {@code lock} to an object.
-     *
-     * @param objId object id.
-     * @param lock lock to add.
-     */
-    protected void add(Opaque objId, NlmLock lock) {
-        add(objId.asBytes(), lock);
-    }
-
-    /**
-     * Remove a lock for the given object.
-     *
-     * @param objId object id.
-     * @param lock lock to remove.
-     * @return true, if specified lock was removed.
-     */
-    @Deprecated(forRemoval = true)
-    abstract protected boolean remove(byte[] objId, NlmLock lock);
-
-    /**
-     * Remove a lock for the given object.
-     *
-     * @param objId object id.
-     * @param lock lock to remove.
-     * @return true, if specified lock was removed.
-     */
-    protected boolean remove(Opaque objId, NlmLock lock) {
-        return remove(objId.asBytes(), lock);
-    }
-
-    /**
-     * Add all locks from a given collection of locks
-     *
-     * @param objId object id.
-     * @param locks locks to add.
-     */
-    @Deprecated(forRemoval = true)
-    abstract protected void addAll(byte[] objId, Collection<NlmLock> locks);
-
-    /**
-     * Add all locks from a given collection of locks
-     *
-     * @param objId object id.
-     * @param locks locks to add.
-     */
-    protected void addAll(Opaque objId, Collection<NlmLock> locks) {
-        addAll(objId.asBytes(), locks);
-    }
-
-    /**
-     * Remove all locks specified by {@code locks} associated with the given object.
-     *
-     * @param objId object id.
-     * @param locks collections of locks to remove.
-     */
-    @Deprecated(forRemoval = true)
-    abstract protected void removeAll(byte[] objId, Collection<NlmLock> locks);
-
-    /**
-     * Remove all locks specified by {@code locks} associated with the given object.
-     *
-     * @param objId object id.
-     * @param locks collections of locks to remove.
-     */
-    protected void removeAll(Opaque objId, Collection<NlmLock> locks) {
-        removeAll(objId.asBytes(), locks);
+    protected final Lock getObjectLock(byte[] objId) {
+        throw new IllegalStateException();
     }
 
     @Override
+    protected abstract Lock getObjectLock(Opaque objId);
+
+    @Override
+    @Deprecated(forRemoval = true)
+    protected final Collection<NlmLock> getActiveLocks(byte[] objId) {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    protected abstract Collection<NlmLock> getActiveLocks(Opaque objId);
+
+    @Override
+    @Deprecated(forRemoval = true)
+    protected final void add(byte[] objId, NlmLock lock) {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    protected abstract void add(Opaque objId, NlmLock lock);
+
+    @Override
+    @Deprecated(forRemoval = true)
+    protected final boolean remove(byte[] objId, NlmLock lock) {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    protected abstract boolean remove(Opaque objId, NlmLock lock);
+
+    @Override
+    @Deprecated(forRemoval = true)
+    protected final void addAll(byte[] objId, Collection<NlmLock> locks) {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    protected abstract void addAll(Opaque objId, Collection<NlmLock> locks);
+
+    @Override
+    @Deprecated(forRemoval = true)
+    protected final void removeAll(byte[] objId, Collection<NlmLock> locks) {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    protected abstract void removeAll(Opaque objId, Collection<NlmLock> locks);
+
+    @Override
+    @Deprecated(forRemoval = true)
     public void lock(byte[] objId, NlmLock lock) throws LockException {
+        if (DEBUG_DEPRECATED_CALLS) {
+            new IllegalStateException("Called deprecated method").printStackTrace();
+        }
+        lock(Opaque.forBytes(objId), lock);
+    }
+
+    @Override
+    public void lock(Opaque objId, NlmLock lock) throws LockException {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -191,7 +133,16 @@ public abstract class AbstractLockManager implements LockManager {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public void unlock(byte[] objId, NlmLock lock) throws LockException {
+        if (DEBUG_DEPRECATED_CALLS) {
+            new IllegalStateException("Called deprecated method").printStackTrace();
+        }
+        unlock(Opaque.forBytes(objId), lock);
+    }
+
+    @Override
+    public void unlock(Opaque objId, NlmLock lock) throws LockException {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -230,7 +181,16 @@ public abstract class AbstractLockManager implements LockManager {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public void test(byte[] objId, NlmLock lock) throws LockException {
+        if (DEBUG_DEPRECATED_CALLS) {
+            new IllegalStateException("Called deprecated method").printStackTrace();
+        }
+        test(Opaque.forBytes(objId), lock);
+    }
+
+    @Override
+    public void test(Opaque objId, NlmLock lock) throws LockException {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -246,7 +206,16 @@ public abstract class AbstractLockManager implements LockManager {
     }
 
     @Override
+    @Deprecated(forRemoval = true)
     public void unlockIfExists(byte[] objId, NlmLock lock) {
+        if (DEBUG_DEPRECATED_CALLS) {
+            new IllegalStateException("Called deprecated method").printStackTrace();
+        }
+        unlockIfExists(Opaque.forBytes(objId), lock);
+    }
+
+    @Override
+    public void unlockIfExists(Opaque objId, NlmLock lock) {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -255,5 +224,4 @@ public abstract class AbstractLockManager implements LockManager {
             dlmLock.unlock();
         }
     }
-
 }
