@@ -255,7 +255,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
             case nfs4_prot.FATTR4_CHOWN_RESTRICTED:
                 return Optional.empty();
             case nfs4_prot.FATTR4_FILEID:
-                if (stat.hasIno()) {
+                if (stat.isDefined(StatAttribute.INO)) {
                     return Optional.of(new fattr4_fileid(stat.getIno()));
                 } else {
                     return Optional.empty();
@@ -354,7 +354,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                  * TODO!!!:
                  */
 
-                if (!stat.hasIno()) {
+                if (!stat.isDefined(StatAttribute.INO)) {
                     return Optional.empty();
                 }
                 long mofi = stat.getIno();

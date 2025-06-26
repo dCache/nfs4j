@@ -154,15 +154,6 @@ public class Stat implements Serializable, Cloneable {
     }
 
     /**
-     * Checks if an inode number has been set (even if 0).
-     *
-     * @return {@code true} if set.
-     */
-    public boolean hasIno() {
-        return isDefined(StatAttribute.INO);
-    }
-
-    /**
      * Returns file inode number.
      */
     public long getIno() {

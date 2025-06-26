@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.dcache.nfs.vfs.Stat.StatAttribute;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -168,9 +169,9 @@ public class StatTest {
     @Test
     public void testGetIno() {
         Stat stat = new Stat();
-        assertFalse(stat.hasIno());
+        assertFalse(stat.isDefined(StatAttribute.INO));
         stat.setIno(1);
-        assertTrue(stat.hasIno());
+        assertTrue(stat.isDefined(StatAttribute.INO));
         assertEquals(1, stat.getIno());
 
     }
