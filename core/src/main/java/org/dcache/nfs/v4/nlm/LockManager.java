@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v4.nlm;
 
+import org.dcache.nfs.util.Opaque;
+
 /**
  */
 public interface LockManager {
@@ -33,6 +35,10 @@ public interface LockManager {
      */
     void lock(byte[] objId, NlmLock lock) throws LockException;
 
+    default void lock(Opaque key, NlmLock lock) throws LockException {
+        lock(key.asBytes(), lock);
+    }
+
     /**
      * Unlock byte range of an {@code objId}.
      *
@@ -42,6 +48,10 @@ public interface LockManager {
      * @throws LockException if locking fails.
      */
     void unlock(byte[] objId, NlmLock lock) throws LockException;
+
+    default void unlock(Opaque key, NlmLock lock) throws LockException {
+        unlock(key.asBytes(), lock);
+    }
 
     /**
      * Test byte range lock existence for an {@code objId}. Same as {@link #lock}, except that a new lock is not
@@ -54,6 +64,10 @@ public interface LockManager {
      */
     void test(byte[] objId, NlmLock lock) throws LockException;
 
+    default void test(Opaque key, NlmLock lock) throws LockException {
+        test(key.asBytes(), lock);
+    }
+
     /**
      * Like {@link #unlock(byte[], org.dcache.nfs.v4.nlm.NlmLock)}, but does not fail if lock does not exists.
      *
@@ -61,4 +75,8 @@ public interface LockManager {
      * @param lock
      */
     void unlockIfExists(byte[] objId, NlmLock lock);
+
+    default void unlockIfExists(Opaque key, NlmLock lock) {
+        unlockIfExists(key.asBytes(), lock);
+    }
 }

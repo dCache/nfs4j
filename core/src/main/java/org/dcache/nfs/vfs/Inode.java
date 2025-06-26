@@ -74,7 +74,7 @@ public class Inode {
         this.generation = generation;
         this.exportIdx = exportIdx;
         this.type = type;
-        this.opaqueKey = new Opaque(fs_opaque.clone());
+        this.opaqueKey = Opaque.forBytes(fs_opaque);
 
         this.nfsHandle = buildNfsHandle(fs_opaque);
     }
@@ -111,7 +111,7 @@ public class Inode {
         int olen = (int) b.get();
         byte[] fs_opaque = new byte[olen];
         b.get(fs_opaque);
-        this.opaqueKey = new Opaque(fs_opaque);
+        this.opaqueKey = Opaque.forBytes(fs_opaque);
 
         this.nfsHandle = bytes.clone();
     }
@@ -144,8 +144,21 @@ public class Inode {
         return new Inode(0, 0, 0, bytes);
     }
 
+    @Deprecated(forRemoval = true)
     public byte[] getFileId() {
-        return opaqueKey.getOpaque().clone();
+        return opaqueKey.asBytes();
+    }
+
+    /**
+     * Returns a locking-key referring to the underlying inode/file referred to by this instance, or a superset,
+     * suitable for {@link org.dcache.nfs.v4.nlm.LockManager} etc.
+     * <p>
+     * This may or may not be equal to {@link #getFileIdKey()}.
+     * 
+     * @return The locking key for file referred to by this inode.
+     */
+    public Opaque getLockKey() {
+        return opaqueKey;
     }
 
     /**

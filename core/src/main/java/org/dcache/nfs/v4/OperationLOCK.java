@@ -118,11 +118,11 @@ public class OperationLOCK extends AbstractNFSv4Operation {
 
             NlmLock lock = new NlmLock(lockOwner, _args.oplock.locktype, _args.oplock.offset.value,
                     _args.oplock.length.value);
-            context.getLm().lock(inode.getFileId(), lock);
+            context.getLm().lock(inode.getLockKey(), lock);
 
             // ensure, that on close locks will be released
             lock_state.addDisposeListener(s -> {
-                context.getLm().unlockIfExists(inode.getFileId(), lock);
+                context.getLm().unlockIfExists(inode.getLockKey(), lock);
             });
 
             // FIXME: we might run into race condition, thus updating sedid must be fenced!

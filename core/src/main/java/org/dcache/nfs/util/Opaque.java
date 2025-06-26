@@ -21,6 +21,7 @@ package org.dcache.nfs.util;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Base64;
 
 import com.google.common.io.BaseEncoding;
 
@@ -32,13 +33,31 @@ public class Opaque implements Serializable {
     private static final long serialVersionUID = 1532238396149112674L;
 
     private final byte[] _opaque;
+    private String base64 = null;
 
+    public static Opaque forBytes(byte[] bytes) {
+        return new Opaque(bytes.clone());
+    }
+
+    @Deprecated(forRemoval = true)
     public Opaque(byte[] opaque) {
         _opaque = opaque;
     }
 
+    @Deprecated(forRemoval = true)
     public byte[] getOpaque() {
         return _opaque;
+    }
+
+    public byte[] asBytes() {
+        return _opaque.clone();
+    }
+
+    public String getBase64() {
+        if (base64 == null) {
+            base64 = Base64.getEncoder().withoutPadding().encodeToString(_opaque);
+        }
+        return base64;
     }
 
     @Override
@@ -58,6 +77,12 @@ public class Opaque implements Serializable {
         return Arrays.equals(_opaque, ((Opaque) o)._opaque);
     }
 
+    /**
+     * Returns a (potentially non-stable) debug string.
+     * 
+     * @see #getBase64()
+     */
+    @Deprecated
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
