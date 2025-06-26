@@ -628,7 +628,7 @@ public class NFS4Client {
     public synchronized StateOwner getOrCreateOwner(byte[] owner, seqid4 seq) throws BadSeqidException {
         StateOwner stateOwner;
         if (_minorVersion == 0) {
-            Opaque k = new Opaque(owner);
+            Opaque k = Opaque.forBytes(owner);
             stateOwner = _owners.get(k);
             if (stateOwner == null) {
                 state_owner4 so = new state_owner4();
@@ -655,7 +655,7 @@ public class NFS4Client {
      * @param owner client unique state owner
      */
     public synchronized void releaseOwner(byte[] owner) throws StaleClientidException {
-        Opaque k = new Opaque(owner);
+        Opaque k = Opaque.forBytes(owner);
         StateOwner stateOwner = _owners.remove(k);
         if (stateOwner == null) {
             throw new StaleClientidException();
