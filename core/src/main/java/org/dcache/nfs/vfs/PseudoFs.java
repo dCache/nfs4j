@@ -746,8 +746,17 @@ public class PseudoFs extends ForwardingFileSystem {
      *
      * @param inode The {@link Inode} as passed from and to the NFS client.
      * @return The {@link Inode} as passed from {@link PseudoFs} to the underlying {@link VirtualFileSystem}.
+     * @throws IOException on error.
      */
-    private Inode innerInode(Inode inode) {
+    private Inode innerInode(Inode inode) throws IOException {
+        if (inode.isPseudoInode()) {
+            Inode innerRootInode = _inner.getRootInode();
+            if (innerRootInode.getFileIdKey().equals(inode.getFileIdKey())) {
+                return innerRootInode;
+            } else {
+                throw new BadHandleException();
+            }
+        }
         return Inode.innerInode(inode);
     }
 }
