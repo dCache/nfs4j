@@ -39,14 +39,8 @@ public class Opaque implements Serializable {
         return new Opaque(bytes.clone());
     }
 
-    @Deprecated(forRemoval = true)
-    public Opaque(byte[] opaque) {
+    private Opaque(byte[] opaque) {
         _opaque = opaque;
-    }
-
-    @Deprecated(forRemoval = true)
-    public byte[] getOpaque() {
-        return _opaque;
     }
 
     public byte[] asBytes() {
