@@ -19,122 +19,20 @@
  */
 package org.dcache.nfs.vfs;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-import com.google.common.io.BaseEncoding;
-
-/**
- * NFS file handle on wire representation format v1.
- *
- * <pre>
- *   byte fh_version;      // file handle format version number; version 1 description
- *   byte[3] fh_magic      // 0xcaffee
- *   uint32 fh_generation; // server boot time or 0 for permanent handles
- *   uint32 export_index;    // index into export table
- *   byte fh_type          // 1 if pseudo fs
- *   byte fh_olen;         // length of opaque data
- *   byte[] fh_opaque;     // FS specific opaque data <= 114
- * </pre>
- */
-public class FileHandle {
-
-    private final static int MIN_LEN = 14;
-    private final static int VERSION = 1;
-    private final static int MAGIC = 0xCAFFEE;
+@Deprecated(forRemoval = true)
+public class FileHandle extends Inode {
     private final static byte[] EMPTY_FH = new byte[0];
 
-    private final int version;
-    private final int magic;
-    private final int generation;
-    private final int exportIdx;
-    private final int type;
-    private final byte[] fs_opaque;
+    public FileHandle(byte[] bytes) {
+        super(bytes);
+    }
 
     public FileHandle(int generation, int exportIdx, int type, byte[] fs_opaque) {
-        this.version = VERSION;
-        this.magic = MAGIC;
-        this.generation = generation;
-        this.exportIdx = exportIdx;
-        this.type = type;
-        this.fs_opaque = fs_opaque;
+        super(generation, exportIdx, type, fs_opaque);
     }
 
-    public FileHandle(byte[] bytes) {
-        if (bytes.length < MIN_LEN) {
-            throw new IllegalArgumentException("too short");
-        }
-
-        ByteBuffer b = ByteBuffer.wrap(bytes);
-        b.order(ByteOrder.BIG_ENDIAN);
-
-        int magic_version = b.getInt();
-        int geussVersion = (magic_version & 0xFF000000) >>> 24;
-        if (geussVersion != VERSION) {
-            throw new IllegalArgumentException("Unsupported version: " + geussVersion);
-        }
-
-        version = geussVersion;
-        magic = magic_version & 0x00FFFFFF;
-        if (magic != MAGIC) {
-            throw new IllegalArgumentException("Bad magic number");
-        }
-
-        generation = b.getInt();
-        exportIdx = b.getInt();
-        type = (int) b.get();
-        int olen = (int) b.get();
-        fs_opaque = new byte[olen];
-        b.get(fs_opaque);
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public int getMagic() {
-        return magic;
-    }
-
-    public int getGeneration() {
-        return generation;
-    }
-
-    public int getExportIdx() {
-        return exportIdx;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public byte[] getFsOpaque() {
-        return fs_opaque;
-    }
-
-    public byte[] bytes() {
-        int len = fs_opaque.length + MIN_LEN;
-        byte[] bytes = new byte[len];
-        ByteBuffer b = ByteBuffer.wrap(bytes);
-        b.order(ByteOrder.BIG_ENDIAN);
-
-        b.putInt(version << 24 | magic);
-        b.putInt(generation);
-        b.putInt(exportIdx);
-        b.put((byte) type);
-        b.put((byte) fs_opaque.length);
-        b.put(fs_opaque);
-        return bytes;
-    }
-
-    @Override
-    public String toString() {
-        return BaseEncoding.base16().lowerCase().encode(this.bytes());
-    }
-
+    @Deprecated(forRemoval = true)
     public static class FileHandleBuilder {
-        private int version = VERSION;
-        private int magic = MAGIC;
         private int generation = 0;
         private int export_idx = 0;
         private int type = 0;
@@ -160,12 +58,6 @@ public class FileHandle {
             return this;
         }
 
-        /**
-         * A shortcut with defaults
-         *
-         * @param opaque
-         * @return
-         */
         public FileHandle build(byte[] opaque) {
             return new FileHandle(generation, export_idx, type, opaque);
         }
@@ -173,5 +65,33 @@ public class FileHandle {
         public FileHandle build() {
             return build(fs_opaque);
         }
+    }
+
+    public int getVersion() {
+        return handleVersion();
+    }
+
+    public int getMagic() {
+        return super.getMagic();
+    }
+
+    public int getGeneration() {
+        return super.getGeneration();
+    }
+
+    public int getExportIdx() {
+        return exportIndex();
+    }
+
+    public int getType() {
+        return super.getType();
+    }
+
+    public byte[] getFsOpaque() {
+        return getFileId();
+    }
+
+    public byte[] bytes() {
+        return toNfsHandle();
     }
 }

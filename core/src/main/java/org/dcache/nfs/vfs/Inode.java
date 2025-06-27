@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2024 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -19,35 +19,153 @@
  */
 package org.dcache.nfs.vfs;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import com.google.common.io.BaseEncoding;
+
+/**
+ * NFS file handle on wire representation format v1.
+ *
+ * <pre>
+ *   byte fh_version;      // file handle format version number; version 1 description
+ *   byte[3] fh_magic      // 0xcaffee
+ *   uint32 fh_generation; // server boot time or 0 for permanent handles
+ *   uint32 export_index;    // index into export table
+ *   byte fh_type          // 1 if pseudo fs
+ *   byte fh_olen;         // length of opaque data
+ *   byte[] fh_opaque;     // FS specific opaque data <= 114
+ * </pre>
+ */
 public class Inode {
+    private final static int MIN_LEN = 14;
+    private final static int VERSION = 1;
+    private final static int MAGIC = 0xCAFFEE;
 
-    private final FileHandle fh;
+    private final int version;
+    private final int magic;
+    private final int generation;
+    private final int exportIdx;
+    private final int type;
+    private final byte[] fs_opaque;
+    private final byte[] nfsHandle;
 
-    public Inode(byte[] bytes) {
-        this(new FileHandle(bytes));
+    @Deprecated(forRemoval = true)
+    public Inode(FileHandle fh) {
+        this(fh.bytes());
     }
 
-    public Inode(FileHandle h) {
-        fh = h;
+    /**
+     * This constructor will become marked {@code protected} in a future version.
+     *
+     * @param generation The handle generation (e.g., server boot time), or {@code 0} for permanent handles
+     * @param exportIdx The index into the export table
+     * @param type 1=pseudo FS
+     * @param fs_opaque FS specific opaque data (maximum 114 bytes)
+     */
+    @Deprecated
+    public Inode(int generation, int exportIdx, int type, byte[] fs_opaque) {
+        this.version = VERSION;
+        this.magic = MAGIC;
+        this.generation = generation;
+        this.exportIdx = exportIdx;
+        this.type = type;
+        this.fs_opaque = fs_opaque;
+
+        this.nfsHandle = buildNfsHandle();
+    }
+
+    /**
+     * This constructor will become marked {@code protected} in a future version.
+     *
+     * @param bytes The VFS-specific bytes.
+     */
+    @Deprecated
+    public Inode(byte[] bytes) {
+        if (bytes.length < MIN_LEN) {
+            throw new IllegalArgumentException("too short");
+        }
+
+        ByteBuffer b = ByteBuffer.wrap(bytes);
+        b.order(ByteOrder.BIG_ENDIAN);
+
+        int magic_version = b.getInt();
+        int geussVersion = (magic_version & 0xFF000000) >>> 24;
+        if (geussVersion != VERSION) {
+            throw new IllegalArgumentException("Unsupported version: " + geussVersion);
+        }
+
+        version = geussVersion;
+        magic = magic_version & 0x00FFFFFF;
+        if (magic != MAGIC) {
+            throw new IllegalArgumentException("Bad magic number");
+        }
+
+        generation = b.getInt();
+        exportIdx = b.getInt();
+        type = (int) b.get();
+        int olen = (int) b.get();
+        fs_opaque = new byte[olen];
+        b.get(fs_opaque);
+
+        this.nfsHandle = bytes.clone();
+    }
+
+    @Deprecated(forRemoval = true)
+    protected int getMagic() {
+        return magic;
+    }
+
+    @Deprecated(forRemoval = true)
+    protected int getGeneration() {
+        return generation;
+    }
+
+    @Deprecated(forRemoval = true)
+    protected int getType() {
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        return BaseEncoding.base16().lowerCase().encode(nfsHandle);
+    }
+
+    public static Inode forNfsHandle(byte[] bytes) {
+        return new Inode(bytes);
     }
 
     public static Inode forFile(byte[] bytes) {
-        return new Inode(new FileHandle.FileHandleBuilder().build(bytes));
+        return new Inode(0, 0, 0, bytes);
     }
 
     public byte[] getFileId() {
-        return fh.getFsOpaque();
+        return fs_opaque;
     }
 
     public byte[] toNfsHandle() {
-        return fh.bytes();
+        return nfsHandle.clone();
+    }
+
+    private byte[] buildNfsHandle() {
+        int len = fs_opaque.length + MIN_LEN;
+        byte[] bytes = new byte[len];
+        ByteBuffer b = ByteBuffer.wrap(bytes);
+        b.order(ByteOrder.BIG_ENDIAN);
+
+        b.putInt(version << 24 | magic);
+        b.putInt(generation);
+        b.putInt(exportIdx);
+        b.put((byte) type);
+        b.put((byte) fs_opaque.length);
+        b.put(fs_opaque);
+        return bytes;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(fh.bytes());
+        return Arrays.hashCode(nfsHandle);
     }
 
     @Override
@@ -55,27 +173,22 @@ public class Inode {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof Inode)) {
             return false;
         }
         final Inode other = (Inode) obj;
-        return Arrays.equals(fh.bytes(), other.fh.bytes());
+        return Arrays.equals(nfsHandle, other.nfsHandle);
     }
 
     public boolean isPseudoInode() {
-        return fh.getType() == 1;
+        return type == 1;
     }
 
     public int exportIndex() {
-        return fh.getExportIdx();
+        return exportIdx;
     }
 
     public int handleVersion() {
-        return fh.getVersion();
-    }
-
-    @Override
-    public String toString() {
-        return fh.toString();
+        return version;
     }
 }
