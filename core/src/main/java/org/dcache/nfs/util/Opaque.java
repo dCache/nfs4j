@@ -52,13 +52,66 @@ public interface Opaque {
         return new OpaqueImpl(bytes);
     }
 
+    /**
+     * Default implementation for {@link #hashCode()}.
+     * 
+     * @param obj The instance object.
+     * @return The hash code.
+     * @see #hashCode()
+     */
+    public static int defaultHashCode(Opaque obj) {
+        return Arrays.hashCode(obj.toBytes());
+    }
+
+    /**
+     * Default implementation for {@link #equals(Object)}.
+     * 
+     * @param obj The instance object.
+     * @param other The other object.
+     * @return {@code true} if equal.
+     * @see #equals(Object)
+     */
+    public static boolean defaultEquals(Opaque obj, Object other) {
+        if (other == obj) {
+            return true;
+        }
+        if (!(other instanceof Opaque)) {
+            return false;
+        }
+        return Arrays.equals(obj.toBytes(), ((Opaque) other).toBytes());
+    }
+
+    /**
+     * Returns a byte-representation of this opaque object.
+     * 
+     * @return A new array.
+     */
     byte[] toBytes();
 
+    /**
+     * Returns a Base64 string representing this opaque object.
+     * 
+     * @return A Base64 string.
+     */
     String toBase64();
 
+    /**
+     * Returns the hashCode based on the byte-representation of this instance.
+     * <p>
+     * This method must behave like {@link #defaultHashCode(Opaque)}, but may be optimized.
+     * 
+     * @return The hashCode.
+     */
     @Override
     int hashCode();
 
+    /**
+     * Compares this object to another one.
+     * <p>
+     * This method must behave like {@link #defaultEquals(Opaque, Object)}, but may be optimized.
+     * 
+     * @return {@code true} if both objects are equal.
+     */
     @Override
     boolean equals(Object o);
 
