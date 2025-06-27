@@ -147,11 +147,11 @@ public class Inode {
     }
 
     public static Inode forFileIdKey(Opaque key) {
-        return forFile(key.toBytes());
+        return new Inode(0, 0, 0, key);
     }
 
     public static Inode innerInode(Inode outerInode) {
-        return new Inode(0, 0, 0, outerInode.getFileIdKey());
+        return forFileIdKey(outerInode.getFileIdKey());
     }
 
     @Deprecated(forRemoval = true)
