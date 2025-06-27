@@ -19,49 +19,178 @@
  */
 package org.dcache.nfs.util;
 
-import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
-
-import com.google.common.io.BaseEncoding;
+import java.util.Base64;
 
 /**
- * A helper class for opaque data manipulations. Enabled opaque date to be used as a key in {@link java.util.Collection}
+ * Describes something that can be used as a key in {@link java.util.Map} and that can be converted to a {@code byte[]}
+ * and a Base64 string representation.
  */
-public class Opaque implements Serializable {
-
-    private static final long serialVersionUID = 1532238396149112674L;
-
-    private final byte[] _opaque;
-
-    public Opaque(byte[] opaque) {
-        _opaque = opaque;
+public interface Opaque {
+    /**
+     * Returns an {@link Opaque} instance based on a copy of the given bytes.
+     * 
+     * @param bytes The bytes.
+     * @return The {@link Opaque} instance.
+     */
+    static Opaque forBytes(byte[] bytes) {
+        return new OpaqueImpl(bytes.clone());
     }
 
-    public byte[] getOpaque() {
-        return _opaque;
+    /**
+     * Returns an {@link Opaque} instance based on a copy of the {@code length} bytes from the given {@link ByteBuffer}.
+     * 
+     * @param buf The buffer.
+     * @param length The number of bytes.
+     * @return The {@link Opaque} instance.
+     */
+    static Opaque forBytes(ByteBuffer buf, int length) {
+        byte[] bytes = new byte[length];
+        buf.get(bytes);
+
+        return new OpaqueImpl(bytes);
     }
 
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(_opaque);
+    /**
+     * Default implementation for {@link #hashCode()}.
+     * 
+     * @param obj The instance object.
+     * @return The hash code.
+     * @see #hashCode()
+     */
+    static int defaultHashCode(Opaque obj) {
+        return Arrays.hashCode(obj.toBytes());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
+    /**
+     * Default implementation for {@link #equals(Object)}.
+     * 
+     * @param obj The instance object.
+     * @param other The other object.
+     * @return {@code true} if equal.
+     * @see #equals(Object)
+     */
+    static boolean defaultEquals(Opaque obj, Object other) {
+        if (other == obj) {
             return true;
         }
-        if (!(o instanceof Opaque)) {
+        if (!(other instanceof Opaque)) {
             return false;
         }
-
-        return Arrays.equals(_opaque, ((Opaque) o)._opaque);
+        return Arrays.equals(obj.toBytes(), ((Opaque) other).toBytes());
     }
 
+    /**
+     * Returns a byte-representation of this opaque object.
+     * 
+     * @return A new array.
+     */
+    byte[] toBytes();
+
+    /**
+     * Returns the number of bytes in this opaque object;
+     * 
+     * @return The number of bytes;
+     */
+    int numBytes();
+
+    /**
+     * Returns a Base64 string representing this opaque object.
+     * 
+     * @return A Base64 string.
+     */
+    String toBase64();
+
+    /**
+     * Writes the bytes of this {@link Opaque} to the given {@link ByteBuffer}.
+     * 
+     * @param buf The target buffer.
+     */
+    default void putBytes(ByteBuffer buf) {
+        buf.put(toBytes());
+    }
+
+    /**
+     * Returns the hashCode based on the byte-representation of this instance.
+     * <p>
+     * This method must behave like {@link #defaultHashCode(Opaque)}, but may be optimized.
+     * 
+     * @return The hashCode.
+     */
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append('[').append(BaseEncoding.base16().lowerCase().encode(_opaque)).append(']');
-        return sb.toString();
+    int hashCode();
+
+    /**
+     * Compares this object to another one.
+     * <p>
+     * This method must behave like {@link #defaultEquals(Opaque, Object)}, but may be optimized.
+     * 
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    boolean equals(Object o);
+
+    final class OpaqueImpl implements Opaque {
+        private final byte[] _opaque;
+        private String base64 = null;
+
+        private OpaqueImpl(byte[] opaque) {
+            _opaque = opaque;
+        }
+
+        @Override
+        public byte[] toBytes() {
+            return _opaque.clone();
+        }
+
+        @Override
+        public String toBase64() {
+            if (base64 == null) {
+                base64 = Base64.getEncoder().withoutPadding().encodeToString(_opaque);
+            }
+            return base64;
+        }
+
+        @Override
+        public void putBytes(ByteBuffer buf) {
+            buf.put(_opaque);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(_opaque);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Opaque)) {
+                return false;
+            }
+
+            if (o instanceof OpaqueImpl) {
+                return Arrays.equals(_opaque, ((OpaqueImpl) o)._opaque);
+            } else {
+                return Arrays.equals(_opaque, ((Opaque) o).toBytes());
+            }
+        }
+
+        /**
+         * Returns a (potentially non-stable) debug string.
+         * 
+         * @see #toBase64()
+         */
+        @Override
+        public String toString() {
+            return super.toString() + "[" + toBase64() + "]";
+        }
+
+        @Override
+        public int numBytes() {
+            return _opaque.length;
+        }
     }
 }

@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import org.dcache.nfs.util.Opaque;
+
 import com.google.common.io.BaseEncoding;
 
 /**
@@ -48,8 +50,9 @@ public class Inode {
     private final int generation;
     private final int exportIdx;
     private final int type;
-    private final byte[] fs_opaque;
     private final byte[] nfsHandle;
+
+    private final Opaque opaqueKey;
 
     @Deprecated(forRemoval = true)
     public Inode(FileHandle fh) {
@@ -66,12 +69,16 @@ public class Inode {
      */
     @Deprecated
     public Inode(int generation, int exportIdx, int type, byte[] fs_opaque) {
+        this(generation, exportIdx, type, Opaque.forBytes(fs_opaque));
+    }
+
+    private Inode(int generation, int exportIdx, int type, Opaque fileIdKey) {
         this.version = VERSION;
         this.magic = MAGIC;
         this.generation = generation;
         this.exportIdx = exportIdx;
         this.type = type;
-        this.fs_opaque = fs_opaque;
+        this.opaqueKey = fileIdKey;
 
         this.nfsHandle = buildNfsHandle();
     }
@@ -106,8 +113,7 @@ public class Inode {
         exportIdx = b.getInt();
         type = (int) b.get();
         int olen = (int) b.get();
-        fs_opaque = new byte[olen];
-        b.get(fs_opaque);
+        this.opaqueKey = Opaque.forBytes(b, olen);
 
         this.nfsHandle = bytes.clone();
     }
@@ -140,8 +146,40 @@ public class Inode {
         return new Inode(0, 0, 0, bytes);
     }
 
+    public static Inode forFileIdKey(Opaque key) {
+        return new Inode(0, 0, 0, key);
+    }
+
+    public static Inode innerInode(Inode outerInode) {
+        return forFileIdKey(outerInode.getFileIdKey());
+    }
+
+    @Deprecated(forRemoval = true)
     public byte[] getFileId() {
-        return fs_opaque;
+        return opaqueKey.toBytes();
+    }
+
+    /**
+     * Returns a locking-key referring to the underlying inode/file referred to by this instance, or a superset,
+     * suitable for {@link org.dcache.nfs.v4.nlm.LockManager} etc.
+     * <p>
+     * This may or may not be equal to {@link #getFileIdKey()}.
+     * 
+     * @return The locking key for file referred to by this inode.
+     */
+    public Opaque getLockKey() {
+        return opaqueKey;
+    }
+
+    /**
+     * Returns a key suitable for identifying the underlying inode/file referred to by this instance, providing a
+     * {@link Object#equals(Object)} and {@link Object#hashCode()} implementation that may or may not be different from
+     * {@link Inode#equals(Object)} and {@link Inode#hashCode()}.
+     * 
+     * @return The fileId key.
+     */
+    public Opaque getFileIdKey() {
+        return opaqueKey;
     }
 
     public byte[] toNfsHandle() {
@@ -149,7 +187,12 @@ public class Inode {
     }
 
     private byte[] buildNfsHandle() {
-        int len = fs_opaque.length + MIN_LEN;
+        int opaqueLen = opaqueKey.numBytes();
+        if (opaqueLen < 0 || opaqueLen > 255) {
+            throw new IllegalStateException("Invalid opaque key length");
+        }
+
+        int len = MIN_LEN + opaqueLen;
         byte[] bytes = new byte[len];
         ByteBuffer b = ByteBuffer.wrap(bytes);
         b.order(ByteOrder.BIG_ENDIAN);
@@ -158,8 +201,8 @@ public class Inode {
         b.putInt(generation);
         b.putInt(exportIdx);
         b.put((byte) type);
-        b.put((byte) fs_opaque.length);
-        b.put(fs_opaque);
+        b.put((byte) opaqueLen);
+        opaqueKey.putBytes(b);
         return bytes;
     }
 
