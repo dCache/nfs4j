@@ -39,17 +39,15 @@ public interface Opaque {
     }
 
     /**
-     * Returns an {@link Opaque} instance based on a copy of the {@code length} bytes from the given {@link ByteBuffer}
-     * starting from the current {@link ByteBuffer#position()} plus the given {@code offset}.
+     * Returns an {@link Opaque} instance based on a copy of the {@code length} bytes from the given {@link ByteBuffer}.
      * 
      * @param buf The buffer.
-     * @param offset The offset (relative to the current position).
      * @param length The number of bytes.
      * @return The {@link Opaque} instance.
      */
-    public static Opaque forBytes(ByteBuffer buf, int offset, int length) {
+    public static Opaque forBytes(ByteBuffer buf, int length) {
         byte[] bytes = new byte[length];
-        buf.get(bytes, offset, length);
+        buf.get(bytes);
 
         return new OpaqueImpl(bytes);
     }

@@ -109,7 +109,7 @@ public class Inode {
         exportIdx = b.getInt();
         type = (int) b.get();
         int olen = (int) b.get();
-        this.opaqueKey = Opaque.forBytes(b, 0, olen);
+        this.opaqueKey = Opaque.forBytes(b, olen);
 
         this.nfsHandle = bytes.clone();
     }
