@@ -19,68 +19,78 @@
  */
 package org.dcache.nfs.util;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Base64;
 
-import com.google.common.io.BaseEncoding;
-
 /**
- * A helper class for opaque data manipulations. Enabled opaque date to be used as a key in {@link java.util.Collection}
+ * Describes something that can be used as a key in {@link java.util.Map} and that can be converted to a {@code byte[]}
+ * and a Base64 string representation.
  */
-public class Opaque implements Serializable {
-
-    private static final long serialVersionUID = 1532238396149112674L;
-
-    private final byte[] _opaque;
-    private String base64 = null;
-
+public interface Opaque {
     public static Opaque forBytes(byte[] bytes) {
-        return new Opaque(bytes.clone());
+        return new OpaqueImpl(bytes.clone());
     }
 
-    private Opaque(byte[] opaque) {
-        _opaque = opaque;
-    }
+    byte[] asBytes();
 
-    public byte[] asBytes() {
-        return _opaque.clone();
-    }
-
-    public String getBase64() {
-        if (base64 == null) {
-            base64 = Base64.getEncoder().withoutPadding().encodeToString(_opaque);
-        }
-        return base64;
-    }
+    String getBase64();
 
     @Override
-    public int hashCode() {
-        return Arrays.hashCode(_opaque);
-    }
+    int hashCode();
 
     @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof Opaque)) {
-            return false;
+    boolean equals(Object o);
+
+    final class OpaqueImpl implements Opaque {
+        private final byte[] _opaque;
+        private String base64 = null;
+
+        private OpaqueImpl(byte[] opaque) {
+            _opaque = opaque;
         }
 
-        return Arrays.equals(_opaque, ((Opaque) o)._opaque);
-    }
+        @Override
+        public byte[] asBytes() {
+            return _opaque.clone();
+        }
 
-    /**
-     * Returns a (potentially non-stable) debug string.
-     * 
-     * @see #getBase64()
-     */
-    @Deprecated
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append('[').append(BaseEncoding.base16().lowerCase().encode(_opaque)).append(']');
-        return sb.toString();
+        @Override
+        public String getBase64() {
+            if (base64 == null) {
+                base64 = Base64.getEncoder().withoutPadding().encodeToString(_opaque);
+            }
+            return base64;
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(_opaque);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Opaque)) {
+                return false;
+            }
+
+            if (o instanceof OpaqueImpl) {
+                return Arrays.equals(_opaque, ((OpaqueImpl) o)._opaque);
+            } else {
+                return Arrays.equals(_opaque, ((Opaque) o).asBytes());
+            }
+        }
+
+        /**
+         * Returns a (potentially non-stable) debug string.
+         * 
+         * @see #getBase64()
+         */
+        @Override
+        public String toString() {
+            return super.toString() + "[" + getBase64() + "]";
+        }
     }
 }
