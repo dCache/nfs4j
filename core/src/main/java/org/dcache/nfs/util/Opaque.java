@@ -34,7 +34,7 @@ public interface Opaque {
      * @param bytes The bytes.
      * @return The {@link Opaque} instance.
      */
-    public static Opaque forBytes(byte[] bytes) {
+    static Opaque forBytes(byte[] bytes) {
         return new OpaqueImpl(bytes.clone());
     }
 
@@ -45,7 +45,7 @@ public interface Opaque {
      * @param length The number of bytes.
      * @return The {@link Opaque} instance.
      */
-    public static Opaque forBytes(ByteBuffer buf, int length) {
+    static Opaque forBytes(ByteBuffer buf, int length) {
         byte[] bytes = new byte[length];
         buf.get(bytes);
 
@@ -59,7 +59,7 @@ public interface Opaque {
      * @return The hash code.
      * @see #hashCode()
      */
-    public static int defaultHashCode(Opaque obj) {
+    static int defaultHashCode(Opaque obj) {
         return Arrays.hashCode(obj.toBytes());
     }
 
@@ -71,7 +71,7 @@ public interface Opaque {
      * @return {@code true} if equal.
      * @see #equals(Object)
      */
-    public static boolean defaultEquals(Opaque obj, Object other) {
+    static boolean defaultEquals(Opaque obj, Object other) {
         if (other == obj) {
             return true;
         }
