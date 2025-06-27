@@ -35,7 +35,7 @@ import com.google.common.util.concurrent.Striped;
  *
  * @since 0.14
  */
-public class SimpleLm extends AbstractLockManager2 {
+public class SimpleLm extends AbstractLockManager {
 
     /*
      * Use {@link Striped} here to split synchronized block on file locks into multiple partitions to increase

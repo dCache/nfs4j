@@ -43,18 +43,7 @@ public abstract class AbstractLockManager implements LockManager {
      * @param objId object id.
      * @return exclusive lock.
      */
-    @Deprecated(forRemoval = true)
-    abstract protected Lock getObjectLock(byte[] objId);
-
-    /**
-     * Get exclusive lock on objects locks.
-     *
-     * @param objId object id.
-     * @return exclusive lock.
-     */
-    protected Lock getObjectLock(Opaque objId) {
-        return getObjectLock(objId.asBytes());
-    }
+    protected abstract Lock getObjectLock(Opaque objId);
 
     /**
      * Get collection of currently used active locks on the object.
@@ -62,18 +51,7 @@ public abstract class AbstractLockManager implements LockManager {
      * @param objId object id.
      * @return collection of active locks.
      */
-    @Deprecated(forRemoval = true)
-    abstract protected Collection<NlmLock> getActiveLocks(byte[] objId);
-
-    /**
-     * Get collection of currently used active locks on the object.
-     *
-     * @param objId object id.
-     * @return collection of active locks.
-     */
-    protected Collection<NlmLock> getActiveLocks(Opaque objId) {
-        return getActiveLocks(objId.asBytes());
-    }
+    protected abstract Collection<NlmLock> getActiveLocks(Opaque objId);
 
     /**
      * Add {@code lock} to an object.
@@ -81,18 +59,7 @@ public abstract class AbstractLockManager implements LockManager {
      * @param objId object id.
      * @param lock lock to add.
      */
-    @Deprecated(forRemoval = true)
-    abstract protected void add(byte[] objId, NlmLock lock);
-
-    /**
-     * Add {@code lock} to an object.
-     *
-     * @param objId object id.
-     * @param lock lock to add.
-     */
-    protected void add(Opaque objId, NlmLock lock) {
-        add(objId.asBytes(), lock);
-    }
+    protected abstract void add(Opaque objId, NlmLock lock);
 
     /**
      * Remove a lock for the given object.
@@ -101,19 +68,7 @@ public abstract class AbstractLockManager implements LockManager {
      * @param lock lock to remove.
      * @return true, if specified lock was removed.
      */
-    @Deprecated(forRemoval = true)
-    abstract protected boolean remove(byte[] objId, NlmLock lock);
-
-    /**
-     * Remove a lock for the given object.
-     *
-     * @param objId object id.
-     * @param lock lock to remove.
-     * @return true, if specified lock was removed.
-     */
-    protected boolean remove(Opaque objId, NlmLock lock) {
-        return remove(objId.asBytes(), lock);
-    }
+    protected abstract boolean remove(Opaque objId, NlmLock lock);
 
     /**
      * Add all locks from a given collection of locks
@@ -121,18 +76,7 @@ public abstract class AbstractLockManager implements LockManager {
      * @param objId object id.
      * @param locks locks to add.
      */
-    @Deprecated(forRemoval = true)
-    abstract protected void addAll(byte[] objId, Collection<NlmLock> locks);
-
-    /**
-     * Add all locks from a given collection of locks
-     *
-     * @param objId object id.
-     * @param locks locks to add.
-     */
-    protected void addAll(Opaque objId, Collection<NlmLock> locks) {
-        addAll(objId.asBytes(), locks);
-    }
+    protected abstract void addAll(Opaque objId, Collection<NlmLock> locks);
 
     /**
      * Remove all locks specified by {@code locks} associated with the given object.
@@ -140,21 +84,10 @@ public abstract class AbstractLockManager implements LockManager {
      * @param objId object id.
      * @param locks collections of locks to remove.
      */
-    @Deprecated(forRemoval = true)
-    abstract protected void removeAll(byte[] objId, Collection<NlmLock> locks);
-
-    /**
-     * Remove all locks specified by {@code locks} associated with the given object.
-     *
-     * @param objId object id.
-     * @param locks collections of locks to remove.
-     */
-    protected void removeAll(Opaque objId, Collection<NlmLock> locks) {
-        removeAll(objId.asBytes(), locks);
-    }
+    protected abstract void removeAll(Opaque objId, Collection<NlmLock> locks);
 
     @Override
-    public void lock(byte[] objId, NlmLock lock) throws LockException {
+    public void lock(Opaque objId, NlmLock lock) throws LockException {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -191,7 +124,7 @@ public abstract class AbstractLockManager implements LockManager {
     }
 
     @Override
-    public void unlock(byte[] objId, NlmLock lock) throws LockException {
+    public void unlock(Opaque objId, NlmLock lock) throws LockException {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -230,7 +163,7 @@ public abstract class AbstractLockManager implements LockManager {
     }
 
     @Override
-    public void test(byte[] objId, NlmLock lock) throws LockException {
+    public void test(Opaque objId, NlmLock lock) throws LockException {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -246,7 +179,7 @@ public abstract class AbstractLockManager implements LockManager {
     }
 
     @Override
-    public void unlockIfExists(byte[] objId, NlmLock lock) {
+    public void unlockIfExists(Opaque objId, NlmLock lock) {
         Lock dlmLock = getObjectLock(objId);
         dlmLock.lock();
         try {
@@ -255,5 +188,4 @@ public abstract class AbstractLockManager implements LockManager {
             dlmLock.unlock();
         }
     }
-
 }

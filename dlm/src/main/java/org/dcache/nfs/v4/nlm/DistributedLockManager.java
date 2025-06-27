@@ -19,7 +19,6 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import java.util.Base64;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -47,7 +46,7 @@ import com.hazelcast.multimap.MultiMap;
  *
  * @since 0.16
  */
-public class DistributedLockManager extends AbstractLockManager2 {
+public class DistributedLockManager extends AbstractLockManager {
 
     private final MultiMap<String, NlmLock> locks;
 
