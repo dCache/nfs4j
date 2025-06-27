@@ -113,7 +113,7 @@ public class SimpleLm extends AbstractLockManager {
     }
 
     private final String toKey(Opaque objId) {
-        return objId.getBase64();
+        return objId.toBase64();
     }
 
 }

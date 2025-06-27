@@ -145,12 +145,12 @@ public class Inode {
     }
 
     public static Inode forFileIdKey(Opaque key) {
-        return forFile(key.asBytes());
+        return forFile(key.toBytes());
     }
 
     @Deprecated(forRemoval = true)
     public byte[] getFileId() {
-        return opaqueKey.asBytes();
+        return opaqueKey.toBytes();
     }
 
     /**

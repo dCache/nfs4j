@@ -31,9 +31,9 @@ public interface Opaque {
         return new OpaqueImpl(bytes.clone());
     }
 
-    byte[] asBytes();
+    byte[] toBytes();
 
-    String getBase64();
+    String toBase64();
 
     @Override
     int hashCode();
@@ -50,12 +50,12 @@ public interface Opaque {
         }
 
         @Override
-        public byte[] asBytes() {
+        public byte[] toBytes() {
             return _opaque.clone();
         }
 
         @Override
-        public String getBase64() {
+        public String toBase64() {
             if (base64 == null) {
                 base64 = Base64.getEncoder().withoutPadding().encodeToString(_opaque);
             }
@@ -79,18 +79,18 @@ public interface Opaque {
             if (o instanceof OpaqueImpl) {
                 return Arrays.equals(_opaque, ((OpaqueImpl) o)._opaque);
             } else {
-                return Arrays.equals(_opaque, ((Opaque) o).asBytes());
+                return Arrays.equals(_opaque, ((Opaque) o).toBytes());
             }
         }
 
         /**
          * Returns a (potentially non-stable) debug string.
          * 
-         * @see #getBase64()
+         * @see #toBase64()
          */
         @Override
         public String toString() {
-            return super.toString() + "[" + getBase64() + "]";
+            return super.toString() + "[" + toBase64() + "]";
         }
     }
 }

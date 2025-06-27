@@ -134,7 +134,7 @@ public class DistributedLockManager extends AbstractLockManager {
     }
 
     private static String objIdToKey(Opaque objId) {
-      return objId.getBase64();
+      return objId.toBase64();
     }
 
 }
