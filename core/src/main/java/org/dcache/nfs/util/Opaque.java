@@ -89,11 +89,27 @@ public interface Opaque {
     byte[] toBytes();
 
     /**
+     * Returns the number of bytes in this opaque object;
+     * 
+     * @return The number of bytes;
+     */
+    int numBytes();
+
+    /**
      * Returns a Base64 string representing this opaque object.
      * 
      * @return A Base64 string.
      */
     String toBase64();
+
+    /**
+     * Writes the bytes of this {@link Opaque} to the given {@link ByteBuffer}.
+     * 
+     * @param buf The target buffer.
+     */
+    default void putBytes(ByteBuffer buf) {
+        buf.put(toBytes());
+    }
 
     /**
      * Returns the hashCode based on the byte-representation of this instance.
@@ -137,6 +153,11 @@ public interface Opaque {
         }
 
         @Override
+        public void putBytes(ByteBuffer buf) {
+            buf.put(_opaque);
+        }
+
+        @Override
         public int hashCode() {
             return Arrays.hashCode(_opaque);
         }
@@ -165,6 +186,11 @@ public interface Opaque {
         @Override
         public String toString() {
             return super.toString() + "[" + toBase64() + "]";
+        }
+
+        @Override
+        public int numBytes() {
+            return _opaque.length;
         }
     }
 }

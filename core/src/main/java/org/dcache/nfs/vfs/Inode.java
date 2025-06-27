@@ -69,14 +69,18 @@ public class Inode {
      */
     @Deprecated
     public Inode(int generation, int exportIdx, int type, byte[] fs_opaque) {
+        this(generation, exportIdx, type, Opaque.forBytes(fs_opaque));
+    }
+
+    private Inode(int generation, int exportIdx, int type, Opaque fileIdKey) {
         this.version = VERSION;
         this.magic = MAGIC;
         this.generation = generation;
         this.exportIdx = exportIdx;
         this.type = type;
-        this.opaqueKey = Opaque.forBytes(fs_opaque);
+        this.opaqueKey = fileIdKey;
 
-        this.nfsHandle = buildNfsHandle(fs_opaque);
+        this.nfsHandle = buildNfsHandle();
     }
 
     /**
@@ -146,6 +150,10 @@ public class Inode {
         return forFile(key.toBytes());
     }
 
+    public static Inode innerInode(Inode outerInode) {
+        return new Inode(0, 0, 0, outerInode.getFileIdKey());
+    }
+
     @Deprecated(forRemoval = true)
     public byte[] getFileId() {
         return opaqueKey.toBytes();
@@ -178,8 +186,13 @@ public class Inode {
         return nfsHandle.clone();
     }
 
-    private byte[] buildNfsHandle(byte[] fs_opaque) {
-        int len = fs_opaque.length + MIN_LEN;
+    private byte[] buildNfsHandle() {
+        int opaqueLen = opaqueKey.numBytes();
+        if (opaqueLen < 0 || opaqueLen > 255) {
+            throw new IllegalStateException("Invalid opaque key length");
+        }
+
+        int len = MIN_LEN + opaqueLen;
         byte[] bytes = new byte[len];
         ByteBuffer b = ByteBuffer.wrap(bytes);
         b.order(ByteOrder.BIG_ENDIAN);
@@ -188,8 +201,8 @@ public class Inode {
         b.putInt(generation);
         b.putInt(exportIdx);
         b.put((byte) type);
-        b.put((byte) fs_opaque.length);
-        b.put(fs_opaque);
+        b.put((byte) opaqueLen);
+        opaqueKey.putBytes(b);
         return bytes;
     }
 

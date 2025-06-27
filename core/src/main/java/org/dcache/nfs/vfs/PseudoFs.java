@@ -748,6 +748,6 @@ public class PseudoFs extends ForwardingFileSystem {
      * @return The {@link Inode} as passed from {@link PseudoFs} to the underlying {@link VirtualFileSystem}.
      */
     private Inode innerInode(Inode inode) {
-        return Inode.forFile(inode.getFileId());
+        return Inode.innerInode(inode);
     }
 }
