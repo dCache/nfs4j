@@ -28,6 +28,12 @@ import java.util.Base64;
  * and a Base64 string representation.
  */
 public interface Opaque {
+    /**
+     * Returns an {@link Opaque} instance based on a copy of the given bytes.
+     * 
+     * @param bytes The bytes.
+     * @return The {@link Opaque} instance.
+     */
     public static Opaque forBytes(byte[] bytes) {
         return new OpaqueImpl(bytes.clone());
     }
