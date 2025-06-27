@@ -144,6 +144,10 @@ public class Inode {
         return new Inode(0, 0, 0, bytes);
     }
 
+    public static Inode forFileIdKey(Opaque key) {
+        return forFile(key.asBytes());
+    }
+
     @Deprecated(forRemoval = true)
     public byte[] getFileId() {
         return opaqueKey.asBytes();

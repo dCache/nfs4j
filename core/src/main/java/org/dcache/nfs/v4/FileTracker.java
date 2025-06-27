@@ -565,7 +565,7 @@ public class FileTracker {
     public Map<Inode, Collection<NFS4Client>> getOpenFiles() {
         return files.entrySet().stream()
                 .collect(Collectors.toMap(
-                        e -> Inode.forFile(e.getKey().asBytes()),
+                        e -> Inode.forFileIdKey(e.getKey()),
                         e -> e.getValue().stream().map(OpenState::getClient).collect(Collectors.toSet())));
     }
 
@@ -578,7 +578,7 @@ public class FileTracker {
     public Map<Inode, Collection<NFS4Client>> getDelegations() {
         return delegations.entrySet().stream()
                 .collect(Collectors.toMap(
-                        e -> Inode.forFile(e.getKey().asBytes()),
+                        e -> Inode.forFileIdKey(e.getKey()),
                         e -> e.getValue().stream().map(DelegationState::client).collect(Collectors.toSet())));
     }
 }
