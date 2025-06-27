@@ -19,6 +19,7 @@
  */
 package org.dcache.nfs.util;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -29,6 +30,22 @@ import java.util.Base64;
 public interface Opaque {
     public static Opaque forBytes(byte[] bytes) {
         return new OpaqueImpl(bytes.clone());
+    }
+
+    /**
+     * Returns an {@link Opaque} instance based on a copy of the {@code length} bytes from the given {@link ByteBuffer}
+     * starting from the current {@link ByteBuffer#position()} plus the given {@code offset}.
+     * 
+     * @param buf The buffer.
+     * @param offset The offset (relative to the current position).
+     * @param length The number of bytes.
+     * @return The {@link Opaque} instance.
+     */
+    public static Opaque forBytes(ByteBuffer buf, int offset, int length) {
+        byte[] bytes = new byte[length];
+        buf.get(bytes, offset, length);
+
+        return new OpaqueImpl(bytes);
     }
 
     byte[] toBytes();
