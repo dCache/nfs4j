@@ -1,10 +1,10 @@
 package org.dcache.nfs.benchmarks;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.v4.StateOwner;
 import org.dcache.nfs.v4.nlm.LockException;
 import org.dcache.nfs.v4.nlm.LockManager;
@@ -41,15 +41,15 @@ public class ConcurrentLockManagerBenchmark {
      */
     @State(Scope.Thread)
     public static class FileHolder {
-
-        private final Random random = ThreadLocalRandom.current();
-        private final byte[] file1 = new byte[16];
+        private final Opaque file1;
 
         public FileHolder() {
-            random.nextBytes(file1);
+            byte[] bytes = new byte[16];
+            ThreadLocalRandom.current().nextBytes(bytes);
+            file1 = Opaque.forBytes(bytes);
         }
 
-        public byte[] getFile() {
+        public Opaque getFile() {
             return file1;
         }
 
