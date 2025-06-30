@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class OpaqueTest {
     @Test
-    public void testMutable() {
+    public void testMutableByteBuffer() {
         ByteBuffer buf = ByteBuffer.allocate(64);
         buf.putInt(3, 0xAABBCCDD);
         buf.putInt(7, 0xEEFF0011);
@@ -32,6 +32,25 @@ public class OpaqueTest {
 
         // change contents of mutable buffer
         buf.put(6, (byte) 0x12);
+        assertNotEquals(bufOpaque.toBase64(), bytesOpaque.toBase64());
+        assertNotEquals(bufOpaque, bytesOpaque);
+        assertNotEquals(bytesOpaque, bufOpaque);
+        assertNotEquals(bytesOpaque.hashCode(), bufOpaque.hashCode());
+    }
+
+    @Test
+    public void testMutableByteArray() throws Exception {
+        byte[] buf = new byte[] {(byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04};
+        Opaque bufOpaque = Opaque.forMutableByteArray(buf);
+        Opaque bytesOpaque = Opaque.forBytes(new byte[] {(byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04});
+
+        assertEquals(bufOpaque.toBase64(), bytesOpaque.toBase64());
+        assertEquals(bufOpaque, bytesOpaque);
+        assertEquals(bytesOpaque, bufOpaque);
+        assertEquals(bytesOpaque.hashCode(), bufOpaque.hashCode());
+
+        // change contents of mutable buffer
+        buf[3] = (byte) 0xDD;
         assertNotEquals(bufOpaque.toBase64(), bytesOpaque.toBase64());
         assertNotEquals(bufOpaque, bytesOpaque);
         assertNotEquals(bytesOpaque, bufOpaque);
