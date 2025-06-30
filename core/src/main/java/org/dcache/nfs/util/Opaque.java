@@ -134,6 +134,7 @@ public interface Opaque {
     final class OpaqueImpl implements Opaque {
         private final byte[] _opaque;
         private String base64 = null;
+        private int hashCode;
 
         private OpaqueImpl(byte[] opaque) {
             _opaque = opaque;
@@ -159,7 +160,10 @@ public interface Opaque {
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(_opaque);
+            if (hashCode == 0) {
+                hashCode = Arrays.hashCode(_opaque);
+            }
+            return hashCode;
         }
 
         @Override
