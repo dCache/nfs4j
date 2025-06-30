@@ -1,0 +1,40 @@
+package org.dcache.nfs.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.nio.ByteBuffer;
+
+import org.junit.Test;
+
+public class OpaqueTest {
+    @Test
+    public void testMutable() {
+        ByteBuffer buf = ByteBuffer.allocate(64);
+        buf.putInt(3, 0xAABBCCDD);
+        buf.putInt(7, 0xEEFF0011);
+
+        Opaque bufOpaque = Opaque.forMutableByteBuffer(buf, 3, 4);
+        Opaque bytesOpaque = Opaque.forBytes(new byte[] {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC, (byte) 0xDD});
+
+        assertEquals(bufOpaque.toBase64(), bytesOpaque.toBase64());
+        assertEquals(bufOpaque, bytesOpaque);
+        assertEquals(bytesOpaque, bufOpaque);
+        assertEquals(bytesOpaque.hashCode(), bufOpaque.hashCode());
+
+        // unrelated changes should not affect equality
+        buf.put(2, (byte) 0x7f);
+        buf.putInt(7, 0);
+        assertEquals(bufOpaque.toBase64(), bytesOpaque.toBase64());
+        assertEquals(bufOpaque, bytesOpaque);
+        assertEquals(bytesOpaque, bufOpaque);
+        assertEquals(bytesOpaque.hashCode(), bufOpaque.hashCode());
+
+        // change contents of mutable buffer
+        buf.put(6, (byte) 0x12);
+        assertNotEquals(bufOpaque.toBase64(), bytesOpaque.toBase64());
+        assertNotEquals(bufOpaque, bytesOpaque);
+        assertNotEquals(bytesOpaque, bufOpaque);
+        assertNotEquals(bytesOpaque.hashCode(), bufOpaque.hashCode());
+    }
+}
