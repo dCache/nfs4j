@@ -2,6 +2,8 @@ package org.dcache.nfs.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
 import java.nio.ByteBuffer;
 
@@ -55,5 +57,19 @@ public class OpaqueTest {
         assertNotEquals(bufOpaque, bytesOpaque);
         assertNotEquals(bytesOpaque, bufOpaque);
         assertNotEquals(bytesOpaque.hashCode(), bufOpaque.hashCode());
+    }
+
+    @Test
+    public void testToImmutable() throws Exception {
+        Opaque mutable = Opaque.forMutableByteBuffer(ByteBuffer.wrap(new byte[] {
+                (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04}), 0, 4);
+        Opaque mutableToImmutable = mutable.toImmutableOpaque();
+        assertEquals(mutable, mutableToImmutable);
+        assertNotSame(mutable, mutableToImmutable);
+
+        Opaque immutable = Opaque.forBytes(new byte[] {(byte) 0xAA, (byte) 0xBB, (byte) 0xCC, (byte) 0xDD});
+        Opaque immutableToImmutable = immutable.toImmutableOpaque();
+        assertEquals(immutable, immutableToImmutable);
+        assertSame(immutable, immutableToImmutable);
     }
 }
