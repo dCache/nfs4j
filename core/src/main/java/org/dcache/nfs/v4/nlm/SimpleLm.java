@@ -58,36 +58,32 @@ public class SimpleLm extends AbstractLockManager {
     /**
      * Exclusive lock on objects locks.
      */
-    private final ConcurrentHashMap<String, List<NlmLock>> locks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Opaque, List<NlmLock>> locks = new ConcurrentHashMap<>();
 
     @Override
     protected Lock getObjectLock(Opaque objId) {
-        String key = toKey(objId);
-        return objLock.get(key);
+        return objLock.get(objId);
     }
 
     @Override
     protected Collection<NlmLock> getActiveLocks(Opaque objId) {
-        String key = toKey(objId);
-        return locks.getOrDefault(key, Collections.emptyList());
+        return locks.getOrDefault(objId, Collections.emptyList());
     }
 
     @Override
     protected void add(Opaque objId, NlmLock lock) {
-        String key = toKey(objId);
-        Collection<NlmLock> l = locks.computeIfAbsent(key, k -> new ArrayList<>());
+        Collection<NlmLock> l = locks.computeIfAbsent(objId.toImmutableOpaque(), k -> new ArrayList<>());
         l.add(lock);
     }
 
     @Override
     protected boolean remove(Opaque objId, NlmLock lock) {
-        String key = toKey(objId);
-        Collection<NlmLock> l = locks.get(key);
+        Collection<NlmLock> l = locks.get(objId);
         boolean isRemoved = false;
         if (l != null) {
             isRemoved = l.remove(lock);
             if (l.isEmpty()) {
-                locks.remove(key);
+                locks.remove(objId);
             }
         }
         return isRemoved;
@@ -95,25 +91,18 @@ public class SimpleLm extends AbstractLockManager {
 
     @Override
     protected void addAll(Opaque objId, Collection<NlmLock> locks) {
-        String key = toKey(objId);
-        Collection<NlmLock> l = this.locks.computeIfAbsent(key, k -> new ArrayList<>());
+        Collection<NlmLock> l = this.locks.computeIfAbsent(objId.toImmutableOpaque(), k -> new ArrayList<>());
         l.addAll(locks);
     }
 
     @Override
     protected void removeAll(Opaque objId, Collection<NlmLock> locks) {
-        String key = toKey(objId);
-        Collection<NlmLock> l = this.locks.get(key);
+        Collection<NlmLock> l = this.locks.get(objId);
         if (l != null) {
             l.removeAll(locks);
             if (l.isEmpty()) {
-                this.locks.remove(key);
+                this.locks.remove(objId);
             }
         }
     }
-
-    private final String toKey(Opaque objId) {
-        return objId.toBase64();
-    }
-
 }
