@@ -40,7 +40,7 @@ public interface Opaque {
      * @return The {@link Opaque} instance.
      */
     static Opaque forBytes(byte[] bytes) {
-        return new OpaqueImpl(bytes.clone());
+        return new OpaqueImmutableImpl(bytes.clone());
     }
 
     /**
@@ -53,7 +53,7 @@ public interface Opaque {
      * @return The {@link Opaque} instance.
      */
     static Opaque forMutableByteArray(byte[] bytes) {
-        return new OpaqueMutableImpl(bytes);
+        return new OpaqueImpl(bytes);
     }
 
     /**
@@ -68,7 +68,7 @@ public interface Opaque {
         byte[] bytes = new byte[length];
         buf.get(bytes);
 
-        return new OpaqueImpl(bytes);
+        return new OpaqueImmutableImpl(bytes);
     }
 
     /**
@@ -176,8 +176,6 @@ public interface Opaque {
 
     class OpaqueImpl implements Opaque {
         final byte[] _opaque;
-        private String base64 = null;
-        private int hashCode;
 
         OpaqueImpl(byte[] opaque) {
             _opaque = opaque;
@@ -188,29 +186,23 @@ public interface Opaque {
             return _opaque.clone();
         }
 
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(_opaque);
+        }
+
+        @Override
+        public String toBase64() {
+            return toBase64Impl();
+        }
+
         protected String toBase64Impl() {
             return Base64.getEncoder().withoutPadding().encodeToString(_opaque);
         }
 
         @Override
-        public String toBase64() {
-            if (base64 == null) {
-                base64 = toBase64Impl();
-            }
-            return base64;
-        }
-
-        @Override
         public void putBytes(ByteBuffer buf) {
             buf.put(_opaque);
-        }
-
-        @Override
-        public int hashCode() {
-            if (hashCode == 0) {
-                hashCode = Arrays.hashCode(_opaque);
-            }
-            return hashCode;
         }
 
         @Override
@@ -259,30 +251,38 @@ public interface Opaque {
 
         @Override
         public Opaque toImmutableOpaque() {
-            return this;
+            return Opaque.forBytes(_opaque);
         }
     }
 
-    final class OpaqueMutableImpl extends OpaqueImpl {
-        protected OpaqueMutableImpl(byte[] opaque) {
+    final class OpaqueImmutableImpl extends OpaqueImpl {
+        private String base64 = null;
+        private int hashCode;
+
+        protected OpaqueImmutableImpl(byte[] opaque) {
             super(opaque);
         }
 
         @Override
-        public Opaque toImmutableOpaque() {
-            return Opaque.forBytes(_opaque);
+        public int hashCode() {
+            if (hashCode == 0) {
+                hashCode = Arrays.hashCode(_opaque);
+            }
+            return hashCode;
         }
 
         @Override
         public String toBase64() {
-            return toBase64Impl();
+            if (base64 == null) {
+                base64 = toBase64Impl();
+            }
+            return base64;
         }
 
         @Override
-        public int hashCode() {
-            return Arrays.hashCode(_opaque);
+        public Opaque toImmutableOpaque() {
+            return this;
         }
-
     }
 
     final class OpaqueBufferImpl implements Opaque {
