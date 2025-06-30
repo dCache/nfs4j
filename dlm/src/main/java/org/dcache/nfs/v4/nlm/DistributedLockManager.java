@@ -19,11 +19,12 @@
  */
 package org.dcache.nfs.v4.nlm;
 
-import java.util.Base64;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+
+import org.dcache.nfs.util.Opaque;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.multimap.MultiMap;
@@ -61,7 +62,7 @@ public class DistributedLockManager extends AbstractLockManager {
     }
 
     @Override
-    protected Lock getObjectLock(byte[] objId) {
+    protected Lock getObjectLock(Opaque objId) {
         String key = objIdToKey(objId);
         return new Lock() {
             @Override
@@ -103,40 +104,37 @@ public class DistributedLockManager extends AbstractLockManager {
      * @return collection of active locks.
      */
     @Override
-    protected Collection<NlmLock> getActiveLocks(byte[] objId) {
+    protected Collection<NlmLock> getActiveLocks(Opaque objId) {
         String key = objIdToKey(objId);
         return locks.get(key);
     }
 
     @Override
-    protected void add(byte[] objId, NlmLock lock) {
+    protected void add(Opaque objId, NlmLock lock) {
         String key = objIdToKey(objId);
         locks.put(key, lock);
     }
 
     @Override
-    protected boolean remove(byte[] objId, NlmLock lock) {
+    protected boolean remove(Opaque objId, NlmLock lock) {
         String key = objIdToKey(objId);
         return locks.remove(key, lock);
     }
 
     @Override
-    protected void addAll(byte[] objId, Collection<NlmLock> locks) {
+    protected void addAll(Opaque objId, Collection<NlmLock> locks) {
         String key = objIdToKey(objId);
         locks.forEach(l -> this.locks.put(key, l));
     }
 
     @Override
-    protected void removeAll(byte[] objId, Collection<NlmLock> locks) {
+    protected void removeAll(Opaque objId, Collection<NlmLock> locks) {
         String key = objIdToKey(objId);
         locks.forEach(l -> this.locks.remove(key, l));
     }
 
-    private static String objIdToKey(byte[] objId) {
-        return Base64
-                .getEncoder()
-                .withoutPadding()
-                .encodeToString(objId);
+    private static String objIdToKey(Opaque objId) {
+      return objId.toBase64();
     }
 
 }

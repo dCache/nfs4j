@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v4.nlm;
 
+import org.dcache.nfs.util.Opaque;
+
 /**
  */
 public interface LockManager {
@@ -31,7 +33,7 @@ public interface LockManager {
      * @throws LockDeniedException if a conflicting lock is detected.
      * @throws LockException if locking fails.
      */
-    void lock(byte[] objId, NlmLock lock) throws LockException;
+    void lock(Opaque objId, NlmLock lock) throws LockException;
 
     /**
      * Unlock byte range of an {@code objId}.
@@ -41,7 +43,7 @@ public interface LockManager {
      * @throws LockRangeUnavailabeException if no matching lock found.
      * @throws LockException if locking fails.
      */
-    void unlock(byte[] objId, NlmLock lock) throws LockException;
+    void unlock(Opaque objId, NlmLock lock) throws LockException;
 
     /**
      * Test byte range lock existence for an {@code objId}. Same as {@link #lock}, except that a new lock is not
@@ -52,13 +54,13 @@ public interface LockManager {
      * @throws LockDeniedException if a conflicting lock is detected.
      * @throws LockException if locking fails.
      */
-    void test(byte[] objId, NlmLock lock) throws LockException;
+    void test(Opaque objId, NlmLock lock) throws LockException;
 
     /**
-     * Like {@link #unlock(byte[], org.dcache.nfs.v4.nlm.NlmLock)}, but does not fail if lock does not exists.
+     * Like {@link #unlock(Opaque, org.dcache.nfs.v4.nlm.NlmLock)}, but does not fail if lock does not exists.
      *
      * @param objId
      * @param lock
      */
-    void unlockIfExists(byte[] objId, NlmLock lock);
+    void unlockIfExists(Opaque objId, NlmLock lock);
 }

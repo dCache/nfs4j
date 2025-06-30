@@ -52,8 +52,7 @@ public class FsCache {
 
         @Override
         public FileChannel load(Inode inode) throws IOException {
-            byte[] fid = inode.getFileId();
-            String id = BaseEncoding.base16().lowerCase().encode(fid);
+            String id = inode.getLockKey().toBase64();
             File dir = getAndCreateDirectory(id);
             File f = new File(dir, id);
             return new RandomAccessFile(f, "rw").getChannel();

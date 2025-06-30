@@ -20,12 +20,13 @@
 package org.dcache.nfs.v4.nlm;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+
+import org.dcache.nfs.util.Opaque;
 
 import com.google.common.util.concurrent.Striped;
 
@@ -60,26 +61,26 @@ public class SimpleLm extends AbstractLockManager {
     private final ConcurrentHashMap<String, List<NlmLock>> locks = new ConcurrentHashMap<>();
 
     @Override
-    protected Lock getObjectLock(byte[] objId) {
+    protected Lock getObjectLock(Opaque objId) {
         String key = toKey(objId);
         return objLock.get(key);
     }
 
     @Override
-    protected Collection<NlmLock> getActiveLocks(byte[] objId) {
+    protected Collection<NlmLock> getActiveLocks(Opaque objId) {
         String key = toKey(objId);
         return locks.getOrDefault(key, Collections.emptyList());
     }
 
     @Override
-    protected void add(byte[] objId, NlmLock lock) {
+    protected void add(Opaque objId, NlmLock lock) {
         String key = toKey(objId);
         Collection<NlmLock> l = locks.computeIfAbsent(key, k -> new ArrayList<>());
         l.add(lock);
     }
 
     @Override
-    protected boolean remove(byte[] objId, NlmLock lock) {
+    protected boolean remove(Opaque objId, NlmLock lock) {
         String key = toKey(objId);
         Collection<NlmLock> l = locks.get(key);
         boolean isRemoved = false;
@@ -93,14 +94,14 @@ public class SimpleLm extends AbstractLockManager {
     }
 
     @Override
-    protected void addAll(byte[] objId, Collection<NlmLock> locks) {
+    protected void addAll(Opaque objId, Collection<NlmLock> locks) {
         String key = toKey(objId);
         Collection<NlmLock> l = this.locks.computeIfAbsent(key, k -> new ArrayList<>());
         l.addAll(locks);
     }
 
     @Override
-    protected void removeAll(byte[] objId, Collection<NlmLock> locks) {
+    protected void removeAll(Opaque objId, Collection<NlmLock> locks) {
         String key = toKey(objId);
         Collection<NlmLock> l = this.locks.get(key);
         if (l != null) {
@@ -111,8 +112,8 @@ public class SimpleLm extends AbstractLockManager {
         }
     }
 
-    private final String toKey(byte[] objId) {
-        return Base64.getEncoder().encodeToString(objId);
+    private final String toKey(Opaque objId) {
+        return objId.toBase64();
     }
 
 }

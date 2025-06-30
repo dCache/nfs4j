@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.dcache.nfs.util.Opaque;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,12 +21,12 @@ public class DistributedLockManagerTest {
     private HazelcastInstance hzClient;
     private LockManager lm1;
     private LockManager lm2;
-    private byte[] file1;
+    private Opaque file1;
 
     @Before
     public void setUp() throws Exception {
 
-        file1 = "file1".getBytes(StandardCharsets.UTF_8);
+        file1 = Opaque.forBytes("file1".getBytes(StandardCharsets.UTF_8));
 
         hzSerrver = Hazelcast.newHazelcastInstance();
 

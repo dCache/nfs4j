@@ -219,7 +219,7 @@ public class VfsCache extends ForwardingFileSystem {
      * @param inode The inode for which cached state value should be invalidated.
      */
     public void invalidateStatCache(final Inode inode) {
-        _statCache.invalidate(new Opaque(inode.getFileId()));
+        _statCache.invalidate(inode.getFileIdKey());
     }
 
     private void updateParentCache(Inode inode, Inode parent) {
@@ -246,7 +246,7 @@ public class VfsCache extends ForwardingFileSystem {
 
     private Stat statFromCacheOrLoad(final Inode inode) throws IOException {
         try {
-            return _statCache.get(new Opaque(inode.getFileId()), () -> _inner.getattr(inode));
+            return _statCache.get(inode.getFileIdKey(), () -> _inner.getattr(inode));
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             Throwables.throwIfInstanceOf(t, IOException.class);
