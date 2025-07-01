@@ -242,7 +242,7 @@ public class FileTracker {
         // client explicitly requested write delegation
         boolean wantWriteDelegation = (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_WRITE_DELEG) != 0;
 
-        Opaque fileId = inode.getFileIdKey();
+        final Opaque fileId = inode.getFileIdKey().toImmutableOpaque();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
