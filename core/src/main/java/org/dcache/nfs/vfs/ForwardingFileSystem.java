@@ -33,7 +33,7 @@ import org.dcache.nfs.v4.xdr.nfsace4;
  * methods to modify the behavior of the backing file system as desired per the
  * <a href="http://en.wikipedia.org/wiki/Decorator_pattern">decorator pattern</a>.
  *
- * @sice 0.10
+ * @since 0.10
  */
 public abstract class ForwardingFileSystem implements VirtualFileSystem {
 
