@@ -23,9 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.InvalException;
-import org.dcache.nfs.status.IsDirException;
-import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.v4.xdr.READ4res;
 import org.dcache.nfs.v4.xdr.READ4resok;
@@ -34,7 +31,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,16 +46,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws IOException {
         final READ4res res = result.opread;
 
-        Stat inodeStat = context.getFs().getattr(context.currentInode());
         stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opread.stateid);
-
-        if (inodeStat.type() == Stat.Type.DIRECTORY) {
-            throw new IsDirException();
-        }
-
-        if (inodeStat.type() == Stat.Type.SYMLINK) {
-            throw new InvalException();
-        }
 
         NFS4Client client;
         if (context.getMinorversion() == 0) {
@@ -85,19 +72,17 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         ByteBuffer buf = ByteBuffer.allocate(count);
 
-        int bytesReaded = context.getFs().read(inode, buf, offset);
-        if (bytesReaded < 0) {
-            throw new NfsIoException("IO not allowed");
-        }
-
-        buf.flip();
-        res.status = nfsstat.NFS_OK;
         res.resok4 = new READ4resok();
+        int bytesRead = context.getFs().read(inode, buf, offset, res.resok4::setEOF);
 
-        res.resok4.data = buf;
-
-        if (offset + bytesReaded >= inodeStat.getSize()) {
+        if (bytesRead < 0) {
+            buf.clear();
             res.resok4.eof = true;
+        } else {
+            buf.flip();
         }
+
+        res.status = nfsstat.NFS_OK;
+        res.resok4.data = buf;
     }
 }

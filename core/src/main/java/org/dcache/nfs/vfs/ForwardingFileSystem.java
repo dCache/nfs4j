@@ -105,6 +105,11 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
+    public int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        return delegate().read(inode, data, offset, eofReached);
+    }
+
+    @Override
     public String readlink(Inode inode) throws IOException {
         return delegate().readlink(inode);
     }
@@ -139,6 +144,11 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     @Override
     public Stat getattr(Inode inode) throws IOException {
         return delegate().getattr(inode);
+    }
+
+    @Override
+    public Stat.Type getStatType(Inode inode) throws IOException {
+        return delegate().getStatType(inode);
     }
 
     @Override

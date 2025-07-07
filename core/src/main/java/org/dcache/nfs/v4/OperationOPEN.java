@@ -316,8 +316,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             throw new AccessException();
         }
 
-        Stat stat = context.getFs().getattr(inode);
-        switch (stat.type()) {
+        Stat.Type statType = context.getFs().getStatType(inode);
+        switch (statType) {
             case REGULAR:
                 // OK
                 break;

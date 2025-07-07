@@ -57,7 +57,7 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
             throw new InvalException("zero lock len");
         }
 
-        switch (context.getFs().getattr(inode).type()) {
+        switch (context.getFs().getStatType(inode)) {
             case REGULAR:
                 // OK
                 break;
