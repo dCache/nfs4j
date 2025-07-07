@@ -47,8 +47,8 @@ public class OperationREADLINK extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final READLINK4res res = result.opreadlink;
 
-        Stat stat = context.getFs().getattr(context.currentInode());
-        if (stat.type() != Stat.Type.SYMLINK) {
+        Stat.Type statType = context.getFs().getStatType(context.currentInode());
+        if (statType != Stat.Type.SYMLINK) {
             throw new InvalException("not a symlink");
         }
 

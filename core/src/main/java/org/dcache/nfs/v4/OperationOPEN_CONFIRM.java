@@ -53,14 +53,13 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
             throw new NotSuppException("operation OPEN_CONFIRM4 is obsolete in 4.x, x > 0");
         }
 
-        Inode inode = context.currentInode();
-        Stat stat = context.getFs().getattr(context.currentInode());
+        Stat.Type statType = context.getFs().getStatType(context.currentInode());
 
-        if (stat.type() == Stat.Type.DIRECTORY) {
+        if (statType == Stat.Type.DIRECTORY) {
             throw new IsDirException();
         }
 
-        if (stat.type() == Stat.Type.SYMLINK) {
+        if (statType == Stat.Type.SYMLINK) {
             throw new InvalException();
         }
 

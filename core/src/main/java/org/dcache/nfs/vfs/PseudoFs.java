@@ -45,6 +45,7 @@ import org.dcache.nfs.util.SubjectHolder;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.vfs.Stat.Type;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.RpcCall;
@@ -298,6 +299,12 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
+    public int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        checkAccess(inode, ACE4_READ_DATA);
+        return _inner.read(innerInode(inode), data, offset, eofReached);
+    }
+
+    @Override
     public String readlink(Inode inode) throws IOException {
         checkAccess(inode, ACE4_READ_DATA);
         return _inner.readlink(innerInode(inode));
@@ -349,6 +356,12 @@ public class PseudoFs extends ForwardingFileSystem {
     public Stat getattr(Inode inode) throws IOException {
         checkAccess(inode, ACE4_READ_ATTRIBUTES);
         return _inner.getattr(innerInode(inode));
+    }
+
+    @Override
+    public Type getStatType(Inode inode) throws IOException {
+        checkAccess(inode, ACE4_READ_ATTRIBUTES);
+        return _inner.getStatType(innerInode(inode));
     }
 
     @Override
@@ -420,7 +433,14 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private Subject checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
-        return checkAccess(inode, _inner.getattr(innerInode(inode)), requestedMask, shouldLog);
+        Stat stat;
+        if (requestedMask == ACE4_READ_ATTRIBUTES) {
+            stat = null; // not required
+        } else {
+            stat = _inner.getattr(innerInode(inode));
+        }
+
+        return checkAccess(inode, stat, requestedMask, shouldLog);
     }
 
     private Subject checkAccess(Inode inode, Stat stat, int requestedMask, boolean shouldLog) throws IOException {
