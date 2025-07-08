@@ -238,6 +238,17 @@ public class NFSv4StateHandler {
     }
 
     public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
+        if (Stateids.isStateLess(stateId)) {
+            // We do not support NFSv4.0 Anonymous/Bypass Stateids:
+            // https://datatracker.ietf.org/doc/html/rfc7530#section-9.1.4.3
+            //
+            // This is occasionally used by macOS NFS when it loses track of its state.
+            // Returning BAD_STATEID forces a connection-restart.
+            //
+            // https://github.com/apple-oss-distributions/NFS/blob/NFS-327.120.3/kext/nfs4_vnops.c#L2813
+            // https://github.com/apple-oss-distributions/NFS/blob/NFS-327.120.3/kext/nfs4_vnops.c#L1863L1880
+            throw new BadStateidException();
+        }
 
         _readLock.lock();
         try {
