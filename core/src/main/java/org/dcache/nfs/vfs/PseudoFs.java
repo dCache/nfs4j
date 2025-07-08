@@ -753,8 +753,6 @@ public class PseudoFs extends ForwardingFileSystem {
             Inode innerRootInode = _inner.getRootInode();
             if (innerRootInode.getFileIdKey().equals(inode.getFileIdKey())) {
                 return innerRootInode;
-            } else {
-                throw new BadHandleException();
             }
         }
         return Inode.innerInode(inode);
