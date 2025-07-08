@@ -28,6 +28,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
@@ -35,6 +36,7 @@ import java.util.stream.Stream;
 import javax.security.auth.Subject;
 
 import org.dcache.nfs.ExportFile;
+import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.NoEntException;
@@ -742,5 +744,107 @@ public class PseudoFsTest {
 
         pseudoFs = new PseudoFs(vfs, mockedRpc, mockedExportFile);
         pseudoFs.getattr(fsRoot);
+    }
+
+    @Test
+    public void testAllowListingByExportedClient() throws IOException {
+        InetSocketAddress clientEndpoint = new InetSocketAddress("192.168.1.1", 314);
+
+        Subject subject = toSubject(17, 17);
+        Inode parent = vfs.mkdir(fsRoot, "exports", subject, 0755);
+        vfs.mkdir(parent, "data", subject, 0755);
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(clientEndpoint);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export1 = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .forClient("192.168.1.0/24")
+                .build("/exports/data");
+
+
+        var exportTable = new ExportTable() {
+
+            @Override
+            public Stream<FsExport> exports() {
+                throw new RuntimeException("not used in this test");
+            }
+
+            @Override
+            public Stream<FsExport> exports(InetAddress client) {
+                return export1.isAllowed(client) ? Stream.of(export1) : Stream.empty();
+            }
+
+            @Override
+            public FsExport getExport(String path, InetAddress client) {
+                return export1.getPath().equals(path) && export1.isAllowed(client)? export1 : null;
+            }
+
+            @Override
+            public FsExport getExport(int index, InetAddress client) {
+                return  export1.getIndex() == index && export1.isAllowed(client) ? export1 : null;
+            }
+        };
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, exportTable);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, 0);
+    }
+
+
+    @Test(expected = AccessException.class)
+    public void testRejectListing() throws IOException {
+        InetSocketAddress clientEndpoint = new InetSocketAddress("192.168.2.1", 314);
+
+        Subject subject = toSubject(17, 17);
+        Inode parent = vfs.mkdir(fsRoot, "exports", subject, 0755);
+        vfs.mkdir(parent, "data", subject, 0755);
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(clientEndpoint);
+        given(mockedAuth.getSubject()).willReturn(ROOT);
+        given(mockedAuth.type()).willReturn(RpcAuthType.UNIX);
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export1 = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.SYS)
+                .forClient("192.168.1.0/24")
+                .build("/exports/data");
+
+        var exportTable = new ExportTable() {
+
+            @Override
+            public Stream<FsExport> exports() {
+                throw new RuntimeException("not used in this test");
+            }
+
+            @Override
+            public Stream<FsExport> exports(InetAddress client) {
+                return export1.isAllowed(client) ? Stream.of(export1) : Stream.empty();
+            }
+
+            @Override
+            public FsExport getExport(String path, InetAddress client) {
+                return export1.getPath().equals(path) && export1.isAllowed(client)? export1 : null;
+            }
+
+            @Override
+            public FsExport getExport(int index, InetAddress client) {
+                return  export1.getIndex() == index && export1.isAllowed(client) ? export1 : null;
+            }
+        };
+
+        pseudoFs = new PseudoFs(vfs, mockedRpc, exportTable);
+        Inode pseudoRoot = pseudoFs.getRootInode();
+        pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, 0);
     }
 }
