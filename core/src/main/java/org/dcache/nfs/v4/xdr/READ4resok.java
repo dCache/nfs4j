@@ -51,5 +51,8 @@ public class READ4resok implements XdrAble {
         data = xdr.xdrDecodeByteBuffer();
     }
 
+    public void setEOF() {
+      this.eof = true;
+    }
 }
 // End of READ4resok.java

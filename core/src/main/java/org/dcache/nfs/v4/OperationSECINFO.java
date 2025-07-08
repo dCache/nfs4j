@@ -48,8 +48,8 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
 
         final SECINFO4res res = result.opsecinfo;
         Inode dir = context.currentInode();
-        Stat stat = context.getFs().getattr(dir);
-        if (stat.type() != Stat.Type.DIRECTORY) {
+        Stat.Type statType = context.getFs().getStatType(dir);
+        if (statType != Stat.Type.DIRECTORY) {
             throw new NotDirException();
         }
 
