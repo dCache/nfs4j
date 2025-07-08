@@ -238,6 +238,10 @@ public class NFSv4StateHandler {
     }
 
     public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
+        if (stateId.seqid == -1) {
+            // invalid; force reconnect
+            throw new BadSessionException();
+        }
 
         _readLock.lock();
         try {
