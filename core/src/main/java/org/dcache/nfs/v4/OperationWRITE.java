@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
+import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NfsIoException;
@@ -66,24 +67,34 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             throw new InvalException("path is a symlink");
         }
 
-        NFS4Client client;
-        if (context.getMinorversion() == 0) {
-            /*
-             * The NFSv4.0 spec requires lease renewal on WRITE. See: https://tools.ietf.org/html/rfc7530#page-119
-             *
-             * With introduction of sessions in v4.1 update of the lease time done through SEQUENCE operations.
-             */
-            context.getStateHandler().updateClientLeaseTime(stateid);
-            client = context.getStateHandler().getClientIdByStateId(stateid);
-        } else {
-            client = context.getSession().getClient();
-        }
-
         var inode = context.currentInode();
+        if (Stateids.isStateLess(stateid)) {
+            // Anonymous access as per RFC 7530
+            // https://datatracker.ietf.org/doc/html/rfc7530#section-9.1.4.3
+            // we only check file access rights.
+            if (context.getFs().access(context.getSubject(), inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
+                throw new AccessException();
+            }
 
-        int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, stateid);
-        if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
-            throw new OpenModeException("Invalid open mode");
+        } else {
+
+            NFS4Client client;
+            if (context.getMinorversion() == 0) {
+                /*
+                 * The NFSv4.0 spec requires lease renewal on WRITE. See: https://tools.ietf.org/html/rfc7530#page-119
+                 *
+                 * With introduction of sessions in v4.1 update of the lease time done through SEQUENCE operations.
+                 */
+                context.getStateHandler().updateClientLeaseTime(stateid);
+                client = context.getStateHandler().getClientIdByStateId(stateid);
+            } else {
+                client = context.getSession().getClient();
+            }
+
+            int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, stateid);
+            if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
+                throw new OpenModeException("Invalid open mode");
+            }
         }
 
         long offset = _args.opwrite.offset.value;
