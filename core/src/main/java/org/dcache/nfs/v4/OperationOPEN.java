@@ -169,7 +169,12 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                             res.resok4.attrset.set(nfs4_prot.FATTR4_MODE);
                         }
 
-                        if (createSize.isPresent() && createSize.get().value == 0) {
+                        if (createSize.isPresent()) {
+                            if (createSize.get().value != 0) {
+                                var newSizeStat = new Stat();
+                                newSizeStat.setSize(createSize.get().value);
+                                context.getFs().setattr(inode, newSizeStat);
+                            }
                             res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
                         }
 
