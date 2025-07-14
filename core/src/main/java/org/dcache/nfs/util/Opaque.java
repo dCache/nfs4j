@@ -20,9 +20,12 @@
 package org.dcache.nfs.util;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Objects;
+
+import org.dcache.oncrpc4j.util.Bytes;
 
 /**
  * Describes something that can be used as a key for {@link java.util.HashMap} and that can be converted to a
@@ -85,6 +88,9 @@ public interface Opaque {
      * @see #toImmutableOpaque()
      */
     static Opaque forMutableByteBuffer(ByteBuffer buf, int index, int length) {
+        if (buf.order() != ByteOrder.BIG_ENDIAN) {
+            buf = buf.duplicate();
+        }
         return new OpaqueBufferImpl(buf, index, length);
     }
 
@@ -174,10 +180,26 @@ public interface Opaque {
     @Override
     boolean equals(Object o);
 
-    class OpaqueImpl implements Opaque {
+    /**
+     * Returns the byte stored at the given position.
+     * 
+     * @param byteOffset The byte offset
+     * @return The byte.
+     */
+    byte byteAt(int byteOffset);
+
+    /**
+     * Returns the {@code long} stored at the given position, using big-endian byte order.
+     * 
+     * @param byteOffset The byte offset
+     * @return The long.
+     */
+    long longAt(int byteOffset);
+
+    public class OpaqueImpl implements Opaque {
         final byte[] _opaque;
 
-        OpaqueImpl(byte[] opaque) {
+        protected OpaqueImpl(byte[] opaque) {
             _opaque = opaque;
         }
 
@@ -252,6 +274,16 @@ public interface Opaque {
         @Override
         public Opaque toImmutableOpaque() {
             return Opaque.forBytes(_opaque);
+        }
+
+        @Override
+        public byte byteAt(int position) {
+            return _opaque[position];
+        }
+
+        @Override
+        public long longAt(int byteOffset) {
+            return Bytes.getLong(_opaque, byteOffset);
         }
     }
 
@@ -360,13 +392,29 @@ public interface Opaque {
                 }
                 return true;
             } else {
-                return toImmutableOpaque().equals(o);
+                Opaque other = (Opaque) o;
+                for (int i = index, n = index + length, oi = 0; i < n; i++, oi++) {
+                    if (buf.get(i) != other.byteAt(oi)) {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 
         @Override
         public String toString() {
             return super.toString() + "[" + toBase64() + "]";
+        }
+
+        @Override
+        public byte byteAt(int position) {
+            return buf.get(position);
+        }
+
+        @Override
+        public long longAt(int byteOffset) {
+            return buf.getLong(byteOffset);
         }
     }
 }
