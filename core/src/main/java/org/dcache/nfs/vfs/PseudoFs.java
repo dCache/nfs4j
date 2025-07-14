@@ -823,12 +823,12 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     /**
-     * Convert an {@link Inode} that is used by {@link PseudoFs} to an {@link Inode} that is understood by the
-     * underlying file system.
+     * Convert an {@link Inode} that is used by {@link PseudoFs} to an {@link Inode} that is understood
+     * by the underlying file system.
      * <p>
      * We currently store additional information such as "ExportId" and "PseudoInode" as parts of the Inode.
-     * {@link VirtualFileSystem}s that store {@link Inode} as a whole (rather than only the "fileId" bit) may not
-     * recognize such objects, unless we remove this additional information.
+     * {@link VirtualFileSystem}s that store {@link Inode} as a whole (rather than only the "fileId" bit)
+     * may not recognize such objects, unless we remove this additional information.
      * <p>
      * Once {@link PseudoFs} handles this configuration internally, we can remove this conversion step.
      *
