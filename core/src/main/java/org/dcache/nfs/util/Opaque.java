@@ -199,7 +199,7 @@ public interface Opaque {
     public class OpaqueImpl implements Opaque {
         final byte[] _opaque;
 
-        protected OpaqueImpl(byte[] opaque) {
+        OpaqueImpl(byte[] opaque) {
             _opaque = opaque;
         }
 
@@ -392,13 +392,7 @@ public interface Opaque {
                 }
                 return true;
             } else {
-                Opaque other = (Opaque) o;
-                for (int i = index, n = index + length, oi = 0; i < n; i++, oi++) {
-                    if (buf.get(i) != other.byteAt(oi)) {
-                        return false;
-                    }
-                }
-                return true;
+                return toImmutableOpaque().equals(o);
             }
         }
 
