@@ -21,12 +21,14 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 import java.util.concurrent.CompletableFuture;
 
 import javax.security.auth.Subject;
 
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.vfs.Stat.StatAttribute;
 
 /**
  * A file system which forwards all its method calls to another file system. Subclasses should override one or more
@@ -147,8 +149,8 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
-    public Stat.Type getStatType(Inode inode) throws IOException {
-        return delegate().getStatType(inode);
+    public Stat getattr(Inode inode, EnumSet<StatAttribute> attributes) throws IOException {
+        return delegate().getattr(inode, attributes);
     }
 
     @Override

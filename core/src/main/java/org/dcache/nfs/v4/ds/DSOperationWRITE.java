@@ -62,7 +62,7 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
 
         Inode inode = context.currentInode();
-        Stat.Type statType = context.getFs().getStatType(inode);
+        Stat.Type statType = context.getFs().getattr(inode, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
 
         if (statType == Stat.Type.DIRECTORY) {
             throw new IsDirException("Can't WRITE into a directory inode");

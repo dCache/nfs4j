@@ -55,7 +55,7 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
         Inode parent = context.currentInode();
 
-        Stat.Type inodeStatType = context.getFs().getStatType(context.savedInode());
+        Stat.Type inodeStatType = context.getFs().getattr(context.savedInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
         if (inodeStatType == Stat.Type.DIRECTORY) {
             throw new IsDirException("Can't hard-link a directory");
         }

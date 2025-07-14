@@ -105,7 +105,7 @@ public class MountServer extends mount_protServerStub {
         try {
 
             Inode rootInode = path2Inode(_vfs, mountPoint);
-            Stat.Type type = _vfs.getStatType(rootInode);
+            Stat.Type type = _vfs.getattr(rootInode, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
 
             if (type == Stat.Type.SYMLINK) {
                 /*
@@ -113,7 +113,7 @@ public class MountServer extends mount_protServerStub {
                  */
                 String path = _vfs.readlink(rootInode);
                 rootInode = path2Inode(_vfs, path);
-                type = _vfs.getStatType(rootInode);
+                type = _vfs.getattr(rootInode, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
             }
 
             if (type != Stat.Type.DIRECTORY) {

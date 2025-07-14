@@ -94,7 +94,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             throw new BadCookieException("bad cookie : " + startValue);
         }
 
-        Stat.Type statType = context.getFs().getStatType(dir);
+        Stat.Type statType = context.getFs().getattr(dir, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
         if (statType != Stat.Type.DIRECTORY) {
             throw new NotDirException();
         }

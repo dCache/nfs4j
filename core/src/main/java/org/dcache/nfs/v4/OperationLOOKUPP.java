@@ -46,7 +46,7 @@ public class OperationLOOKUPP extends AbstractNFSv4Operation {
     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final LOOKUPP4res res = result.oplookupp;
 
-        Stat.Type statType = context.getFs().getStatType(context.currentInode());
+        Stat.Type statType = context.getFs().getattr(context.currentInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
 
         if (statType == Stat.Type.SYMLINK) {
             throw new SymlinkException("get parent on a symlink");

@@ -48,7 +48,7 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
         String name = NameFilter.convertName(_args.oplookup.objname.value);
 
-        Stat.Type statType = context.getFs().getStatType(context.currentInode());
+        Stat.Type statType = context.getFs().getattr(context.currentInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
         if (statType == Stat.Type.SYMLINK) {
             throw new SymlinkException("parent not a symbolic link");
         }

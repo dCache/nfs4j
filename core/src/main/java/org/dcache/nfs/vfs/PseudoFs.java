@@ -20,15 +20,41 @@
 package org.dcache.nfs.vfs;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.dcache.nfs.util.UnixSubjects.*;
-import static org.dcache.nfs.v4.xdr.nfs4_prot.*;
-import static org.dcache.nfs.vfs.AclCheckable.Access;
+import static org.dcache.nfs.util.UnixSubjects.hasGid;
+import static org.dcache.nfs.util.UnixSubjects.hasUid;
+import static org.dcache.nfs.util.UnixSubjects.isNobodySubject;
+import static org.dcache.nfs.util.UnixSubjects.isRootSubject;
+import static org.dcache.nfs.util.UnixSubjects.toSubject;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_DELETE;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_EXECUTE;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_EXTEND;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_LOOKUP;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_MODIFY;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_READ;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_XALIST;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_XAREAD;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACCESS4_XAWRITE;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_ADD_FILE;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_ADD_SUBDIRECTORY;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_APPEND_DATA;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_DELETE;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_DELETE_CHILD;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_EXECUTE;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_LIST_DIRECTORY;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_READ_ACL;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_READ_ATTRIBUTES;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_READ_DATA;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_WRITE_ACL;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_WRITE_ATTRIBUTES;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_WRITE_DATA;
+import static org.dcache.nfs.v4.xdr.nfs4_prot.ACE4_WRITE_OWNER;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,12 +66,17 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.ExportTable;
 import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.*;
+import org.dcache.nfs.status.AccessException;
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.NoEntException;
+import org.dcache.nfs.status.PermException;
+import org.dcache.nfs.status.RoFsException;
 import org.dcache.nfs.util.SubjectHolder;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
 import org.dcache.nfs.v4.xdr.nfsace4;
-import org.dcache.nfs.vfs.Stat.Type;
+import org.dcache.nfs.vfs.AclCheckable.Access;
+import org.dcache.nfs.vfs.Stat.StatAttribute;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
 import org.dcache.oncrpc4j.rpc.RpcAuthType;
 import org.dcache.oncrpc4j.rpc.RpcCall;
@@ -359,9 +390,9 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
-    public Type getStatType(Inode inode) throws IOException {
+    public Stat getattr(Inode inode, EnumSet<StatAttribute> attributes) throws IOException {
         checkAccess(inode, ACE4_READ_ATTRIBUTES);
-        return _inner.getStatType(innerInode(inode));
+        return _inner.getattr(innerInode(inode), attributes);
     }
 
     @Override

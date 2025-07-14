@@ -77,7 +77,7 @@ public class OperationREADDIRTest {
         dirStat.setSize(512);
         vfs = mock(VirtualFileSystem.class); // the vfs serving it
         when(vfs.getattr(eq(dirInode))).thenReturn(dirStat);
-        given(vfs.getStatType(any())).willCallRealMethod(); // default implementation calls getattr
+        given(vfs.getattr(any(), any())).willCallRealMethod(); // default implementation calls getattr
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_READDIR);
         context = new CompoundContextBuilder()

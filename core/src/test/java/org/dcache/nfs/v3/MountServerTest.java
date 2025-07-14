@@ -141,7 +141,7 @@ public class MountServerTest {
 
             given(_fs.getRootInode()).willReturn(inode);
             given(_fs.getattr(inode)).willReturn(stat);
-            given(_fs.getStatType(any())).willCallRealMethod();
+            given(_fs.getattr(any(), any())).willCallRealMethod();
 
             for (String pathElement : splitter.split(path)) {
                 Inode objectInode = mock(Inode.class);

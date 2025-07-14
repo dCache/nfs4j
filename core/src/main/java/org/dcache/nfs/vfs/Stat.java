@@ -33,6 +33,12 @@ public class Stat implements Serializable, Cloneable {
         DEV, INO, MODE, NLINK, OWNER, GROUP, RDEV, SIZE, GENERATION, ATIME, MTIME, CTIME, BTIME
     };
 
+    /**
+     * A special {@link EnumSet} indicating that we're really only interested in the file type, which is usually part of
+     * {@link StatAttribute#MODE}; the remaining bits of {@code mode} may be 0.
+     */
+    public static final EnumSet<StatAttribute> STAT_ATTRIBUTES_TYPE_ONLY = EnumSet.of(StatAttribute.MODE);
+
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter LS_TIME_FORMAT = DateTimeFormatter.ofPattern("MMM dd HH:mm");
 

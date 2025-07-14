@@ -21,8 +21,8 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import javax.security.auth.Subject;
 
@@ -32,6 +32,7 @@ import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
+import org.dcache.nfs.vfs.Stat.StatAttribute;
 
 import com.google.common.annotations.Beta;
 
@@ -337,18 +338,14 @@ public interface VirtualFileSystem {
     Stat getattr(Inode inode) throws IOException;
 
     /**
-     * Gets the type of an inode.
-     * <p>
-     * This is equivalent to calling {@code getattr(inode).type()}), except that some implementations may choose to
-     * optimize this code path. Note that it is permissible to return a result for a stale inode, i.e., unlike calling
-     * {@link #getattr(Inode)}, no actual "stat" call needs to be made.
+     * Gets at least a specific subset of attributes for the given file system object.
      *
      * @param inode inode of the file system object.
-     * @return The type.
-     * @throws IOException on error.
+     * @return file's attributes.
+     * @throws IOException
      */
-    default Stat.Type getStatType(Inode inode) throws IOException {
-        return getattr(inode).type();
+    default Stat getattr(Inode inode, EnumSet<StatAttribute> attributes) throws IOException {
+        return getattr(inode);
     }
 
     /**

@@ -56,7 +56,7 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
         final COMMIT4res res = result.opcommit;
         if (context.getFs() != null) {
             Inode inode = context.currentInode();
-            Stat.Type statType = context.getFs().getStatType(inode);
+            Stat.Type statType = context.getFs().getattr(inode, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
 
             if (statType == Stat.Type.DIRECTORY) {
                 throw new IsDirException("Invalid can't commit a directory");
