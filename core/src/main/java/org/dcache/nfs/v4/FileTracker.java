@@ -341,8 +341,7 @@ public class FileTracker {
             stateid = state.stateid();
             OpenState openState = new OpenState(client, owner, stateid, shareAccess, shareDeny);
             opens.add(openState);
-            Opaque fileIdKey = inode.getFileIdKey();
-            state.addDisposeListener(s -> removeOpen(fileIdKey, stateid));
+            state.addDisposeListener(s -> removeOpen(inode, stateid));
             stateid.bumpSeqid();
 
             // we need to return copy to avoid modification by concurrent opens
@@ -532,10 +531,8 @@ public class FileTracker {
      * @param stateid associated with the open.
      */
     void removeOpen(Inode inode, stateid4 stateid) {
-        removeOpen(inode.getFileIdKey(), stateid);
-    }
 
-    void removeOpen(Opaque fileId, stateid4 stateid) {
+        Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
