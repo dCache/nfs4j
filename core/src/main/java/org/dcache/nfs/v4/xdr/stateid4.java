@@ -91,7 +91,8 @@ public class stateid4 implements XdrAble, Serializable, Cloneable {
 
     public void xdrDecode(XdrDecodingStream xdr)
             throws OncRpcException, IOException {
-        throw new UnsupportedOperationException("Use constructor");
+        seqid = xdr.xdrDecodeInt();
+        opaque = Opaque.forBytes(xdr.xdrDecodeOpaque(12));
     }
 
     @Override
