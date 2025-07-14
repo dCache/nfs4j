@@ -475,7 +475,7 @@ public class FileTracker {
         lock.lock();
         try {
 
-            switch (stateid.byteAt(11)) {
+            switch (stateid4.getType(stateid)) {
                 case Stateids.LOCK_STATE_ID:
                     NFS4State lockState = client.state(stateid);
                     stateid = lockState.getOpenState().stateid().getOpaque();

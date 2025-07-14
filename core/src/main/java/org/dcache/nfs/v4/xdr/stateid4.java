@@ -78,6 +78,10 @@ public class stateid4 implements XdrAble, Serializable, Cloneable {
         return opaque.byteAt(11);
     }
 
+    public static int getType(Opaque stateIdOther) {
+        return stateIdOther.byteAt(11);
+    }
+
     @Override
     public stateid4 clone() {
         return new stateid4(seqid, opaque);
