@@ -55,14 +55,14 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
         _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
 
-        Stat stat = context.getFs().getattr(context.currentInode());
+        Stat.Type statType = context.getFs().getattr(context.currentInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
         stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opwrite.stateid);
 
-        if (stat.type() == Stat.Type.DIRECTORY) {
+        if (statType == Stat.Type.DIRECTORY) {
             throw new IsDirException();
         }
 
-        if (stat.type() == Stat.Type.SYMLINK) {
+        if (statType == Stat.Type.SYMLINK) {
             throw new InvalException("path is a symlink");
         }
 

@@ -37,6 +37,7 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
             throw new InvalException("zero lock len");
         }
 
-        switch (context.getFs().getattr(inode).type()) {
+        switch (context.getFs().getattr(inode, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type()) {
             case REGULAR:
                 // OK
                 break;

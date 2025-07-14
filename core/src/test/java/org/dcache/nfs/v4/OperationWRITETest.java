@@ -63,6 +63,7 @@ public class OperationWRITETest {
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
+        when(vfs.getattr(any(), any())).thenCallRealMethod();
         when(vfs.write(any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
@@ -99,6 +100,7 @@ public class OperationWRITETest {
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
+        when(vfs.getattr(any(), any())).thenCallRealMethod();
         when(vfs.write(any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
@@ -137,6 +139,7 @@ public class OperationWRITETest {
         verifier4 verifier = mock(verifier4.class);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
+        when(vfs.getattr(any(), any())).thenCallRealMethod();
         when(vfs.write(any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 

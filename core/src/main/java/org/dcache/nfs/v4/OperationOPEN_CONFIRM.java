@@ -31,7 +31,6 @@ import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,14 +52,13 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
             throw new NotSuppException("operation OPEN_CONFIRM4 is obsolete in 4.x, x > 0");
         }
 
-        Inode inode = context.currentInode();
-        Stat stat = context.getFs().getattr(context.currentInode());
+        Stat.Type statType = context.getFs().getattr(context.currentInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
 
-        if (stat.type() == Stat.Type.DIRECTORY) {
+        if (statType == Stat.Type.DIRECTORY) {
             throw new IsDirException();
         }
 
-        if (stat.type() == Stat.Type.SYMLINK) {
+        if (statType == Stat.Type.SYMLINK) {
             throw new InvalException();
         }
 

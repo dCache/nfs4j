@@ -10,6 +10,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -75,6 +77,7 @@ public class OperationREADDIRTest {
         dirStat.setSize(512);
         vfs = mock(VirtualFileSystem.class); // the vfs serving it
         when(vfs.getattr(eq(dirInode))).thenReturn(dirStat);
+        given(vfs.getattr(any(), any())).willCallRealMethod(); // default implementation calls getattr
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_READDIR);
         context = new CompoundContextBuilder()

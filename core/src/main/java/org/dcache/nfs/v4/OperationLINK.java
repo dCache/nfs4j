@@ -54,15 +54,15 @@ public class OperationLINK extends AbstractNFSv4Operation {
         result.oplink.resok4.cinfo.atomic = true;
 
         Inode parent = context.currentInode();
-        Stat parentDirStat = context.getFs().getattr(parent);
-        Stat inodeStat = context.getFs().getattr(context.savedInode());
 
-        if (parentDirStat.type() != Stat.Type.DIRECTORY) {
-            throw new NotDirException("Can't create a hard-link in non directory object");
+        Stat.Type inodeStatType = context.getFs().getattr(context.savedInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
+        if (inodeStatType == Stat.Type.DIRECTORY) {
+            throw new IsDirException("Can't hard-link a directory");
         }
 
-        if (inodeStat.type() == Stat.Type.DIRECTORY) {
-            throw new IsDirException("Can't hard-link a directory");
+        Stat parentDirStat = context.getFs().getattr(parent);
+        if (parentDirStat.type() != Stat.Type.DIRECTORY) {
+            throw new NotDirException("Can't create a hard-link in non directory object");
         }
 
         result.oplink.resok4.cinfo.before = new changeid4(parentDirStat.getGeneration());

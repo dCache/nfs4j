@@ -21,14 +21,18 @@ package org.dcache.nfs.vfs;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 import java.util.concurrent.CompletableFuture;
 
 import javax.security.auth.Subject;
 
+import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
+import org.dcache.nfs.vfs.Stat.StatAttribute;
 
 import com.google.common.annotations.Beta;
 
@@ -194,6 +198,7 @@ public interface VirtualFileSystem {
      * @param offset file's position to read from.
      * @return number of bytes read from the file, possibly zero. -1 if EOF is reached.
      * @throws IOException
+     * @see {@link #read(Inode, ByteBuffer, long, Runnable)}
      */
     default int read(Inode inode, ByteBuffer data, long offset) throws IOException {
         ByteBuffer buf = ByteBuffer.allocate(data.remaining());
@@ -203,6 +208,47 @@ public interface VirtualFileSystem {
             data.put(buf);
         }
         return n;
+    }
+
+    /**
+     * Read data from file with a given inode into {@code data}.
+     * <p>
+     * Note that the NFSv4 specification requires to detect the "end of file" slightly different from the Java
+     * semantics. If we have read all bytes of a file, then we should signal "end of file" immediately instead of
+     * waiting for another call where we return {@code -1}. If we detect such a case (by default, we compare the offset
+     * and the number of bytes read to the size returned by {@link Stat#getSize()} from {@link #getattr(Inode)}), then
+     * we can notify the NFS server via the given callback function.
+     * <p>
+     * In practice, depending on your NFS clients and usage scenario, calling {@code eofReached} may be optional -- in
+     * the event that exactly the remaining number of bytes have been read, a real-world NFS client will simply attempt
+     * to read more bytes in a subsequent operation and then encounter the EOF via {@code read} returning {@code -1}.
+     * That would allow a {@link VirtualFileSystem} implementation to completely skip retrieving {@link Stat}
+     * information via {@link #getattr(Inode)}), which may incur a higher, recurring cost than the inconvenience of a
+     * single additional client roundtrip at the end of the file.
+     *
+     * @param inode inode of the file to read from.
+     * @param data byte array for writing.
+     * @param offset file's position to read from.
+     * @param eofReached a non-blocking callback to indicate that the end of the file was just reached (particularly,
+     *            when a subsequent call would return {@code -1}).
+     * @return number of bytes read from the file, possibly zero. -1 if EOF is reached.
+     * @throws IOException
+     */
+    default int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        Stat stat = getattr(inode);
+
+        Stat.Type statType = stat.type();
+        if (statType == Stat.Type.DIRECTORY) {
+            throw new IsDirException();
+        } else if (statType == Stat.Type.SYMLINK) {
+            throw new InvalException();
+        }
+
+        int numRead = read(inode, data, offset);
+        if (numRead >= 0 && (offset + numRead) >= stat.getSize()) {
+            eofReached.run();
+        }
+        return numRead;
     }
 
     /**
@@ -290,6 +336,17 @@ public interface VirtualFileSystem {
      * @throws IOException
      */
     Stat getattr(Inode inode) throws IOException;
+
+    /**
+     * Gets at least a specific subset of attributes for the given file system object.
+     *
+     * @param inode inode of the file system object.
+     * @return file's attributes.
+     * @throws IOException
+     */
+    default Stat getattr(Inode inode, EnumSet<StatAttribute> attributes) throws IOException {
+        return getattr(inode);
+    }
 
     /**
      * Set/update file system object's attributes.
