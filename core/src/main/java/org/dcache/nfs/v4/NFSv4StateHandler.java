@@ -481,7 +481,7 @@ public class NFSv4StateHandler {
         // we eat the first 8 bits if the counter, however, we don't expect 16M states be active at the same time,
         // thus the probability of a collision is too low
         Bytes.putInt(other, 8, count << 8 | (type & 0xFF));
-        return stateid4.forBytes(other, STATE_INITIAL_SEQUENCE);
+        return new stateid4(other, STATE_INITIAL_SEQUENCE);
     }
 
     /**

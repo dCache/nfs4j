@@ -56,18 +56,18 @@ public class Stateids {
     }
 
     private final static stateid4 CURRENT_STATEID =
-            stateid4.forBytes(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1);
+            new stateid4(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1);
     private final static stateid4 INVAL_STATEID =
-            stateid4.forBytes(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nfs4_prot.NFS4_UINT32_MAX);
+            new stateid4(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nfs4_prot.NFS4_UINT32_MAX);
     private final static stateid4 ZERO_STATEID =
-            stateid4.forBytes(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0);
+            new stateid4(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0);
 
-    private final static stateid4 ONE_STATEID = stateid4.forBytes(new byte[] {
+    private final static stateid4 ONE_STATEID = new stateid4(new byte[] {
             (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,
             (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff}, nfs4_prot.NFS4_UINT32_MAX);
 
     public static stateid4 uptodateOf(stateid4 stateid) {
-        return stateid4.forBytes(stateid.getOpaque().toBytes(), 0);
+        return new stateid4(stateid.getOpaque().toBytes(), 0);
     }
 
     public static stateid4 currentStateId() {

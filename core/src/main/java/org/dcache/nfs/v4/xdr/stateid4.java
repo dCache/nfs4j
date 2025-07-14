@@ -39,16 +39,11 @@ public class stateid4 implements XdrAble, Serializable, Cloneable {
     private byte[] other; // only declared for Java Serialization
     private transient Opaque opaque;
 
-    public static stateid4 forBytes(byte[] bytes, int seqid) {
-        return new stateid4(seqid, Opaque.forBytes(bytes));
-    }
-
     public stateid4(XdrDecodingStream xdr) throws OncRpcException, IOException {
         this.seqid = xdr.xdrDecodeInt();
         this.opaque = Opaque.forBytes(xdr.xdrDecodeOpaque(12));
     }
 
-    @Deprecated(forRemoval = true)
     public stateid4(byte[] bytes, int seqid) {
         this(seqid, Opaque.forBytes(bytes));
     }
