@@ -1,9 +1,16 @@
 package org.dcache.nfs.v4;
 
-import static org.dcache.nfs.v4.NfsTestUtils.*;
+import static org.dcache.nfs.v4.NfsTestUtils.execute;
 import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.dcache.nfs.v4.NfsTestUtils.generateStateId;
+import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -57,14 +64,14 @@ public class OperationWRITETest {
         FileTracker fileTracker = mock(FileTracker.class);
 
         when(stateHandler.getFileTracker()).thenReturn(fileTracker);
-        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
+        when(fileTracker.getShareAccess(any(), any(), (stateid4) any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
         when(session.getClient()).thenReturn(client);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.getattr(any(), any())).thenCallRealMethod();
-        when(vfs.write(any(), any(), anyLong(), any()))
+        when(vfs.write(any(), any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()
@@ -94,14 +101,14 @@ public class OperationWRITETest {
         FileTracker fileTracker = mock(FileTracker.class);
 
         when(stateHandler.getFileTracker()).thenReturn(fileTracker);
-        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
+        when(fileTracker.getShareAccess(any(), any(), (stateid4) any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
         when(session.getClient()).thenReturn(client);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.getattr(any(), any())).thenCallRealMethod();
-        when(vfs.write(any(), any(), anyLong(), any()))
+        when(vfs.write(any(), any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()
@@ -131,7 +138,7 @@ public class OperationWRITETest {
         FileTracker fileTracker = mock(FileTracker.class);
 
         when(stateHandler.getFileTracker()).thenReturn(fileTracker);
-        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
+        when(fileTracker.getShareAccess(any(), any(), (stateid4) any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_WRITE);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
         when(session.getClient()).thenReturn(client);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
@@ -140,7 +147,7 @@ public class OperationWRITETest {
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.getattr(any(), any())).thenCallRealMethod();
-        when(vfs.write(any(), any(), anyLong(), any()))
+        when(vfs.write(any(), any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()

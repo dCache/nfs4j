@@ -237,13 +237,22 @@ public class NFSv4StateHandler {
         }
     }
 
+    public NFS4Client getClientIfExists(long clientId) {
+        _readLock.lock();
+        try {
+            return _clientsByServerId.get(new clientid4(clientId));
+        } finally {
+            _readLock.unlock();
+        }
+    }
+
     public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
 
         _readLock.lock();
         try {
             checkState(_running, "NFS state handler not running");
 
-            clientid4 clientId = new clientid4(Bytes.getLong(stateId.other, 0));
+            clientid4 clientId = new clientid4(stateId.getClientId());
             NFS4Client client = _clientsByServerId.get(clientId);
             if (client == null) {
                 throw new BadStateidException("no client for stateid: " + stateId);
@@ -439,7 +448,7 @@ public class NFSv4StateHandler {
      * @return state hander id.
      */
     public static int getInstanceId(stateid4 stateid) {
-        long clientid = Bytes.getLong(stateid.other, 0);
+        long clientid = stateid.getClientId();
         return (int) (clientid >> 16) & 0xFFFF;
     }
 
@@ -472,7 +481,7 @@ public class NFSv4StateHandler {
         // we eat the first 8 bits if the counter, however, we don't expect 16M states be active at the same time,
         // thus the probability of a collision is too low
         Bytes.putInt(other, 8, count << 8 | (type & 0xFF));
-        return new stateid4(other, STATE_INITIAL_SEQUENCE);
+        return stateid4.forBytes(other, STATE_INITIAL_SEQUENCE);
     }
 
     /**

@@ -117,7 +117,7 @@ public class NFS4Client {
      */
     private int _sessionSequence = 1;
 
-    private final Map<stateid4, NFS4State> _clientStates = new ConcurrentHashMap<>();
+    private final Map<Opaque, NFS4State> _clientStates = new ConcurrentHashMap<>();
 
     /**
      * sessions associated with the client
@@ -334,18 +334,20 @@ public class NFS4Client {
 
         NFS4State state = new NFS4State(openState, stateOwner, _stateHandler.createStateId(this, type, _stateIdCounter
                 .incrementAndGet()));
+        stateid4 stateId = state.stateid();
+        Opaque opaque = stateId.getOpaque();
         if (openState != null) {
             openState.addDisposeListener(s -> {
                 // remove and dispose derived states.
-                NFS4State nfsState = _clientStates.get(state.stateid());
+                NFS4State nfsState = _clientStates.get(opaque);
                 if (nfsState != null) {
                     _log.debug("removing derived state {}", nfsState);
                     nfsState.tryDispose();
                 }
-                _clientStates.remove(state.stateid());
+                _clientStates.remove(opaque);
             });
         }
-        _clientStates.put(state.stateid(), state);
+        _clientStates.put(opaque, state);
         return state;
     }
 
@@ -410,29 +412,34 @@ public class NFS4Client {
     }
 
     public void releaseState(stateid4 stateid) throws ChimeraNFSException {
+        Opaque opaque = stateid.getOpaque();
 
-        NFS4State state = _clientStates.get(stateid);
+        NFS4State state = _clientStates.get(opaque);
         if (state == null) {
             throw new BadStateidException("State not known to the client: " + stateid);
         }
         state.disposeIgnoreFailures();
-        _clientStates.remove(stateid);
+        _clientStates.remove(opaque);
     }
 
     public void tryReleaseState(stateid4 stateid) throws ChimeraNFSException {
 
-        NFS4State state = _clientStates.get(stateid);
+        NFS4State state = _clientStates.get(stateid.getOpaque());
         if (state == null) {
             throw new BadStateidException("State not known to the client: " + stateid);
         }
         state.tryDispose();
-        _clientStates.remove(stateid);
+        _clientStates.remove(stateid.getOpaque());
     }
 
     public NFS4State state(stateid4 stateid) throws ChimeraNFSException {
-        NFS4State state = _clientStates.get(stateid);
+        return state(stateid.getOpaque());
+    }
+
+    public NFS4State state(Opaque stateidOpaque) throws ChimeraNFSException {
+        NFS4State state = _clientStates.get(stateidOpaque);
         if (state == null) {
-            throw new BadStateidException("State not known to the client: " + stateid);
+            throw new BadStateidException("State not known to the client: " + stateidOpaque);
         }
         return state;
     }
@@ -534,7 +541,7 @@ public class NFS4Client {
      * @param state to attach
      */
     public void attachState(NFS4State state) {
-        _clientStates.put(state.stateid(), state);
+        _clientStates.put(state.stateid().getOpaque(), state);
     }
 
     /**
@@ -543,7 +550,7 @@ public class NFS4Client {
      * @param state to detach
      */
     public void detachState(NFS4State state) {
-        _clientStates.remove(state.stateid());
+        _clientStates.remove(state.stateid().getOpaque());
     }
 
     @GuardedBy("this")

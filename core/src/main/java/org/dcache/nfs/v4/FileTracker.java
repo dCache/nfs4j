@@ -315,9 +315,9 @@ public class FileTracker {
                         os.shareDenySeen |= 1 << ((shareDeny & nfs4_prot.OPEN4_SHARE_ACCESS_BOTH) - 1);
                     }
 
-                    os.stateid.seqid++;
+                    os.stateid.bumpSeqid();
                     // we need to return copy to avoid modification by concurrent opens
-                    var openStateid = new stateid4(os.stateid.other, os.stateid.seqid);
+                    var openStateid = os.stateid.clone();
 
                     // yet another open from the same client. Let's check if we can delegate.
                     if (canDelegateRead && (os.shareAccess
@@ -341,11 +341,12 @@ public class FileTracker {
             stateid = state.stateid();
             OpenState openState = new OpenState(client, owner, stateid, shareAccess, shareDeny);
             opens.add(openState);
-            state.addDisposeListener(s -> removeOpen(inode, stateid));
-            stateid.seqid++;
+            Opaque fileIdKey = inode.getFileIdKey();
+            state.addDisposeListener(s -> removeOpen(fileIdKey, stateid));
+            stateid.bumpSeqid();
 
             // we need to return copy to avoid modification by concurrent opens
-            var openStateid = new stateid4(stateid.other, stateid.seqid);
+            var openStateid = stateid.clone();
 
             // REVISIT: currently only read-delegations are supported
             if (canDelegateRead && (wantReadDelegation || adlHeuristic.shouldDelegate(client, inode))) {
@@ -408,9 +409,9 @@ public class FileTracker {
             os.shareAccess = shareAccess;
             os.shareDeny = shareDeny;
 
-            os.stateid.seqid++;
+            os.stateid.bumpSeqid();
             // we need to return copy to avoid modification by concurrent opens
-            return new stateid4(os.stateid.other, os.stateid.seqid);
+            return os.stateid.clone();
         } finally {
             lock.unlock();
         }
@@ -463,16 +464,21 @@ public class FileTracker {
      */
     public int getShareAccess(NFS4Client client, Inode inode, stateid4 stateid)
             throws ChimeraNFSException {
+        Opaque stateIdOpaque = stateid.getOpaque();
+        return getShareAccess(client, inode, stateIdOpaque);
+    }
 
+    public int getShareAccess(NFS4Client client, Inode inode, Opaque stateid)
+            throws ChimeraNFSException {
         Opaque fileId = inode.getFileIdKey();
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {
 
-            switch (stateid.other[11]) {
+            switch (stateid.byteAt(11)) {
                 case Stateids.LOCK_STATE_ID:
                     NFS4State lockState = client.state(stateid);
-                    stateid = lockState.getOpenState().stateid();
+                    stateid = lockState.getOpenState().stateid().getOpaque();
                     // fall through
                 case Stateids.OPEN_STATE_ID: {
                     final List<OpenState> opens = files.get(fileId);
@@ -481,10 +487,10 @@ public class FileTracker {
                         throw new BadStateidException("no matching open");
                     }
 
-                    final stateid4 openStateid = stateid;
+                    final Opaque openStateid = stateid;
                     return opens.stream()
                             .filter(s -> client.getId() == s.client.getId())
-                            .filter(s -> s.stateid.equals(openStateid))
+                            .filter(s -> s.stateid.getOpaque().equals(openStateid))
                             .mapToInt(OpenState::getShareAccess)
                             .findAny()
                             .orElseThrow(BadStateidException::new);
@@ -496,11 +502,11 @@ public class FileTracker {
                         throw new BadStateidException("no delegation found");
                     }
 
-                    stateid4 delegationStateid = stateid;
+                    Opaque delegationStateid = stateid;
 
                     var delegation = fileDelegations.stream()
                             .filter(d -> d.client().getId().equals(client.getId()))
-                            .filter(d -> d.delegationStateid().stateid().equals(delegationStateid))
+                            .filter(d -> d.delegationStateid().stateid().getOpaque().equals(delegationStateid))
                             .findAny()
                             .orElseThrow(BadStateidException::new);
 
@@ -526,8 +532,10 @@ public class FileTracker {
      * @param stateid associated with the open.
      */
     void removeOpen(Inode inode, stateid4 stateid) {
+        removeOpen(inode.getFileIdKey(), stateid);
+    }
 
-        Opaque fileId = inode.getFileIdKey();
+    void removeOpen(Opaque fileId, stateid4 stateid) {
         Lock lock = filesLock.get(fileId);
         lock.lock();
         try {

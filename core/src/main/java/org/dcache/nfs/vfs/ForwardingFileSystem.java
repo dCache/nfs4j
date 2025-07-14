@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.security.auth.Subject;
 
+import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.vfs.Stat.StatAttribute;
@@ -107,8 +108,8 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
-    public int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
-        return delegate().read(inode, data, offset, eofReached);
+    public int read(Opaque stateId, Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        return delegate().read(stateId, inode, data, offset, eofReached);
     }
 
     @Override
@@ -139,8 +140,19 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
+    public WriteResult write(Opaque stateId, Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
+        return delegate().write(stateId, inode, data, offset, stabilityLevel);
+    }
+
+    @Override
     public void commit(Inode inode, long offset, int count) throws IOException {
         delegate().commit(inode, offset, count);
+    }
+
+    @Override
+    public void commit(Opaque stateId, Inode inode, long offset, int count) throws IOException {
+        delegate().commit(stateId, inode, offset, count);
     }
 
     @Override
@@ -221,5 +233,15 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     @Override
     public CompletableFuture<Long> copyFileRange(Inode src, long srcPos, Inode dst, long dstPos, long len) {
         return delegate().copyFileRange(src, srcPos, dst, dstPos, len);
+    }
+
+    @Override
+    public void open(Opaque stateId, Inode inode, OpenMode openMode) {
+        delegate().open(stateId, inode, openMode);
+    }
+
+    @Override
+    public void close(Opaque stateId) {
+        delegate().close(stateId);
     }
 }

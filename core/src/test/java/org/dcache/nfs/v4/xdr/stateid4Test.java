@@ -19,10 +19,9 @@
  */
 package org.dcache.nfs.v4.xdr;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.dcache.nfs.v4.xdr.stateid4;
-import org.dcache.nfs.v4.xdr.uint32_t;
 import org.junit.Test;
 
 public class stateid4Test {
@@ -30,13 +29,9 @@ public class stateid4Test {
     @Test
     public void testEqualsTrue() {
 
-        stateid4 stateidA = new stateid4();
-        stateidA.seqid = 1;
-        stateidA.other = "state".getBytes();
+        stateid4 stateidA = stateid4.forBytes("state".getBytes(), 1);
 
-        stateid4 stateidB = new stateid4();
-        stateidB.seqid = 1;
-        stateidB.other = "state".getBytes();
+        stateid4 stateidB = stateid4.forBytes("state".getBytes(), 1);
 
         assertTrue("equal keys not equal", stateidA.equals(stateidB));
         assertTrue("equal, but different hashCode", stateidA.hashCode() == stateidB.hashCode());
@@ -46,9 +41,7 @@ public class stateid4Test {
     @Test
     public void testEqualsSame() {
 
-        stateid4 stateidA = new stateid4();
-        stateidA.seqid = 1;
-        stateidA.other = "state".getBytes();
+        stateid4 stateidA = stateid4.forBytes("state".getBytes(), 1);
 
         assertTrue("equal keys not equal", stateidA.equals(stateidA));
     }
@@ -56,13 +49,9 @@ public class stateid4Test {
     @Test
     public void testDifferSequence() {
 
-        stateid4 stateidA = new stateid4();
-        stateidA.seqid = 1;
-        stateidA.other = "state".getBytes();
+        stateid4 stateidA = stateid4.forBytes("state".getBytes(), 1);
 
-        stateid4 stateidB = new stateid4();
-        stateidB.seqid = 2;
-        stateidB.other = "state".getBytes();
+        stateid4 stateidB = stateid4.forBytes("state".getBytes(), 2);
 
         assertTrue("differ by sequence should still be equal", stateidA.equals(stateidB));
         assertFalse("differ by sequence can't be equal", stateidA.equalsWithSeq(stateidB));
@@ -71,13 +60,9 @@ public class stateid4Test {
     @Test
     public void testDifferOther() {
 
-        stateid4 stateidA = new stateid4();
-        stateidA.seqid = 1;
-        stateidA.other = "stateA".getBytes();
+        stateid4 stateidA = stateid4.forBytes("stateA".getBytes(), 1);
 
-        stateid4 stateidB = new stateid4();
-        stateidB.seqid = 1;
-        stateidB.other = "stateB".getBytes();
+        stateid4 stateidB = stateid4.forBytes("stateB".getBytes(), 1);
 
         assertFalse("differ by other not detected", stateidA.equals(stateidB));
     }

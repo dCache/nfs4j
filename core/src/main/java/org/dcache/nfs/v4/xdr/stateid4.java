@@ -21,45 +21,73 @@ package org.dcache.nfs.v4.xdr;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 
+import org.dcache.nfs.util.Opaque;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
-import com.google.common.io.BaseEncoding;
-
-public class stateid4 implements XdrAble, Serializable {
+public class stateid4 implements XdrAble, Serializable, Cloneable {
 
     static final long serialVersionUID = -6677150504723505919L;
 
-    public int seqid;
-    public byte[] other;
+    private int seqid;
+    private final Opaque other;
 
-    public stateid4() {
+    public static stateid4 forBytes(byte[] bytes, int seqid) {
+        return new stateid4(seqid, Opaque.forBytes(bytes));
     }
 
-    public stateid4(byte[] other, int seq) {
-        this.other = other;
-        seqid = seq;
+    public stateid4(XdrDecodingStream xdr) throws OncRpcException, IOException {
+        this.seqid = xdr.xdrDecodeInt();
+        this.other = Opaque.forBytes(xdr.xdrDecodeOpaque(12));
     }
 
-    public stateid4(XdrDecodingStream xdr)
-            throws OncRpcException, IOException {
-        xdrDecode(xdr);
+    @Deprecated(forRemoval = true)
+    public stateid4(byte[] bytes, int seqid) {
+        this(seqid, Opaque.forBytes(bytes));
+    }
+
+    private stateid4(int seqid, Opaque other) {
+        this.seqid = seqid;
+        this.other = other.toImmutableOpaque();
+    }
+
+    public Opaque getOpaque() {
+        return other;
+    }
+
+    public int getSeqId() {
+        return seqid;
+    }
+
+    public long getClientId() {
+        return other.longAt(0);
+    }
+
+    public static long getClientId(Opaque stateIdOther) {
+        return stateIdOther.longAt(0);
+    }
+
+    public int getType() {
+        return other.byteAt(11);
+    }
+
+    @Override
+    public stateid4 clone() {
+        return new stateid4(seqid, other);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
             throws OncRpcException, IOException {
         xdr.xdrEncodeInt(seqid);
-        xdr.xdrEncodeOpaque(other, 12);
+        xdr.xdrEncodeOpaque(other.toBytes(), 12);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
             throws OncRpcException, IOException {
-        seqid = xdr.xdrDecodeInt();
-        other = xdr.xdrDecodeOpaque(12);
+        throw new UnsupportedOperationException("Use constructor");
     }
 
     @Override
@@ -72,7 +100,7 @@ public class stateid4 implements XdrAble, Serializable {
 
         final stateid4 other_id = (stateid4) obj;
 
-        return Arrays.equals(this.other, other_id.other);
+        return this.other.equals(other_id.other);
     }
 
     /**
@@ -87,12 +115,12 @@ public class stateid4 implements XdrAble, Serializable {
             return true;
         }
 
-        return otherState.seqid == this.seqid && Arrays.equals(this.other, otherState.other);
+        return otherState.seqid == this.seqid && this.other.equals(otherState.other);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(other);
+        return this.other.hashCode();
     }
 
     @Override
@@ -100,10 +128,13 @@ public class stateid4 implements XdrAble, Serializable {
         StringBuilder sb = new StringBuilder();
 
         sb.append("[");
-        sb.append(BaseEncoding.base16().lowerCase().encode(other));
+        sb.append(other);
         sb.append(", seq: ").append(seqid).append("]");
         return sb.toString();
     }
 
+    public void bumpSeqid() {
+        ++seqid;
+    }
 }
 // End of stateid4.java

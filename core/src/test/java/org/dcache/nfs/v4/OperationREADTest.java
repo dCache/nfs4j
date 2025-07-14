@@ -1,8 +1,16 @@
 package org.dcache.nfs.v4;
 
-import static org.dcache.nfs.v4.NfsTestUtils.*;
+import static org.dcache.nfs.v4.NfsTestUtils.execute;
 import static org.dcache.nfs.v4.NfsTestUtils.generateRpcCall;
-import static org.mockito.Mockito.*;
+import static org.dcache.nfs.v4.NfsTestUtils.generateStateId;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -54,7 +62,7 @@ public class OperationREADTest {
         FileTracker fileTracker = mock(FileTracker.class);
 
         when(stateHandler.getFileTracker()).thenReturn(fileTracker);
-        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_READ);
+        when(fileTracker.getShareAccess(any(), any(), (stateid4) any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_READ);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
         when(session.getClient()).thenReturn(client);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
@@ -90,7 +98,7 @@ public class OperationREADTest {
         FileTracker fileTracker = mock(FileTracker.class);
 
         when(stateHandler.getFileTracker()).thenReturn(fileTracker);
-        when(fileTracker.getShareAccess(any(), any(), any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_READ);
+        when(fileTracker.getShareAccess(any(), any(), (stateid4) any())).thenReturn(nfs4_prot.OPEN4_SHARE_ACCESS_READ);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);
         when(session.getClient()).thenReturn(client);
         when(stateHandler.getClientIdByStateId(any())).thenReturn(client);

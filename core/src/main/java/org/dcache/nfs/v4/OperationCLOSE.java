@@ -59,6 +59,8 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         NFS4State nfsState = client.state(stateid);
         Stateids.checkStateId(nfsState.stateid(), stateid);
 
+        context.getFs().close(stateid.getOpaque());
+
         if (context.getMinorversion() == 0) {
             nfsState.getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
             client.updateLeaseTime();
@@ -68,6 +70,5 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
 
         res.open_stateid = Stateids.invalidStateId();
         res.status = nfsstat.NFS_OK;
-
     }
 }

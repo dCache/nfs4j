@@ -33,6 +33,7 @@ import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.status.SymlinkException;
 import org.dcache.nfs.status.WrongTypeException;
+import org.dcache.nfs.v4.FileTracker.OpenRecord;
 import org.dcache.nfs.v4.xdr.OPEN4res;
 import org.dcache.nfs.v4.xdr.OPEN4resok;
 import org.dcache.nfs.v4.xdr.aceflag4;
@@ -61,6 +62,8 @@ import org.dcache.nfs.v4.xdr.utf8str_mixed;
 import org.dcache.nfs.v4.xdr.why_no_delegation4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
+import org.dcache.nfs.vfs.VirtualFileSystem;
+import org.dcache.nfs.vfs.VirtualFileSystem.OpenMode;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +104,9 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         res.resok4.cinfo = new change_info4();
         res.resok4.cinfo.atomic = true;
 
+        Inode inode;
+        VirtualFileSystem.OpenMode openMode;
+
         switch (_args.opopen.claim.claim) {
 
             case open_claim_type4.CLAIM_NULL:
@@ -118,7 +124,6 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 String name = NameFilter.convertName(_args.opopen.claim.file.value);
                 _log.debug("regular open for : {}", name);
 
-                Inode inode;
                 if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
 
                     boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4)
@@ -205,13 +210,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                         }
 
                     }
-
+                    openMode = OpenMode.READ_WRITE;
                 } else {
                     // no changes from us, old stat info is still good enough
                     res.resok4.cinfo.after = new changeid4(stat.getGeneration());
 
                     inode = context.getFs().lookup(context.currentInode(), name);
-                    checkCanAccess(context, inode, _args.opopen.share_access);
+                    openMode = checkCanAccess(context, inode, _args.opopen.share_access);
                 }
 
                 context.currentInode(inode);
@@ -238,7 +243,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 res.resok4.cinfo.after = new changeid4(0);
 
                 inode = context.currentInode();
-                checkCanAccess(context, inode, _args.opopen.share_access);
+                openMode = checkCanAccess(context, inode, _args.opopen.share_access);
                 break;
             case open_claim_type4.CLAIM_DELEGATE_CUR:
             case open_claim_type4.CLAIM_DELEGATE_PREV:
@@ -268,15 +273,19 @@ public class OperationOPEN extends AbstractNFSv4Operation {
          *
          * THis is a perfectly a valid situation as at the end file is created and only one writer is allowed.
          */
-        var openRecord = context
+        OpenRecord openRecord = context
                 .getStateHandler()
                 .getFileTracker()
                 .addOpen(client, owner, context.currentInode(),
                         _args.opopen.share_access.value,
                         _args.opopen.share_deny.value);
 
-        context.currentStateid(openRecord.openStateId());
-        res.resok4.stateid = openRecord.openStateId();
+        stateid4 openStateId = openRecord.openStateId();
+        context.currentStateid(openStateId);
+
+        context.getFs().open(openStateId.getOpaque(), inode, openMode);
+
+        res.resok4.stateid = openStateId;
         if (openRecord.hasDelegation()) {
             res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_READ;
             res.resok4.delegation.read = new open_read_delegation4();
@@ -294,19 +303,24 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
     }
 
-    private void checkCanAccess(CompoundContext context, Inode inode, uint32_t share_access) throws IOException {
+    private VirtualFileSystem.OpenMode checkCanAccess(CompoundContext context, Inode inode, uint32_t share_access)
+            throws IOException {
 
         int accessMode;
+        VirtualFileSystem.OpenMode openMode;
 
         switch (share_access.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK) {
             case nfs4_prot.OPEN4_SHARE_ACCESS_READ:
                 accessMode = nfs4_prot.ACCESS4_READ;
+                openMode = VirtualFileSystem.OpenMode.READ_ONLY;
                 break;
             case nfs4_prot.OPEN4_SHARE_ACCESS_WRITE:
                 accessMode = nfs4_prot.ACCESS4_MODIFY;
+                openMode = VirtualFileSystem.OpenMode.WRITE_ONLY;
                 break;
             case nfs4_prot.OPEN4_SHARE_ACCESS_BOTH:
                 accessMode = nfs4_prot.ACCESS4_READ | nfs4_prot.ACCESS4_MODIFY;
+                openMode = VirtualFileSystem.OpenMode.READ_WRITE;
                 break;
             default:
                 throw new InvalException("Invalid share_access mode: " + share_access.value);
@@ -328,5 +342,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             default:
                 throw context.getMinorversion() == 0 ? new SymlinkException() : new WrongTypeException();
         }
+
+        return openMode;
     }
 }

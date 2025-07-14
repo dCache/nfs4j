@@ -53,7 +53,7 @@ public class OperationTEST_STATEID extends AbstractNFSv4Operation {
             stateid4 statid = _args.optest_stateid.ts_stateids[i];
             try {
                 NFS4State state = client.state(statid);
-                if (state.stateid().seqid < statid.seqid) {
+                if (state.stateid().getSeqId() < statid.getSeqId()) {
                     res.tsr_resok4.tsr_status_codes[i] = nfsstat.NFSERR_OLD_STATEID;
                 } else {
                     res.tsr_resok4.tsr_status_codes[i] = nfsstat.NFS_OK;

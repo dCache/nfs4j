@@ -56,18 +56,18 @@ public class Stateids {
     }
 
     private final static stateid4 CURRENT_STATEID =
-            new stateid4(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1);
+            stateid4.forBytes(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 1);
     private final static stateid4 INVAL_STATEID =
-            new stateid4(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nfs4_prot.NFS4_UINT32_MAX);
+            stateid4.forBytes(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nfs4_prot.NFS4_UINT32_MAX);
     private final static stateid4 ZERO_STATEID =
-            new stateid4(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0);
+            stateid4.forBytes(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0);
 
-    private final static stateid4 ONE_STATEID = new stateid4(new byte[] {
+    private final static stateid4 ONE_STATEID = stateid4.forBytes(new byte[] {
             (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,
             (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff}, nfs4_prot.NFS4_UINT32_MAX);
 
     public static stateid4 uptodateOf(stateid4 stateid) {
-        return new stateid4(stateid.other, 0);
+        return stateid4.forBytes(stateid.getOpaque().toBytes(), 0);
     }
 
     public static stateid4 currentStateId() {
@@ -91,16 +91,17 @@ public class Stateids {
     }
 
     public static void checkStateId(stateid4 expected, stateid4 stateid) throws ChimeraNFSException {
-        if (stateid.seqid == 0) {
+        int seq = stateid.getSeqId();
+        if (seq == 0) {
             // so called 'most up-to-date seqid', see https://tools.ietf.org/html/rfc5661#section-8.2.2
             return;
         }
 
-        if (expected.seqid > stateid.seqid) {
-            throw new OldStateidException();
-        }
+        int expectedSeq = expected.getSeqId();
 
-        if (expected.seqid < stateid.seqid) {
+        if (expectedSeq > seq) {
+            throw new OldStateidException();
+        } else if (expectedSeq != seq) {
             throw new BadStateidException();
         }
     }
@@ -114,37 +115,37 @@ public class Stateids {
     }
 
     public static void checkOpenStateid(stateid4 stateid) throws BadStateidException {
-        if (stateid.other[11] != OPEN_STATE_ID) {
+        if (stateid.getType() != OPEN_STATE_ID) {
             throw new BadStateidException("Not an open stateid");
         }
     }
 
     public static void checkLockStateid(stateid4 stateid) throws BadStateidException {
-        if (stateid.other[11] != LOCK_STATE_ID) {
+        if (stateid.getType() != LOCK_STATE_ID) {
             throw new BadStateidException("Not a lock stateid");
         }
     }
 
     public static void checkDelegationStateid(stateid4 stateid) throws BadStateidException {
-        if (stateid.other[11] != DELEGATION_STATE_ID) {
+        if (stateid.getType() != DELEGATION_STATE_ID) {
             throw new BadStateidException("Not a delegation stateid");
         }
     }
 
     public static void checkDirDelegationStateid(stateid4 stateid) throws BadStateidException {
-        if (stateid.other[11] != DIR_DELEGATION_STATE_ID) {
+        if (stateid.getType() != DIR_DELEGATION_STATE_ID) {
             throw new BadStateidException("Not a directory delegation stateid");
         }
     }
 
     public static void checkServerSiderCopyStateid(stateid4 stateid) throws BadStateidException {
-        if (stateid.other[11] != SSC_STATE_ID) {
+        if (stateid.getType() != SSC_STATE_ID) {
             throw new BadStateidException("Not a server-side copy stateid");
         }
     }
 
     public static void checkLayoutStateid(stateid4 stateid) throws BadStateidException {
-        if (stateid.other[11] != LAYOUT_STATE_ID) {
+        if (stateid.getType() != LAYOUT_STATE_ID) {
             throw new BadStateidException("Not a layout stateid");
         }
     }

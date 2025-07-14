@@ -87,7 +87,8 @@ public class OperationWRITE extends AbstractNFSv4Operation {
         }
 
         long offset = _args.opwrite.offset.value;
-        VirtualFileSystem.WriteResult writeResult = context.getFs().write(context.currentInode(),
+        VirtualFileSystem.WriteResult writeResult = context.getFs().write(
+                stateid.getOpaque(), context.currentInode(),
                 _args.opwrite.data, offset, VirtualFileSystem.StabilityLevel.fromStableHow(_args.opwrite.stable));
 
         if (writeResult.getBytesWritten() < 0) {

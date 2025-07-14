@@ -29,6 +29,7 @@ import javax.security.auth.Subject;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.IsDirException;
 import org.dcache.nfs.status.NotSuppException;
+import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.v4.NfsIdMapping;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.stable_how4;
@@ -226,6 +227,7 @@ public interface VirtualFileSystem {
      * information via {@link #getattr(Inode)}), which may incur a higher, recurring cost than the inconvenience of a
      * single additional client roundtrip at the end of the file.
      *
+     * @param stateId The stateId as obtained via an {@code open} command via NFSv4, or {@code null}.
      * @param inode inode of the file to read from.
      * @param data byte array for writing.
      * @param offset file's position to read from.
@@ -234,7 +236,8 @@ public interface VirtualFileSystem {
      * @return number of bytes read from the file, possibly zero. -1 if EOF is reached.
      * @throws IOException
      */
-    default int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+    default int read(Opaque stateId, Inode inode, ByteBuffer data, long offset, Runnable eofReached)
+            throws IOException {
         Stat stat = getattr(inode);
 
         Stat.Type statType = stat.type();
@@ -318,6 +321,22 @@ public interface VirtualFileSystem {
     }
 
     /**
+     * Write provided {@code data} into inode with a given stability level.
+     *
+     * @param stateId The stateId as obtained via an {@code open} command via NFSv4, or {@code null}.
+     * @param inode inode of the file to write.
+     * @param data data to be written.
+     * @param offset the file position to begin writing at.
+     * @param stabilityLevel data stability level.
+     * @return write result.
+     * @throws IOException
+     */
+    default WriteResult write(Opaque stateId, Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
+        return write(inode, data, offset, stabilityLevel);
+    }
+
+    /**
      * Flush data in {@code dirty} state to the stable storage. Typically follows
      * {@link #write(Inode, ByteBuffer, long, StabilityLevel)} operation.
      *
@@ -327,6 +346,20 @@ public interface VirtualFileSystem {
      * @throws IOException
      */
     void commit(Inode inode, long offset, int count) throws IOException;
+
+    /**
+     * Flush data in {@code dirty} state to the stable storage. Typically follows
+     * {@link #write(Inode, ByteBuffer, long, StabilityLevel)} operation.
+     *
+     * @param stateId The stateId as obtained via an {@code open} command via NFSv4, or {@code null}.
+     * @param inode inode of the file to commit.
+     * @param offset the file position to start commit at.
+     * @param count number of bytes to commit.
+     * @throws IOException
+     */
+    default void commit(Opaque stateId, Inode inode, long offset, int count) throws IOException {
+        commit(inode, offset, count);
+    }
 
     /**
      * Get file system object's attributes.
@@ -441,6 +474,18 @@ public interface VirtualFileSystem {
          */
         public StabilityLevel getStabilityLevel() {
             return stabilityLevel;
+        }
+    }
+
+    enum OpenMode {
+        READ_ONLY, WRITE_ONLY, READ_WRITE;
+
+        boolean canRead() {
+            return this == READ_ONLY || this == READ_WRITE;
+        }
+
+        boolean canWrite() {
+            return this == WRITE_ONLY || this == READ_WRITE;
         }
     }
 
@@ -587,5 +632,26 @@ public interface VirtualFileSystem {
      */
     default Inode inodeForNfsHandle(byte[] bytes) throws IOException {
         return Inode.forNfsHandle(bytes);
+    }
+
+    /**
+     * Notifies the filing system about an explicit open operation to an {@link Inode}, using the given open mode and
+     * the specified stateId as a reference for {@link #read(Opaque, Inode, ByteBuffer, long, Runnable)},
+     * {@link #write(Opaque, Inode, ByteBuffer, long, StabilityLevel)} and {@link #commit(Opaque, Inode, long, int)}.
+     * 
+     * @param stateId The stateId.
+     * @param inode The {@link Inode}.
+     * @param openMode The open mode.
+     */
+    default void open(Opaque stateId, Inode inode, OpenMode openMode) {
+    }
+
+    /**
+     * Notifies the filing system about an explicit close operation corresponding to the given stateId.
+     * 
+     * @param stateId The stateId.
+     * @see #open(Opaque, Inode, OpenMode)
+     */
+    default void close(Opaque stateId) {
     }
 }

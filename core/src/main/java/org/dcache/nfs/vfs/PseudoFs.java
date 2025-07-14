@@ -71,10 +71,15 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.status.PermException;
 import org.dcache.nfs.status.RoFsException;
+import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.util.SubjectHolder;
+import org.dcache.nfs.v4.NFS4Client;
+import org.dcache.nfs.v4.NFSv4StateHandler;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.AclCheckable.Access;
 import org.dcache.nfs.vfs.Stat.StatAttribute;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
@@ -105,6 +110,7 @@ public class PseudoFs extends ForwardingFileSystem {
     private final VirtualFileSystem _inner;
     private final ExportTable _exportTable;
     private final RpcAuth _auth;
+    private final NFSv4StateHandler _stateHandler;
 
     private final static int ACCESS4_MASK =
             ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
@@ -112,11 +118,16 @@ public class PseudoFs extends ForwardingFileSystem {
                     | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
 
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable) {
+        this(inner, call, exportTable, null);
+    }
+
+    public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable, NFSv4StateHandler stateHandler) {
         _inner = inner;
         _subject = call.getCredential().getSubject();
         _auth = call.getCredential();
         _inetAddress = call.getTransport().getRemoteSocketAddress();
         _exportTable = exportTable;
+        _stateHandler = stateHandler;
     }
 
     @Override
@@ -329,10 +340,29 @@ public class PseudoFs extends ForwardingFileSystem {
         return _inner.read(innerInode(inode), data, offset);
     }
 
+    private void checkAccessReadWriteData(Opaque stateId, Inode inode, boolean write) throws IOException {
+        if (_stateHandler != null) {
+            NFS4Client client = _stateHandler.getClientIfExists(stateid4.getClientId(stateId));
+            if (client != null) {
+                int shareAccess;
+                try {
+                    shareAccess = _stateHandler.getFileTracker().getShareAccess(client, inode, stateId);
+                    if ((shareAccess & (write ? nfs4_prot.OPEN4_SHARE_ACCESS_WRITE
+                            : nfs4_prot.OPEN4_SHARE_ACCESS_READ)) != 0) {
+                        return; // permit
+                    }
+                } catch (ChimeraNFSException e) {
+                    // ignore; check below and throw proper exception
+                }
+            }
+        }
+        checkAccess(inode, write ? ACE4_WRITE_DATA : ACE4_READ_DATA);
+    }
+
     @Override
-    public int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
-        checkAccess(inode, ACE4_READ_DATA);
-        return _inner.read(innerInode(inode), data, offset, eofReached);
+    public int read(Opaque stateId, Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        checkAccessReadWriteData(stateId, inode, false);
+        return _inner.read(stateId, innerInode(inode), data, offset, eofReached);
     }
 
     @Override
@@ -381,6 +411,13 @@ public class PseudoFs extends ForwardingFileSystem {
             throws IOException {
         checkAccess(inode, ACE4_WRITE_DATA);
         return _inner.write(innerInode(inode), data, offset, stabilityLevel);
+    }
+
+    @Override
+    public WriteResult write(Opaque stateId, Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
+        checkAccessReadWriteData(stateId, inode, true);
+        return _inner.write(stateId, innerInode(inode), data, offset, stabilityLevel);
     }
 
     @Override
@@ -786,12 +823,12 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     /**
-     * Convert an {@link Inode} that is used by {@link PseudoFs} to an {@link Inode} that is understood
-     * by the underlying file system.
+     * Convert an {@link Inode} that is used by {@link PseudoFs} to an {@link Inode} that is understood by the
+     * underlying file system.
      * <p>
      * We currently store additional information such as "ExportId" and "PseudoInode" as parts of the Inode.
-     * {@link VirtualFileSystem}s that store {@link Inode} as a whole (rather than only the "fileId" bit)
-     * may not recognize such objects, unless we remove this additional information.
+     * {@link VirtualFileSystem}s that store {@link Inode} as a whole (rather than only the "fileId" bit) may not
+     * recognize such objects, unless we remove this additional information.
      * <p>
      * Once {@link PseudoFs} handles this configuration internally, we can remove this conversion step.
      *
