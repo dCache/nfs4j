@@ -29,6 +29,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
+import org.dcache.nfs.vfs.VirtualFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,10 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         NFS4State nfsState = client.state(stateid);
         Stateids.checkStateId(nfsState.stateid(), stateid);
 
-        context.getFs().close(stateid.getOpaque());
+        VirtualFileSystem fs = context.getFs();
+        if (fs != null) {
+            fs.close(stateid.getOpaque());
+        }
 
         if (context.getMinorversion() == 0) {
             nfsState.getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
