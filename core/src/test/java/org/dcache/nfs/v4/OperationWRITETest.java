@@ -64,7 +64,7 @@ public class OperationWRITETest {
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.getattr(any(), any())).thenCallRealMethod();
-        when(vfs.write(any(), any(), anyLong(), any()))
+        when(vfs.write(any(), any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()
@@ -101,7 +101,7 @@ public class OperationWRITETest {
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.getattr(any(), any())).thenCallRealMethod();
-        when(vfs.write(any(), any(), anyLong(), any()))
+        when(vfs.write(any(), any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()
@@ -140,7 +140,7 @@ public class OperationWRITETest {
 
         when(vfs.getattr(any())).thenReturn(fileStat);
         when(vfs.getattr(any(), any())).thenCallRealMethod();
-        when(vfs.write(any(), any(), anyLong(), any()))
+        when(vfs.write(any(), any(), any(), anyLong(), any()))
                 .thenReturn(new VirtualFileSystem.WriteResult(VirtualFileSystem.StabilityLevel.UNSTABLE, 1));
 
         COMPOUND4args writeArgs = new CompoundBuilder()

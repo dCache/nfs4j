@@ -72,9 +72,13 @@ import org.dcache.nfs.status.NoEntException;
 import org.dcache.nfs.status.PermException;
 import org.dcache.nfs.status.RoFsException;
 import org.dcache.nfs.util.SubjectHolder;
+import org.dcache.nfs.v4.NFS4Client;
+import org.dcache.nfs.v4.NFSv4StateHandler;
 import org.dcache.nfs.v4.acl.Acls;
 import org.dcache.nfs.v4.xdr.acemask4;
+import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfsace4;
+import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.AclCheckable.Access;
 import org.dcache.nfs.vfs.Stat.StatAttribute;
 import org.dcache.oncrpc4j.rpc.RpcAuth;
@@ -105,6 +109,7 @@ public class PseudoFs extends ForwardingFileSystem {
     private final VirtualFileSystem _inner;
     private final ExportTable _exportTable;
     private final RpcAuth _auth;
+    private final NFSv4StateHandler _stateHandler;
 
     private final static int ACCESS4_MASK =
             ACCESS4_DELETE | ACCESS4_EXECUTE | ACCESS4_EXTEND
@@ -112,11 +117,16 @@ public class PseudoFs extends ForwardingFileSystem {
                     | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
 
     public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable) {
+        this(inner, call, exportTable, null);
+    }
+
+    public PseudoFs(VirtualFileSystem inner, RpcCall call, ExportTable exportTable, NFSv4StateHandler stateHandler) {
         _inner = inner;
         _subject = call.getCredential().getSubject();
         _auth = call.getCredential();
         _inetAddress = call.getTransport().getRemoteSocketAddress();
         _exportTable = exportTable;
+        _stateHandler = stateHandler;
     }
 
     @Override
@@ -131,6 +141,26 @@ public class PseudoFs extends ForwardingFileSystem {
         } catch (IOException e) {
         }
         return false;
+    }
+
+    private void checkAccessReadWriteData(OpenHandle oh, Inode inode, boolean write) throws IOException {
+        if (_stateHandler != null && oh instanceof stateid4) {
+            stateid4 stateId = (stateid4) oh;
+            NFS4Client client = _stateHandler.getClientIfExists(stateId.getClientId());
+            if (client != null) {
+                int shareAccess;
+                try {
+                    shareAccess = _stateHandler.getFileTracker().getShareAccess(client, inode, stateId);
+                    if ((shareAccess & (write ? nfs4_prot.OPEN4_SHARE_ACCESS_WRITE
+                            : nfs4_prot.OPEN4_SHARE_ACCESS_READ)) != 0) {
+                        return; // permit
+                    }
+                } catch (ChimeraNFSException e) {
+                    // ignore; check below and throw proper exception
+                }
+            }
+        }
+        checkAccess(inode, write ? ACE4_WRITE_DATA : ACE4_READ_DATA);
     }
 
     @Override
@@ -330,9 +360,9 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     @Override
-    public int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
-        checkAccess(inode, ACE4_READ_DATA);
-        return _inner.read(innerInode(inode), data, offset, eofReached);
+    public int read(OpenHandle oh, Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        checkAccessReadWriteData(oh, inode, false);
+        return _inner.read(oh, innerInode(inode), data, offset, eofReached);
     }
 
     @Override
@@ -381,6 +411,13 @@ public class PseudoFs extends ForwardingFileSystem {
             throws IOException {
         checkAccess(inode, ACE4_WRITE_DATA);
         return _inner.write(innerInode(inode), data, offset, stabilityLevel);
+    }
+
+    @Override
+    public WriteResult write(OpenHandle oh, Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
+        checkAccessReadWriteData(oh, inode, true);
+        return _inner.write(oh, innerInode(inode), data, offset, stabilityLevel);
     }
 
     @Override
