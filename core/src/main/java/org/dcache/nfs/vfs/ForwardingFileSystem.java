@@ -107,8 +107,8 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     }
 
     @Override
-    public int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
-        return delegate().read(inode, data, offset, eofReached);
+    public int read(OpenHandle oh, Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+        return delegate().read(oh, inode, data, offset, eofReached);
     }
 
     @Override
@@ -136,6 +136,12 @@ public abstract class ForwardingFileSystem implements VirtualFileSystem {
     public WriteResult write(Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
             throws IOException {
         return delegate().write(inode, data, offset, stabilityLevel);
+    }
+
+    @Override
+    public WriteResult write(OpenHandle oh, Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
+        return delegate().write(oh, inode, data, offset, stabilityLevel);
     }
 
     @Override

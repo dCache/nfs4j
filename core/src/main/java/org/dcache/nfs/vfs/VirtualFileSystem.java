@@ -226,6 +226,7 @@ public interface VirtualFileSystem {
      * information via {@link #getattr(Inode)}), which may incur a higher, recurring cost than the inconvenience of a
      * single additional client roundtrip at the end of the file.
      *
+     * @param oh The open-handle, or {@code null}.
      * @param inode inode of the file to read from.
      * @param data byte array for writing.
      * @param offset file's position to read from.
@@ -234,7 +235,7 @@ public interface VirtualFileSystem {
      * @return number of bytes read from the file, possibly zero. -1 if EOF is reached.
      * @throws IOException
      */
-    default int read(Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
+    default int read(OpenHandle oh, Inode inode, ByteBuffer data, long offset, Runnable eofReached) throws IOException {
         Stat stat = getattr(inode);
 
         Stat.Type statType = stat.type();
@@ -302,6 +303,7 @@ public interface VirtualFileSystem {
     /**
      * Write provided {@code data} into inode with a given stability level.
      *
+     * @param oh The open-handle, or {@code null}.
      * @param inode inode of the file to write.
      * @param data data to be written.
      * @param offset the file position to begin writing at.
@@ -315,6 +317,22 @@ public interface VirtualFileSystem {
         byte[] bytes = new byte[count];
         data.get(bytes);
         return write(inode, bytes, offset, count, stabilityLevel);
+    }
+
+    /**
+     * Write provided {@code data} into inode with a given stability level.
+     *
+     * @param oh Carries metadata determined upon opening the resource at the NFS level, or {@code null}.
+     * @param inode inode of the file to write.
+     * @param data data to be written.
+     * @param offset the file position to begin writing at.
+     * @param stabilityLevel data stability level.
+     * @return write result.
+     * @throws IOException
+     */
+    default WriteResult write(OpenHandle oh, Inode inode, ByteBuffer data, long offset, StabilityLevel stabilityLevel)
+            throws IOException {
+        return write(inode, data, offset, stabilityLevel);
     }
 
     /**

@@ -82,7 +82,7 @@ public class OperationREAD extends AbstractNFSv4Operation {
         ByteBuffer buf = ByteBuffer.allocate(count);
 
         res.resok4 = new READ4resok();
-        int bytesRead = context.getFs().read(inode, buf, offset, res.resok4::setEOF);
+        int bytesRead = context.getFs().read(stateid, inode, buf, offset, res.resok4::setEOF);
 
         if (bytesRead < 0) {
             buf.clear();

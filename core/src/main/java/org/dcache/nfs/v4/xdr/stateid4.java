@@ -23,14 +23,17 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.dcache.nfs.util.Opaque;
+import org.dcache.nfs.vfs.OpenHandle;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
+import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
 import com.google.common.io.BaseEncoding;
 
-public class stateid4 implements XdrAble, Serializable {
+public class stateid4 implements XdrAble, Serializable, OpenHandle {
 
     static final long serialVersionUID = -6677150504723505919L;
 
@@ -93,6 +96,15 @@ public class stateid4 implements XdrAble, Serializable {
     @Override
     public int hashCode() {
         return Arrays.hashCode(other);
+    }
+
+    public long getClientId() {
+        return Bytes.getLong(other, 0);
+    }
+
+    @Override
+    public Opaque getOpaque() {
+        return Opaque.forMutableByteArray(other);
     }
 
     @Override

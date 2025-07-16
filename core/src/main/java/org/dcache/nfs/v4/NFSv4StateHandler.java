@@ -237,13 +237,22 @@ public class NFSv4StateHandler {
         }
     }
 
+    public NFS4Client getClientIfExists(long clientId) {
+        _readLock.lock();
+        try {
+            return _clientsByServerId.get(new clientid4(clientId));
+        } finally {
+            _readLock.unlock();
+        }
+    }
+
     public NFS4Client getClientIdByStateId(stateid4 stateId) throws ChimeraNFSException {
 
         _readLock.lock();
         try {
             checkState(_running, "NFS state handler not running");
 
-            clientid4 clientId = new clientid4(Bytes.getLong(stateId.other, 0));
+            clientid4 clientId = new clientid4(stateId.getClientId());
             NFS4Client client = _clientsByServerId.get(clientId);
             if (client == null) {
                 throw new BadStateidException("no client for stateid: " + stateId);

@@ -24,8 +24,10 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.status.OpenModeException;
 import org.dcache.nfs.status.ServerFaultException;
+import org.dcache.nfs.util.Opaque;
 import org.dcache.nfs.v4.nlm.LockDeniedException;
 import org.dcache.nfs.v4.nlm.LockException;
+import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.nlm.NlmLock;
 import org.dcache.nfs.v4.xdr.LOCK4denied;
 import org.dcache.nfs.v4.xdr.LOCK4resok;
@@ -118,12 +120,12 @@ public class OperationLOCK extends AbstractNFSv4Operation {
 
             NlmLock lock = new NlmLock(lockOwner, _args.oplock.locktype, _args.oplock.offset.value,
                     _args.oplock.length.value);
-            context.getLm().lock(inode.getLockKey(), lock);
+            Opaque lockKey = inode.getLockKey();
+            LockManager lm = context.getLm();
+            lm.lock(lockKey, lock);
 
             // ensure, that on close locks will be released
-            lock_state.addDisposeListener(s -> {
-                context.getLm().unlockIfExists(inode.getLockKey(), lock);
-            });
+            lock_state.addDisposeListener(s -> lm.unlockIfExists(lockKey, lock));
 
             // FIXME: we might run into race condition, thus updating sedid must be fenced!
             lock_state.bumpSeqid();

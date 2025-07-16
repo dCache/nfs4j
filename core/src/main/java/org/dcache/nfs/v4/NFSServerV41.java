@@ -134,7 +134,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
             }
             res.resarray = new ArrayList<>(arg1.argarray.length);
 
-            VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportTable);
+            VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportTable, _statHandler);
 
             CompoundContextBuilder builder = new CompoundContextBuilder()
                     .withMinorversion(arg1.minorversion.value)
