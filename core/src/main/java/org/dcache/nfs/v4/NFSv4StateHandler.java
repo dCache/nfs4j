@@ -109,6 +109,8 @@ public class NFSv4StateHandler {
      */
     private final Clock _clock;
 
+    private boolean supportStateless = true;
+
     public NFSv4StateHandler() {
         this(Duration.ofSeconds(NFSv4Defaults.NFS4_LEASE_TIME), 0, new EphemeralClientRecoveryStore());
     }
@@ -500,4 +502,40 @@ public class NFSv4StateHandler {
         return _leaseTime;
     }
 
+    /**
+     * Checks if stateless stateids are supported.
+     * 
+     * @return true if supported.
+     */
+    public boolean isSupportStateless() {
+        return supportStateless;
+    }
+
+    /**
+     * Enables/disables support for stateless stateids.
+     * 
+     * @param supportStateless flag.
+     */
+    public void setSupportStateless(boolean supportStateless) {
+        this.supportStateless = supportStateless;
+    }
+
+    /**
+     * Checks if the given stateid is stateless. If so but stateless stateids are not supported, a
+     * {@link BadStateidException} is thrown.
+     * 
+     * @param stateid The stateid.
+     * @return {@code true} if stateless.
+     * @throws BadStateidException if stateless but not supported.
+     * @see #setSupportStateless(boolean)
+     */
+    public boolean checkStatelessAndSupported(stateid4 stateid) throws BadStateidException {
+        if (Stateids.isStateLess(stateid)) {
+            if (supportStateless) {
+                return true;
+            }
+            throw new BadStateidException();
+        }
+        return false;
+    }
 }

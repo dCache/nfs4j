@@ -49,7 +49,9 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
         stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opread.stateid);
         var inode = context.currentInode();
-        if (Stateids.isStateLess(stateid)) {
+
+        NFSv4StateHandler stateHandler = context.getStateHandler();
+        if (stateHandler.checkStatelessAndSupported(stateid)) {
             // Anonymous access as per RFC 7530
             // https://datatracker.ietf.org/doc/html/rfc7530#section-9.1.4.3
             // we only check file access rights.
@@ -64,13 +66,13 @@ public class OperationREAD extends AbstractNFSv4Operation {
                  *
                  * With introduction of sessions in v4.1 update of the lease time done through SEQUENCE operations.
                  */
-                context.getStateHandler().updateClientLeaseTime(stateid);
-                client = context.getStateHandler().getClientIdByStateId(stateid);
+                stateHandler.updateClientLeaseTime(stateid);
+                client = stateHandler.getClientIdByStateId(stateid);
             } else {
                 client = context.getSession().getClient();
             }
 
-            int shareAccess = context.getStateHandler().getFileTracker().getShareAccess(client, inode, stateid);
+            int shareAccess = stateHandler.getFileTracker().getShareAccess(client, inode, stateid);
             if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_READ) == 0) {
                 throw new OpenModeException("Invalid open mode");
             }
