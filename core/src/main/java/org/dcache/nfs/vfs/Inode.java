@@ -22,10 +22,9 @@ package org.dcache.nfs.vfs;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.HexFormat;
 
 import org.dcache.nfs.util.Opaque;
-
-import com.google.common.io.BaseEncoding;
 
 /**
  * NFS file handle on wire representation format v1.
@@ -135,7 +134,7 @@ public class Inode {
 
     @Override
     public String toString() {
-        return BaseEncoding.base16().lowerCase().encode(nfsHandle);
+        return HexFormat.of().formatHex(nfsHandle);
     }
 
     public static Inode forNfsHandle(byte[] bytes) {

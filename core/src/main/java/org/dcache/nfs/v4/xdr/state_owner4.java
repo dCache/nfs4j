@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@ package org.dcache.nfs.v4.xdr;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.Objects;
 
 import org.dcache.oncrpc4j.rpc.OncRpcException;
@@ -30,7 +31,6 @@ import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.io.BaseEncoding;
 
 public class state_owner4 implements XdrAble, Serializable {
 
@@ -91,7 +91,7 @@ public class state_owner4 implements XdrAble, Serializable {
     public String toString() {
         return MoreObjects.toStringHelper(this.getClass().getSimpleName())
                 .add("clientid", Long.toString(clientid.value, 16))
-                .add("ownerid", BaseEncoding.base16().lowerCase().encode(owner))
+                .add("ownerid", HexFormat.of().formatHex(owner))
                 .toString();
     }
 }

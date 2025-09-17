@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.google.common.io.BaseEncoding;
+import java.util.HexFormat;
 
 /**
  *
@@ -36,21 +36,21 @@ public class FileHandleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadVersion() {
-        byte[] bytes = BaseEncoding.base16().lowerCase().decode(
+        byte[] bytes = HexFormat.of().parseHex(
                 "02caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         Inode.forNfsHandle(bytes);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testBadMagic() {
-        byte[] bytes = BaseEncoding.base16().lowerCase().decode(
+        byte[] bytes = HexFormat.of().parseHex(
                 "0100000000000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         Inode.forNfsHandle(bytes);
     }
 
     @Test
     public void testValidHandleV1() {
-        byte[] bytes = BaseEncoding.base16().lowerCase().decode(
+        byte[] bytes = HexFormat.of().parseHex(
                 "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30");
         FileHandle fh = new FileHandle(bytes);
 
@@ -72,7 +72,7 @@ public class FileHandleTest {
         assertEquals(
                 "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
                 fh.toString());
-        assertArrayEquals(BaseEncoding.base16().lowerCase().decode(
+        assertArrayEquals(HexFormat.of().parseHex(
                 "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
                 fh.toNfsHandle());
     }
@@ -85,7 +85,7 @@ public class FileHandleTest {
         assertEquals(
                 "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30",
                 inode.toString());
-        assertArrayEquals(BaseEncoding.base16().lowerCase().decode(
+        assertArrayEquals(HexFormat.of().parseHex(
                 "01caffee00000000ea15b996002e303a494e4f44453a3030303043333732333331373433393234353645423833453434383434453844323844363a30"),
                 inode.toNfsHandle());
     }

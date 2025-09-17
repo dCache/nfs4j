@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,13 +22,12 @@ package org.dcache.nfs.v4.xdr;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HexFormat;
 
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-
-import com.google.common.io.BaseEncoding;
 
 public class stateid4 implements XdrAble, Serializable {
 
@@ -100,7 +99,7 @@ public class stateid4 implements XdrAble, Serializable {
         StringBuilder sb = new StringBuilder();
 
         sb.append("[");
-        sb.append(BaseEncoding.base16().lowerCase().encode(other));
+        sb.append(HexFormat.of().formatHex(other));
         sb.append(", seq: ").append(seqid).append("]");
         return sb.toString();
     }

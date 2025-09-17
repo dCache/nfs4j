@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,14 +21,13 @@ package org.dcache.nfs.v4.xdr;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HexFormat;
 
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.dcache.oncrpc4j.util.Bytes;
 import org.dcache.oncrpc4j.xdr.XdrAble;
 import org.dcache.oncrpc4j.xdr.XdrDecodingStream;
 import org.dcache.oncrpc4j.xdr.XdrEncodingStream;
-
-import com.google.common.io.BaseEncoding;
 
 public class verifier4 implements XdrAble {
 
@@ -77,7 +76,7 @@ public class verifier4 implements XdrAble {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('[').append(BaseEncoding.base16().lowerCase().encode(value)).append(']');
+        sb.append('[').append(HexFormat.of().formatHex(value)).append(']');
         return sb.toString();
     }
 

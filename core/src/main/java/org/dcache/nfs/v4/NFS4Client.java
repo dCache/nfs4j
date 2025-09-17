@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,10 +56,9 @@ import org.dcache.nfs.v4.xdr.verifier4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/*
  *  with great help of William A.(Andy) Adamson
  */
-import com.google.common.io.BaseEncoding;
 
 public class NFS4Client {
 
@@ -285,8 +285,7 @@ public class NFS4Client {
         Instant curentTime = _clock.instant();
         var delta = Duration.between(_lastLeaseUpdate, curentTime);
         if (delta.compareTo(_leaseTime) > 0) {
-            throw new ExpiredException("lease time expired: (" + delta + "): " + BaseEncoding.base16().lowerCase()
-                    .encode(_ownerId) +
+            throw new ExpiredException("lease time expired: (" + delta + "): " + HexFormat.of().formatHex(_ownerId) +
                     " (" + _clientId + ").");
         }
         _lastLeaseUpdate = curentTime;
@@ -441,7 +440,7 @@ public class NFS4Client {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(_clientAddress).append(":")
-                .append(BaseEncoding.base16().lowerCase().encode(_ownerId))
+                .append(HexFormat.of().formatHex(_ownerId))
                 .append("@")
                 .append(_clientId)
                 .append(":v4.").append(getMinorVersion());
