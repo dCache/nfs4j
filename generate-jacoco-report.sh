@@ -15,7 +15,7 @@ mkdir -p "$REPORT_DIR"
 
 # Check if JaCoCo CLI JAR exists in Maven cache
 if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "JaCoCo CLI JAR not found in Maven cache. Trying to download via Maven..."
+    echo "JaCoCo CLI JAR not found in Maven cache. Downloading via Maven..."
     # Try to download via Maven
     mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR" > /dev/null 2>&1
 
