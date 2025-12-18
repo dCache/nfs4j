@@ -4,30 +4,32 @@
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
 MAVEN_REPO="$HOME/.m2/repository"
-JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/jacoco-cli/$JACOCO_VERSION/jacoco-cli-$JACOCO_VERSION-nodeps.jar"
+JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
+JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
+FALLBACK_JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
-# Download JaCoCo CLI JAR using Maven if it doesn't exist
+# Check if JaCoCo CLI JAR exists in Maven cache
 if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "Downloading JaCoCo CLI via Maven..."
-    MAVEN_REPO="$HOME/.m2/repository"
-    JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
+    echo "JaCoCo CLI JAR not found in Maven cache. Trying to download via Maven..."
+    # Try to download via Maven
+    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR" > /dev/null 2>&1
 
-    # Ensure the directory exists
-    mkdir -p "$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION"
-
-    # Use the correct artifact ID and group ID
-    mvn dependency:get \
-        -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps \
-        -Ddest="$JACOCO_CLI_JAR"
-
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to download JaCoCo CLI JAR via Maven"
-        exit 1
+    # Check if Maven download was successful
+    if [ ! -f "$JACOCO_CLI_JAR" ]; then
+        echo "Failed to download JaCoCo CLI JAR via Maven. Falling back to direct download..."
+        # Fallback: Download only the CLI JAR file directly from GitHub
+        mkdir -p "$JACOCO_DIR/lib"
+        wget -q "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar" -O "$FALLBACK_JACOCO_CLI_JAR"
+        if [ $? -ne 0 ]; then
+            echo "Error: Failed to download JaCoCo CLI JAR"
+            exit 1
+        fi
+        JACOCO_CLI_JAR="$FALLBACK_JACOCO_CLI_JAR"
     fi
 fi
 
