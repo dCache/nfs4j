@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: JaCoCo Coverage Report
-            path: nfs4j-coverage/target/site
+            path: target/coverage-reports/site
 
       - name: JUnit test report
         uses: mikepenz/action-junit-report@v5
