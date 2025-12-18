@@ -43,7 +43,6 @@
       <module>benchmarks</module>
       <module>basic-server</module>
       <module>rquota</module>
-      <module>nfs4j-coverage</module>
   </modules>
 
   <properties>
