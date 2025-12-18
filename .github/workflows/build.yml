@@ -10,14 +10,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: "temurin"
           cache: maven
+
+      - name: Cache JaCoCo CLI
+        id: cache-jacoco
+        uses: actions/cache@v4
+        with:
+            path: ~/jacoco-0.8.14
+            key: ${{ runner.os }}-jacoco-cli-${{ hashFiles('generate-jacoco-report.sh') }}
+            restore-keys: |
+                ${{ runner.os }}-jacoco-cli-
+
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
+
+      - name: Generate JaCoCo Report
+        run: |
+         chmod +x ./generate-jacoco-report.sh
+         ./generate-jacoco-report.sh
+
+      - name: Upload JaCoCo Report
+        uses: actions/upload-artifact@v4
+        with:
+            name: JaCoCo Coverage Report
+            path: target/coverage-reports/site
 
       - name: JUnit test report
         uses: mikepenz/action-junit-report@v5
