@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# Script to merge JaCoCo execution data files and generate an HTML coverage report.
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
