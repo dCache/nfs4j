@@ -19,6 +19,17 @@ jobs:
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
 
+      - name: Generate JaCoCo Report
+        run: |
+         chmod +x ./generate-jacoco-report.sh
+         ./generate-jacoco-report.sh
+
+      - name: Upload JaCoCo Report
+        uses: actions/upload-artifact@v3
+        with:
+            name: JaCoCo Coverage Report
+            path: nfs4j-coverage/target/site
+
       - name: JUnit test report
         uses: mikepenz/action-junit-report@v5
         if: always()
