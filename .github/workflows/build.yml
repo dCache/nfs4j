@@ -25,7 +25,7 @@ jobs:
          ./generate-jacoco-report.sh
 
       - name: Upload JaCoCo Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: JaCoCo Coverage Report
             path: nfs4j-coverage/target/site
