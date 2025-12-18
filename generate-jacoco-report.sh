@@ -3,21 +3,32 @@
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
-JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
-JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
+MAVEN_REPO="$HOME/.m2/repository"
+JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/jacoco-cli/$JACOCO_VERSION/jacoco-cli-$JACOCO_VERSION-nodeps.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
-# Install JaCoCo CLI if not already installed
+# Download JaCoCo CLI JAR using Maven if it doesn't exist
 if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "Installing JaCoCo CLI..."
-    mkdir -p "$JACOCO_DIR"
-    wget -q "https://github.com/jacoco/jacoco/releases/download/v$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" -O "/tmp/jacoco-$JACOCO_VERSION.zip"
-    unzip -q "/tmp/jacoco-$JACOCO_VERSION.zip" -d "$JACOCO_DIR"
-    rm -f "/tmp/jacoco-$JACOCO_VERSION.zip"
+    echo "Downloading JaCoCo CLI via Maven..."
+    MAVEN_REPO="$HOME/.m2/repository"
+    JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
+
+    # Ensure the directory exists
+    mkdir -p "$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION"
+
+    # Use the correct artifact ID and group ID
+    mvn dependency:get \
+        -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps \
+        -Ddest="$JACOCO_CLI_JAR"
+
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to download JaCoCo CLI JAR via Maven"
+        exit 1
+    fi
 fi
 
 # Check if JaCoCo CLI JAR exists
