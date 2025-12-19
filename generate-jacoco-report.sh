@@ -1,38 +1,24 @@
 #!/bin/bash
-# Script to merge JaCoCo execution data files and generate an HTML coverage report.
+
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
 MAVEN_REPO="$HOME/.m2/repository"
 JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
-JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
-JACOCO_CLI_JAR_LOCAL="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
-# Function to download JaCoCo CLI via Maven
-download_jacoco_via_maven() {
+# Check if JaCoCo CLI JAR exists in Maven cache
+if [ ! -f "$JACOCO_CLI_JAR" ]; then
     echo "Downloading JaCoCo CLI via Maven..."
-    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR_MAVEN"
+    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR" -DremoteRepositories=central::default::https://repo.maven.apache.org/maven2
     if [ $? -ne 0 ]; then
         echo "Error: Failed to download JaCoCo CLI JAR via Maven"
         exit 1
     fi
-}
-
-# Check if JaCoCo CLI JAR exists in Maven cache
-if [ -f "$JACOCO_CLI_JAR_MAVEN" ]; then
-    JACOCO_CLI_JAR="$JACOCO_CLI_JAR_MAVEN"
-# Check if JaCoCo CLI JAR exists in local cache
-elif [ -f "$JACOCO_CLI_JAR_LOCAL" ]; then
-    JACOCO_CLI_JAR="$JACOCO_CLI_JAR_LOCAL"
-# If not found, download via Maven
-else
-    download_jacoco_via_maven
-    JACOCO_CLI_JAR="$JACOCO_CLI_JAR_MAVEN"
 fi
 
 # Check if JaCoCo CLI JAR exists
