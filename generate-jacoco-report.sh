@@ -6,31 +6,33 @@ JACOCO_VERSION="0.8.14"
 MAVEN_REPO="$HOME/.m2/repository"
 JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
 JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
-FALLBACK_JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
+JACOCO_CLI_JAR_LOCAL="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
-# Check if JaCoCo CLI JAR exists in Maven cache
-if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "JaCoCo CLI JAR not found in Maven cache. Downloading via Maven..."
-    # Try to download via Maven
-    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR" > /dev/null 2>&1
-
-    # Check if Maven download was successful
-    if [ ! -f "$JACOCO_CLI_JAR" ]; then
-        echo "Failed to download JaCoCo CLI JAR via Maven. Falling back to direct download..."
-        # Fallback: Download only the CLI JAR file directly from GitHub
-        mkdir -p "$JACOCO_DIR/lib"
-        wget -q "https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar" -O "$FALLBACK_JACOCO_CLI_JAR"
-        if [ $? -ne 0 ]; then
-            echo "Error: Failed to download JaCoCo CLI JAR"
-            exit 1
-        fi
-        JACOCO_CLI_JAR="$FALLBACK_JACOCO_CLI_JAR"
+# Function to download JaCoCo CLI via Maven
+download_jacoco_via_maven() {
+    echo "Downloading JaCoCo CLI via Maven..."
+    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR_MAVEN"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to download JaCoCo CLI JAR via Maven"
+        exit 1
     fi
+}
+
+# Check if JaCoCo CLI JAR exists in Maven cache
+if [ -f "$JACOCO_CLI_JAR_MAVEN" ]; then
+    JACOCO_CLI_JAR="$JACOCO_CLI_JAR_MAVEN"
+# Check if JaCoCo CLI JAR exists in local cache
+elif [ -f "$JACOCO_CLI_JAR_LOCAL" ]; then
+    JACOCO_CLI_JAR="$JACOCO_CLI_JAR_LOCAL"
+# If not found, download via Maven
+else
+    download_jacoco_via_maven
+    JACOCO_CLI_JAR="$JACOCO_CLI_JAR_MAVEN"
 fi
 
 # Check if JaCoCo CLI JAR exists
