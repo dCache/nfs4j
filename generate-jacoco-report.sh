@@ -3,28 +3,21 @@
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
-MAVEN_REPO="$HOME/.m2/repository"
-JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
+JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
+JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
-# Debug: Print paths
-echo "DEBUG: MAVEN_REPO: $MAVEN_REPO"
-echo "DEBUG: JACOCO_DIR: $JACOCO_DIR"
-echo "DEBUG: JACOCO_CLI_JAR: $JACOCO_CLI_JAR"
-echo "DEBUG: Checking if $JACOCO_CLI_JAR exists..."
-
-# Check if JaCoCo CLI JAR exists in Maven cache
+# Check if JaCoCo CLI JAR exists in the cache directory
 if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "Downloading JaCoCo CLI via Maven..."
-    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR" -DremoteRepositories=central::default::https://repo.maven.apache.org/maven2
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to download JaCoCo CLI JAR via Maven"
-        exit 1
-    fi
+    echo "JaCoCo CLI JAR not found in cache directory. Downloading..."
+    mkdir -p "$JACOCO_DIR"
+    wget -q "https://github.com/jacoco/jacoco/releases/download/v$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" -O "/tmp/jacoco-$JACOCO_VERSION.zip"
+    unzip -q "/tmp/jacoco-$JACOCO_VERSION.zip" -d "$JACOCO_DIR"
+    rm -f "/tmp/jacoco-$JACOCO_VERSION.zip"
 fi
 
 # Check if JaCoCo CLI JAR exists
@@ -71,7 +64,6 @@ for exec_file in "${EXEC_FILES[@]}"; do
     module_path=$(dirname "$(dirname "$(dirname "$exec_file")")")
     module_name=$(basename "$module_path")
 
-    echo "DEBUG: Module path: $module_path"
     # Add classfiles and sourcefiles arguments
     CLASSFILES_ARGS+=("--classfiles" "$module_path/target/classes")
     SOURCEFILES_ARGS+=("--sourcefiles" "$module_path/src/main/java")
