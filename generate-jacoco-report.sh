@@ -11,6 +11,12 @@ REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
+# Debug: Print paths
+echo "DEBUG: MAVEN_REPO: $MAVEN_REPO"
+echo "DEBUG: JACOCO_DIR: $JACOCO_DIR"
+echo "DEBUG: JACOCO_CLI_JAR: $JACOCO_CLI_JAR"
+echo "DEBUG: Checking if $JACOCO_CLI_JAR exists..."
+
 # Check if JaCoCo CLI JAR exists in Maven cache
 if [ ! -f "$JACOCO_CLI_JAR" ]; then
     echo "Downloading JaCoCo CLI via Maven..."
@@ -65,6 +71,7 @@ for exec_file in "${EXEC_FILES[@]}"; do
     module_path=$(dirname "$(dirname "$(dirname "$exec_file")")")
     module_name=$(basename "$module_path")
 
+    echo "DEBUG: Module path: $module_path"
     # Add classfiles and sourcefiles arguments
     CLASSFILES_ARGS+=("--classfiles" "$module_path/target/classes")
     SOURCEFILES_ARGS+=("--sourcefiles" "$module_path/src/main/java")
