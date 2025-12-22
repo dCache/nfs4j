@@ -27,22 +27,6 @@ jobs:
             restore-keys: |
                 ${{ runner.os }}-jacoco-cli-
 
-      - name: Debug Cache Contents
-        run: |
-             echo "DEBUG: Cache directory contents:"
-             ls -la ~/jacoco-0.8.14 || echo "Directory does not exist"
-
-      - name: Download JaCoCo CLI
-        if: steps.cache-jacoco.outputs.cache-hit != 'true'
-        run: |
-            JACOCO_VERSION="0.8.14"
-            JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
-            mkdir -p "$JACOCO_DIR"
-            wget -q "https://github.com/jacoco/jacoco/releases/download/v$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" -O "/tmp/jacoco-$JACOCO_VERSION.zip"
-            unzip -q "/tmp/jacoco-$JACOCO_VERSION.zip" -d "$JACOCO_DIR"
-            rm -f "/tmp/jacoco-$JACOCO_VERSION.zip"
-            echo "JACOCO_CLI_JAR=$JACOCO_DIR/lib/jacococli.jar" >> $GITHUB_ENV
-
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
 

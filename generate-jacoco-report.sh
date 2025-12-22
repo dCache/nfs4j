@@ -4,7 +4,8 @@
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
 MAVEN_REPO="$HOME/.m2/repository"
-JACOCO_CLI_JAR="$MAVEN_REPO/org/jacoco/org.jacoco.cli/$JACOCO_VERSION/org.jacoco.cli-$JACOCO_VERSION-nodeps.jar"
+JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
+JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 
@@ -24,19 +25,13 @@ if [ ! -f "$JACOCO_CLI_JAR" ]; then
     wget -q "https://github.com/jacoco/jacoco/releases/download/v$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" -O "/tmp/jacoco-$JACOCO_VERSION.zip"
     unzip -q "/tmp/jacoco-$JACOCO_VERSION.zip" -d "$JACOCO_DIR"
     rm -f "/tmp/jacoco-$JACOCO_VERSION.zip"
+    echo "DEBUG: Downloaded JaCoCo CLI to $JACOCO_DIR"
+    ls -la "$JACOCO_DIR"
+else
+    echo "DEBUG: JaCoCo CLI JAR found at $JACOCO_CLI_JAR"
 fi
 
-# Check if JaCoCo CLI JAR exists in Maven cache
-if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "Downloading JaCoCo CLI via Maven..."
-    mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:$JACOCO_VERSION:jar:nodeps -Ddest="$JACOCO_CLI_JAR" -DremoteRepositories=central::default::https://repo.maven.apache.org/maven2
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to download JaCoCo CLI JAR via Maven"
-        exit 1
-    fi
-fi
-
-# Check if JaCoCo CLI JAR exists
+# Check if JaCoCo CLI JAR exists after download
 if [ ! -f "$JACOCO_CLI_JAR" ]; then
     echo "Error: JaCoCo CLI JAR not found at $JACOCO_CLI_JAR"
     exit 1
@@ -44,6 +39,12 @@ fi
 
 # Find all jacoco-ut.exec files dynamically
 EXEC_FILES=($(find "$PROJECT_ROOT" -name "jacoco-ut.exec" -type f))
+
+# Debug: Print found exec files
+echo "DEBUG: Found execution data files:"
+for exec_file in "${EXEC_FILES[@]}"; do
+    echo "DEBUG: $exec_file"
+done
 
 # Check if any execution data files were found
 if [ ${#EXEC_FILES[@]} -eq 0 ]; then
@@ -80,7 +81,9 @@ for exec_file in "${EXEC_FILES[@]}"; do
     module_path=$(dirname "$(dirname "$(dirname "$exec_file")")")
     module_name=$(basename "$module_path")
 
+    # Debug: Print module paths
     echo "DEBUG: Module path: $module_path"
+
     # Add classfiles and sourcefiles arguments
     CLASSFILES_ARGS+=("--classfiles" "$module_path/target/classes")
     SOURCEFILES_ARGS+=("--sourcefiles" "$module_path/src/main/java")
