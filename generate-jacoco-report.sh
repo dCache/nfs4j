@@ -3,7 +3,6 @@
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
-MAVEN_REPO="$HOME/.m2/repository"
 JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
 JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
@@ -13,8 +12,6 @@ REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 mkdir -p "$REPORT_DIR"
 
 # Debug: Print paths
-echo "DEBUG: MAVEN_REPO: $MAVEN_REPO"
-echo "DEBUG: JACOCO_DIR: $JACOCO_DIR"
 echo "DEBUG: JACOCO_CLI_JAR: $JACOCO_CLI_JAR"
 echo "DEBUG: Checking if $JACOCO_CLI_JAR exists..."
 
