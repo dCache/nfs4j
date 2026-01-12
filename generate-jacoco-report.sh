@@ -3,7 +3,7 @@
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 JACOCO_VERSION="0.8.14"
-JACOCO_DIR="$HOME/jacoco-$JACOCO_VERSION"
+JACOCO_DIR="${PROJECT_ROOT}/jacoco-$JACOCO_VERSION"
 JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 MERGED_EXEC="$PROJECT_ROOT/target/coverage-reports/merged.exec"
 REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
