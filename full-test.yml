@@ -12,6 +12,8 @@ services:
       - "2049:2049"
     image: "nfs4j:dev"
     container_name: "nfs4j"
+    volumes:
+      - ./basic-server/target/coverage-reports:/coverage-reports
 
   tester:
     image: dcache/pynfs:0.5
