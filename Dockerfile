@@ -1,4 +1,4 @@
-FROM almalinux/9-minimal
+FROM almalinux/10-minimal
 
 RUN microdnf install -y java-21-openjdk-headless && \
     microdnf clean all && \
