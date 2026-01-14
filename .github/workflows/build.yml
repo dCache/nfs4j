@@ -25,7 +25,7 @@ jobs:
         id: cache-jacoco
         uses: actions/cache@v4
         with:
-            path: ${{ github.workspace }}/jacoco-0.8.14
+            path: ${{ github.workspace }}/jacoco-${{ env.JACOCO_VERSION }}
             key: ${{ runner.os }}-jacoco-cli-${{ env.JACOCO_VERSION }}
 
       - name: Build with Maven
