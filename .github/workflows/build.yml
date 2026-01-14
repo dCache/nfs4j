@@ -24,22 +24,14 @@ jobs:
         with:
             path: ~/jacoco-0.8.14
             key: ${{ runner.os }}-jacoco-cli-${{ hashFiles('generate-jacoco-report.sh') }}
-            restore-keys: |
-                ${{ runner.os }}-jacoco-cli-
 
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
 
-      - name: Generate JaCoCo Report
+      - name: Get JaCoCo CLI
         run: |
-         chmod +x ./generate-jacoco-report.sh
-         ./generate-jacoco-report.sh
-
-      - name: Upload JaCoCo Report
-        uses: actions/upload-artifact@v4
-        with:
-            name: JaCoCo Coverage Report
-            path: target/coverage-reports/site
+         chmod +x ./get-jacoco.sh
+         ./get-jacoco.sh
 
       - name: JUnit test report
         uses: mikepenz/action-junit-report@v5
@@ -58,3 +50,14 @@ jobs:
         with:
           check_name: pynfs protocol compatibility test
           report_paths: "report/*.xml"
+
+      - name: Generate JaCoCo Report
+        run: |
+          chmod +x ./generate-jacoco-report.sh
+          ./generate-jacoco-report.sh
+
+      - name: Upload JaCoCo Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: JaCoCo Coverage Report
+          path: target/coverage-reports/site
