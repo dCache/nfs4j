@@ -2,12 +2,14 @@
 
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
-JACOCO_VERSION="0.8.14"
+JACOCO_VERSION="${JACOCO_VERSION:-0.8.14}"  #fallback to 0.8.14 if env var is unset
 JACOCO_DIR="${PROJECT_ROOT}/jacoco-$JACOCO_VERSION"
 JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 
 # Debug: Print paths
 echo "DEBUG: JACOCO_CLI_JAR: $JACOCO_CLI_JAR"
+echo "DEBUG: PROJECT_ROOT: $PROJECT_ROOT"
+echo "DEBUG: JACOCO_DIR: $JACOCO_DIR"
 echo "DEBUG: Checking if $JACOCO_CLI_JAR exists..."
 
 # Check if JaCoCo CLI JAR exists in the cache directory
