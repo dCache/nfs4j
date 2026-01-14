@@ -11,29 +11,6 @@ REPORT_DIR="$PROJECT_ROOT/target/coverage-reports/site"
 # Ensure the report directory exists
 mkdir -p "$REPORT_DIR"
 
-# Debug: Print paths
-echo "DEBUG: JACOCO_CLI_JAR: $JACOCO_CLI_JAR"
-echo "DEBUG: Checking if $JACOCO_CLI_JAR exists..."
-
-# Check if JaCoCo CLI JAR exists in the cache directory
-if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "JaCoCo CLI JAR not found in cache directory. Downloading..."
-    mkdir -p "$JACOCO_DIR"
-    wget -q "https://github.com/jacoco/jacoco/releases/download/v$JACOCO_VERSION/jacoco-$JACOCO_VERSION.zip" -O "/tmp/jacoco-$JACOCO_VERSION.zip"
-    unzip -q "/tmp/jacoco-$JACOCO_VERSION.zip" -d "$JACOCO_DIR"
-    rm -f "/tmp/jacoco-$JACOCO_VERSION.zip"
-    echo "DEBUG: Downloaded JaCoCo CLI to $JACOCO_DIR"
-    ls -la "$JACOCO_DIR"
-else
-    echo "DEBUG: JaCoCo CLI JAR found at $JACOCO_CLI_JAR"
-fi
-
-# Check if JaCoCo CLI JAR exists after download
-if [ ! -f "$JACOCO_CLI_JAR" ]; then
-    echo "Error: JaCoCo CLI JAR not found at $JACOCO_CLI_JAR"
-    exit 1
-fi
-
 # Find all jacoco-ut.exec files dynamically
 EXEC_FILES=($(find "$PROJECT_ROOT" -name "jacoco-ut.exec" -type f))
 
@@ -71,7 +48,6 @@ for exec_file in "${EXEC_FILES[@]}"; do
     # Extract module path (e.g., core, dlm, rquota) from the exec file path
     module_path=$(dirname "$(dirname "$(dirname "$exec_file")")")
     module_name=$(basename "$module_path")
-
     # Add classfiles and sourcefiles arguments
     CLASSFILES_ARGS+=("--classfiles" "$module_path/target/classes")
     SOURCEFILES_ARGS+=("--sourcefiles" "$module_path/src/main/java")
