@@ -2,7 +2,7 @@
 
 # Define paths
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
-JACOCO_VERSION="0.8.14"
+JACOCO_VERSION="${JACOCO_VERSION:-0.8.14}"  #fallback to 0.8.14 if env var is unset
 JACOCO_DIR="${PROJECT_ROOT}/jacoco-$JACOCO_VERSION"
 JACOCO_CLI_JAR="$JACOCO_DIR/lib/jacococli.jar"
 
