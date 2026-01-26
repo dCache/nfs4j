@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -305,15 +305,17 @@ public class NfsServerV3 extends nfs3_protServerStub {
 
             parentStat = fs.getattr(parent);
 
-            int fmode = 0644 | Stat.S_IFREG;
+            int fmode = 0644;
             Subject actualSubject = null;
             if (newAttr != null) {
-                fmode = newAttr.mode.mode.value.value | Stat.S_IFREG;
+                if (newAttr.mode.set_it) {
+                    fmode = newAttr.mode.mode.value.value;
+                }
                 if (newAttr.uid.set_it || newAttr.gid.set_it) {
                     actualSubject = UnixSubjects.toSubject(newAttr.uid.uid.value, newAttr.gid.gid.value);
                 }
             }
-            inode = fs.create(parent, Stat.Type.REGULAR, path, actualSubject, fmode);
+            inode = fs.create(parent, Stat.Type.REGULAR, path, actualSubject, fmode | Stat.S_IFREG);
             Stat inodeStat = fs.getattr(inode);
 
             res.status = nfsstat.NFS_OK;
@@ -607,13 +609,15 @@ public class NfsServerV3 extends nfs3_protServerStub {
             int mode = 0777;
             Subject actualSubject = null;
             if (attr != null) {
-                mode = attr.mode.mode.value.value | Stat.S_IFDIR;
+                if (attr.mode.set_it) {
+                    mode = attr.mode.mode.value.value;
+                }
                 if (attr.uid.set_it || attr.gid.set_it) {
                     actualSubject = UnixSubjects.toSubject(attr.uid.uid.value, attr.gid.gid.value);
                 }
             }
 
-            Inode inode = fs.mkdir(parent, name, actualSubject, mode);
+            Inode inode = fs.mkdir(parent, name, actualSubject, mode | Stat.S_IFDIR);
 
             res.resok = new MKDIR3resok();
             res.resok.obj = new post_op_fh3();
