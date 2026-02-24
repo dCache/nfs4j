@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2021 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -110,7 +110,8 @@ public class OperationCOPY extends AbstractNFSv4Operation {
 
 
         CompletableFuture<Long> copyFuture = context.getFs().copyFileRange(srcInode, srcPos, dstInode, dstPos, len);
-        if (_args.opcopy.ca_synchronous) {
+        // In case when the error is immediate treat it as a synchronous copy to re-use exception handling code.
+        if (_args.opcopy.ca_synchronous || copyFuture.isCompletedExceptionally()) {
             long bytes = 0L;
             try {
                 bytes = copyFuture.get();
