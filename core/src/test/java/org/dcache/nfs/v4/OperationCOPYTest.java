@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.status.OffloadNoReqsException;
 import org.dcache.nfs.v4.xdr.COMPOUND4args;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
@@ -141,6 +142,32 @@ public class OperationCOPYTest {
                 .withFs(vfs)
                 .withCall(generateRpcCall())
                 .build();
+
+        execute(context, copyArgs);
+    }
+
+    @Test(expected = NotSuppException.class)
+    public void testCopyAsyncNotSupported() throws Exception {
+
+        when(vfs.copyFileRange(any(), anyLong(), any(), anyLong(), anyLong()))
+              .thenReturn(CompletableFuture.failedFuture(new NotSuppException()));
+
+        COMPOUND4args copyArgs = new CompoundBuilder()
+              .withMinorversion(2)
+              .withPutfh(fhSrc)
+              .withSavefh()
+              .withPutfh(fhDest)
+              .withIntraServerCopy(srcStateid, destStateid, 0L, 0L,
+                    NFSv4Defaults.NFS4_MAXIOBUFFERSIZE + 1L, false,
+                    true)
+              .build();
+
+        CompoundContext context = new CompoundContextBuilder()
+              .withStateHandler(stateHandler)
+              .withSession(session)
+              .withFs(vfs)
+              .withCall(generateRpcCall())
+              .build();
 
         execute(context, copyArgs);
     }
