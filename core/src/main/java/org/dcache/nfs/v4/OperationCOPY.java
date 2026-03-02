@@ -118,7 +118,7 @@ public class OperationCOPY extends AbstractNFSv4Operation {
 
         CompletableFuture<Long> copyFuture = context.getFs().copyFileRange(srcInode, srcPos, dstInode, dstPos, len);
         boolean isSync = _args.opcopy.ca_synchronous;
-        if (isSync) {
+        if (isSync || copyFuture.isCompletedExceptionally()) {
             try {
                 // try sync copy and fall-back to async
                 long n = copyFuture.get(1, TimeUnit.SECONDS);
