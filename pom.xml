@@ -38,7 +38,6 @@
   <modules>
       <module>core</module>
       <module>basic-client</module>
-      <module>spring</module>
       <module>dlm</module>
       <module>benchmarks</module>
       <module>basic-server</module>
@@ -187,11 +186,6 @@
               <groupId>com.google.guava</groupId>
               <artifactId>guava</artifactId>
               <version>32.0.0-jre</version>
-          </dependency>
-          <dependency>
-              <groupId>org.springframework</groupId>
-              <artifactId>spring-context</artifactId>
-              <version>5.2.22.RELEASE</version>
           </dependency>
           <dependency>
               <groupId>org.dcache</groupId>
