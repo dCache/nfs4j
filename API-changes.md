@@ -1,5 +1,9 @@
 # Changes to NFS4J public API
 
+## 0.28
+
+- dropped Spring integration
+
 ## 0.27
 
 - change the signature of `ClientCB#cbLayoutRecallFile` to accept layout type.
