@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -161,6 +161,8 @@ public class MDSOperationExecutor extends AbstractOperationExecutor {
                 return new OperationREMOVEXATTR(op);
             case nfs_opnum4.OP_COPY:
                 return new OperationCOPY(op);
+
+            // legit, but not supported by nfs4j operations.
             case nfs_opnum4.OP_ALLOCATE:
             case nfs_opnum4.OP_COPY_NOTIFY:
             case nfs_opnum4.OP_DEALLOCATE:
@@ -171,7 +173,7 @@ public class MDSOperationExecutor extends AbstractOperationExecutor {
             case nfs_opnum4.OP_SEEK:
             case nfs_opnum4.OP_WRITE_SAME:
             case nfs_opnum4.OP_CLONE:
-                // in V4.2 all operations are optional.
+            case nfs_opnum4.OP_GET_DIR_DELEGATION:
                 return new AbstractNFSv4Operation(op, op.argop) {
                     @Override
                     public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException,
