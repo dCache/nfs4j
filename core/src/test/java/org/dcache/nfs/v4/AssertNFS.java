@@ -23,6 +23,7 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.AbstractNFSv4Operation;
 import org.dcache.nfs.v4.CompoundContext;
+import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 
 import junit.framework.AssertionFailedError;
@@ -30,10 +31,10 @@ import junit.framework.AssertionFailedError;
 public class AssertNFS {
 
     public static void assertNFS(AbstractNFSv4Operation op,
-            CompoundContext context, nfs_resop4 result, int expectedStatus) throws Exception {
+            CompoundContext context, nfs_argop4 args, nfs_resop4 result, int expectedStatus) throws Exception {
 
         try {
-            op.process(context, result);
+            op.process(context, args, result);
             assertNFSStatus(expectedStatus, result.getStatus());
         } catch (ChimeraNFSException e) {
             assertNFSStatus(expectedStatus, e.getStatus());

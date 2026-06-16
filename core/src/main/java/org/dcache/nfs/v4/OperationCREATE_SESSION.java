@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.dcache.nfs.v4.xdr.CREATE_SESSION4resok;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.slf4j.Logger;
@@ -47,12 +46,8 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationCREATE_SESSION.class);
 
-    public OperationCREATE_SESSION(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_CREATE_SESSION);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
         final CREATE_SESSION4res res = result.opcreate_session;
 
         int sessionFlags = 0;
@@ -60,14 +55,14 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         /*
          * check for correct arguments
          */
-        if (_args.opcreate_session.csa_fore_chan_attrs.ca_rdma_ird.length > 1) {
+        if (args.opcreate_session.csa_fore_chan_attrs.ca_rdma_ird.length > 1) {
             throw new BadXdrException("bad size of rdma_ird");
         }
 
         /*
          * check for correct flags
          */
-        if ((_args.opcreate_session.csa_flags.value & ~(SESSION_FLAGS_MASK)) != 0) {
+        if ((args.opcreate_session.csa_flags.value & ~(SESSION_FLAGS_MASK)) != 0) {
             throw new InvalException("bad ceate_session flag");
         }
 
@@ -79,7 +74,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * period of inactivity, possibly due to a loss of connectivity. NFS4ERR_STALE_CLIENTID is returned, and no
          * changes are made to any client records on the server. Otherwise, the server goes to phase 2.
          */
-        NFS4Client client = context.getStateHandler().getValidClient(_args.opcreate_session.csa_clientid);
+        NFS4Client client = context.getStateHandler().getValidClient(args.opcreate_session.csa_clientid);
 
         /*
          * Phase 2:
@@ -97,29 +92,29 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
             throw new ClidInUseException("client already in use: " + client.principal() + " " + context.getPrincipal());
         }
 
-        NFSv41Session session = client.createSession(_args.opcreate_session.csa_sequence.value,
+        NFSv41Session session = client.createSession(args.opcreate_session.csa_sequence.value,
                 Math.min(NFSv4Defaults.NFS4_MAX_SESSION_SLOTS,
-                        _args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value),
+                        args.opcreate_session.csa_fore_chan_attrs.ca_maxrequests.value),
                 Math.min(NFSv4Defaults.NFS4_MAX_SESSION_SLOTS,
-                        _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value),
-                Math.min(NFSv4Defaults.NFS4_MAX_OPS, _args.opcreate_session.csa_fore_chan_attrs.ca_maxoperations.value),
+                        args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value),
+                Math.min(NFSv4Defaults.NFS4_MAX_OPS, args.opcreate_session.csa_fore_chan_attrs.ca_maxoperations.value),
                 Math.min(NFSv4Defaults.NFS4_MAX_OPS,
-                        _args.opcreate_session.csa_back_chan_attrs.ca_maxoperations.value));
+                        args.opcreate_session.csa_back_chan_attrs.ca_maxoperations.value));
         _log.debug("adding new session [{}]", session);
 
         /*
          * if client supports call backs on the same channel make use of it
          */
-        if (client.isCallbackNeede() && (_args.opcreate_session.csa_flags.value
+        if (client.isCallbackNeede() && (args.opcreate_session.csa_flags.value
                 & nfs4_prot.CREATE_SESSION4_FLAG_CONN_BACK_CHAN) != 0) {
 
             ClientCB cb = new ClientCB(
                     context.getRpcCall().getTransport().getPeerTransport(),
-                    _args.opcreate_session.csa_cb_program.value,
+                    args.opcreate_session.csa_cb_program.value,
                     context.getMinorversion(),
                     session.id(),
-                    _args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value,
-                    _args.opcreate_session.csa_sec_parms);
+                    args.opcreate_session.csa_back_chan_attrs.ca_maxrequests.value,
+                    args.opcreate_session.csa_sec_parms);
             try {
                 cb.cbPing();
                 client.setCB(cb);
@@ -135,7 +130,7 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
         res.csr_resok4 = new CREATE_SESSION4resok();
 
         res.csr_resok4.csr_sessionid = session.id();
-        res.csr_resok4.csr_sequence = _args.opcreate_session.csa_sequence;
+        res.csr_resok4.csr_sequence = args.opcreate_session.csa_sequence;
 
         res.csr_resok4.csr_flags = new uint32_t(sessionFlags);
 
@@ -147,11 +142,11 @@ public class OperationCREATE_SESSION extends AbstractNFSv4Operation {
          * res.csr_resok4.csr_conn_binding_opts.cbr_hash_alg_info = new hash_alg_info4();
          */
 
-        res.csr_resok4.csr_fore_chan_attrs = _args.opcreate_session.csa_fore_chan_attrs;
+        res.csr_resok4.csr_fore_chan_attrs = args.opcreate_session.csa_fore_chan_attrs;
         res.csr_resok4.csr_fore_chan_attrs.ca_maxoperations = new count4(session.getMaxOps());
         res.csr_resok4.csr_fore_chan_attrs.ca_maxrequests = new count4(session.getHighestSlot() + 1);
 
-        res.csr_resok4.csr_back_chan_attrs = _args.opcreate_session.csa_back_chan_attrs;
+        res.csr_resok4.csr_back_chan_attrs = args.opcreate_session.csa_back_chan_attrs;
         res.csr_resok4.csr_back_chan_attrs.ca_maxoperations = new count4(session.getMaxCbOps());
         res.csr_resok4.csr_back_chan_attrs.ca_maxrequests = new count4(session.getCbHighestSlot() + 1);
 

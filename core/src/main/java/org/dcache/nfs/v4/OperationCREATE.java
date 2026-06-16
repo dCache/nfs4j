@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -37,7 +37,6 @@ import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -49,22 +48,18 @@ public class OperationCREATE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationCREATE.class);
 
-    public OperationCREATE(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_CREATE);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         final CREATE4res res = result.opcreate;
 
-        fattr4 objAttr = _args.opcreate.createattrs;
-        int type = _args.opcreate.objtype.type;
+        fattr4 objAttr = args.opcreate.createattrs;
+        int type = args.opcreate.objtype.type;
         Inode inode;
 
         Stat stat = context.getFs().getattr(context.currentInode());
-        String name = NameFilter.convertName(_args.opcreate.objname.value);
+        String name = NameFilter.convertName(args.opcreate.objname.value);
 
         if (stat.type() != Stat.Type.DIRECTORY) {
             throw new NotDirException();
@@ -86,7 +81,7 @@ public class OperationCREATE extends AbstractNFSv4Operation {
                         context.getSubject(), mode);
                 break;
             case nfs_ftype4.NF4LNK:
-                String linkDest = NameFilter.convertPath(_args.opcreate.objtype.linkdata.value.value);
+                String linkDest = NameFilter.convertPath(args.opcreate.objtype.linkdata.value.value);
                 inode = context.getFs().symlink(context.currentInode(), name, linkDest,
                         context.getSubject(), mode);
                 break;

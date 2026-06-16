@@ -49,33 +49,33 @@ public class DSOperationExecutor extends AbstractOperationExecutor {
 
         switch (op.argop) {
             case nfs_opnum4.OP_COMMIT:
-                return new DSOperationCOMMIT(op, _fs);
+                return new DSOperationCOMMIT(_fs);
             case nfs_opnum4.OP_GETATTR:
-                return new OperationGETATTR(op);
+                return new OperationGETATTR();
             case nfs_opnum4.OP_PUTFH:
-                return new OperationPUTFH(op);
+                return new OperationPUTFH();
             case nfs_opnum4.OP_PUTROOTFH:
-                return new OperationPUTROOTFH(op);
+                return new OperationPUTROOTFH();
             case nfs_opnum4.OP_READ:
-                return new DSOperationREAD(op, _fs);
+                return new DSOperationREAD(_fs);
             case nfs_opnum4.OP_WRITE:
-                return new DSOperationWRITE(op, _fs);
+                return new DSOperationWRITE(_fs);
             case nfs_opnum4.OP_EXCHANGE_ID:
-                return new OperationEXCHANGE_ID(op);
+                return new OperationEXCHANGE_ID();
             case nfs_opnum4.OP_CREATE_SESSION:
-                return new OperationCREATE_SESSION(op);
+                return new OperationCREATE_SESSION();
             case nfs_opnum4.OP_DESTROY_SESSION:
-                return new OperationDESTROY_SESSION(op);
+                return new OperationDESTROY_SESSION();
             case nfs_opnum4.OP_SEQUENCE:
-                return new OperationSEQUENCE(op);
+                return new OperationSEQUENCE();
             case nfs_opnum4.OP_RECLAIM_COMPLETE:
-                return new OperationRECLAIM_COMPLETE(op);
+                return new OperationRECLAIM_COMPLETE();
             case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
-                return new OperationBIND_CONN_TO_SESSION(op);
+                return new OperationBIND_CONN_TO_SESSION();
             case nfs_opnum4.OP_DESTROY_CLIENTID:
-                return new OperationDESTROY_CLIENTID(op);
+                return new OperationDESTROY_CLIENTID();
         }
 
-        return new OperationILLEGAL(op);
+        return new OperationILLEGAL();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -39,15 +39,15 @@ public class OperationSECINFO_NO_NAMETest {
 
     private OperationSECINFO_NO_NAME op;
     private Inode inode;
+    private nfs_argop4 arg = new nfs_argop4();
 
     @Before
     public void setUp() throws IOException {
 
-        nfs_argop4 arg = new nfs_argop4();
         arg.argop = nfs_opnum4.OP_SECINFO_NO_NAME;
         arg.opsecinfo_no_name = new SECINFO_NO_NAME4args(0);
 
-        op = new OperationSECINFO_NO_NAME(arg);
+        op = new OperationSECINFO_NO_NAME();
         inode = mock(Inode.class);
 
     }
@@ -62,7 +62,7 @@ public class OperationSECINFO_NO_NAMETest {
                 .build();
         context.currentInode(inode);
         nfs_resop4 result = nfs_resop4.resopFor(nfs_opnum4.OP_SECINFO_NO_NAME);
-        op.process(context, result);
+        op.process(context, arg, result);
 
         assertEquals("Sec Sys not detected", RpcAuthType.UNIX, result.opsecinfo_no_name.resok4.value[0].flavor);
     }
@@ -77,7 +77,7 @@ public class OperationSECINFO_NO_NAMETest {
                 .build();
         context.currentInode(inode);
         nfs_resop4 result = nfs_resop4.resopFor(nfs_opnum4.OP_SECINFO_NO_NAME);
-        op.process(context, result);
+        op.process(context, arg, result);
 
         assertEquals("Sec Krb5 not detected", RpcAuthType.RPCGSS_SEC, result.opsecinfo_no_name.resok4.value[0].flavor);
     }
@@ -92,7 +92,7 @@ public class OperationSECINFO_NO_NAMETest {
                 .build();
         context.currentInode(inode);
         nfs_resop4 result = nfs_resop4.resopFor(nfs_opnum4.OP_SECINFO_NO_NAME);
-        op.process(context, result);
+        op.process(context, arg, result);
 
         assertEquals("Sec Krb5 not detected", RpcAuthType.RPCGSS_SEC, result.opsecinfo_no_name.resok4.value[0].flavor);
         assertEquals("Sec Sys not detected", RpcAuthType.UNIX, result.opsecinfo_no_name.resok4.value[1].flavor);

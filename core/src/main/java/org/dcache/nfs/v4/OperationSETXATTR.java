@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2019 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.status.BadXdrException;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -36,12 +35,8 @@ import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class OperationSETXATTR extends AbstractNFSv4Operation {
 
-    public OperationSETXATTR(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_SETXATTR);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         Inode inode = context.currentInode();
@@ -51,9 +46,9 @@ public class OperationSETXATTR extends AbstractNFSv4Operation {
         Stat stat = context.getFs().getattr(inode);
         result.opsetxattr.sxr_info.before = new changeid4(stat.getGeneration());
 
-        context.getFs().setXattr(inode, _args.opsetxattr.sxa_name,
-                _args.opsetxattr.sxa_value.value,
-                toXatterSetMode(_args.opsetxattr.sxa_option));
+        context.getFs().setXattr(inode, args.opsetxattr.sxa_name,
+                args.opsetxattr.sxa_value.value,
+                toXatterSetMode(args.opsetxattr.sxa_option));
 
         stat = context.getFs().getattr(inode);
         result.opsetxattr.sxr_info.after = new changeid4(stat.getGeneration());

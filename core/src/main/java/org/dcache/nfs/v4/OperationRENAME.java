@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import org.dcache.nfs.v4.xdr.RENAME4resok;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -40,12 +39,8 @@ public class OperationRENAME extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationRENAME.class);
 
-    public OperationRENAME(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_RENAME);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final RENAME4res res = result.oprename;
 
         res.resok4 = new RENAME4resok();
@@ -69,8 +64,8 @@ public class OperationRENAME extends AbstractNFSv4Operation {
             throw new NotDirException("destination path  not a directory");
         }
 
-        String oldName = NameFilter.convertName(_args.oprename.oldname.value);
-        String newName = NameFilter.convertName(_args.oprename.newname.value);
+        String oldName = NameFilter.convertName(args.oprename.oldname.value);
+        String newName = NameFilter.convertName(args.oprename.newname.value);
 
         _log.debug("Rename: src={} name={} dest={} name={}",
                 sourceDir,

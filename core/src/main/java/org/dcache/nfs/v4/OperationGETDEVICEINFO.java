@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@ import org.dcache.nfs.v4.xdr.device_addr4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +41,8 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICEINFO.class);
 
-    public OperationGETDEVICEINFO(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_GETDEVICEINFO);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         /*
          * GETDEVICEINFO. returns the mapping of device ID to storage device address.
@@ -57,14 +52,14 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
                 .getDeviceManager()
                 .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
-        deviceid4 deviceId = _args.opgetdeviceinfo.gdia_device_id;
+        deviceid4 deviceId = args.opgetdeviceinfo.gdia_device_id;
 
-        _log.debug("Get device info for device [{}], type {} ", deviceId, _args.opgetdeviceinfo.gdia_layout_type);
+        _log.debug("Get device info for device [{}], type {} ", deviceId, args.opgetdeviceinfo.gdia_layout_type);
 
         res.gdir_resok4 = new GETDEVICEINFO4resok();
 
-        layouttype4 layoutType = layouttype4.valueOf(_args.opgetdeviceinfo.gdia_layout_type);
-        device_addr4 deviceInfo = pnfsDeviceManager.getDeviceInfo(context, _args.opgetdeviceinfo);
+        layouttype4 layoutType = layouttype4.valueOf(args.opgetdeviceinfo.gdia_layout_type);
+        device_addr4 deviceInfo = pnfsDeviceManager.getDeviceInfo(context, args.opgetdeviceinfo);
 
         if (deviceInfo == null) {
             throw new NoEntException("invalid deviceInfo id [" + deviceId + "]");
@@ -72,14 +67,14 @@ public class OperationGETDEVICEINFO extends AbstractNFSv4Operation {
 
         res.gdir_resok4.gdir_device_addr = deviceInfo;
         // expect the returned notification bitmap to be the same size as requested by client.
-        res.gdir_resok4.gdir_notification = new bitmap4(new int[_args.opgetdeviceinfo.gdia_notify_types.value.length]);
+        res.gdir_resok4.gdir_notification = new bitmap4(new int[args.opgetdeviceinfo.gdia_notify_types.value.length]);
         /*
          * provide faked notification only if client expects them
          */
-        if (_args.opgetdeviceinfo.gdia_notify_types.isSet(NOTIFY_DEVICEID4_CHANGE)) {
+        if (args.opgetdeviceinfo.gdia_notify_types.isSet(NOTIFY_DEVICEID4_CHANGE)) {
             res.gdir_resok4.gdir_notification.set(NOTIFY_DEVICEID4_CHANGE);
         }
-        if (_args.opgetdeviceinfo.gdia_notify_types.isSet(NOTIFY_DEVICEID4_DELETE)) {
+        if (args.opgetdeviceinfo.gdia_notify_types.isSet(NOTIFY_DEVICEID4_DELETE)) {
             res.gdir_resok4.gdir_notification.set(NOTIFY_DEVICEID4_DELETE);
         }
 

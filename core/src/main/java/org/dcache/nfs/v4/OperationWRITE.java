@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@ import org.dcache.nfs.v4.xdr.WRITE4resok;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Stat;
@@ -45,19 +44,15 @@ public class OperationWRITE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationWRITE.class);
 
-    public OperationWRITE(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_WRITE);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
         final WRITE4res res = result.opwrite;
 
-        _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
+        args.opwrite.offset.checkOverflow(args.opwrite.data.remaining(), "offset + length overflow");
 
         Stat.Type statType = context.getFs().getattr(context.currentInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
-        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opwrite.stateid);
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, args.opwrite.stateid);
 
         if (statType == Stat.Type.DIRECTORY) {
             throw new IsDirException();
@@ -97,9 +92,9 @@ public class OperationWRITE extends AbstractNFSv4Operation {
             }
         }
 
-        long offset = _args.opwrite.offset.value;
+        long offset = args.opwrite.offset.value;
         VirtualFileSystem.WriteResult writeResult = context.getFs().write(context.currentInode(),
-                _args.opwrite.data, offset, VirtualFileSystem.StabilityLevel.fromStableHow(_args.opwrite.stable));
+                args.opwrite.data, offset, VirtualFileSystem.StabilityLevel.fromStableHow(args.opwrite.stable));
 
         if (writeResult.getBytesWritten() < 0) {
             throw new NfsIoException("IO not allowed");

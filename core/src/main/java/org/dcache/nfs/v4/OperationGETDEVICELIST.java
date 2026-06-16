@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.slf4j.Logger;
@@ -42,12 +41,8 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETDEVICELIST.class);
 
-    public OperationGETDEVICELIST(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_GETDEVICELIST);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         final GETDEVICELIST4res res = result.opgetdevicelist;
         final NFSv41DeviceManager pnfsDeviceManager = context
@@ -59,11 +54,11 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
          * the short deviceid4 and the addressing information for that device, for a particular layout type.
          */
 
-        if (_args.opgetdevicelist.gdla_maxdevices.value < 0) {
+        if (args.opgetdevicelist.gdla_maxdevices.value < 0) {
             throw new InvalException("negative maxcount");
         }
 
-        if (_args.opgetdevicelist.gdla_maxdevices.value < 1) {
+        if (args.opgetdevicelist.gdla_maxdevices.value < 1) {
             throw new TooSmallException("device list too small");
         }
 
@@ -73,9 +68,9 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
         res.gdlr_resok4.gdlr_cookieverf = new verifier4();
         res.gdlr_resok4.gdlr_cookieverf.value = new byte[nfs4_prot.NFS4_VERIFIER_SIZE];
 
-        List<deviceid4> deviceIDs = pnfsDeviceManager.getDeviceList(context, _args.opgetdevicelist);
+        List<deviceid4> deviceIDs = pnfsDeviceManager.getDeviceList(context, args.opgetdevicelist);
 
-        int deviceListSize = Math.min(deviceIDs.size(), _args.opgetdevicelist.gdla_maxdevices.value);
+        int deviceListSize = Math.min(deviceIDs.size(), args.opgetdevicelist.gdla_maxdevices.value);
 
         res.gdlr_resok4.gdlr_deviceid_list = new deviceid4[deviceListSize];
 
@@ -86,7 +81,7 @@ public class OperationGETDEVICELIST extends AbstractNFSv4Operation {
 
         _log.debug("GETDEVICELIST4: new list of #{}, maxcount {}",
                 res.gdlr_resok4.gdlr_deviceid_list.length,
-                _args.opgetdevicelist.gdla_maxdevices.value);
+                args.opgetdevicelist.gdla_maxdevices.value);
 
         /*
          * we reply only one dummy entry. The rest is dynamic

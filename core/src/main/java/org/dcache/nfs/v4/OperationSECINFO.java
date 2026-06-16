@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.v4.xdr.SECINFO4res;
 import org.dcache.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -39,12 +38,8 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSECINFO.class);
 
-    public OperationSECINFO(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_SECINFO);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         final SECINFO4res res = result.opsecinfo;
         Inode dir = context.currentInode();
@@ -55,7 +50,7 @@ public class OperationSECINFO extends AbstractNFSv4Operation {
 
         context.clearCurrentInode();
 
-        String name = NameFilter.convertName(_args.opsecinfo.name.value);
+        String name = NameFilter.convertName(args.opsecinfo.name.value);
         Inode inode = context.getFs().lookup(dir, name);
 
         try {

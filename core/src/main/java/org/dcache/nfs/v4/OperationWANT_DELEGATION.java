@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +29,8 @@ public class OperationWANT_DELEGATION extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationWANT_DELEGATION.class);
 
-    public OperationWANT_DELEGATION(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_WANT_DELEGATION);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) {
         result.opwant_delegation.wdr_status = nfsstat.NFSERR_NOTSUPP;
     }
 }

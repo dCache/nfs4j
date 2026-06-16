@@ -267,8 +267,8 @@ public class OperationREADDIRTest {
                 .withReaddir(startCookie, verifier4.valueOf(verifier), dirCount, maxCount, attrs)
                 .build().argarray[0];
 
-        OperationREADDIR readdirOp = new OperationREADDIR(op);
-        readdirOp.process(context, result);
+        OperationREADDIR readdirOp = new OperationREADDIR();
+        readdirOp.process(context, op, result);
 
         entries = result.opreaddir.resok4.reply.entries;
     }

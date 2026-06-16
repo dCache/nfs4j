@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@ import org.dcache.nfs.v4.nlm.LockException;
 import org.dcache.nfs.v4.nlm.LockRangeUnavailabeException;
 import org.dcache.nfs.v4.nlm.NlmLock;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
@@ -39,25 +38,21 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLOCKU.class);
 
-    public OperationLOCKU(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LOCKU);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
-        stateid4 lockStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplocku.lock_stateid);
+        stateid4 lockStateid = Stateids.getCurrentStateidIfNeeded(context, args.oplocku.lock_stateid);
         NFS4Client client;
         StateOwner lockOwner;
         NFS4State lock_state;
 
-        if (_args.oplocku.length.value == 0) {
+        if (args.oplocku.length.value == 0) {
             throw new InvalException("zero lock len");
         }
 
-        _args.oplocku.offset.checkOverflow(_args.oplocku.length, "offset + len overflow");
+        args.oplocku.offset.checkOverflow(args.oplocku.length, "offset + len overflow");
 
         try {
 
@@ -70,11 +65,11 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
             lock_state = client.state(lockStateid);
             lockOwner = lock_state.getStateOwner();
             if (context.getMinorversion() == 0) {
-                lockOwner.acceptAsNextSequence(_args.oplocku.seqid);
+                lockOwner.acceptAsNextSequence(args.oplocku.seqid);
             }
 
-            NlmLock lock = new NlmLock(lockOwner, _args.oplocku.locktype, _args.oplocku.offset.value,
-                    _args.oplocku.length.value);
+            NlmLock lock = new NlmLock(lockOwner, args.oplocku.locktype, args.oplocku.offset.value,
+                    args.oplocku.length.value);
             try {
                 context.getLm().unlock(inode.getLockKey(), lock);
             } catch (LockRangeUnavailabeException e) {

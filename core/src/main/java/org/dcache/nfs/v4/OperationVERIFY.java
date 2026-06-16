@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import org.dcache.nfs.v4.xdr.VERIFY4res;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
@@ -40,12 +39,8 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationVERIFY.class);
 
-    OperationVERIFY(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_VERIFY);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         final VERIFY4res res = result.opverify;
@@ -59,21 +54,21 @@ public class OperationVERIFY extends AbstractNFSv4Operation {
          *
          */
 
-        if (!_args.opverify.obj_attributes.attrmask.isEmpty()) {
+        if (!args.opverify.obj_attributes.attrmask.isEmpty()) {
 
-            if (_args.opverify.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
+            if (args.opverify.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
                 throw new InvalException("RDATTR_ERROR can be used with readdir only");
             }
 
-            fattr4 currentAttr = OperationGETATTR.getAttributes(_args.opverify.obj_attributes.attrmask,
+            fattr4 currentAttr = OperationGETATTR.getAttributes(args.opverify.obj_attributes.attrmask,
                     context.getFs(),
                     context.currentInode(), context);
 
-            if (!_args.opverify.obj_attributes.attrmask.equals(currentAttr.attrmask)) {
+            if (!args.opverify.obj_attributes.attrmask.equals(currentAttr.attrmask)) {
                 throw new AttrNotSuppException("check for not supported attribute");
             }
 
-            if (Arrays.equals(_args.opverify.obj_attributes.attr_vals.value, currentAttr.attr_vals.value)) {
+            if (Arrays.equals(args.opverify.obj_attributes.attr_vals.value, currentAttr.attr_vals.value)) {
                 res.status = nfsstat.NFS_OK;
             } else {
                 res.status = nfsstat.NFSERR_NOT_SAME;

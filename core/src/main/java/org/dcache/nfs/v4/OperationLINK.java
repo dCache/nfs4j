@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import org.dcache.nfs.v4.xdr.LINK4resok;
 import org.dcache.nfs.v4.xdr.change_info4;
 import org.dcache.nfs.v4.xdr.changeid4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -40,14 +39,10 @@ public class OperationLINK extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLINK.class);
 
-    public OperationLINK(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LINK);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
-        String newName = NameFilter.convertName(_args.oplink.newname.value);
+        String newName = NameFilter.convertName(args.oplink.newname.value);
 
         result.oplink.resok4 = new LINK4resok();
         result.oplink.resok4.cinfo = new change_info4();

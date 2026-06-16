@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@ import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.OPEN_CONFIRM4res;
 import org.dcache.nfs.v4.xdr.OPEN_CONFIRM4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Stat;
@@ -39,12 +38,8 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_CONFIRM.class);
 
-    public OperationOPEN_CONFIRM(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_OPEN_CONFIRM);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         final OPEN_CONFIRM4res res = result.opopen_confirm;
 
@@ -62,12 +57,12 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
             throw new InvalException();
         }
 
-        stateid4 stateid = _args.opopen_confirm.open_stateid;
+        stateid4 stateid = args.opopen_confirm.open_stateid;
         _log.debug("confirmed stateID: {}", stateid);
 
         NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
-        state.getStateOwner().acceptAsNextSequence(_args.opopen_confirm.seqid);
+        state.getStateOwner().acceptAsNextSequence(args.opopen_confirm.seqid);
 
         state.bumpSeqid();
         state.confirm();

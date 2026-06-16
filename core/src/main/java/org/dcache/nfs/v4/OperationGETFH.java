@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.v4.xdr.GETFH4res;
 import org.dcache.nfs.v4.xdr.GETFH4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +35,8 @@ public class OperationGETFH extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETFH.class);
 
-    public OperationGETFH(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_GETFH);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
         final GETFH4res res = result.opgetfh;
 

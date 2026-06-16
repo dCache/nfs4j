@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import org.dcache.nfs.v4.CompoundContext;
 import org.dcache.nfs.v4.xdr.COMMIT4res;
 import org.dcache.nfs.v4.xdr.COMMIT4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
@@ -42,17 +41,16 @@ public class DSOperationCOMMIT extends AbstractNFSv4Operation {
 
     private final FsCache _fsCache;
 
-    public DSOperationCOMMIT(nfs_argop4 args, FsCache fsCache) {
-        super(args, nfs_opnum4.OP_COMMIT);
+    public DSOperationCOMMIT(FsCache fsCache) {
         _fsCache = fsCache;
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
         // FIXME: sync the data
 
-        _args.opcommit.offset.checkOverflow(_args.opcommit.count.value, "offset + length overflow");
+        args.opcommit.offset.checkOverflow(args.opcommit.count.value, "offset + length overflow");
         final COMMIT4res res = result.opcommit;
         if (context.getFs() != null) {
             Inode inode = context.currentInode();

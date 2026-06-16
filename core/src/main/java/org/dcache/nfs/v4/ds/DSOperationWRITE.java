@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@ import org.dcache.nfs.v4.xdr.WRITE4res;
 import org.dcache.nfs.v4.xdr.WRITE4resok;
 import org.dcache.nfs.v4.xdr.count4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stable_how4;
 import org.dcache.nfs.vfs.FsCache;
@@ -47,19 +46,18 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
     private static final Logger _log = LoggerFactory.getLogger(DSOperationWRITE.class);
     private final FsCache _fsCache;
 
-    public DSOperationWRITE(nfs_argop4 args, FsCache fsCache) {
-        super(args, nfs_opnum4.OP_WRITE);
+    public DSOperationWRITE(FsCache fsCache) {
         _fsCache = fsCache;
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         final WRITE4res res = result.opwrite;
 
-        long offset = _args.opwrite.offset.value;
+        long offset = args.opwrite.offset.value;
 
-        _args.opwrite.offset.checkOverflow(_args.opwrite.data.remaining(), "offset + length overflow");
+        args.opwrite.offset.checkOverflow(args.opwrite.data.remaining(), "offset + length overflow");
 
         Inode inode = context.currentInode();
         Stat.Type statType = context.getFs().getattr(inode, Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
@@ -72,22 +70,22 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
             throw new InvalException("Invalid object type");
         }
 
-        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opwrite.stateid)
-                && !Stateids.OneStateId().equalsWithSeq(_args.opwrite.stateid)) {
+        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(args.opwrite.stateid)
+                && !Stateids.OneStateId().equalsWithSeq(args.opwrite.stateid)) {
             /*
              * The NFSv4.0 spec requires to update lease time as long as client needs the file. This is done through
              * READ, WRITE and RENEW opertations. With introduction of sessions in v4.1 update of the lease time done
              * through SEQUENCE operation.
              */
-            context.getStateHandler().updateClientLeaseTime(_args.opwrite.stateid);
+            context.getStateHandler().updateClientLeaseTime(args.opwrite.stateid);
         }
 
         FileChannel out = _fsCache.get(inode);
 
         long lastSize = out.size();
 
-        _args.opwrite.data.rewind();
-        int bytesWritten = out.write(_args.opwrite.data, offset);
+        args.opwrite.data.rewind();
+        int bytesWritten = out.write(args.opwrite.data, offset);
 
         if (bytesWritten < 0) {
             throw new NfsIoException("IO not allowed");
@@ -96,17 +94,17 @@ public class DSOperationWRITE extends AbstractNFSv4Operation {
         res.status = nfsstat.NFS_OK;
         res.resok4 = new WRITE4resok();
         res.resok4.count = new count4(bytesWritten);
-        res.resok4.committed = _args.opwrite.stable;
+        res.resok4.committed = args.opwrite.stable;
         res.resok4.writeverf = context.getRebootVerifier();
 
         synchronized (out) {
-            if ((_args.opwrite.stable != stable_how4.UNSTABLE4) && (offset + bytesWritten > lastSize)) {
+            if ((args.opwrite.stable != stable_how4.UNSTABLE4) && (offset + bytesWritten > lastSize)) {
                 Stat newStat = new Stat();
                 newStat.setSize(out.size());
                 context.getFs().setattr(context.currentInode(), newStat);
             }
         }
         _log.debug("MOVER: {}@{} written, {} requested. New File size {}",
-                bytesWritten, offset, _args.opwrite.data, out.size());
+                bytesWritten, offset, args.opwrite.data, out.size());
     }
 }

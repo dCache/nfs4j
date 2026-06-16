@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.PUTFH4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
@@ -35,16 +34,12 @@ public class OperationPUTFH extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationPUTFH.class);
 
-    public OperationPUTFH(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_PUTFH);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final PUTFH4res res = result.opputfh;
 
         try {
-            context.currentInode(new Inode(_args.opputfh.object.value));
+            context.currentInode(new Inode(args.opputfh.object.value));
             context.currentStateid(Stateids.ZeroStateId());
             _log.debug("NFS Request  PUTFH4 current: {}", context.currentInode());
             res.status = nfsstat.NFS_OK;

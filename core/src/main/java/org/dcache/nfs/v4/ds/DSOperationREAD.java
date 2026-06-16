@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2014 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@ import org.dcache.nfs.v4.Stateids;
 import org.dcache.nfs.v4.xdr.READ4res;
 import org.dcache.nfs.v4.xdr.READ4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.FsCache;
 import org.dcache.nfs.vfs.Inode;
@@ -46,13 +45,12 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
     private static final Logger _log = LoggerFactory.getLogger(DSOperationREAD.class);
     private final FsCache _fsCache;
 
-    public DSOperationREAD(nfs_argop4 args, FsCache fsCache) {
-        super(args, nfs_opnum4.OP_READ);
+    public DSOperationREAD(FsCache fsCache) {
         _fsCache = fsCache;
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final READ4res res = result.opread;
 
         Inode inode = context.currentInode();
@@ -66,20 +64,20 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
             throw new InvalException("Invalid object type");
         }
 
-        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(_args.opread.stateid) && !Stateids
-                .OneStateId().equalsWithSeq(_args.opread.stateid)) {
+        if ((context.getMinorversion() == 0) && !Stateids.ZeroStateId().equalsWithSeq(args.opread.stateid) && !Stateids
+                .OneStateId().equalsWithSeq(args.opread.stateid)) {
             /*
              * The NFSv4.0 spec requires to update lease time as long as client needs the file. This is done through
              * READ, WRITE and RENEW opertations. With introduction of sessions in v4.1 update of the lease time done
              * through SEQUENCE operation.
              */
-            context.getStateHandler().updateClientLeaseTime(_args.opread.stateid);
+            context.getStateHandler().updateClientLeaseTime(args.opread.stateid);
         }
 
         boolean eof = false;
 
-        long offset = _args.opread.offset.value;
-        int count = _args.opread.count.value;
+        long offset = args.opread.offset.value;
+        int count = args.opread.count.value;
 
         ByteBuffer bb = ByteBuffer.allocateDirect(count);
         FileChannel in = _fsCache.get(inode);
@@ -101,6 +99,6 @@ public class DSOperationREAD extends AbstractNFSv4Operation {
         res.resok4.eof = eof;
 
         _log.debug("MOVER: {}@{} readed, {} requested.",
-                bytesReaded, offset, _args.opread.count.value);
+                bytesReaded, offset, args.opread.count.value);
     }
 }

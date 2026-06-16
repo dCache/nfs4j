@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.v4.xdr.LAYOUTRETURN4res;
 import org.dcache.nfs.v4.xdr.layoutreturn_stateid;
 import org.dcache.nfs.v4.xdr.layoutreturn_type4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,25 +35,21 @@ public class OperationLAYOUTRETURN extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTRETURN.class);
 
-    OperationLAYOUTRETURN(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LAYOUTRETURN);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         final LAYOUTRETURN4res res = result.oplayoutreturn;
         final NFSv41DeviceManager pnfsDeviceManager = context
                 .getDeviceManager()
                 .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
-        _log.debug("LAYOUTRETURN4args :        type: {}", _args.oplayoutreturn.lora_layout_type);
-        _log.debug("LAYOUTRETURN4args :        mode: {}", _args.oplayoutreturn.lora_iomode);
-        _log.debug("LAYOUTRETURN4args : return type: {}", _args.oplayoutreturn.lora_layoutreturn.lr_returntype);
-        _log.debug("LAYOUTRETURN4args :     reclaim: {}", _args.oplayoutreturn.lora_reclaim);
+        _log.debug("LAYOUTRETURN4args :        type: {}", args.oplayoutreturn.lora_layout_type);
+        _log.debug("LAYOUTRETURN4args :        mode: {}", args.oplayoutreturn.lora_iomode);
+        _log.debug("LAYOUTRETURN4args : return type: {}", args.oplayoutreturn.lora_layoutreturn.lr_returntype);
+        _log.debug("LAYOUTRETURN4args :     reclaim: {}", args.oplayoutreturn.lora_reclaim);
 
-        if (_args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
-            pnfsDeviceManager.layoutReturn(context, _args.oplayoutreturn);
+        if (args.oplayoutreturn.lora_layoutreturn.lr_returntype == layoutreturn_type4.LAYOUTRETURN4_FILE) {
+            pnfsDeviceManager.layoutReturn(context, args.oplayoutreturn);
         }
 
         res.lorr_stateid = new layoutreturn_stateid();

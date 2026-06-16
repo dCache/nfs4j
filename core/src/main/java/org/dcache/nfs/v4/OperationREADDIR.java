@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2018 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -38,7 +38,6 @@ import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_cookie4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.dcache.nfs.vfs.DirectoryEntry;
@@ -71,12 +70,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
      */
     private static final long COOKIE_OFFSET = 3;
 
-    OperationREADDIR(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_READDIR);
-    }
-
     @Override
-    public void process(final CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(final CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         final READDIR4res res = result.opreaddir;
@@ -84,8 +79,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         final Inode dir = context.currentInode();
 
         DirectoryStream directoryStream;
-        verifier4 verifier = _args.opreaddir.cookieverf;
-        long startValue = _args.opreaddir.cookie.value;
+        verifier4 verifier = args.opreaddir.cookieverf;
+        long startValue = args.opreaddir.cookie.value;
 
         /*
          * we have to fake cookie values, while '0' and '1' is reserved so we start with 3
@@ -106,7 +101,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
 
         directoryStream = context.getFs().list(dir, verifier.value, startValue);
         Iterator<DirectoryEntry> dirList = directoryStream.iterator();
-        if (_args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
+        if (args.opreaddir.maxcount.value < READDIR4RESOK_SIZE) {
             throw new TooSmallException("maxcount too small");
         }
 
@@ -142,7 +137,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             currentEntry.cookie = new nfs_cookie4(le.getCookie() + COOKIE_OFFSET);
 
             try {
-                currentEntry.attrs = OperationGETATTR.getAttributes(_args.opreaddir.attr_request, context.getFs(), ei,
+                currentEntry.attrs = OperationGETATTR.getAttributes(args.opreaddir.attr_request, context.getFs(), ei,
                         le.getStat(), context);
             } catch (ChimeraNFSException e) {
                 /*
@@ -150,7 +145,7 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
                  *
                  * @see: rfc7530#section-16.24.4
                  */
-                if (!_args.opreaddir.attr_request.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
+                if (!args.opreaddir.attr_request.isSet(nfs4_prot.FATTR4_RDATTR_ERROR)) {
                     throw e;
                 }
                 currentEntry.attrs = generateReaddirErrorAttribute(e.getStatus());
@@ -160,8 +155,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
             int newSize = ENTRY4_SIZE + name.length() + currentEntry.name.value.length
                     + currentEntry.attrs.attr_vals.value.length;
             int newDirSize = name.length() + 4; // name + sizeof(long)
-            if ((currcount + newSize > _args.opreaddir.maxcount.value) || (dircount
-                    + newDirSize > _args.opreaddir.dircount.value)) {
+            if ((currcount + newSize > args.opreaddir.maxcount.value) || (dircount
+                    + newDirSize > args.opreaddir.dircount.value)) {
                 if (lastEntry == null) {
                     // corner case - means we didnt have enough space to
                     // write even a single entry.
@@ -185,8 +180,8 @@ public class OperationREADDIR extends AbstractNFSv4Operation {
         _log.debug("Sending {} entries ({} bytes from {}, dircount = {}) cookie = {} EOF={}",
                 fcount,
                 currcount,
-                _args.opreaddir.maxcount.value,
-                _args.opreaddir.dircount.value,
+                args.opreaddir.maxcount.value,
+                args.opreaddir.dircount.value,
                 startValue,
                 res.resok4.reply.eof);
     }

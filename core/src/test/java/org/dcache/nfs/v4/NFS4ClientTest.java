@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@ public class NFS4ClientTest {
                 .withClose(state.stateid(), 1)
                 .build().argarray[0];
 
-        OperationCLOSE CLOSE = new OperationCLOSE(close_args);
+        OperationCLOSE CLOSE = new OperationCLOSE();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
@@ -92,7 +92,7 @@ public class NFS4ClientTest {
         context.currentInode(Inode.forFile(new byte[] {}));
         context.setSession(session);
 
-        AssertNFS.assertNFS(CLOSE, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CLOSE, context, close_args, result, nfsstat.NFS_OK);
         assertFalse("client state not cleaned", nfsClient.hasState());
     }
 
@@ -107,7 +107,7 @@ public class NFS4ClientTest {
                 .withClose(state.stateid(), 1)
                 .build().argarray[0];
 
-        OperationCLOSE CLOSE = new OperationCLOSE(close_args);
+        OperationCLOSE CLOSE = new OperationCLOSE();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CLOSE);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
@@ -117,7 +117,7 @@ public class NFS4ClientTest {
 
         context.currentInode(Inode.forFile(new byte[] {}));
 
-        AssertNFS.assertNFS(CLOSE, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CLOSE, context, close_args, result, nfsstat.NFS_OK);
         assertFalse("client state not cleaned", nfsClient.hasState());
     }
 

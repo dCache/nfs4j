@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import org.dcache.nfs.v4.xdr.READ4res;
 import org.dcache.nfs.v4.xdr.READ4resok;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.slf4j.Logger;
@@ -39,15 +38,11 @@ public class OperationREAD extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationREAD.class);
 
-    public OperationREAD(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_READ);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
         final READ4res res = result.opread;
 
-        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opread.stateid);
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, args.opread.stateid);
         var inode = context.currentInode();
         if (Stateids.isStateLess(stateid)) {
             // Anonymous access as per RFC 7530
@@ -76,8 +71,8 @@ public class OperationREAD extends AbstractNFSv4Operation {
             }
         }
 
-        long offset = _args.opread.offset.value;
-        int count = _args.opread.count.value;
+        long offset = args.opread.offset.value;
+        int count = args.opread.count.value;
 
         ByteBuffer buf = ByteBuffer.allocate(count);
 

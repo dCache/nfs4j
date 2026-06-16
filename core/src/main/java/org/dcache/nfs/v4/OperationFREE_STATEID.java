@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2015 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@ import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.FREE_STATEID4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.oncrpc4j.rpc.OncRpcException;
@@ -35,19 +34,15 @@ import org.dcache.oncrpc4j.rpc.OncRpcException;
  */
 public class OperationFREE_STATEID extends AbstractNFSv4Operation {
 
-    public OperationFREE_STATEID(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_FREE_STATEID);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         // FIXME: we as validating spec, as a valid open-state must rerun NFS4ERR_LOCKS_HELD.
 
         final FREE_STATEID4res res = result.opfree_stateid;
         NFS4Client client = context.getSession().getClient();
-        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opfree_stateid.fsa_stateid);
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, args.opfree_stateid.fsa_stateid);
         client.releaseState(stateid);
         res.fsr_status = nfsstat.NFS_OK;
     }

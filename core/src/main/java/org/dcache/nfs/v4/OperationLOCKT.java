@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@ import org.dcache.nfs.v4.xdr.LOCK4denied;
 import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.lock_owner4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.state_owner4;
@@ -45,16 +44,12 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLOCKT.class);
 
-    public OperationLOCKT(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LOCKT);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
-        if (_args.oplockt.length.value == 0) {
+        if (args.oplockt.length.value == 0) {
             throw new InvalException("zero lock len");
         }
 
@@ -68,24 +63,24 @@ public class OperationLOCKT extends AbstractNFSv4Operation {
                 throw new InvalException("lockt on non file object");
         }
 
-        _args.oplockt.offset.checkOverflow(_args.oplockt.length, "offset + len overflow");
+        args.oplockt.offset.checkOverflow(args.oplockt.length, "offset + len overflow");
 
         try {
 
             state_owner4 hypotheticLockOwner = new state_owner4();
-            hypotheticLockOwner.owner = _args.oplockt.owner.owner;
+            hypotheticLockOwner.owner = args.oplockt.owner.owner;
 
             if (context.getMinorversion() == 0) {
                 // poke to check that client id is valid
-                hypotheticLockOwner.clientid = _args.oplockt.owner.clientid;
-                context.getStateHandler().getConfirmedClient(_args.oplockt.owner.clientid);
+                hypotheticLockOwner.clientid = args.oplockt.owner.clientid;
+                context.getStateHandler().getConfirmedClient(args.oplockt.owner.clientid);
             } else {
                 hypotheticLockOwner.clientid = context.getSession().getClient().getId();
             }
             StateOwner lockOwner = new StateOwner(hypotheticLockOwner, 0);
 
-            NlmLock lock = new NlmLock(lockOwner, _args.oplockt.locktype, _args.oplockt.offset.value,
-                    _args.oplockt.length.value);
+            NlmLock lock = new NlmLock(lockOwner, args.oplockt.locktype, args.oplockt.offset.value,
+                    args.oplockt.length.value);
             context.getLm().test(inode.getLockKey(), lock);
 
             result.oplockt.status = nfsstat.NFS_OK;

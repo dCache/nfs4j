@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ import org.dcache.nfs.v4.xdr.OPEN_DOWNGRADE4res;
 import org.dcache.nfs.v4.xdr.OPEN_DOWNGRADE4resok;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
@@ -37,18 +36,14 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationOPEN_DOWNGRADE.class);
 
-    public OperationOPEN_DOWNGRADE(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_OPEN_DOWNGRADE);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
 
         final OPEN_DOWNGRADE4res res = result.opopen_downgrade;
 
-        final int shareAccess = _args.opopen_downgrade.share_access.value
+        final int shareAccess = args.opopen_downgrade.share_access.value
                 & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK;
-        final int shareDeny = _args.opopen_downgrade.share_deny.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK;
+        final int shareDeny = args.opopen_downgrade.share_deny.value & ~nfs4_prot.OPEN4_SHARE_ACCESS_WANT_DELEG_MASK;
 
         /*
          * Share access must be one of OPEN4_SHARE_ACCESS_READ, OPEN4_SHARE_ACCESS_WRITE or OPEN4_SHARE_ACCESS_BOTH.
@@ -67,7 +62,7 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
         }
 
         final Inode inode = context.currentInode();
-        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opopen_downgrade.open_stateid);
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, args.opopen_downgrade.open_stateid);
         NFS4Client client;
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
@@ -79,7 +74,7 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
         Stateids.checkStateId(nfsState.stateid(), stateid);
 
         if (context.getMinorversion() == 0) {
-            nfsState.getStateOwner().acceptAsNextSequence(_args.opopen_downgrade.seqid);
+            nfsState.getStateOwner().acceptAsNextSequence(args.opopen_downgrade.seqid);
         }
 
         res.status = nfsstat.NFS_OK;

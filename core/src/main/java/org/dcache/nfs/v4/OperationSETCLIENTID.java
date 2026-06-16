@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@ import org.dcache.nfs.v4.xdr.SETCLIENTID4resok;
 import org.dcache.nfs.v4.xdr.clientaddr4;
 import org.dcache.nfs.v4.xdr.netaddr4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.verifier4;
 import org.slf4j.Logger;
@@ -38,12 +37,8 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSETCLIENTID.class);
 
-    public OperationSETCLIENTID(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_SETCLIENTID);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
 
         final SETCLIENTID4res res = result.opsetclientid;
 
@@ -51,8 +46,8 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
             throw new NotSuppException("operation SETCLIENTID4 is obsolete in 4.x, x > 0");
         }
 
-        verifier4 verifier = _args.opsetclientid.client.verifier;
-        final byte[] id = _args.opsetclientid.client.id;
+        verifier4 verifier = args.opsetclientid.client.verifier;
+        final byte[] id = args.opsetclientid.client.id;
         NFS4Client client = context.getStateHandler().clientByOwner(id);
 
 
@@ -62,7 +57,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                     context.getRemoteSocketAddress(),
                     context.getLocalSocketAddress(),
                     context.getMinorversion(),
-                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
+                    args.opsetclientid.client.id, args.opsetclientid.client.verifier,
                     context.getPrincipal(), false);
         } else if (!client.isConfirmed()) {
 
@@ -72,7 +67,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                     context.getRemoteSocketAddress(),
                     context.getLocalSocketAddress(),
                     context.getMinorversion(),
-                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
+                    args.opsetclientid.client.id, args.opsetclientid.client.verifier,
                     context.getPrincipal(), false);
 
         } else if (!client.clientGeneratedVerifierEquals(verifier)) {
@@ -83,7 +78,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                     context.getRemoteSocketAddress(),
                     context.getLocalSocketAddress(),
                     context.getMinorversion(),
-                    _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
+                    args.opsetclientid.client.id, args.opsetclientid.client.verifier,
                     context.getPrincipal(), false);
 
         } else if (client.isLeaseValid()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -38,7 +38,6 @@ import org.dcache.nfs.v4.xdr.fattr4_acl;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.settime4;
@@ -59,12 +58,8 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSETATTR.class);
 
-    public OperationSETATTR(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_SETATTR);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         final SETATTR4res res = result.opsetattr;
@@ -73,12 +68,12 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
 
         Inode inode = context.currentInode();
 
-        if (_args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_SIZE) && !Stateids.isStateLess(
-                _args.opsetattr.stateid)) {
+        if (args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_SIZE) && !Stateids.isStateLess(
+                args.opsetattr.stateid)) {
 
             // TODO: check for DENY_WRITE for any existing opens. However, posix does not support deny masks.
             NFS4Client client;
-            stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opsetattr.stateid);
+            stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, args.opsetattr.stateid);
             if (context.getMinorversion() > 0) {
                 client = context.getSession().getClient();
             } else {
@@ -97,7 +92,7 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
         }
 
         res.status = nfsstat.NFS_OK;
-        res.attrsset = setAttributes(_args.opsetattr.obj_attributes, inode, context);
+        res.attrsset = setAttributes(args.opsetattr.obj_attributes, inode, context);
     }
 
     static bitmap4 setAttributes(fattr4 attributes, Inode inode, CompoundContext context) throws IOException,

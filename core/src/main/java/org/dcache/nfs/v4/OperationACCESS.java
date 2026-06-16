@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import org.dcache.nfs.status.InvalException;
 import org.dcache.nfs.v4.xdr.ACCESS4res;
 import org.dcache.nfs.v4.xdr.ACCESS4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.uint32_t;
 import org.slf4j.Logger;
@@ -46,16 +45,12 @@ public class OperationACCESS extends AbstractNFSv4Operation {
     private final static int ACCESS4_MASK_v42 =
             ACCESS4_MASK_v40 | ACCESS4_XAREAD | ACCESS4_XAWRITE | ACCESS4_XALIST;
 
-    public OperationACCESS(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_ACCESS);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result)
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result)
             throws ChimeraNFSException, IOException {
 
         final ACCESS4res res = result.opaccess;
-        final int requestedAccess = _args.opaccess.access.value;
+        final int requestedAccess = args.opaccess.access.value;
 
         final int validationMask = context.getMinorversion() > 1 ? ACCESS4_MASK_v42 : ACCESS4_MASK_v40;
         if ((requestedAccess & ~validationMask) != 0) {

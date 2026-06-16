@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -34,7 +34,6 @@ import org.dcache.nfs.v4.xdr.lock_owner4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_lock_type4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.offset4;
 import org.dcache.nfs.v4.xdr.stateid4;
@@ -46,32 +45,28 @@ public class OperationLOCK extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLOCK.class);
 
-    public OperationLOCK(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LOCK);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
-        if (_args.oplock.length.value == 0) {
+        if (args.oplock.length.value == 0) {
             throw new InvalException("zero lock len");
         }
 
-        _args.oplock.offset.checkOverflow(_args.oplock.length, "offset + len overflow");
+        args.oplock.offset.checkOverflow(args.oplock.length, "offset + len overflow");
 
         stateid4 oldStateid;
         NFS4Client client;
         NFS4State lock_state;
         StateOwner lockOwner;
 
-        if (_args.oplock.locker.new_lock_owner) {
-            oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.open_owner.open_stateid);
+        if (args.oplock.locker.new_lock_owner) {
+            oldStateid = Stateids.getCurrentStateidIfNeeded(context, args.oplock.locker.open_owner.open_stateid);
 
             if (context.getMinorversion() == 0) {
                 client = context.getStateHandler().getConfirmedClient(
-                        _args.oplock.locker.open_owner.lock_owner.clientid);
+                        args.oplock.locker.open_owner.lock_owner.clientid);
             } else {
                 client = context.getSession().getClient();
             }
@@ -79,26 +74,26 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             NFS4State openState = client.state(oldStateid);
             Stateids.checkStateId(openState.stateid(), oldStateid);
             if (context.getMinorversion() == 0) {
-                openState.getStateOwner().acceptAsNextSequence(_args.oplock.locker.open_owner.open_seqid);
+                openState.getStateOwner().acceptAsNextSequence(args.oplock.locker.open_owner.open_seqid);
                 client.updateLeaseTime();
             }
 
-            lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner,
-                    _args.oplock.locker.open_owner.lock_seqid);
+            lockOwner = client.getOrCreateOwner(args.oplock.locker.open_owner.lock_owner.owner,
+                    args.oplock.locker.open_owner.lock_seqid);
             lock_state = client.createLockState(lockOwner, openState);
 
             // lock states do not requires extra confirmation
             lock_state.confirm();
 
         } else {
-            oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.lock_owner.lock_stateid);
+            oldStateid = Stateids.getCurrentStateidIfNeeded(context, args.oplock.locker.lock_owner.lock_stateid);
             client = context.getStateHandler().getClientIdByStateId(oldStateid);
             lock_state = client.state(oldStateid);
             Stateids.checkStateId(lock_state.stateid(), oldStateid);
 
             lockOwner = lock_state.getStateOwner();
             if (context.getMinorversion() == 0) {
-                lockOwner.acceptAsNextSequence(_args.oplock.locker.lock_owner.lock_seqid);
+                lockOwner.acceptAsNextSequence(args.oplock.locker.lock_owner.lock_seqid);
                 client.updateLeaseTime();
             }
         }
@@ -106,7 +101,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
         try {
 
             // reject write lock on read-only open
-            if (_args.oplock.locktype == nfs_lock_type4.WRITEW_LT || _args.oplock.locktype == nfs_lock_type4.WRITE_LT) {
+            if (args.oplock.locktype == nfs_lock_type4.WRITEW_LT || args.oplock.locktype == nfs_lock_type4.WRITE_LT) {
 
                 int shareAccess = context.getStateHandler().getFileTracker()
                         .getShareAccess(client, inode, lock_state.getOpenState().stateid());
@@ -116,8 +111,8 @@ public class OperationLOCK extends AbstractNFSv4Operation {
                 }
             }
 
-            NlmLock lock = new NlmLock(lockOwner, _args.oplock.locktype, _args.oplock.offset.value,
-                    _args.oplock.length.value);
+            NlmLock lock = new NlmLock(lockOwner, args.oplock.locktype, args.oplock.offset.value,
+                    args.oplock.length.value);
             context.getLm().lock(inode.getLockKey(), lock);
 
             // ensure, that on close locks will be released

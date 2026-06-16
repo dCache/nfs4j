@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.v4.xdr.SECINFO4resok;
 import org.dcache.nfs.v4.xdr.SECINFO_NO_NAME4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.qop4;
 import org.dcache.nfs.v4.xdr.rpcsec_gss_info;
@@ -51,18 +50,14 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
     private final static uint32_t DEFAULT_QOP = new uint32_t(0);
     private final static String K5OID = "1.2.840.113554.1.2.2";
 
-    public OperationSECINFO_NO_NAME(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_SECINFO_NO_NAME);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
 
         try {
             SECINFO_NO_NAME4res res = result.opsecinfo_no_name;
             Inode inode = context.currentInode();
-            switch (_args.opsecinfo_no_name.value) {
+            switch (args.opsecinfo_no_name.value) {
                 case secinfo_style4.SECINFO_STYLE4_PARENT:
                     inode = context.getFs().parentOf(inode);
                     // fall through
@@ -72,7 +67,7 @@ public class OperationSECINFO_NO_NAME extends AbstractNFSv4Operation {
                     res.resok4.value = secinfosOf(inode, context);
                     break;
                 default:
-                    throw new BadXdrException("bad type: " + _args.opsecinfo_no_name.value);
+                    throw new BadXdrException("bad type: " + args.opsecinfo_no_name.value);
             }
         } catch (GSSException e) {
             throw new NfsIoException(e.getMessage());

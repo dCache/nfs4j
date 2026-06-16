@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2015 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import org.dcache.nfs.status.NotDirException;
 import org.dcache.nfs.status.SymlinkException;
 import org.dcache.nfs.v4.xdr.LOOKUP4res;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.dcache.nfs.vfs.Stat;
@@ -38,15 +37,11 @@ public class OperationLOOKUP extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLOOKUP.class);
 
-    public OperationLOOKUP(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LOOKUP);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
         final LOOKUP4res res = result.oplookup;
 
-        String name = NameFilter.convertName(_args.oplookup.objname.value);
+        String name = NameFilter.convertName(args.oplookup.objname.value);
 
         Stat.Type statType = context.getFs().getattr(context.currentInode(), Stat.STAT_ATTRIBUTES_TYPE_ONLY).type();
         if (statType == Stat.Type.SYMLINK) {

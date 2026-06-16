@@ -41,11 +41,11 @@ public class LocalIoOperationExecutor extends MDSOperationExecutor {
     public AbstractNFSv4Operation getOperation(nfs_argop4 op) {
         switch (op.argop) {
             case nfs_opnum4.OP_READ:
-                return new DSOperationREAD(op, _fs);
+                return new DSOperationREAD(_fs);
             case nfs_opnum4.OP_COMMIT:
-                return new DSOperationCOMMIT(op, _fs);
+                return new DSOperationCOMMIT(_fs);
             case nfs_opnum4.OP_WRITE:
-                return new DSOperationWRITE(op, _fs);
+                return new DSOperationWRITE(_fs);
             default:
                 return super.getOperation(op);
         }

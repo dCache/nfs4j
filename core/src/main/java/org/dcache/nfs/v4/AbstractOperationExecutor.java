@@ -55,7 +55,7 @@ public abstract class AbstractOperationExecutor implements OperationExecutor {
         nfs_resop4 opResult = nfs_resop4.resopFor(args.argop);
 
         try {
-            op.process(context, opResult);
+            op.process(context, args, opResult);
         } catch (NfsIoException | ResourceException | ServerFaultException e) {
             LOGGER.error("NFS server fault: op: {} : {}", nfs_opnum4.toString(args.argop), e.getMessage());
             opResult.setStatus(e.getStatus());

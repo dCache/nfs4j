@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,17 +21,12 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 
 public class OperationBIND_CONN_TO_SESSION extends AbstractNFSv4Operation {
 
-    public OperationBIND_CONN_TO_SESSION(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_BIND_CONN_TO_SESSION);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) {
         result.opbind_conn_to_session.bctsr_status = nfsstat.NFSERR_NOTSUPP;
     }
 }

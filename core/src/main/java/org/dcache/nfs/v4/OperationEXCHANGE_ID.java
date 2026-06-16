@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -48,7 +48,6 @@ import org.dcache.nfs.v4.xdr.EXCHANGE_ID4resok;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_impl_id4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.nfstime4;
 import org.dcache.nfs.v4.xdr.sequenceid4;
@@ -80,12 +79,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
             | nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A
             | nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R);
 
-    public OperationEXCHANGE_ID(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_EXCHANGE_ID);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
 
         final EXCHANGE_ID4res res = result.opexchange_id;
 
@@ -96,20 +91,20 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
          * String(impelemtation.nii_name.value.value) ); }
          */
 
-        final byte[] clientOwner = _args.opexchange_id.eia_clientowner.co_ownerid;
+        final byte[] clientOwner = args.opexchange_id.eia_clientowner.co_ownerid;
 
         /*
          * check the state
          */
 
-        if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE
-                && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED
-                && _args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV) {
-            _log.debug("EXCHANGE_ID4: state protection : {}", _args.opexchange_id.eia_state_protect.spa_how);
+        if (args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE
+                && args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_MACH_CRED
+                && args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_SSV) {
+            _log.debug("EXCHANGE_ID4: state protection : {}", args.opexchange_id.eia_state_protect.spa_how);
             throw new InvalException("invalid state protection");
         }
 
-        if (_args.opexchange_id.eia_flags.value != 0 && (_args.opexchange_id.eia_flags.value
+        if (args.opexchange_id.eia_flags.value != 0 && (args.opexchange_id.eia_flags.value
                 | EXCHGID4_FLAG_MASK) != EXCHGID4_FLAG_MASK) {
             throw new InvalException("invalid flag");
         }
@@ -117,29 +112,29 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
         /*
          * spec. requires <1>
          */
-        if (_args.opexchange_id.eia_client_impl_id.length > 1) {
+        if (args.opexchange_id.eia_client_impl_id.length > 1) {
             throw new BadXdrException("invalid array size of client implementaion");
         }
 
         /*
          * The EXCHGID4_FLAG_CONFIRMED_R bit can only be set in eir_flags; it is always off in eia_flags.
          */
-        if (_args.opexchange_id.eia_flags.value != 0 && ((_args.opexchange_id.eia_flags.value
+        if (args.opexchange_id.eia_flags.value != 0 && ((args.opexchange_id.eia_flags.value
                 & nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R) == nfs4_prot.EXCHGID4_FLAG_CONFIRMED_R)) {
             throw new InvalException("Client used server-only flag");
         }
 
         // Check if there is another ssv use -> TODO: Implement SSV
-        if (_args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE) {
-            _log.debug("Tried the wrong security Option! {}:", _args.opexchange_id.eia_state_protect.spa_how);
+        if (args.opexchange_id.eia_state_protect.spa_how != state_protect_how4.SP4_NONE) {
+            _log.debug("Tried the wrong security Option! {}:", args.opexchange_id.eia_state_protect.spa_how);
             throw new AccessException("SSV other than SP4NONE to use");
         }
 
         NFS4Client client = context.getStateHandler().clientByOwner(clientOwner);
         final Principal principal = context.getPrincipal();
-        final verifier4 verifier = _args.opexchange_id.eia_clientowner.co_verifier;
+        final verifier4 verifier = args.opexchange_id.eia_clientowner.co_verifier;
 
-        final boolean update = (_args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
+        final boolean update = (args.opexchange_id.eia_flags.value & nfs4_prot.EXCHGID4_FLAG_UPD_CONFIRMED_REC_A) != 0;
 
         final InetSocketAddress remoteSocketAddress = context.getRemoteSocketAddress();
         final InetSocketAddress localSocketAddress = context.getLocalSocketAddress();
@@ -175,7 +170,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                 client = stateHandler.createClient(
                         remoteSocketAddress, localSocketAddress,
                         context.getMinorversion(),
-                        clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
+                        clientOwner, args.opexchange_id.eia_clientowner.co_verifier,
                         principal, needCallBack);
 
             } else {
@@ -190,7 +185,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                         client = stateHandler.createClient(
                                 remoteSocketAddress, localSocketAddress,
                                 context.getMinorversion(),
-                                clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
+                                clientOwner, args.opexchange_id.eia_clientowner.co_verifier,
                                 principal, needCallBack);
                     } else {
                         _log.debug("Case 3b: Client Collision");
@@ -199,7 +194,7 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                             client = stateHandler.createClient(
                                     remoteSocketAddress, localSocketAddress,
                                     context.getMinorversion(),
-                                    clientOwner, _args.opexchange_id.eia_clientowner.co_verifier,
+                                    clientOwner, args.opexchange_id.eia_clientowner.co_verifier,
                                     principal, needCallBack);
                         } else {
                             throw new ClidInUseException("Principal Missmatch");
@@ -211,8 +206,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                     client = stateHandler.createClient(
                             remoteSocketAddress, localSocketAddress,
                             context.getMinorversion(),
-                            _args.opexchange_id.eia_clientowner.co_ownerid,
-                            _args.opexchange_id.eia_clientowner.co_verifier,
+                            args.opexchange_id.eia_clientowner.co_ownerid,
+                            args.opexchange_id.eia_clientowner.co_verifier,
                             principal, needCallBack);
                 }
             }

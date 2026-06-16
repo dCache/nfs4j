@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2019 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@ import java.io.IOException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 
 /**
@@ -32,18 +31,14 @@ import org.dcache.nfs.v4.xdr.nfs_resop4;
  */
 public class OperationLAYOUTSTATS extends AbstractNFSv4Operation {
 
-    public OperationLAYOUTSTATS(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LAYOUTSTATS);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException {
 
         final NFSv41DeviceManager pnfsDeviceManager = context
                 .getDeviceManager()
                 .orElseThrow(() -> new NotSuppException("pNFS device manager not configured"));
 
-        pnfsDeviceManager.layoutStats(context, _args.oplayoutstats);
+        pnfsDeviceManager.layoutStats(context, args.oplayoutstats);
 
         result.oplayoutstats.status = nfsstat.NFS_OK;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -26,24 +26,19 @@ import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.COMMIT4res;
 import org.dcache.nfs.v4.xdr.COMMIT4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 
 public class OperationCOMMIT extends AbstractNFSv4Operation {
 
-    public OperationCOMMIT(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_COMMIT);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context,nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
         final COMMIT4res res = result.opcommit;
         Inode inode = context.currentInode();
 
-        _args.opcommit.offset.checkOverflow(_args.opcommit.count.value, "offset + length overflow");
-        context.getFs().commit(inode, _args.opcommit.offset.value, _args.opcommit.count.value);
+        args.opcommit.offset.checkOverflow(args.opcommit.count.value, "offset + length overflow");
+        context.getFs().commit(inode, args.opcommit.offset.value, args.opcommit.count.value);
 
         res.resok4 = new COMMIT4resok();
         res.resok4.writeverf = context.getRebootVerifier();

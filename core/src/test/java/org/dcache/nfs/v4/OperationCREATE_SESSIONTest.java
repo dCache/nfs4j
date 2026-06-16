@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2020 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -90,14 +90,14 @@ public class OperationCREATE_SESSIONTest {
                 .withCreatesession(new clientid4(0), new sequenceid4(0))
                 .build().argarray[0];
 
-        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFSERR_STALE_CLIENTID);
+        AssertNFS.assertNFS(CREATE_SESSION, context, cretaesession_args, result, nfsstat.NFSERR_STALE_CLIENTID);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class OperationCREATE_SESSIONTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -117,7 +117,7 @@ public class OperationCREATE_SESSIONTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
 
         sequenceid4 badSequence = new sequenceid4(result.opexchange_id.eir_resok4.eir_sequenceid.value + 1);
         nfs_argop4 cretaesession_args = new CompoundBuilder()
@@ -126,14 +126,14 @@ public class OperationCREATE_SESSIONTest {
                         badSequence)
                 .build().argarray[0];
 
-        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFSERR_SEQ_MISORDERED);
+        AssertNFS.assertNFS(CREATE_SESSION, context, cretaesession_args, result, nfsstat.NFSERR_SEQ_MISORDERED);
     }
 
     @Test(expected = BadSessionException.class)
@@ -145,7 +145,7 @@ public class OperationCREATE_SESSIONTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -153,7 +153,7 @@ public class OperationCREATE_SESSIONTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
 
         nfs_argop4 cretaesession_args = new CompoundBuilder()
                 .withCreatesession(
@@ -161,28 +161,28 @@ public class OperationCREATE_SESSIONTest {
                         result.opexchange_id.eir_resok4.eir_sequenceid)
                 .build().argarray[0];
 
-        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, cretaesession_args, result, nfsstat.NFS_OK);
 
         sessionid4 session = result.opcreate_session.csr_resok4.csr_sessionid;
         nfs_argop4 destroysession_args = new CompoundBuilder()
                 .withDestroysession(result.opcreate_session.csr_resok4.csr_sessionid)
                 .build().argarray[0];
 
-        OperationDESTROY_SESSION DESTROY_SESSION = new OperationDESTROY_SESSION(destroysession_args);
+        OperationDESTROY_SESSION DESTROY_SESSION = new OperationDESTROY_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_DESTROY_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(DESTROY_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(DESTROY_SESSION, context, destroysession_args, result, nfsstat.NFS_OK);
         stateHandler.getClient(session).getSession(session);
     }
 

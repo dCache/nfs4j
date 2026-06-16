@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,6 @@ package org.dcache.nfs.v4;
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
@@ -33,15 +32,11 @@ public class OperationDELEGRETURN extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationDELEGRETURN.class);
 
-    public OperationDELEGRETURN(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_DELEGRETURN);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
 
         final Inode inode = context.currentInode();
-        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, _args.opdelegreturn.deleg_stateid);
+        stateid4 stateid = Stateids.getCurrentStateidIfNeeded(context, args.opdelegreturn.deleg_stateid);
         NFS4Client client;
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();

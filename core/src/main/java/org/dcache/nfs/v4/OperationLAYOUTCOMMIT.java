@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@ import org.dcache.nfs.v4.xdr.LAYOUTCOMMIT4resok;
 import org.dcache.nfs.v4.xdr.length4;
 import org.dcache.nfs.v4.xdr.newsize4;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.vfs.Inode;
 import org.slf4j.Logger;
@@ -40,12 +39,8 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationLAYOUTCOMMIT.class);
 
-    public OperationLAYOUTCOMMIT(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_LAYOUTCOMMIT);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException {
 
         final LAYOUTCOMMIT4res res = result.oplayoutcommit;
 
@@ -56,15 +51,15 @@ public class OperationLAYOUTCOMMIT extends AbstractNFSv4Operation {
         Inode inode = context.currentInode();
 
         _log.debug("LAYOUTCOMMIT: inode={} length={} offset={} loca_last_write_offset={}",
-                inode, _args.oplayoutcommit.loca_length.value,
-                _args.oplayoutcommit.loca_offset.value,
-                (_args.oplayoutcommit.loca_last_write_offset.no_newoffset
-                        ? _args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset"));
+                inode, args.oplayoutcommit.loca_length.value,
+                args.oplayoutcommit.loca_offset.value,
+                (args.oplayoutcommit.loca_last_write_offset.no_newoffset
+                        ? args.oplayoutcommit.loca_last_write_offset.no_offset.value : "notset"));
 
         res.locr_resok4 = new LAYOUTCOMMIT4resok();
         res.locr_resok4.locr_newsize = new newsize4();
 
-        OptionalLong newSize = pnfsDeviceManager.layoutCommit(context, _args.oplayoutcommit);
+        OptionalLong newSize = pnfsDeviceManager.layoutCommit(context, args.oplayoutcommit);
 
         res.locr_resok4.locr_newsize.ns_sizechanged = newSize.isPresent();
         if (newSize.isPresent()) {

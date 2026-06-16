@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2022 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -69,7 +69,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -77,7 +77,7 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -97,8 +97,8 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -118,7 +118,7 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
 
         nfs_argop4 cretaesession_args = new CompoundBuilder()
                 .withCreatesession(
@@ -126,16 +126,16 @@ public class OperationEXCHANGE_IDTest {
                         result.opexchange_id.eir_resok4.eir_sequenceid)
                 .build().argarray[0];
 
-        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, cretaesession_args, result, nfsstat.NFS_OK);
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -155,7 +155,7 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
 
         nfs_argop4 cretaesession_args = new CompoundBuilder()
                 .withCreatesession(
@@ -163,22 +163,22 @@ public class OperationEXCHANGE_IDTest {
                         result.opexchange_id.eir_resok4.eir_sequenceid)
                 .build().argarray[0];
 
-        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, cretaesession_args, result, nfsstat.NFS_OK);
 
         nfs_argop4 exchangeid_reboot_args = new CompoundBuilder()
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_reboot_args);
+        EXCHANGE_ID = new OperationEXCHANGE_ID();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_reboot_args, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -198,7 +198,7 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
 
         nfs_argop4 cretaesession_args = new CompoundBuilder()
                 .withCreatesession(
@@ -206,14 +206,14 @@ public class OperationEXCHANGE_IDTest {
                         result.opexchange_id.eir_resok4.eir_sequenceid)
                 .build().argarray[0];
 
-        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION(cretaesession_args);
+        OperationCREATE_SESSION CREATE_SESSION = new OperationCREATE_SESSION();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_CREATE_SESSION);
         context = new CompoundContextBuilder()
                 .withStateHandler(stateHandler)
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(CREATE_SESSION, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(CREATE_SESSION, context, cretaesession_args, result, nfsstat.NFS_OK);
 
         TimeUnit.SECONDS.sleep(3);
 
@@ -225,13 +225,13 @@ public class OperationEXCHANGE_IDTest {
                         0,
                         0).build().argarray[0];
 
-        OperationSEQUENCE SEQUENCE = new OperationSEQUENCE(sequence_args);
+        OperationSEQUENCE SEQUENCE = new OperationSEQUENCE();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_SEQUENCE);
-        AssertNFS.assertNFS(SEQUENCE, context, result, nfsstat.NFSERR_EXPIRED);
+        AssertNFS.assertNFS(SEQUENCE, context, sequence_args, result, nfsstat.NFSERR_EXPIRED);
 
-        EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        EXCHANGE_ID = new OperationEXCHANGE_ID();
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
     }
 
     @Test
@@ -243,7 +243,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -251,7 +251,7 @@ public class OperationEXCHANGE_IDTest {
                 .withCall(generateRpcCall())
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
         assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
     }
@@ -265,7 +265,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -274,7 +274,7 @@ public class OperationEXCHANGE_IDTest {
                 .withoutPnfs()
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
         assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_NON_PNFS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
     }
@@ -288,7 +288,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -297,7 +297,7 @@ public class OperationEXCHANGE_IDTest {
                 .withPnfsRoleMDS()
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
         assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
     }
@@ -311,7 +311,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -320,7 +320,7 @@ public class OperationEXCHANGE_IDTest {
                 .withPnfsRoleDS()
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
         assertEquals("Invalid pNFS-capabilities returned", nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
     }
@@ -334,7 +334,7 @@ public class OperationEXCHANGE_IDTest {
                 .withExchangeId(domain, name, clientId, 0, state_protect_how4.SP4_NONE)
                 .build().argarray[0];
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -344,7 +344,7 @@ public class OperationEXCHANGE_IDTest {
                 .withPnfsRoleDS()
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
         assertEquals("Invalid pNFS-capabilities returned",
                 nfs4_prot.EXCHGID4_FLAG_USE_PNFS_MDS | nfs4_prot.EXCHGID4_FLAG_USE_PNFS_DS,
                 result.opexchange_id.eir_resok4.eir_flags.value);
@@ -364,7 +364,7 @@ public class OperationEXCHANGE_IDTest {
         implId.nii_domain = new utf8str_cis("nfs.dev");
         implId.nii_name = new utf8str_cs("junit");
 
-        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID(exchangeid_args);
+        OperationEXCHANGE_ID EXCHANGE_ID = new OperationEXCHANGE_ID();
 
         result = nfs_resop4.resopFor(nfs_opnum4.OP_EXCHANGE_ID);
         context = new CompoundContextBuilder()
@@ -373,7 +373,7 @@ public class OperationEXCHANGE_IDTest {
                 .withImplementationId(implId)
                 .build();
 
-        AssertNFS.assertNFS(EXCHANGE_ID, context, result, nfsstat.NFS_OK);
+        AssertNFS.assertNFS(EXCHANGE_ID, context, exchangeid_args, result, nfsstat.NFS_OK);
         assertEquals("Invalid implementation domain returned",
                 new utf8str_cis("nfs.dev"),
                 result.opexchange_id.eir_resok4.eir_server_impl_id[0].nii_domain);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,11 +21,9 @@ package org.dcache.nfs.v4;
 
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
-import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.v4.xdr.SEQUENCE4res;
 import org.dcache.nfs.v4.xdr.SEQUENCE4resok;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.sessionid4;
 import org.dcache.nfs.v4.xdr.slotid4;
@@ -37,19 +35,15 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationSEQUENCE.class);
 
-    public OperationSEQUENCE(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_SEQUENCE);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
         final SEQUENCE4res res = result.opsequence;
 
-        NFS4Client client = context.getStateHandler().getClient(_args.opsequence.sa_sessionid);
-        NFSv41Session session = client.getSession(_args.opsequence.sa_sessionid);
+        NFS4Client client = context.getStateHandler().getClient(args.opsequence.sa_sessionid);
+        NFSv41Session session = client.getSession(args.opsequence.sa_sessionid);
 
-        SessionSlot slot = session.getSessionSlot(_args.opsequence.sa_slotid.value);
-        context.setCache(slot.acquire(_args.opsequence.sa_sequenceid.value));
+        SessionSlot slot = session.getSessionSlot(args.opsequence.sa_slotid.value);
+        context.setCache(slot.acquire(args.opsequence.sa_sequenceid.value));
 
         session.bindIfNeeded(new SessionConnection(
                 context.getLocalSocketAddress(),
@@ -58,18 +52,18 @@ public class OperationSEQUENCE extends AbstractNFSv4Operation {
         client.updateLeaseTime();
 
         context.setSession(session);
-        context.setCacheThis(_args.opsequence.sa_cachethis);
+        context.setCacheThis(args.opsequence.sa_cachethis);
         context.setSessionSlot(slot);
 
         res.sr_resok4 = new SEQUENCE4resok();
 
         res.sr_resok4.sr_highest_slotid = new slotid4(session.getHighestSlot());
-        res.sr_resok4.sr_slotid = new slotid4(_args.opsequence.sa_slotid.value);
+        res.sr_resok4.sr_slotid = new slotid4(args.opsequence.sa_slotid.value);
         res.sr_resok4.sr_target_highest_slotid = new slotid4(session.getHighestSlot());
-        res.sr_resok4.sr_sessionid = new sessionid4(_args.opsequence.sa_sessionid.value);
+        res.sr_resok4.sr_sessionid = new sessionid4(args.opsequence.sa_sessionid.value);
 
         // res.sr_resok4.sr_sequenceid = new sequenceid4( new uint32_t( session.nextSequenceID()) );
-        res.sr_resok4.sr_sequenceid = _args.opsequence.sa_sequenceid;
+        res.sr_resok4.sr_sequenceid = args.opsequence.sa_sequenceid;
         res.sr_resok4.sr_status_flags = new uint32_t(0);
 
         res.sr_status = nfsstat.NFS_OK;

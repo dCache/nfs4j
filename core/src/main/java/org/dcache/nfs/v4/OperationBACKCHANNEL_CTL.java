@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@ import org.dcache.nfs.status.NfsIoException;
 import org.dcache.nfs.status.NotSuppException;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +37,8 @@ public class OperationBACKCHANNEL_CTL extends AbstractNFSv4Operation {
 
     public static final Logger LOG = LoggerFactory.getLogger(OperationBACKCHANNEL_CTL.class);
 
-    public OperationBACKCHANNEL_CTL(nfs_argop4 op) {
-        super(op, nfs_opnum4.OP_BACKCHANNEL_CTL);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException {
 
         if (context.getMinorversion() == 0) {
             throw new NotSuppException("Backchannel update for minor version " + context.getMinorversion()
@@ -53,11 +48,11 @@ public class OperationBACKCHANNEL_CTL extends AbstractNFSv4Operation {
         var session = context.getSession();
         var cb = new ClientCB(
                 context.getRpcCall().getTransport().getPeerTransport(),
-                _args.opbackchannel_ctl.bca_cb_program.value,
+                args.opbackchannel_ctl.bca_cb_program.value,
                 context.getMinorversion(),
                 session.id(),
                 session.getMaxCbOps(),
-                _args.opbackchannel_ctl.bca_sec_parms);
+                args.opbackchannel_ctl.bca_sec_parms);
 
         try {
             cb.cbPing();

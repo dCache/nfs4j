@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -87,7 +87,6 @@ import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_fh4;
 import org.dcache.nfs.v4.xdr.nfs_ftype4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.nfstime4;
@@ -109,17 +108,13 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationGETATTR.class);
 
-    public OperationGETATTR(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_GETATTR);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws IOException, OncRpcException {
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws IOException, OncRpcException {
 
         final GETATTR4res res = result.opgetattr;
 
         res.resok4 = new GETATTR4resok();
-        res.resok4.obj_attributes = getAttributes(_args.opgetattr.attr_request,
+        res.resok4.obj_attributes = getAttributes(args.opgetattr.attr_request,
                 context.getFs(),
                 context.currentInode(), context);
 

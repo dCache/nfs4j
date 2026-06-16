@@ -19,171 +19,177 @@
  */
 package org.dcache.nfs.v4;
 
-import java.io.IOException;
-
-import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.v4.xdr.*;
-import org.dcache.oncrpc4j.rpc.OncRpcException;
 
 public class MDSOperationExecutor extends AbstractOperationExecutor {
+
+
+    /*
+     * The operations are pre-initialized to reuse the instances.
+     */
+
+    private final AbstractNFSv4Operation opAccess = new OperationACCESS();
+    private final AbstractNFSv4Operation opClose = new OperationCLOSE();
+    private final AbstractNFSv4Operation opCommit = new OperationCOMMIT();
+    private final AbstractNFSv4Operation opCreate = new OperationCREATE();
+    private final AbstractNFSv4Operation opDelegPurge = new OperationDELEGPURGE();
+    private final AbstractNFSv4Operation opDelegReturn = new OperationDELEGRETURN();
+    private final AbstractNFSv4Operation opGetAttr = new OperationGETATTR();
+    private final AbstractNFSv4Operation opGetFH = new OperationGETFH();
+    private final AbstractNFSv4Operation opLink = new OperationLINK();
+    private final AbstractNFSv4Operation opLock = new OperationLOCK();
+    private final AbstractNFSv4Operation opLockT = new OperationLOCKT();
+    private final AbstractNFSv4Operation opLockU = new OperationLOCKU();
+    private final AbstractNFSv4Operation opLookup = new OperationLOOKUP();
+    private final AbstractNFSv4Operation opLookupP = new OperationLOOKUPP();
+    private final AbstractNFSv4Operation opNVerify = new OperationNVERIFY();
+    private final AbstractNFSv4Operation opOpen = new OperationOPEN();
+    private final AbstractNFSv4Operation opOpenAttr = new OperationOPENATTR();
+    private final AbstractNFSv4Operation opOpenConfirm = new OperationOPEN_CONFIRM();
+    private final AbstractNFSv4Operation opOpenDowngrade = new OperationOPEN_DOWNGRADE();
+    private final AbstractNFSv4Operation opPutFH = new OperationPUTFH();
+    private final AbstractNFSv4Operation opPutPubFH = new OperationPUTPUBFH();
+    private final AbstractNFSv4Operation opPutRootFH = new OperationPUTROOTFH();
+    private final AbstractNFSv4Operation opRead = new OperationREAD();
+    private final AbstractNFSv4Operation opReadDir = new OperationREADDIR();
+    private final AbstractNFSv4Operation opReadLink = new OperationREADLINK();
+    private final AbstractNFSv4Operation opRemove = new OperationREMOVE();
+    private final AbstractNFSv4Operation opRename = new OperationRENAME();
+    private final AbstractNFSv4Operation opRenew = new OperationRENEW();
+    private final AbstractNFSv4Operation opRestoreFH = new OperationRESTOREFH();
+    private final AbstractNFSv4Operation opSaveFH = new OperationSAVEFH();
+    private final AbstractNFSv4Operation opSecInfo = new OperationSECINFO();
+    private final AbstractNFSv4Operation opSetAttr = new OperationSETATTR();
+    private final AbstractNFSv4Operation opSetClientId = new OperationSETCLIENTID();
+    private final AbstractNFSv4Operation opSetClientIdConfirm = new OperationSETCLIENTID_CONFIRM();
+    private final AbstractNFSv4Operation opVerify = new OperationVERIFY();
+    private final AbstractNFSv4Operation opWrite = new OperationWRITE();
+    private final AbstractNFSv4Operation opReleaseLockOwner = new OperationRELEASE_LOCKOWNER();
+    private final AbstractNFSv4Operation opBackChannelCtl = new OperationBACKCHANNEL_CTL();
+    private final AbstractNFSv4Operation opGetDeviceList = new OperationGETDEVICELIST();
+    private final AbstractNFSv4Operation opLayoutError = new OperationLAYOUTERROR();
+    private final AbstractNFSv4Operation opLayoutGet = new OperationLAYOUTGET();
+    private final AbstractNFSv4Operation opLayoutCommit = new OperationLAYOUTCOMMIT();
+    private final AbstractNFSv4Operation opLayoutReturn = new OperationLAYOUTRETURN();
+    private final AbstractNFSv4Operation opLayoutStats = new OperationLAYOUTSTATS();
+    private final AbstractNFSv4Operation opGetDeviceInfo = new OperationGETDEVICEINFO();
+    private final AbstractNFSv4Operation opExchangeId = new OperationEXCHANGE_ID();
+    private final AbstractNFSv4Operation opCreateSession = new OperationCREATE_SESSION();
+    private final AbstractNFSv4Operation opDestroySession = new OperationDESTROY_SESSION();
+    private final AbstractNFSv4Operation opSequence = new OperationSEQUENCE();
+    private final AbstractNFSv4Operation opDestroyClientId = new OperationDESTROY_CLIENTID();
+    private final AbstractNFSv4Operation opReclaimComplete = new OperationRECLAIM_COMPLETE();
+    private final AbstractNFSv4Operation opBindConnToSession = new OperationBIND_CONN_TO_SESSION();
+    private final AbstractNFSv4Operation opSecInfoNoName = new OperationSECINFO_NO_NAME();
+    private final AbstractNFSv4Operation opFreeStateId = new OperationFREE_STATEID();
+    private final AbstractNFSv4Operation opTestStateId = new OperationTEST_STATEID();
+    private final AbstractNFSv4Operation opGetXAttr = new OperationGETXATTR();
+    private final AbstractNFSv4Operation opSetXAttr = new OperationSETXATTR();
+    private final AbstractNFSv4Operation opListXAttr = new OperationLISTXATTRS();
+    private final AbstractNFSv4Operation opRemoveXAttr = new OperationREMOVEXATTR();
+    private final AbstractNFSv4Operation opCopy = new OperationCOPY();
+    private final AbstractNFSv4Operation opIllegal = new OperationILLEGAL();
+
+    /*
+     * The is no Unsupported Operations, thus create one.
+     */
+    private final AbstractNFSv4Operation opUnsupported = new AbstractNFSv4Operation() {
+        @Override
+        public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) {
+            result.setStatus(nfsstat.NFSERR_NOTSUPP);
+
+        }
+    };
+
 
     @Override
     protected AbstractNFSv4Operation getOperation(nfs_argop4 op) {
 
-        switch (op.argop) {
-            case nfs_opnum4.OP_ACCESS:
-                return new OperationACCESS(op);
-            case nfs_opnum4.OP_CLOSE:
-                return new OperationCLOSE(op);
-            case nfs_opnum4.OP_COMMIT:
-                return new OperationCOMMIT(op);
-            case nfs_opnum4.OP_CREATE:
-                return new OperationCREATE(op);
-            case nfs_opnum4.OP_DELEGPURGE:
-                return new OperationDELEGPURGE(op);
-            case nfs_opnum4.OP_DELEGRETURN:
-                return new OperationDELEGRETURN(op);
-            case nfs_opnum4.OP_GETATTR:
-                return new OperationGETATTR(op);
-            case nfs_opnum4.OP_GETFH:
-                return new OperationGETFH(op);
-            case nfs_opnum4.OP_LINK:
-                return new OperationLINK(op);
-            case nfs_opnum4.OP_LOCK:
-                return new OperationLOCK(op);
-            case nfs_opnum4.OP_LOCKT:
-                return new OperationLOCKT(op);
-            case nfs_opnum4.OP_LOCKU:
-                return new OperationLOCKU(op);
-            case nfs_opnum4.OP_LOOKUP:
-                return new OperationLOOKUP(op);
-            case nfs_opnum4.OP_LOOKUPP:
-                return new OperationLOOKUPP(op);
-            case nfs_opnum4.OP_NVERIFY:
-                return new OperationNVERIFY(op);
-            case nfs_opnum4.OP_OPEN:
-                return new OperationOPEN(op);
-            case nfs_opnum4.OP_OPENATTR:
-                return new OperationOPENATTR(op);
-            case nfs_opnum4.OP_OPEN_CONFIRM:
-                return new OperationOPEN_CONFIRM(op);
-            case nfs_opnum4.OP_OPEN_DOWNGRADE:
-                return new OperationOPEN_DOWNGRADE(op);
-            case nfs_opnum4.OP_PUTFH:
-                return new OperationPUTFH(op);
-            case nfs_opnum4.OP_PUTPUBFH:
-                return new OperationPUTPUBFH(op);
-            case nfs_opnum4.OP_PUTROOTFH:
-                return new OperationPUTROOTFH(op);
-            case nfs_opnum4.OP_READ:
-                return new OperationREAD(op);
-            case nfs_opnum4.OP_READDIR:
-                return new OperationREADDIR(op);
-            case nfs_opnum4.OP_READLINK:
-                return new OperationREADLINK(op);
-            case nfs_opnum4.OP_REMOVE:
-                return new OperationREMOVE(op);
-            case nfs_opnum4.OP_RENAME:
-                return new OperationRENAME(op);
-            case nfs_opnum4.OP_RENEW:
-                return new OperationRENEW(op);
-            case nfs_opnum4.OP_RESTOREFH:
-                return new OperationRESTOREFH(op);
-            case nfs_opnum4.OP_SAVEFH:
-                return new OperationSAVEFH(op);
-            case nfs_opnum4.OP_SECINFO:
-                return new OperationSECINFO(op);
-            case nfs_opnum4.OP_SETATTR:
-                return new OperationSETATTR(op);
-            case nfs_opnum4.OP_SETCLIENTID:
-                return new OperationSETCLIENTID(op);
-            case nfs_opnum4.OP_SETCLIENTID_CONFIRM:
-                return new OperationSETCLIENTID_CONFIRM(op);
-            case nfs_opnum4.OP_VERIFY:
-                return new OperationVERIFY(op);
-            case nfs_opnum4.OP_WRITE:
-                return new OperationWRITE(op);
-            case nfs_opnum4.OP_RELEASE_LOCKOWNER:
-                return new OperationRELEASE_LOCKOWNER(op);
-            case nfs_opnum4.OP_BACKCHANNEL_CTL:
-                return new OperationBACKCHANNEL_CTL(op);
-            /**
+        return switch (op.argop) {
+            case nfs_opnum4.OP_ACCESS -> opAccess;
+            case nfs_opnum4.OP_CLOSE -> opClose;
+            case nfs_opnum4.OP_COMMIT -> opCommit;
+            case nfs_opnum4.OP_CREATE -> opCreate;
+            case nfs_opnum4.OP_DELEGPURGE -> opDelegPurge;
+            case nfs_opnum4.OP_DELEGRETURN -> opDelegReturn;
+            case nfs_opnum4.OP_GETATTR -> opGetAttr;
+            case nfs_opnum4.OP_GETFH -> opGetFH;
+            case nfs_opnum4.OP_LINK -> opLink;
+            case nfs_opnum4.OP_LOCK -> opLock;
+            case nfs_opnum4.OP_LOCKT -> opLockT;
+            case nfs_opnum4.OP_LOCKU -> opLockU;
+            case nfs_opnum4.OP_LOOKUP -> opLookup;
+            case nfs_opnum4.OP_LOOKUPP -> opLookupP;
+            case nfs_opnum4.OP_NVERIFY -> opNVerify;
+            case nfs_opnum4.OP_OPEN -> opOpen;
+            case nfs_opnum4.OP_OPENATTR -> opOpenAttr;
+            case nfs_opnum4.OP_OPEN_CONFIRM -> opOpenConfirm;
+            case nfs_opnum4.OP_OPEN_DOWNGRADE -> opOpenDowngrade;
+            case nfs_opnum4.OP_PUTFH -> opPutFH;
+            case nfs_opnum4.OP_PUTPUBFH -> opPutPubFH;
+            case nfs_opnum4.OP_PUTROOTFH -> opPutRootFH;
+            case nfs_opnum4.OP_READ -> opRead;
+            case nfs_opnum4.OP_READDIR -> opReadDir;
+            case nfs_opnum4.OP_READLINK -> opReadLink;
+            case nfs_opnum4.OP_REMOVE -> opRemove;
+            case nfs_opnum4.OP_RENAME -> opRename;
+            case nfs_opnum4.OP_RENEW -> opRenew;
+            case nfs_opnum4.OP_RESTOREFH -> opRestoreFH;
+            case nfs_opnum4.OP_SAVEFH -> opSaveFH;
+            case nfs_opnum4.OP_SECINFO -> opSecInfo;
+            case nfs_opnum4.OP_SETATTR -> opSetAttr;
+            case nfs_opnum4.OP_SETCLIENTID -> opSetClientId;
+            case nfs_opnum4.OP_SETCLIENTID_CONFIRM -> opSetClientIdConfirm;
+            case nfs_opnum4.OP_VERIFY -> opVerify;
+            case nfs_opnum4.OP_WRITE -> opWrite;
+            case nfs_opnum4.OP_RELEASE_LOCKOWNER -> opReleaseLockOwner;
+            case nfs_opnum4.OP_BACKCHANNEL_CTL -> opBackChannelCtl;
+
+
+            /*
              * NFSv4.1 (pNFS)
              */
-            case nfs_opnum4.OP_GETDEVICELIST:
-                return new OperationGETDEVICELIST(op);
-            case nfs_opnum4.OP_LAYOUTERROR:
-                return new OperationLAYOUTERROR(op);
-            case nfs_opnum4.OP_LAYOUTGET:
-                return new OperationLAYOUTGET(op);
-            case nfs_opnum4.OP_LAYOUTCOMMIT:
-                return new OperationLAYOUTCOMMIT(op);
-            case nfs_opnum4.OP_LAYOUTRETURN:
-                return new OperationLAYOUTRETURN(op);
-            case nfs_opnum4.OP_LAYOUTSTATS:
-                return new OperationLAYOUTSTATS(op);
-            case nfs_opnum4.OP_GETDEVICEINFO:
-                return new OperationGETDEVICEINFO(op);
-            case nfs_opnum4.OP_EXCHANGE_ID:
-                /*
-                 * By having chimera as a backend file system we need to support legacy .(xx)(xx)... commands. To allow
-                 * read of those files, MDS ( nfsv41 door ) have to declare itself as a data server (DS).
-                 *
-                 * indicate that we are a MDS and DS at the same time.
-                 */
-                return new OperationEXCHANGE_ID(op);
-            case nfs_opnum4.OP_CREATE_SESSION:
-                return new OperationCREATE_SESSION(op);
-            case nfs_opnum4.OP_DESTROY_SESSION:
-                return new OperationDESTROY_SESSION(op);
-            case nfs_opnum4.OP_SEQUENCE:
-                return new OperationSEQUENCE(op);
-            case nfs_opnum4.OP_DESTROY_CLIENTID:
-                return new OperationDESTROY_CLIENTID(op);
-            case nfs_opnum4.OP_RECLAIM_COMPLETE:
-                return new OperationRECLAIM_COMPLETE(op);
-            case nfs_opnum4.OP_BIND_CONN_TO_SESSION:
-                return new OperationBIND_CONN_TO_SESSION(op);
-            case nfs_opnum4.OP_SECINFO_NO_NAME:
-                return new OperationSECINFO_NO_NAME(op);
-            case nfs_opnum4.OP_FREE_STATEID:
-                return new OperationFREE_STATEID(op);
-            case nfs_opnum4.OP_TEST_STATEID:
-                return new OperationTEST_STATEID(op);
-            case nfs_opnum4.OP_GETXATTR:
-                return new OperationGETXATTR(op);
-            case nfs_opnum4.OP_SETXATTR:
-                return new OperationSETXATTR(op);
-            case nfs_opnum4.OP_LISTXATTRS:
-                return new OperationLISTXATTRS(op);
-            case nfs_opnum4.OP_REMOVEXATTR:
-                return new OperationREMOVEXATTR(op);
-            case nfs_opnum4.OP_COPY:
-                return new OperationCOPY(op);
+            case nfs_opnum4.OP_GETDEVICELIST -> opGetDeviceList;
+            case nfs_opnum4.OP_LAYOUTERROR -> opLayoutError;
+            case nfs_opnum4.OP_LAYOUTGET -> opLayoutGet;
+            case nfs_opnum4.OP_LAYOUTCOMMIT -> opLayoutCommit;
+            case nfs_opnum4.OP_LAYOUTRETURN -> opLayoutReturn;
+            case nfs_opnum4.OP_LAYOUTSTATS -> opLayoutStats;
+            case nfs_opnum4.OP_GETDEVICEINFO -> opGetDeviceInfo;
+            case nfs_opnum4.OP_EXCHANGE_ID -> opExchangeId;
+            case nfs_opnum4.OP_CREATE_SESSION -> opCreateSession;
+            case nfs_opnum4.OP_DESTROY_SESSION -> opDestroySession;
+            case nfs_opnum4.OP_SEQUENCE -> opSequence;
+            case nfs_opnum4.OP_DESTROY_CLIENTID -> opDestroyClientId;
+            case nfs_opnum4.OP_RECLAIM_COMPLETE -> opReclaimComplete;
+            case nfs_opnum4.OP_BIND_CONN_TO_SESSION -> opBindConnToSession;
+            case nfs_opnum4.OP_SECINFO_NO_NAME -> opSecInfoNoName;
+            case nfs_opnum4.OP_FREE_STATEID -> opFreeStateId;
+            case nfs_opnum4.OP_TEST_STATEID -> opTestStateId;
+
+            /*
+             * xattr extension
+             */
+            case nfs_opnum4.OP_GETXATTR -> opGetXAttr;
+            case nfs_opnum4.OP_SETXATTR -> opSetXAttr;
+            case nfs_opnum4.OP_LISTXATTRS -> opListXAttr;
+            case nfs_opnum4.OP_REMOVEXATTR -> opRemoveXAttr;
+
+            /*
+             * NFSv4.2
+             */
+            case nfs_opnum4.OP_COPY -> opCopy;
 
             // legit, but not supported by nfs4j operations.
-            case nfs_opnum4.OP_ALLOCATE:
-            case nfs_opnum4.OP_COPY_NOTIFY:
-            case nfs_opnum4.OP_DEALLOCATE:
-            case nfs_opnum4.OP_IO_ADVISE:
-            case nfs_opnum4.OP_OFFLOAD_CANCEL:
-            case nfs_opnum4.OP_OFFLOAD_STATUS:
-            case nfs_opnum4.OP_READ_PLUS:
-            case nfs_opnum4.OP_SEEK:
-            case nfs_opnum4.OP_WRITE_SAME:
-            case nfs_opnum4.OP_CLONE:
-            case nfs_opnum4.OP_GET_DIR_DELEGATION:
-                return new AbstractNFSv4Operation(op, op.argop) {
-                    @Override
-                    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException,
-                            IOException, OncRpcException {
-                        result.setStatus(nfsstat.NFSERR_NOTSUPP);
-                    }
-                };
-            case nfs_opnum4.OP_ILLEGAL:
-        }
+            case nfs_opnum4.OP_ALLOCATE, nfs_opnum4.OP_COPY_NOTIFY, nfs_opnum4.OP_DEALLOCATE,
+                 nfs_opnum4.OP_IO_ADVISE, nfs_opnum4.OP_OFFLOAD_CANCEL,
+                 nfs_opnum4.OP_OFFLOAD_STATUS, nfs_opnum4.OP_READ_PLUS, nfs_opnum4.OP_SEEK,
+                 nfs_opnum4.OP_WRITE_SAME, nfs_opnum4.OP_CLONE, nfs_opnum4.OP_GET_DIR_DELEGATION ->
+                  opUnsupported;
 
-        return new OperationILLEGAL(op);
+            default -> opIllegal;
+
+        };
     }
 }

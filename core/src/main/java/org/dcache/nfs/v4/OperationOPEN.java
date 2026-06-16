@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -46,7 +46,6 @@ import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.mode4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
-import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.nfsace4;
 import org.dcache.nfs.v4.xdr.open_claim_type4;
@@ -69,12 +68,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
     private static final Logger _log = LoggerFactory.getLogger(OperationOPEN.class);
 
-    public OperationOPEN(nfs_argop4 args) {
-        super(args, nfs_opnum4.OP_OPEN);
-    }
-
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException, IOException,
+    public void process(CompoundContext context, nfs_argop4 args, nfs_resop4 result) throws ChimeraNFSException, IOException,
             OncRpcException {
         final OPEN4res res = result.opopen;
 
@@ -83,13 +78,13 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         if (context.getMinorversion() > 0) {
             client = context.getSession().getClient();
         } else {
-            client = context.getStateHandler().getConfirmedClient(_args.opopen.owner.clientid);
+            client = context.getStateHandler().getConfirmedClient(args.opopen.owner.clientid);
 
             client.updateLeaseTime();
-            _log.debug("open request form {}", _args.opopen.owner);
+            _log.debug("open request form {}", args.opopen.owner);
         }
 
-        owner = client.getOrCreateOwner(_args.opopen.owner.owner, _args.opopen.seqid);
+        owner = client.getOrCreateOwner(args.opopen.owner.owner, args.opopen.seqid);
 
         res.resok4 = new OPEN4resok();
         res.resok4.attrset = new bitmap4();
@@ -101,7 +96,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         res.resok4.cinfo = new change_info4();
         res.resok4.cinfo.atomic = true;
 
-        switch (_args.opopen.claim.claim) {
+        switch (args.opopen.claim.claim) {
 
             case open_claim_type4.CLAIM_NULL:
 
@@ -115,14 +110,14 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     throw new NotDirException();
                 }
                 res.resok4.cinfo.before = new changeid4(stat.getGeneration());
-                String name = NameFilter.convertName(_args.opopen.claim.file.value);
+                String name = NameFilter.convertName(args.opopen.claim.file.value);
                 _log.debug("regular open for : {}", name);
 
                 Inode inode;
-                if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
+                if (args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
 
-                    boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4)
-                            || (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
+                    boolean exclusive = (args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4)
+                            || (args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
 
                     /**
                      * According to the spec. client MAY send all allowed attributes. Nevertheless, in reality, clients
@@ -132,19 +127,19 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                      */
                     AttributeMap attributeMap;
 
-                    switch (_args.opopen.openhow.how.mode) {
+                    switch (args.opopen.openhow.how.mode) {
                         case createmode4.UNCHECKED4:
                         case createmode4.GUARDED4:
-                            attributeMap = new AttributeMap(_args.opopen.openhow.how.createattrs);
+                            attributeMap = new AttributeMap(args.opopen.openhow.how.createattrs);
                             break;
                         case createmode4.EXCLUSIVE4:
                             attributeMap = new AttributeMap(null);
                             break;
                         case createmode4.EXCLUSIVE4_1:
-                            attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
+                            attributeMap = new AttributeMap(args.opopen.openhow.how.ch_createboth.cva_attrs);
                             break;
                         default:
-                            throw new BadXdrException("bad value: " + _args.opopen.openhow.how.mode);
+                            throw new BadXdrException("bad value: " + args.opopen.openhow.how.mode);
                     }
 
                     try {
@@ -216,7 +211,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                     res.resok4.cinfo.after = new changeid4(stat.getGeneration());
 
                     inode = context.getFs().lookup(context.currentInode(), name);
-                    checkCanAccess(context, inode, _args.opopen.share_access);
+                    checkCanAccess(context, inode, args.opopen.share_access);
                 }
 
                 context.currentInode(inode);
@@ -243,17 +238,17 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 res.resok4.cinfo.after = new changeid4(0);
 
                 inode = context.currentInode();
-                checkCanAccess(context, inode, _args.opopen.share_access);
+                checkCanAccess(context, inode, args.opopen.share_access);
                 break;
             case open_claim_type4.CLAIM_DELEGATE_CUR:
             case open_claim_type4.CLAIM_DELEGATE_PREV:
             case open_claim_type4.CLAIM_DELEG_CUR_FH:
             case open_claim_type4.CLAIM_DELEG_PREV_FH:
-                _log.warn("Unimplemented open claim: {}", _args.opopen.claim.claim);
-                throw new InvalException("Unimplemented open claim: {}" + _args.opopen.claim.claim);
+                _log.warn("Unimplemented open claim: {}", args.opopen.claim.claim);
+                throw new InvalException("Unimplemented open claim: {}" + args.opopen.claim.claim);
             default:
-                _log.warn("BAD open claim: {}", _args.opopen.claim.claim);
-                throw new InvalException("BAD open claim: {}" + _args.opopen.claim.claim);
+                _log.warn("BAD open claim: {}", args.opopen.claim.claim);
+                throw new InvalException("BAD open claim: {}" + args.opopen.claim.claim);
 
         }
 
@@ -277,8 +272,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 .getStateHandler()
                 .getFileTracker()
                 .addOpen(client, owner, context.currentInode(),
-                        _args.opopen.share_access.value,
-                        _args.opopen.share_deny.value);
+                        args.opopen.share_access.value,
+                        args.opopen.share_deny.value);
 
         context.currentStateid(openRecord.openStateId());
         res.resok4.stateid = openRecord.openStateId();
@@ -291,7 +286,7 @@ public class OperationOPEN extends AbstractNFSv4Operation {
             res.resok4.delegation.read.permissions.flag = new aceflag4(0);
             res.resok4.delegation.read.permissions.access_mask = new acemask4(nfs4_prot.ACCESS4_READ);
             res.resok4.delegation.read.permissions.who = new utf8str_mixed(context.getPrincipal().getName());
-        } else if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_ANY_DELEG) != 0) {
+        } else if ((args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_ANY_DELEG) != 0) {
             // REVISIT: shall we return something less general?
             res.resok4.delegation.od_whynone.ond_why = why_no_delegation4.WND4_RESOURCE;
         }
