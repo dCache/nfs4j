@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -129,7 +129,7 @@ public class ClientCB {
                         sec_parms[0].cbsp_sys_cred.machinename);
                 break;
             default:
-                throw new IllegalArgumentException("Unsuppotred security flavor");
+                throw new IllegalArgumentException("Unsupported security flavor");
         }
 
         _highestSlotId = maxrequests - 1;
@@ -221,7 +221,9 @@ public class ClientCB {
         var slot = _clientSession.acquireSlot();
         try {
             XdrAble args = generateCompound(slot, "cb_recall_delegation", opArgs);
-            _rpc.call(nfs4_prot.CB_COMPOUND_1, args, new CB_COMPOUND4res());
+            CB_COMPOUND4res res = new CB_COMPOUND4res();
+            _rpc.call(nfs4_prot.CB_COMPOUND_1, args, res);
+            nfsstat.throwIfNeeded(res.status);
         } finally {
             _clientSession.releaseSlot(slot);
         }
