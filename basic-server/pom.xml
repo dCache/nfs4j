@@ -10,6 +10,7 @@
     <groupId>org.dcache.nfs4j</groupId>
     <artifactId>basic-server</artifactId>
     <packaging>jar</packaging>
+    <name>NFS4J Basic Server implementation</name>
 
 
     <build>
