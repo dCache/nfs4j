@@ -245,38 +245,6 @@
       </dependencies>
   </dependencyManagement>
 
-  <!--
-    MAVEN REPOSITORIES
-  -->
-  <repositories>
-    <repository>
-      <id>maven2-repository.dcache.org</id>
-      <name>dCache.ORG Repository for Maven</name>
-      <url>https://download.dcache.org/nexus/content/groups/public/</url>
-      <layout>default</layout>
-    </repository>
-    <repository>
-      <id>dcache-snapshots</id>
-      <name>dCache.ORG snapshots repository</name>
-      <url>https://download.dcache.org/nexus/content/repositories/snapshots</url>
-      <layout>default</layout>
-    </repository>
-  </repositories>
-
-    <!--
-                 MAVEN DEPLOYMENT REPOSITORY
-    -->
-  <distributionManagement>
-      <repository>
-          <id>dcache.org</id>
-          <url>https://download.dcache.org/nexus/content/repositories/releases</url>
-      </repository>
-      <snapshotRepository>
-          <id>dcache.org-snapshot</id>
-          <url>https://download.dcache.org/nexus/content/repositories/snapshots</url>
-      </snapshotRepository>
-  </distributionManagement>
-
   <profiles>
       <profile>
           <id>sign-artifacts</id>
