@@ -11,6 +11,7 @@
     <groupId>org.dcache</groupId>
     <artifactId>benchmarks</artifactId>
     <packaging>jar</packaging>
+    <name>NFS4J Benchmarks</name>
 
     <profiles>
         <profile>

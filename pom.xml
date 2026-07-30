@@ -23,6 +23,7 @@
   <url>http://www.dCache.ORG</url>
 
   <scm>
+      <url>https://github.com/dCache/nfs4j.git</url>
       <connection>scm:git:https://github.com/dCache/nfs4j.git</connection>
       <developerConnection>scm:git:ssh://git@github.com/dCache/nfs4j.git</developerConnection>
     <tag>0.28</tag>

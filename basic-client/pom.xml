@@ -11,6 +11,7 @@
     <groupId>org.dcache</groupId>
     <artifactId>nfs4j-basic-client</artifactId>
     <packaging>jar</packaging>
+    <name>NFS4J Basic Client</name>
 
     <build>
         <plugins>
