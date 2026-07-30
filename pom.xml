@@ -210,7 +210,7 @@
           <dependency>
               <groupId>org.dcache</groupId>
               <artifactId>oncrpc4j-core</artifactId>
-              <version>3.3.0</version>
+              <version>3.4.3</version>
           </dependency>
           <dependency>
               <groupId>com.hazelcast</groupId>
