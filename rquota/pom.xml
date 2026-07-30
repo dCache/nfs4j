@@ -11,6 +11,7 @@
     <artifactId>rquota</artifactId>
     <packaging>jar</packaging>
     <description>Remote quota protocol implementation</description>
+    <name>NFS4J Remote Quota</name>
 
     <!--
         EXTERNAL DEPENDENCIES

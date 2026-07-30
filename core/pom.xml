@@ -11,6 +11,7 @@
     <groupId>org.dcache</groupId>
     <artifactId>nfs4j-core</artifactId>
     <packaging>jar</packaging>
+    <name>NFS4J Server component</name>
 
     <build>
         <pluginManagement>
