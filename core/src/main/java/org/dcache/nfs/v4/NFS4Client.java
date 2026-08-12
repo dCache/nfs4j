@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -296,6 +296,14 @@ public class NFS4Client {
      */
     public void refreshLeaseTime() {
         _lastLeaseUpdate = _clock.instant();
+    }
+
+    /**
+     * Expire the client's lease. The client record and its state are preserved,
+     * but any operation using this client's stateid will return NFS4ERR_EXPIRED.
+     */
+    public void expireLease() {
+        _lastLeaseUpdate = Instant.EPOCH;
     }
 
     /**

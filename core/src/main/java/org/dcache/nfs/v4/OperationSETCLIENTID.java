@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -79,6 +79,7 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
 
             // existing client, different verifier. Client rebooted.
             // create new record, keep the old one as required by the RFC 7530
+            NFS4Client oldClient = client;
             client = context.getStateHandler().createClient(
                     context.getRemoteSocketAddress(),
                     context.getLocalSocketAddress(),
@@ -86,10 +87,18 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
                     _args.opsetclientid.client.id, _args.opsetclientid.client.verifier,
                     context.getPrincipal(), false);
 
-        } else if (client.isLeaseValid()) {
+            // expire old client's lease so that any operation on old
+            // stateids returns NFS4ERR_EXPIRED (RFC 7530 Section 16.33.5,
+            // states are not removed but become unusable)
+            oldClient.expireLease();
 
-            // can't be reused, if principal have changes and client has state
-            if (!client.principal().equals(context.getPrincipal()) && client.hasState()) {
+        } else {
+
+            // v == u: probable callback info update (RFC 7530 Section 16.33.5)
+            // CLID_INUSE only if lease is still valid (RFC 7530 Section 9.1.2)
+            if (client.isLeaseValid()
+                    && !client.principal().equals(context.getPrincipal())
+                    && client.hasState()) {
                 netaddr4 addr = new netaddr4(client.getRemoteAddress());
                 res.status = nfsstat.NFSERR_CLID_INUSE;
                 res.client_using = new clientaddr4(addr);
