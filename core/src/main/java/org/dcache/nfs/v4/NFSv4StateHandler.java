@@ -285,6 +285,29 @@ public class NFSv4StateHandler {
             return _clientsByServerId
                     .stream()
                     .filter(c -> Arrays.equals(c.getOwnerId(), ownerid))
+                    .findFirst()
+                    .orElse(null);
+        } finally {
+            _readLock.unlock();
+        }
+    }
+
+    /**
+     * Get existing, unconfirmed client record that matches given client side generated long-hand owner
+     * identifier.
+     *
+     * @param ownerid client side generated long-hand owner identifier.
+     *
+     * @return an existing unconfirmed client record or null, if not matching record found.
+     */
+    public NFS4Client getUnconfirmedClientByOwner(byte[] ownerid) {
+
+        _readLock.lock();
+        try {
+            return _clientsByServerId
+                    .stream()
+                    .filter(c -> Arrays.equals(c.getOwnerId(), ownerid))
+                    .filter(c -> !c.isConfirmed())
                     .findAny()
                     .orElse(null);
         } finally {
