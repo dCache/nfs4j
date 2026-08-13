@@ -186,7 +186,8 @@ public class OperationEXCHANGE_ID extends AbstractNFSv4Operation {
                         client.refreshLeaseTime();
                     } else if (principal.equals(client.principal())) {
                         _log.debug("case 5: Client Restart");
-                        stateHandler.removeClient(client);
+                        // keep old confirmed record, create new unconfirmed
+                        // (RFC 5661 Section 18.35.4 case 5)
                         client = stateHandler.createClient(
                                 remoteSocketAddress, localSocketAddress,
                                 context.getMinorversion(),

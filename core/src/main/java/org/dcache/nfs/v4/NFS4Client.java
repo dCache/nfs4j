@@ -496,8 +496,18 @@ public class NFS4Client {
         _sessionSequence++;
 
         if (!_isConfirmed) {
+
+            // find old confirmed client before confirming this one
+            // (RFC 5661 Section 18.35.4 case 5: atomically destroy the old
+            // confirmed record once the new session is successfully created)
+            NFS4Client oldClient = _stateHandler.getConfirmedClientByOwner(getOwnerId());
+
             _isConfirmed = true;
             _log.debug("set client confirmed");
+
+            if (oldClient != null && !oldClient.getId().equals(getId())) {
+                _stateHandler.removeClient(oldClient);
+            }
         }
 
         return session;
