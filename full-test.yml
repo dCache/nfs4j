@@ -13,7 +13,7 @@ services:
     image: "nfs4j:dev"
     container_name: "nfs4j"
     volumes:
-      - ./basic-server/target/coverage-reports:/coverage-reports
+      - ./basic-server/target/coverage-reports:/coverage-reports:Z
 
   tester:
     image: dcache/pynfs:0.5
@@ -43,4 +43,4 @@ services:
           noCOUR2 noCSESS25 noCSESS26 noCSESS27 noCSESS28 noCSESS29 noCSID9 noDELEG2 noDELEG8 noEID5f \
           noEID50 noOPEN31 noSEQ6 noRECC3 noSEQ7 noSEQ10b noSEQ2 noXATT11 noXATT10 noALLOC1 noALLOC2 noALLOC3
     volumes:
-      - ./report:/report
+      - ./report:/report:Z

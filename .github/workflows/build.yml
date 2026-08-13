@@ -45,7 +45,9 @@ jobs:
 
       - name: Run pynfs tests in container
         id: tester
-        run: COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose -f full-test.yml up --build --quiet-pull --exit-code-from tester
+        run: |
+          pip3 install podman-compose
+          podman-compose -f full-test.yml up --build --quiet-pull --exit-code-from tester
 
       - name: Pynfs Test Report
         uses: mikepenz/action-junit-report@v5
