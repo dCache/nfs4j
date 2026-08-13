@@ -78,6 +78,14 @@ public class OperationSETCLIENTID extends AbstractNFSv4Operation {
         } else if (!client.clientGeneratedVerifierEquals(verifier)) {
 
             // existing client, different verifier. Client rebooted.
+            // remove any existing unconfirmed record as required by RFC 7530
+            // Section 16.33.5 (confirmed {u,x,c,l,s} + unconfirmed {w,x,d,m,t}
+            // → remove unconfirmed, create new unconfirmed {v,x,e,k,r})
+            NFS4Client unconfirmed = context.getStateHandler().getUnconfirmedClientByOwner(id);
+            if (unconfirmed != null && !unconfirmed.getId().equals(client.getId())) {
+                context.getStateHandler().removeClient(unconfirmed);
+            }
+
             // create new record, keep the old one as required by the RFC 7530
             NFS4Client oldClient = client;
             client = context.getStateHandler().createClient(
