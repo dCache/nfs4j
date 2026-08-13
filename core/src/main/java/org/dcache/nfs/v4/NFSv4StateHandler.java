@@ -315,6 +315,29 @@ public class NFSv4StateHandler {
         }
     }
 
+    /**
+     * Get existing, confirmed client record that matches given client side generated long-hand owner
+     * identifier.
+     *
+     * @param ownerid client side generated long-hand owner identifier.
+     *
+     * @return an existing confirmed client record or null, if not matching record found.
+     */
+    public NFS4Client getConfirmedClientByOwner(byte[] ownerid) {
+
+        _readLock.lock();
+        try {
+            return _clientsByServerId
+                    .stream()
+                    .filter(c -> Arrays.equals(c.getOwnerId(), ownerid))
+                    .filter(NFS4Client::isConfirmed)
+                    .findAny()
+                    .orElse(null);
+        } finally {
+            _readLock.unlock();
+        }
+    }
+
     public void updateClientLeaseTime(stateid4 stateid) throws ChimeraNFSException {
 
         checkState(_running, "NFS state handler not running");
