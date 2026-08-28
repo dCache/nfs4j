@@ -185,9 +185,9 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 stat.setATime(realAtime);
                 break;
             case nfs4_prot.FATTR4_TIME_CREATE:
-                nfstime4 ctime = new nfstime4();
-                ctime.xdrDecode(xdr);
-                stat.setCTime(ctime.toMillis());
+                nfstime4 btime = new nfstime4();
+                btime.xdrDecode(xdr);
+                stat.setBTime(btime.toMillis());
                 break;
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
                 settime4 setMtime = new settime4();
