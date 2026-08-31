@@ -232,6 +232,25 @@ public class FileTracker {
      */
     public OpenRecord addOpen(NFS4Client client, StateOwner owner, Inode inode, int shareAccess, int shareDeny)
             throws ChimeraNFSException {
+        return addOpen(client, owner, inode, shareAccess, shareDeny, true);
+    }
+
+    /**
+     * Add a new open to the list of open files. If provided {@code shareAccess} and {@code shareDeny} conflicts with
+     * existing opens, @{link ShareDeniedException} exception will be thrown.
+     *
+     * @param client nfs client performing the open operation.
+     * @param owner open state owner
+     * @param inode of opened file.
+     * @param shareAccess type of access required.
+     * @param shareDeny type of access to deny others.
+     * @param allowDelegations whether the export allows the server to hand out delegations.
+     * @return a snapshot of an OpenRecord associated with open.
+     * @throws ShareDeniedException if share reservation conflicts with an existing open.
+     * @throws ChimeraNFSException
+     */
+    public OpenRecord addOpen(NFS4Client client, StateOwner owner, Inode inode, int shareAccess, int shareDeny,
+            boolean allowDelegations) throws ChimeraNFSException {
 
         // client explicitly refused delegation
         boolean acceptsDelegation = (shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_NO_DELEG) == 0;
@@ -270,7 +289,7 @@ public class FileTracker {
              * delegation is possible if: - client has not explicitly requested no delegation - client has a callback
              * channel - client does not have a delegation for this file - no other open has write access
              */
-            boolean canDelegateRead = acceptsDelegation && (client.getCB() != null &&
+            boolean canDelegateRead = allowDelegations && acceptsDelegation && (client.getCB() != null &&
                     (existingDelegations == null ||
                             existingDelegations.stream()
                                     .noneMatch(d -> d.client().getId() == client.getId())) &&

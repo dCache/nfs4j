@@ -245,6 +245,23 @@ public class FileTrackerTest {
     }
 
     @Test
+    public void shouldNotGetReadDelegationWhenDisabledByExport() throws Exception {
+
+        NFS4Client client = createClient(sh);
+        ClientCB mockCallBack = mock(ClientCB.class);
+        client.setCB(mockCallBack);
+
+        StateOwner stateOwner1 = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+
+        nfs_fh4 fh = generateFileHandle();
+        Inode inode = Inode.forFile(fh.value);
+
+        var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, false);
+        assertFalse("Read delegation granted although disabled for the export", openRecord.hasDelegation());
+    }
+
+    @Test
     public void shouldNotReadDelegation() throws Exception {
 
         NFS4Client client = createClient(sh);

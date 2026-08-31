@@ -207,6 +207,30 @@ public class FsExportTest {
     }
 
     @Test
+    public void testWithDelegations() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_with_deleg", InetAddress.getByName("192.168.1.1"));
+        assertTrue(export.isWithDelegations());
+    }
+
+    @Test
+    public void testWithoutDelegations() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_without_deleg", InetAddress.getByName("192.168.1.1"));
+        assertFalse(export.isWithDelegations());
+    }
+
+    @Test
+    public void testWithoutDelegationsAlternativeSpelling() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_without_deleg_alt", InetAddress.getByName("192.168.1.1"));
+        assertFalse(export.isWithDelegations());
+    }
+
+    @Test
+    public void testDelegationsDefault() throws UnknownHostException {
+        FsExport export = _exportFile.getExport("/export_default_deleg", InetAddress.getByName("192.168.1.1"));
+        assertTrue(export.isWithDelegations());
+    }
+
+    @Test
     public void testExplicitExportForLocalhost() throws Exception {
         FsExport export = _exportFile.getExport("/", InetAddress.getByName("127.0.0.1"));
         assertNull("localhost must not be able to access without explicit intry", export);

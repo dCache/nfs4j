@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.FsExport;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.BadXdrException;
@@ -278,7 +279,8 @@ public class OperationOPEN extends AbstractNFSv4Operation {
                 .getFileTracker()
                 .addOpen(client, owner, context.currentInode(),
                         _args.opopen.share_access.value,
-                        _args.opopen.share_deny.value);
+                        _args.opopen.share_deny.value,
+                        isDelegationAllowed(context, context.currentInode()));
 
         context.currentStateid(openRecord.openStateId());
         res.resok4.stateid = openRecord.openStateId();
@@ -297,6 +299,25 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         }
         res.status = nfsstat.NFS_OK;
 
+    }
+
+    private boolean isDelegationAllowed(CompoundContext context, Inode inode) throws ChimeraNFSException {
+
+        /*
+         * a pNFS data server runs without an export table, thus there is nothing to consult.
+         */
+        if (context.getExportTable() == null) {
+            return true;
+        }
+
+        FsExport export = context
+                .getExportTable()
+                .getExport(inode.exportIndex(), context.getRemoteSocketAddress().getAddress());
+        if (export == null) {
+            throw new AccessException("no export");
+        }
+
+        return export.isWithDelegations();
     }
 
     private void checkCanAccess(CompoundContext context, Inode inode, uint32_t share_access) throws IOException {

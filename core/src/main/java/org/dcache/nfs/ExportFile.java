@@ -269,6 +269,16 @@ public class ExportFile implements ExportTable {
                             continue;
                         }
 
+                        if (option.equals("deleg")) {
+                            exportBuilder.withDelegations();
+                            continue;
+                        }
+
+                        if (option.equals("nodeleg") || option.equals("no_deleg")) {
+                            exportBuilder.withoutDelegations();
+                            continue;
+                        }
+
                         if (option.startsWith("lt=")) {
                             Iterable<String> lt = Splitter.on(":")
                                     .omitEmptyStrings()
