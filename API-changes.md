@@ -1,5 +1,10 @@
 # Changes to NFS4J public API
 
+## 0.29
+
+- change the signature of `FileTracker#addOpen` to accept a flag that indicates whether the export allows the
+  server to hand out open delegations.
+
 ## 0.28
 
 - dropped Spring integration

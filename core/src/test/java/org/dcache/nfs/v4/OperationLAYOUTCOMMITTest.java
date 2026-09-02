@@ -57,7 +57,7 @@ public class OperationLAYOUTCOMMITTest {
     public void testCommitOnReadLayout() throws Exception {
 
         StateOwner stateOwner = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
@@ -83,7 +83,7 @@ public class OperationLAYOUTCOMMITTest {
         when(dm.layoutCommit(any(), any())).thenReturn(OptionalLong.of(100));
 
         StateOwner stateOwner = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
@@ -113,7 +113,7 @@ public class OperationLAYOUTCOMMITTest {
         when(dm.layoutCommit(any(), any())).thenReturn(OptionalLong.empty());
 
         StateOwner stateOwner = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
-        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
@@ -137,7 +137,7 @@ public class OperationLAYOUTCOMMITTest {
     @Test(expected = NotSuppException.class)
     public void testNoPnfsConfigured() throws Exception {
 
-        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord = sh.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
 
         COMPOUND4args layoutCommit = new CompoundBuilder()
                 .withSequence(false, session.id(), 0, 0, 1)
