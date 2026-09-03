@@ -68,7 +68,7 @@ public class FileTrackerBenchmark {
         StateOwner stateOwner = client.getOrCreateOwner(Thread.currentThread().getName().getBytes(
                 StandardCharsets.UTF_8), new seqid4(0));
         Inode inode = generateFileHandle();
-        fileTrackerHolder.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        fileTrackerHolder.getFileTracker().addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         fileTrackerHolder.getStateHandler().removeClient(client);
         return client;
     }

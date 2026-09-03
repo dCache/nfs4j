@@ -53,9 +53,9 @@ public class OperationCOPYTest {
         StateOwner stateOwner = new StateOwner(owner, 1);
 
         srcStateid = stateHandler.getFileTracker().addOpen(client, stateOwner, srcInode,
-                nfs4_prot.OPEN4_SHARE_ACCESS_READ, nfs4_prot.OPEN4_SHARE_DENY_NONE).openStateId();
+                nfs4_prot.OPEN4_SHARE_ACCESS_READ, nfs4_prot.OPEN4_SHARE_DENY_NONE, true).openStateId();
         destStateid = stateHandler.getFileTracker().addOpen(client, stateOwner, destInode,
-                nfs4_prot.OPEN4_SHARE_ACCESS_WRITE, nfs4_prot.OPEN4_SHARE_DENY_NONE).openStateId();
+                nfs4_prot.OPEN4_SHARE_ACCESS_WRITE, nfs4_prot.OPEN4_SHARE_DENY_NONE, true).openStateId();
 
         vfs = mock(VirtualFileSystem.class);
         when(vfs.copyFileRange(any(), anyLong(), any(), anyLong(), anyLong()))

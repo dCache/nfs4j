@@ -72,8 +72,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
     }
 
     @Test
@@ -85,8 +85,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        var openRecord2 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        var openRecord2 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
         assertEquals("New stateid returned", openRecord1.openStateId(), openRecord2.openStateId());
     }
 
@@ -100,8 +100,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        var openRecord2 = tracker.addOpen(client1, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        var openRecord2 = tracker.addOpen(client1, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         assertNotEquals("Same stateid for different owners returned", openRecord1.openStateId(), openRecord2
                 .openStateId());
     }
@@ -115,8 +115,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
         int accessMode = tracker.getShareAccess(client1, inode, openRecord.openStateId());
         assertEquals("Access mode not merged", OPEN4_SHARE_ACCESS_BOTH, accessMode);
     }
@@ -130,8 +130,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
 
         tracker.downgradeOpen(client1, openRecord.openStateId(), inode, OPEN4_SHARE_ACCESS_READ, 0);
 
@@ -148,8 +148,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
 
         tracker.downgradeOpen(client1, openRecord.openStateId(), inode, OPEN4_SHARE_ACCESS_WRITE, 0);
     }
@@ -163,8 +163,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_BOTH, OPEN4_SHARE_ACCESS_READ);
-        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_BOTH, OPEN4_SHARE_ACCESS_READ, true);
+        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
 
         tracker.downgradeOpen(client1, openRecord.openStateId(), inode, OPEN4_SHARE_ACCESS_READ,
                 OPEN4_SHARE_ACCESS_WRITE);
@@ -181,8 +181,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE, 0);
+        var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE, 0, true);
         assertNotEquals("Same stateid returned", openRecord1.openStateId(), openRecord2.openStateId());
     }
 
@@ -195,8 +195,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ, true);
     }
 
     @Test
@@ -208,10 +208,10 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         tracker.removeOpen(inode, openRecord.openStateId());
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_WRITE, OPEN4_SHARE_ACCESS_READ, true);
     }
 
     @Test(expected = BadStateidException.class)
@@ -223,7 +223,7 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         tracker.getShareAccess(client1, inode, client1.createOpenState(stateOwner1).stateid());
     }
 
@@ -240,8 +240,25 @@ public class FileTrackerTest {
         Inode inode = Inode.forFile(fh.value);
 
         var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
-                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, true);
         assertTrue("Read delegation not granted", openRecord.hasDelegation());
+    }
+
+    @Test
+    public void shouldNotGetReadDelegationWhenDisabledByExport() throws Exception {
+
+        NFS4Client client = createClient(sh);
+        ClientCB mockCallBack = mock(ClientCB.class);
+        client.setCB(mockCallBack);
+
+        StateOwner stateOwner1 = client.getOrCreateOwner("client1".getBytes(StandardCharsets.UTF_8), new seqid4(0));
+
+        nfs_fh4 fh = generateFileHandle();
+        Inode inode = Inode.forFile(fh.value);
+
+        var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, false);
+        assertFalse("Read delegation granted although disabled for the export", openRecord.hasDelegation());
     }
 
     @Test
@@ -256,7 +273,7 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord = tracker.addOpen(client, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         assertFalse("Read delegation is granted, but not requested", openRecord.hasDelegation());
     }
 
@@ -273,10 +290,10 @@ public class FileTrackerTest {
         Inode inode = Inode.forFile(fh.value);
 
         var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
-                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, true);
         try {
             var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_WRITE,
-                    0);
+                    0, true);
             fail("Delay exception expected");
         } catch (DelayException e) {
             // expected
@@ -298,9 +315,9 @@ public class FileTrackerTest {
         Inode inode = Inode.forFile(fh.value);
 
         var openRecord1 = tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ
-                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, true);
         var openRecord2 = tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ
-                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+                | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, true);
 
         assertTrue("Read delegation not granted", openRecord2.hasDelegation());
 
@@ -315,10 +332,10 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        var openRecord1 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord1 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         assertFalse("Delegation not expected, but granted", openRecord1.hasDelegation());
 
-        var openRecord2 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        var openRecord2 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
         assertTrue("Read opportunistic delegation not granted", openRecord2.hasDelegation());
     }
 
@@ -332,11 +349,11 @@ public class FileTrackerTest {
         Inode inode = Inode.forFile(fh.value);
 
         var openRecord1 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ
-                | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0);
+                | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0, true);
         assertFalse("Unwanted delegation", openRecord1.hasDelegation());
 
         var openRecord2 = tracker.addOpen(client, stateOwner, inode, OPEN4_SHARE_ACCESS_READ
-                | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0);
+                | OPEN4_SHARE_ACCESS_WANT_NO_DELEG, 0, true);
         assertFalse("Unwanted delegation", openRecord2.hasDelegation());
     }
 
@@ -351,8 +368,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0);
-        tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
+        tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ, 0, true);
 
         var openFiles = tracker.getOpenFiles();
 
@@ -373,8 +390,8 @@ public class FileTrackerTest {
         nfs_fh4 fh = generateFileHandle();
         Inode inode = Inode.forFile(fh.value);
 
-        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
-        tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0);
+        tracker.addOpen(client1, stateOwner1, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, true);
+        tracker.addOpen(client2, stateOwner2, inode, OPEN4_SHARE_ACCESS_READ | OPEN4_SHARE_ACCESS_WANT_READ_DELEG, 0, true);
 
         var delegations = tracker.getDelegations();
 
