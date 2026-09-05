@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.dcache.nfs.v4;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.dcache.nfs.ChimeraNFSException;
@@ -105,6 +104,7 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
     public COMPOUND4res NFSPROC4_COMPOUND_4(RpcCall call$, COMPOUND4args arg1) {
 
         COMPOUND4res res = new COMPOUND4res();
+        res.resarray = new ArrayList<>(arg1.argarray.length);
 
         try {
 
@@ -132,7 +132,6 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
                  */
                 throw new ResourceException(String.format("Too many ops [%d]", arg1.argarray.length));
             }
-            res.resarray = new ArrayList<>(arg1.argarray.length);
 
             VirtualFileSystem fs = new PseudoFs(_fs, call$, _exportTable);
 
@@ -210,11 +209,9 @@ public class NFSServerV41 extends nfs4_prot_NFS4_PROGRAM_ServerStub {
 
         } catch (ChimeraNFSException e) {
             _log.info("NFS operation failed: {}", e.getMessage());
-            res.resarray = Collections.emptyList();
             res.status = e.getStatus();
         } catch (Exception e) {
             _log.error("Unhandled exception:", e);
-            res.resarray = Collections.emptyList();
             res.status = nfsstat.NFSERR_SERVERFAULT;
         } finally {
             MDC.remove(NfsMdc.TAG);

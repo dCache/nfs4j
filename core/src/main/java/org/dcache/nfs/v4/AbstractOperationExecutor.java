@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2019 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -71,6 +71,9 @@ public abstract class AbstractOperationExecutor implements OperationExecutor {
         } catch (OncRpcException e) {
             opResult.setStatus(nfsstat.NFSERR_BADXDR);
             LOGGER.warn("Bad xdr: {}: ", e.getMessage());
+        } catch (Exception e) {
+            LOGGER.error("Unexpected error: op: {} : {}", nfs_opnum4.toString(args.argop), e.getMessage(), e);
+            opResult.setStatus(nfsstat.NFSERR_SERVERFAULT);
         }
         return opResult;
     }
