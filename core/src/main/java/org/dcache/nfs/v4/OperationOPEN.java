@@ -92,212 +92,214 @@ public class OperationOPEN extends AbstractNFSv4Operation {
 
         owner = client.getOrCreateOwner(_args.opopen.owner.owner, _args.opopen.seqid);
 
-        res.resok4 = new OPEN4resok();
-        res.resok4.attrset = new bitmap4();
-        res.resok4.delegation = new open_delegation4();
-        res.resok4.delegation.delegation_type = context.getMinorversion() == 0
-                ? open_delegation_type4.OPEN_DELEGATE_NONE : open_delegation_type4.OPEN_DELEGATE_NONE_EXT;
-        res.resok4.delegation.od_whynone = new open_none_delegation4();
-        res.resok4.delegation.od_whynone.ond_why = why_no_delegation4.WND4_NOT_WANTED;
-        res.resok4.cinfo = new change_info4();
-        res.resok4.cinfo.atomic = true;
+        SequencedRequest.process(context, owner, _args.opopen.seqid, result, () -> {
+            res.resok4 = new OPEN4resok();
+            res.resok4.attrset = new bitmap4();
+            res.resok4.delegation = new open_delegation4();
+            res.resok4.delegation.delegation_type = context.getMinorversion() == 0
+                    ? open_delegation_type4.OPEN_DELEGATE_NONE : open_delegation_type4.OPEN_DELEGATE_NONE_EXT;
+            res.resok4.delegation.od_whynone = new open_none_delegation4();
+            res.resok4.delegation.od_whynone.ond_why = why_no_delegation4.WND4_NOT_WANTED;
+            res.resok4.cinfo = new change_info4();
+            res.resok4.cinfo.atomic = true;
 
-        switch (_args.opopen.claim.claim) {
+            switch (_args.opopen.claim.claim) {
 
-            case open_claim_type4.CLAIM_NULL:
+                case open_claim_type4.CLAIM_NULL:
 
-                if (client.needReclaim() || context.getStateHandler().isGracePeriod()) {
-                    throw new GraceException();
-                }
-
-                Inode parent = context.currentInode();
-                Stat stat = context.getFs().getattr(parent);
-                if (stat.type() != Stat.Type.DIRECTORY) {
-                    throw new NotDirException();
-                }
-                res.resok4.cinfo.before = new changeid4(stat.getGeneration());
-                String name = NameFilter.convertName(_args.opopen.claim.file.value);
-                _log.debug("regular open for : {}", name);
-
-                Inode inode;
-                if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
-
-                    boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4)
-                            || (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
-
-                    /**
-                     * According to the spec. client MAY send all allowed attributes. Nevertheless, in reality, clients
-                     * send only mode. We will accept only mode and client will send extra SETATTR is required.
-                     *
-                     * REVISIT: we can apply all others as well to avoid extra network round trip.
-                     */
-                    AttributeMap attributeMap;
-
-                    switch (_args.opopen.openhow.how.mode) {
-                        case createmode4.UNCHECKED4:
-                        case createmode4.GUARDED4:
-                            attributeMap = new AttributeMap(_args.opopen.openhow.how.createattrs);
-                            break;
-                        case createmode4.EXCLUSIVE4:
-                            attributeMap = new AttributeMap(null);
-                            break;
-                        case createmode4.EXCLUSIVE4_1:
-                            attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
-                            break;
-                        default:
-                            throw new BadXdrException("bad value: " + _args.opopen.openhow.how.mode);
+                    if (client.needReclaim() || context.getStateHandler().isGracePeriod()) {
+                        throw new GraceException();
                     }
 
-                    try {
+                    Inode parent = context.currentInode();
+                    Stat stat = context.getFs().getattr(parent);
+                    if (stat.type() != Stat.Type.DIRECTORY) {
+                        throw new NotDirException();
+                    }
+                    res.resok4.cinfo.before = new changeid4(stat.getGeneration());
+                    String name = NameFilter.convertName(_args.opopen.claim.file.value);
+                    _log.debug("regular open for : {}", name);
 
-                        int mode = 0600;
+                    Inode inode;
+                    if (_args.opopen.openhow.opentype == opentype4.OPEN4_CREATE) {
 
-                        Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
-                        Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
+                        boolean exclusive = (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4)
+                                || (_args.opopen.openhow.how.mode == createmode4.EXCLUSIVE4_1);
 
-                        if (createMode.isPresent()) {
-                            mode = createMode.get().value;
-                        }
-
-                        _log.debug("Creating a new file: {}", name);
-                        inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,
-                                name, context.getSubject(), mode);
-
-                        /*
-                         * Tell client which attributes was applied.
+                        /**
+                         * According to the spec. client MAY send all allowed attributes. Nevertheless, in reality, clients
+                         * send only mode. We will accept only mode and client will send extra SETATTR is required.
+                         *
+                         * REVISIT: we can apply all others as well to avoid extra network round trip.
                          */
-                        if (createMode.isPresent()) {
-                            res.resok4.attrset.set(nfs4_prot.FATTR4_MODE);
+                        AttributeMap attributeMap;
+
+                        switch (_args.opopen.openhow.how.mode) {
+                            case createmode4.UNCHECKED4:
+                            case createmode4.GUARDED4:
+                                attributeMap = new AttributeMap(_args.opopen.openhow.how.createattrs);
+                                break;
+                            case createmode4.EXCLUSIVE4:
+                                attributeMap = new AttributeMap(null);
+                                break;
+                            case createmode4.EXCLUSIVE4_1:
+                                attributeMap = new AttributeMap(_args.opopen.openhow.how.ch_createboth.cva_attrs);
+                                break;
+                            default:
+                                throw new BadXdrException("bad value: " + _args.opopen.openhow.how.mode);
                         }
 
-                        if (createSize.isPresent()) {
-                            if (createSize.get().value != 0) {
-                                var newSizeStat = new Stat();
-                                newSizeStat.setSize(createSize.get().value);
-                                context.getFs().setattr(inode, newSizeStat);
+                        try {
+
+                            int mode = 0600;
+
+                            Optional<mode4> createMode = attributeMap.get(nfs4_prot.FATTR4_MODE);
+                            Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
+
+                            if (createMode.isPresent()) {
+                                mode = createMode.get().value;
                             }
-                            res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
+
+                            _log.debug("Creating a new file: {}", name);
+                            inode = context.getFs().create(context.currentInode(), Stat.Type.REGULAR,
+                                    name, context.getSubject(), mode);
+
+                            /*
+                             * Tell client which attributes was applied.
+                             */
+                            if (createMode.isPresent()) {
+                                res.resok4.attrset.set(nfs4_prot.FATTR4_MODE);
+                            }
+
+                            if (createSize.isPresent()) {
+                                if (createSize.get().value != 0) {
+                                    var newSizeStat = new Stat();
+                                    newSizeStat.setSize(createSize.get().value);
+                                    context.getFs().setattr(inode, newSizeStat);
+                                }
+                                res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
+                            }
+
+                            res.resok4.cinfo.after = new changeid4(context.getFs().getattr(parent).getGeneration());
+                        } catch (ExistException e) {
+
+                            if (exclusive) {
+                                throw new ExistException();
+                            }
+                            // no changes from us, old stat info is still good enough
+                            res.resok4.cinfo.after = new changeid4(stat.getGeneration());
+
+                            inode = context.getFs().lookup(context.currentInode(), name);
+                            if (_log.isDebugEnabled()) {
+                                Stat fileStat = context.getFs().getattr(context.currentInode());
+                                _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
+                                        name,
+                                        fileStat.getUid(),
+                                        fileStat.getGid(),
+                                        Integer.toOctalString(fileStat.getMode() & 0777));
+                            }
+
+                            if (context.getFs().access(context.getSubject(), inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
+                                throw new AccessException();
+                            }
+
+                            Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
+                            if (createSize.isPresent() && createSize.get().value == 0) {
+                                Stat stat4size = new Stat();
+                                stat4size.setSize(0);
+                                context.getFs().setattr(inode, stat4size);
+                                res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
+                            }
+
                         }
 
-                        res.resok4.cinfo.after = new changeid4(context.getFs().getattr(parent).getGeneration());
-                    } catch (ExistException e) {
-
-                        if (exclusive) {
-                            throw new ExistException();
-                        }
+                    } else {
                         // no changes from us, old stat info is still good enough
                         res.resok4.cinfo.after = new changeid4(stat.getGeneration());
 
                         inode = context.getFs().lookup(context.currentInode(), name);
-                        if (_log.isDebugEnabled()) {
-                            Stat fileStat = context.getFs().getattr(context.currentInode());
-                            _log.debug("Opening existing file: {}, uid: {}, gid: {}, mode: 0{}",
-                                    name,
-                                    fileStat.getUid(),
-                                    fileStat.getGid(),
-                                    Integer.toOctalString(fileStat.getMode() & 0777));
-                        }
-
-                        if (context.getFs().access(context.getSubject(), inode, nfs4_prot.ACCESS4_MODIFY) == 0) {
-                            throw new AccessException();
-                        }
-
-                        Optional<fattr4_size> createSize = attributeMap.get(nfs4_prot.FATTR4_SIZE);
-                        if (createSize.isPresent() && createSize.get().value == 0) {
-                            Stat stat4size = new Stat();
-                            stat4size.setSize(0);
-                            context.getFs().setattr(inode, stat4size);
-                            res.resok4.attrset.set(nfs4_prot.FATTR4_SIZE);
-                        }
-
+                        checkCanAccess(context, inode, _args.opopen.share_access);
                     }
 
-                } else {
-                    // no changes from us, old stat info is still good enough
-                    res.resok4.cinfo.after = new changeid4(stat.getGeneration());
+                    context.currentInode(inode);
 
-                    inode = context.getFs().lookup(context.currentInode(), name);
+                    break;
+                case open_claim_type4.CLAIM_PREVIOUS:
+                    /*
+                     * We must trust the client to reclaiming the valid opens. The only think we can check is that client
+                     * has a previous record in the client db.
+                     *
+                     * See: https://tools.ietf.org/html/rfc5661#section-8.4.2.1
+                     */
+                    client.wantReclaim();
+                    // fallthrough to CLAIM_FH
+                case open_claim_type4.CLAIM_FH:
+
+                    _log.debug("open by Inode for : {}", context.currentInode());
+
+                    /*
+                     * Send some dummy values for cinfo, as client does not really expect something. We can do a stat on
+                     * parent, by this will be an extra fileststem (db) call which client will not use.
+                     */
+                    res.resok4.cinfo.before = new changeid4(0);
+                    res.resok4.cinfo.after = new changeid4(0);
+
+                    inode = context.currentInode();
                     checkCanAccess(context, inode, _args.opopen.share_access);
-                }
+                    break;
+                case open_claim_type4.CLAIM_DELEGATE_CUR:
+                case open_claim_type4.CLAIM_DELEGATE_PREV:
+                case open_claim_type4.CLAIM_DELEG_CUR_FH:
+                case open_claim_type4.CLAIM_DELEG_PREV_FH:
+                    _log.warn("Unimplemented open claim: {}", _args.opopen.claim.claim);
+                    throw new InvalException("Unimplemented open claim: {}" + _args.opopen.claim.claim);
+                default:
+                    _log.warn("BAD open claim: {}", _args.opopen.claim.claim);
+                    throw new InvalException("BAD open claim: {}" + _args.opopen.claim.claim);
 
-                context.currentInode(inode);
+            }
 
-                break;
-            case open_claim_type4.CLAIM_PREVIOUS:
-                /*
-                 * We must trust the client to reclaiming the valid opens. The only think we can check is that client
-                 * has a previous record in the client db.
-                 *
-                 * See: https://tools.ietf.org/html/rfc5661#section-8.4.2.1
-                 */
-                client.wantReclaim();
-                // fallthrough to CLAIM_FH
-            case open_claim_type4.CLAIM_FH:
+            /*
+             * if it's v4.0, then client have to confirm
+             */
+            if (context.getMinorversion() > 0) {
+                res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
+            } else {
+                res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX
+                        | nfs4_prot.OPEN4_RESULT_CONFIRM);
+            }
 
-                _log.debug("open by Inode for : {}", context.currentInode());
+            /*
+             * NOTICE: in case on concurrent non-exclusive created with share_deny == WRITE may happen that client which
+             * have created the file will get DENY.
+             *
+             * THis is a perfectly a valid situation as at the end file is created and only one writer is allowed.
+             */
+            var openRecord = context
+                    .getStateHandler()
+                    .getFileTracker()
+                    .addOpen(client, owner, context.currentInode(),
+                            _args.opopen.share_access.value,
+                            _args.opopen.share_deny.value,
+                            isDelegationAllowed(context, context.currentInode()));
 
-                /*
-                 * Send some dummy values for cinfo, as client does not really expect something. We can do a stat on
-                 * parent, by this will be an extra fileststem (db) call which client will not use.
-                 */
-                res.resok4.cinfo.before = new changeid4(0);
-                res.resok4.cinfo.after = new changeid4(0);
-
-                inode = context.currentInode();
-                checkCanAccess(context, inode, _args.opopen.share_access);
-                break;
-            case open_claim_type4.CLAIM_DELEGATE_CUR:
-            case open_claim_type4.CLAIM_DELEGATE_PREV:
-            case open_claim_type4.CLAIM_DELEG_CUR_FH:
-            case open_claim_type4.CLAIM_DELEG_PREV_FH:
-                _log.warn("Unimplemented open claim: {}", _args.opopen.claim.claim);
-                throw new InvalException("Unimplemented open claim: {}" + _args.opopen.claim.claim);
-            default:
-                _log.warn("BAD open claim: {}", _args.opopen.claim.claim);
-                throw new InvalException("BAD open claim: {}" + _args.opopen.claim.claim);
-
-        }
-
-        /*
-         * if it's v4.0, then client have to confirm
-         */
-        if (context.getMinorversion() > 0) {
-            res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX);
-        } else {
-            res.resok4.rflags = new uint32_t(nfs4_prot.OPEN4_RESULT_LOCKTYPE_POSIX
-                    | nfs4_prot.OPEN4_RESULT_CONFIRM);
-        }
-
-        /*
-         * NOTICE: in case on concurrent non-exclusive created with share_deny == WRITE may happen that client which
-         * have created the file will get DENY.
-         *
-         * THis is a perfectly a valid situation as at the end file is created and only one writer is allowed.
-         */
-        var openRecord = context
-                .getStateHandler()
-                .getFileTracker()
-                .addOpen(client, owner, context.currentInode(),
-                        _args.opopen.share_access.value,
-                        _args.opopen.share_deny.value,
-                        isDelegationAllowed(context, context.currentInode()));
-
-        context.currentStateid(openRecord.openStateId());
-        res.resok4.stateid = openRecord.openStateId();
-        if (openRecord.hasDelegation()) {
-            res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_READ;
-            res.resok4.delegation.read = new open_read_delegation4();
-            res.resok4.delegation.read.stateid = openRecord.delegationStateId();
-            res.resok4.delegation.read.permissions = new nfsace4();
-            res.resok4.delegation.read.permissions.type = new acetype4(nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE);
-            res.resok4.delegation.read.permissions.flag = new aceflag4(0);
-            res.resok4.delegation.read.permissions.access_mask = new acemask4(nfs4_prot.ACCESS4_READ);
-            res.resok4.delegation.read.permissions.who = new utf8str_mixed(context.getPrincipal().getName());
-        } else if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_ANY_DELEG) != 0) {
-            // REVISIT: shall we return something less general?
-            res.resok4.delegation.od_whynone.ond_why = why_no_delegation4.WND4_RESOURCE;
-        }
-        res.status = nfsstat.NFS_OK;
+            context.currentStateid(openRecord.openStateId());
+            res.resok4.stateid = openRecord.openStateId();
+            if (openRecord.hasDelegation()) {
+                res.resok4.delegation.delegation_type = open_delegation_type4.OPEN_DELEGATE_READ;
+                res.resok4.delegation.read = new open_read_delegation4();
+                res.resok4.delegation.read.stateid = openRecord.delegationStateId();
+                res.resok4.delegation.read.permissions = new nfsace4();
+                res.resok4.delegation.read.permissions.type = new acetype4(nfs4_prot.ACE4_ACCESS_ALLOWED_ACE_TYPE);
+                res.resok4.delegation.read.permissions.flag = new aceflag4(0);
+                res.resok4.delegation.read.permissions.access_mask = new acemask4(nfs4_prot.ACCESS4_READ);
+                res.resok4.delegation.read.permissions.who = new utf8str_mixed(context.getPrincipal().getName());
+            } else if ((_args.opopen.share_access.value & nfs4_prot.OPEN4_SHARE_ACCESS_WANT_ANY_DELEG) != 0) {
+                // REVISIT: shall we return something less general?
+                res.resok4.delegation.od_whynone.ond_why = why_no_delegation4.WND4_RESOURCE;
+            }
+            res.status = nfsstat.NFS_OK;
+        });
 
     }
 

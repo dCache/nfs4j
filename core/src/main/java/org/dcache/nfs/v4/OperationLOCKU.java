@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
@@ -32,6 +34,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +47,11 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException, OncRpcException {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
         stateid4 lockStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplocku.lock_stateid);
-        NFS4Client client;
-        StateOwner lockOwner;
-        NFS4State lock_state;
 
         if (_args.oplocku.length.value == 0) {
             throw new InvalException("zero lock len");
@@ -59,38 +59,36 @@ public class OperationLOCKU extends AbstractNFSv4Operation {
 
         _args.oplocku.offset.checkOverflow(_args.oplocku.length, "offset + len overflow");
 
-        try {
-
-            if (context.getMinorversion() == 0) {
-                client = context.getStateHandler().getClientIdByStateId(lockStateid);
-            } else {
-                client = context.getSession().getClient();
-            }
-
-            lock_state = client.state(lockStateid);
-            lockOwner = lock_state.getStateOwner();
-            if (context.getMinorversion() == 0) {
-                lockOwner.acceptAsNextSequence(_args.oplocku.seqid);
-            }
-
-            NlmLock lock = new NlmLock(lockOwner, _args.oplocku.locktype, _args.oplocku.offset.value,
-                    _args.oplocku.length.value);
-            try {
-                context.getLm().unlock(inode.getLockKey(), lock);
-            } catch (LockRangeUnavailabeException e) {
-                // posix locks allows unlocking of not locked regions
-            }
-
-            lock_state.bumpSeqid();
-            context.currentStateid(lock_state.stateid());
-            result.oplocku.status = nfsstat.NFS_OK;
-            result.oplocku.lock_stateid = lock_state.stateid();
-
-        } catch (LockRangeUnavailabeException e) {
-            throw new LockRangeException();
-        } catch (LockException e) {
-            throw new ServerFaultException("lock error", e);
+        NFS4Client client;
+        if (context.getMinorversion() == 0) {
+            client = context.getStateHandler().getClientIdByStateId(lockStateid);
+        } else {
+            client = context.getSession().getClient();
         }
 
+        NFS4State lock_state = client.state(lockStateid);
+        StateOwner lockOwner = lock_state.getStateOwner();
+
+        SequencedRequest.process(context, lockOwner, _args.oplocku.seqid, result, () -> {
+            try {
+                NlmLock lock = new NlmLock(lockOwner, _args.oplocku.locktype, _args.oplocku.offset.value,
+                        _args.oplocku.length.value);
+                try {
+                    context.getLm().unlock(inode.getLockKey(), lock);
+                } catch (LockRangeUnavailabeException e) {
+                    // posix locks allows unlocking of not locked regions
+                }
+
+                lock_state.bumpSeqid();
+                context.currentStateid(lock_state.stateid());
+                result.oplocku.status = nfsstat.NFS_OK;
+                result.oplocku.lock_stateid = lock_state.stateid();
+
+            } catch (LockRangeUnavailabeException e) {
+                throw new LockRangeException();
+            } catch (LockException e) {
+                throw new ServerFaultException("lock error", e);
+            }
+        });
     }
 }

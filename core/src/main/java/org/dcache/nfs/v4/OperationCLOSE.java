@@ -60,14 +60,15 @@ public class OperationCLOSE extends AbstractNFSv4Operation {
         Stateids.checkStateId(nfsState.stateid(), stateid);
 
         if (context.getMinorversion() == 0) {
-            nfsState.getStateOwner().acceptAsNextSequence(_args.opclose.seqid);
             client.updateLeaseTime();
         }
 
-        client.tryReleaseState(stateid);
+        SequencedRequest.process(context, nfsState.getStateOwner(), _args.opclose.seqid, result, () -> {
+            client.tryReleaseState(stateid);
 
-        res.open_stateid = Stateids.invalidStateId();
-        res.status = nfsstat.NFS_OK;
+            res.open_stateid = Stateids.invalidStateId();
+            res.status = nfsstat.NFS_OK;
+        });
 
     }
 }

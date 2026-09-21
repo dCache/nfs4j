@@ -21,7 +21,10 @@ package org.dcache.nfs.v4;
 
 import java.io.Serializable;
 
+import org.dcache.nfs.ChimeraNFSException;
+import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.BadSeqidException;
+import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.state_owner4;
 
@@ -40,6 +43,16 @@ public class StateOwner implements Serializable {
     private int seq;
 
     /**
+     * Cached response of the last consumed sequence id to answer retransmissions, see rfc7530#section-9.1.7.
+     */
+    private transient nfs_resop4 lastResponse;
+
+    /**
+     * Cached failure of the last consumed sequence id to answer retransmissions.
+     */
+    private transient ChimeraNFSException lastFailure;
+
+    /**
      * Client unique state owner.
      */
     private final state_owner4 owner;
@@ -49,6 +62,20 @@ public class StateOwner implements Serializable {
         this.seq = seq;
     }
 
+    /**
+     * Create a state owner for nfsv4.0 whose first sequenced request is expected to carry the given sequence id,
+     * typically the request creating the owner. The sequence id is consumed by the operation once it completed,
+     * see {@link #consumeSequence} and rfc7530#section-9.1.7.
+     *
+     * @param owner client unique state owner.
+     * @param seqid sequence id expected as the next one.
+     * @return the state owner.
+     */
+    public static StateOwner expectingSequence(state_owner4 owner, seqid4 seqid) {
+        // initialize the last consumed sequence id such that the given one is the expected next
+        return new StateOwner(owner, seqid.value - 1);
+    }
+
     public synchronized void acceptAsNextSequence(seqid4 openSeqid) throws BadSeqidException {
 
         int next = seq + 1;
@@ -56,6 +83,83 @@ public class StateOwner implements Serializable {
             throw new BadSeqidException();
         }
         seq = next;
+    }
+
+    /**
+     * Validate the sequence id of a sequenced nfsv4.0 request, see rfc7530#section-9.1.7. A request repeating the
+     * last consumed sequence id is a retransmission and must be answered with the cached response of the original
+     * request, see {@link #replayLastResponse()}. A request with the next sequence id must be executed and its
+     * outcome recorded with {@link #consumeSequence} or {@link #consumeSequenceOnFailure}. Any other sequence id is
+     * out of order.
+     *
+     * @param seqid sequence id of the request.
+     * @return true if the request is a retransmission of the last consumed request.
+     * @throws BadSeqidException if the sequence id is out of order.
+     */
+    public synchronized boolean isSequenceReplay(seqid4 seqid) throws BadSeqidException {
+        if (seqid.value == seq) {
+            return true;
+        }
+        if (seqid.value == seq + 1) {
+            return false;
+        }
+        throw new BadSeqidException();
+    }
+
+    /**
+     * Get the cached response of the last consumed sequence id to answer a retransmission detected by
+     * {@link #isSequenceReplay}. If the original request failed, the recorded failure is thrown again.
+     *
+     * @return the response of the original request.
+     * @throws ChimeraNFSException recorded failure of the original request.
+     */
+    public synchronized nfs_resop4 replayLastResponse() throws ChimeraNFSException {
+        if (lastFailure != null) {
+            throw lastFailure;
+        }
+        if (lastResponse == null) {
+            throw new BadSeqidException("no cached response for retransmitted sequence id");
+        }
+        return lastResponse;
+    }
+
+    /**
+     * Consume the sequence id of a successfully executed request and cache its response for retransmissions.
+     *
+     * @param seqid sequence id of the request.
+     * @param response the response sent to the client.
+     */
+    public synchronized void consumeSequence(seqid4 seqid, nfs_resop4 response) {
+        seq = seqid.value;
+        lastResponse = response;
+        lastFailure = null;
+    }
+
+    /**
+     * Consume the sequence id of a failed request, unless the error does not consume a sequence id, and record the
+     * failure for retransmissions. The client does not advance its sequence id on the errors listed in
+     * rfc7530#section-9.1.7 and retries a request answered with NFS4ERR_DELAY with the same sequence id.
+     *
+     * @param seqid sequence id of the request.
+     * @param failure the failure sent to the client.
+     */
+    public synchronized void consumeSequenceOnFailure(seqid4 seqid, ChimeraNFSException failure) {
+        switch (failure.getStatus()) {
+            case nfsstat.NFSERR_BAD_SEQID:
+            case nfsstat.NFSERR_BAD_STATEID:
+            case nfsstat.NFSERR_STALE_CLIENTID:
+            case nfsstat.NFSERR_STALE_STATEID:
+            case nfsstat.NFSERR_BADXDR:
+            case nfsstat.NFSERR_RESOURCE:
+            case nfsstat.NFSERR_NOFILEHANDLE:
+            case nfsstat.NFSERR_MOVED:
+            case nfsstat.NFSERR_DELAY:
+                return;
+            default:
+                seq = seqid.value;
+                lastResponse = null;
+                lastFailure = failure;
+        }
     }
 
     @Override

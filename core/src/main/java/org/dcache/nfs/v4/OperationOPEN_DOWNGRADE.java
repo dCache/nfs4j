@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
@@ -30,6 +32,7 @@ import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +45,7 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException {
 
         final OPEN_DOWNGRADE4res res = result.opopen_downgrade;
 
@@ -78,14 +81,12 @@ public class OperationOPEN_DOWNGRADE extends AbstractNFSv4Operation {
         NFS4State nfsState = client.state(stateid);
         Stateids.checkStateId(nfsState.stateid(), stateid);
 
-        if (context.getMinorversion() == 0) {
-            nfsState.getStateOwner().acceptAsNextSequence(_args.opopen_downgrade.seqid);
-        }
-
-        res.status = nfsstat.NFS_OK;
-        res.resok4 = new OPEN_DOWNGRADE4resok();
-        res.resok4.open_stateid = context.getStateHandler()
-                .getFileTracker()
-                .downgradeOpen(client, stateid, inode, shareAccess, shareDeny);
+        SequencedRequest.process(context, nfsState.getStateOwner(), _args.opopen_downgrade.seqid, result, () -> {
+            res.status = nfsstat.NFS_OK;
+            res.resok4 = new OPEN_DOWNGRADE4resok();
+            res.resok4.open_stateid = context.getStateHandler()
+                    .getFileTracker()
+                    .downgradeOpen(client, stateid, inode, shareAccess, shareDeny);
+        });
     }
 }

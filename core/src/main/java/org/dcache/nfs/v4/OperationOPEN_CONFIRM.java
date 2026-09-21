@@ -67,14 +67,15 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
         NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
-        state.getStateOwner().acceptAsNextSequence(_args.opopen_confirm.seqid);
 
-        state.bumpSeqid();
-        state.confirm();
+        SequencedRequest.process(context, state.getStateOwner(), _args.opopen_confirm.seqid, result, () -> {
+            state.bumpSeqid();
+            state.confirm();
 
-        res.resok4 = new OPEN_CONFIRM4resok();
-        res.resok4.open_stateid = state.stateid();
+            res.resok4 = new OPEN_CONFIRM4resok();
+            res.resok4.open_stateid = state.stateid();
 
-        res.status = nfsstat.NFS_OK;
+            res.status = nfsstat.NFS_OK;
+        });
     }
 }

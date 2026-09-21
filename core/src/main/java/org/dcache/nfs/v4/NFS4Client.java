@@ -651,11 +651,10 @@ public class NFS4Client {
                 state_owner4 so = new state_owner4();
                 so.clientid = _clientId;
                 so.owner = owner;
-                stateOwner = new StateOwner(so, seq.value);
+                stateOwner = StateOwner.expectingSequence(so, seq);
                 _owners.put(k, stateOwner);
-            } else {
-                stateOwner.acceptAsNextSequence(seq);
             }
+            // sequence validation and replay detection happens in the operation, see StateOwner#isSequenceReplay
         } else {
             // for minor version client id derived from session
             state_owner4 so = new state_owner4();

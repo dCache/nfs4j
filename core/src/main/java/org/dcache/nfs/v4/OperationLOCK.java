@@ -19,6 +19,8 @@
  */
 package org.dcache.nfs.v4;
 
+import java.io.IOException;
+
 import org.dcache.nfs.ChimeraNFSException;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.InvalException;
@@ -37,8 +39,10 @@ import org.dcache.nfs.v4.xdr.nfs_lock_type4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
 import org.dcache.nfs.v4.xdr.offset4;
+import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.vfs.Inode;
+import org.dcache.oncrpc4j.rpc.OncRpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +55,7 @@ public class OperationLOCK extends AbstractNFSv4Operation {
     }
 
     @Override
-    public void process(CompoundContext context, nfs_resop4 result) throws ChimeraNFSException {
+    public void process(CompoundContext context, nfs_resop4 result) throws IOException, OncRpcException {
         // to enforce current file handle existence check
         Inode inode = context.currentInode();
 
@@ -61,14 +65,11 @@ public class OperationLOCK extends AbstractNFSv4Operation {
 
         _args.oplock.offset.checkOverflow(_args.oplock.length, "offset + len overflow");
 
-        stateid4 oldStateid;
-        NFS4Client client;
-        NFS4State lock_state;
-        StateOwner lockOwner;
-
         if (_args.oplock.locker.new_lock_owner) {
-            oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.open_owner.open_stateid);
+            stateid4 oldStateid = Stateids.getCurrentStateidIfNeeded(context,
+                    _args.oplock.locker.open_owner.open_stateid);
 
+            NFS4Client client;
             if (context.getMinorversion() == 0) {
                 client = context.getStateHandler().getConfirmedClient(
                         _args.oplock.locker.open_owner.lock_owner.clientid);
@@ -78,30 +79,77 @@ public class OperationLOCK extends AbstractNFSv4Operation {
 
             NFS4State openState = client.state(oldStateid);
             Stateids.checkStateId(openState.stateid(), oldStateid);
+
+            StateOwner openOwner = openState.getStateOwner();
+            seqid4 openSeqid = _args.oplock.locker.open_owner.open_seqid;
+            seqid4 lockSeqid = _args.oplock.locker.open_owner.lock_seqid;
+
+            /*
+             * the request is sequenced by the open-owner, while the new lock-owner is sequenced by it for
+             * subsequent requests. Consume both once the operation completed, as the client does.
+             */
             if (context.getMinorversion() == 0) {
-                openState.getStateOwner().acceptAsNextSequence(_args.oplock.locker.open_owner.open_seqid);
+                if (openOwner.isSequenceReplay(openSeqid)) {
+                    result.oplock = openOwner.replayLastResponse().oplock;
+                    return;
+                }
                 client.updateLeaseTime();
             }
 
-            lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner,
-                    _args.oplock.locker.open_owner.lock_seqid);
-            lock_state = client.createLockState(lockOwner, openState);
+            StateOwner lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner,
+                    lockSeqid);
 
-            // lock states do not requires extra confirmation
-            lock_state.confirm();
+            // when any of the sequence values matches a previous request it is a retransmission, rfc7530 9.1.9
+            if (context.getMinorversion() == 0 && lockOwner.isSequenceReplay(lockSeqid)) {
+                result.oplock = lockOwner.replayLastResponse().oplock;
+                return;
+            }
 
+            try {
+                NFS4State lock_state = client.createLockState(lockOwner, openState);
+
+                // lock states do not requires extra confirmation
+                lock_state.confirm();
+
+                lock(context, result, client, lock_state, lockOwner, inode);
+
+                if (context.getMinorversion() == 0) {
+                    openOwner.consumeSequence(openSeqid, result);
+                    lockOwner.consumeSequence(lockSeqid, result);
+                }
+            } catch (ChimeraNFSException e) {
+                if (context.getMinorversion() == 0) {
+                    openOwner.consumeSequenceOnFailure(openSeqid, e);
+                    lockOwner.consumeSequenceOnFailure(lockSeqid, e);
+                }
+                throw e;
+            } catch (IOException | RuntimeException e) {
+                if (context.getMinorversion() == 0) {
+                    ServerFaultException failure = new ServerFaultException(e.getMessage(), e);
+                    openOwner.consumeSequenceOnFailure(openSeqid, failure);
+                    lockOwner.consumeSequenceOnFailure(lockSeqid, failure);
+                }
+                throw e;
+            }
         } else {
-            oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.lock_owner.lock_stateid);
-            client = context.getStateHandler().getClientIdByStateId(oldStateid);
-            lock_state = client.state(oldStateid);
+            stateid4 oldStateid = Stateids.getCurrentStateidIfNeeded(context,
+                    _args.oplock.locker.lock_owner.lock_stateid);
+            NFS4Client client = context.getStateHandler().getClientIdByStateId(oldStateid);
+            NFS4State lock_state = client.state(oldStateid);
             Stateids.checkStateId(lock_state.stateid(), oldStateid);
 
-            lockOwner = lock_state.getStateOwner();
+            StateOwner lockOwner = lock_state.getStateOwner();
             if (context.getMinorversion() == 0) {
-                lockOwner.acceptAsNextSequence(_args.oplock.locker.lock_owner.lock_seqid);
                 client.updateLeaseTime();
             }
+
+            SequencedRequest.process(context, lockOwner, _args.oplock.locker.lock_owner.lock_seqid, result,
+                    () -> lock(context, result, client, lock_state, lockOwner, inode));
         }
+    }
+
+    private void lock(CompoundContext context, nfs_resop4 result, NFS4Client client, NFS4State lock_state,
+            StateOwner lockOwner, Inode inode) throws ChimeraNFSException {
 
         try {
 
