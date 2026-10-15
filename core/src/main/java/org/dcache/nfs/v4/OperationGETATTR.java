@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@ package org.dcache.nfs.v4;
 import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_0;
 import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1;
 import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1_NO_PNFS;
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_2;
+import static org.dcache.nfs.v4.NFSv4FileAttributes.SUPPORTED_ATTRS_V4_2_NO_PNFS;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.dcache.nfs.nfsstat;
 import org.dcache.nfs.status.AccessException;
 import org.dcache.nfs.status.InvalException;
+import org.dcache.nfs.status.MinorVersMismatchException;
 import org.dcache.nfs.v4.xdr.GETATTR4res;
 import org.dcache.nfs.v4.xdr.GETATTR4resok;
 import org.dcache.nfs.v4.xdr.attrlist4;
@@ -193,11 +196,21 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
 
             case nfs4_prot.FATTR4_SUPPORTED_ATTRS:
                 int[] bitmap;
-                if (context.getMinorversion() == 0) {
-                    bitmap = SUPPORTED_ATTRS_V4_0;
-                } else {
-                    bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1
-                            : SUPPORTED_ATTRS_V4_1_NO_PNFS;
+                switch (context.getMinorversion()) {
+                    case 0:
+                        bitmap = SUPPORTED_ATTRS_V4_0;
+                        break;
+                    case 1:
+                        bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_1
+                              : SUPPORTED_ATTRS_V4_1_NO_PNFS;
+                        break;
+                    case 2:
+                        bitmap = context.getDeviceManager().isPresent() ? SUPPORTED_ATTRS_V4_2
+                                : SUPPORTED_ATTRS_V4_2_NO_PNFS;
+                        break;
+                    default:
+                        // should never happen; minor version checked before compound operation processing
+                        throw new MinorVersMismatchException("Unsupported minorversion: " + context.getMinorversion());
                 }
                 return Optional.of(new fattr4_supported_attrs(bitmap));
             case nfs4_prot.FATTR4_TYPE:
@@ -415,6 +428,7 @@ public class OperationGETATTR extends AbstractNFSv4Operation {
                 return Optional.of(new fattr4_xattr_support(true));
             case nfs4_prot.FATTR4_TIME_MODIFY_SET:
             case nfs4_prot.FATTR4_TIME_ACCESS_SET:
+            case nfs4_prot.FATTR4_MODE_SET_MASKED:
                 throw new InvalException("getattr of write-only attributes");
             default:
                 _log.debug("GETATTR for #{}", fattr);

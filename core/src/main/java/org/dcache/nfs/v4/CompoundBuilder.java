@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2021 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@ import org.dcache.nfs.v4.xdr.RECLAIM_COMPLETE4args;
 import org.dcache.nfs.v4.xdr.REMOVE4args;
 import org.dcache.nfs.v4.xdr.REMOVEXATTR4args;
 import org.dcache.nfs.v4.xdr.SEQUENCE4args;
+import org.dcache.nfs.v4.xdr.SETATTR4args;
 import org.dcache.nfs.v4.xdr.SETXATTR4args;
 import org.dcache.nfs.v4.xdr.WRITE4args;
 import org.dcache.nfs.v4.xdr.attrlist4;
@@ -71,6 +72,7 @@ import org.dcache.nfs.v4.xdr.device_error4;
 import org.dcache.nfs.v4.xdr.deviceid4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_mode;
+import org.dcache.nfs.v4.xdr.fattr4_mode_set_masked;
 import org.dcache.nfs.v4.xdr.fattr4_size;
 import org.dcache.nfs.v4.xdr.io_info4;
 import org.dcache.nfs.v4.xdr.layoutiomode4;
@@ -80,6 +82,8 @@ import org.dcache.nfs.v4.xdr.layoutreturn_type4;
 import org.dcache.nfs.v4.xdr.layouttype4;
 import org.dcache.nfs.v4.xdr.layoutupdate4;
 import org.dcache.nfs.v4.xdr.length4;
+import org.dcache.nfs.v4.xdr.mode4;
+import org.dcache.nfs.v4.xdr.mode_masked4;
 import org.dcache.nfs.v4.xdr.netloc4;
 import org.dcache.nfs.v4.xdr.newoffset4;
 import org.dcache.nfs.v4.xdr.newtime4;
@@ -288,6 +292,48 @@ public class CompoundBuilder {
         args.attr_request = bitmap4.of(attrs);
         op.argop = nfs_opnum4.OP_GETATTR;
         op.opgetattr = args;
+        ops.add(op);
+        return this;
+    }
+
+    /**
+     * Plain SETATTR of FATTR4_MODE with an anonymous (all-zero) stateid.
+     */
+    public CompoundBuilder withSetattr(int mode) {
+        nfs_argop4 op = new nfs_argop4();
+        SETATTR4args args = new SETATTR4args();
+
+        args.obj_attributes = new fattr4();
+        args.obj_attributes.attr_vals = new attrlist4();
+        args.obj_attributes.attr_vals.value = encodeAttrs(new fattr4_mode(mode));
+        args.obj_attributes.attrmask = bitmap4.of(nfs4_prot.FATTR4_MODE);
+        args.stateid = Stateids.ZeroStateId();
+
+        op.argop = nfs_opnum4.OP_SETATTR;
+        op.opsetattr = args;
+        ops.add(op);
+        return this;
+    }
+
+    /**
+     * SETATTR of FATTR4_MODE_SET_MASKED with an anonymous (all-zero) stateid.
+     */
+    public CompoundBuilder withSetattrMasked(int valueToSet, int maskBits) {
+        nfs_argop4 op = new nfs_argop4();
+        SETATTR4args args = new SETATTR4args();
+
+        mode_masked4 masked = new mode_masked4();
+        masked.mm_value_to_set = new mode4(valueToSet);
+        masked.mm_mask_bits = new mode4(maskBits);
+
+        args.obj_attributes = new fattr4();
+        args.obj_attributes.attr_vals = new attrlist4();
+        args.obj_attributes.attr_vals.value = encodeAttrs(new fattr4_mode_set_masked(masked));
+        args.obj_attributes.attrmask = bitmap4.of(nfs4_prot.FATTR4_MODE_SET_MASKED);
+        args.stateid = Stateids.ZeroStateId();
+
+        op.argop = nfs_opnum4.OP_SETATTR;
+        op.opsetattr = args;
         ops.add(op);
         return this;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2019 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -89,6 +89,7 @@ public interface NFSv4FileAttributes {
     static final int FATTR4_FS_LAYOUT_TYPE = (1 << 30); // NFSv4.1 (pNFS)
 
     // word3
+    static final int FATTR4_MODE_SET_MASKED = (1 << 10);
     static final int FATTR4_SUPPATTR_EXCLCREAT = (1 << 11);
     static final int FATTR4_XATTR_SUPPORT = (1 << 18);
 
@@ -181,6 +182,18 @@ public interface NFSv4FileAttributes {
             NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
             NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1 ^ FATTR4_FS_LAYOUT_TYPE,
             NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3
+    };
+
+    public final static int[] SUPPORTED_ATTRS_V4_2 = new int[] {
+            NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+            NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1,
+            NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3 | FATTR4_MODE_SET_MASKED
+    };
+
+    public final static int[] SUPPORTED_ATTRS_V4_2_NO_PNFS = new int[] {
+            NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK0,
+            NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK1 ^ FATTR4_FS_LAYOUT_TYPE,
+            NFSv4FileAttributes.NFS4_SUPPORTED_ATTRS_MASK3 | FATTR4_MODE_SET_MASKED
     };
 
     final static bitmap4 SUPPORTED_ATTR_MASK_V4_1 = new bitmap4(NFSv4FileAttributes.SUPPORTED_ATTRS_V4_1);

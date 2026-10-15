@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@ import org.dcache.nfs.v4.xdr.bitmap4;
 import org.dcache.nfs.v4.xdr.fattr4;
 import org.dcache.nfs.v4.xdr.fattr4_acl;
 import org.dcache.nfs.v4.xdr.mode4;
+import org.dcache.nfs.v4.xdr.mode_masked4;
 import org.dcache.nfs.v4.xdr.nfs4_prot;
 import org.dcache.nfs.v4.xdr.nfs_argop4;
 import org.dcache.nfs.v4.xdr.nfs_opnum4;
@@ -94,6 +95,11 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
             if ((shareAccess & nfs4_prot.OPEN4_SHARE_ACCESS_WRITE) == 0) {
                 throw new OpenModeException("Invalid open mode");
             }
+        }
+
+        if (_args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_MODE)
+              && _args.opsetattr.obj_attributes.attrmask.isSet(nfs4_prot.FATTR4_MODE_SET_MASKED)) {
+            throw new InvalException("FATTR4_MODE and FATTR4_MODE_SET_MASKED are mutually exclusive");
         }
 
         res.status = nfsstat.NFS_OK;
@@ -156,6 +162,18 @@ public class OperationSETATTR extends AbstractNFSv4Operation {
                 mode.xdrDecode(xdr);
                 stat.setMode(mode.value);
                 context.getFs().setAcl(inode, Acls.adjust(context.getFs().getAcl(inode), mode.value));
+                break;
+            case nfs4_prot.FATTR4_MODE_SET_MASKED:
+                if (context.getMinorversion() < 2) {
+                    throw new InvalException("FATTR4_MODE_SET_MASKED is supported in NFSv4.2 and later");
+                }
+                mode_masked4 maskedMode = new mode_masked4();
+                maskedMode.xdrDecode(xdr);
+                int currentMode = context.getFs().getattr(inode).getMode();
+                int newMode = (currentMode & ~maskedMode.mm_mask_bits.value)
+                        | (maskedMode.mm_value_to_set.value & maskedMode.mm_mask_bits.value);
+                stat.setMode(newMode);
+                context.getFs().setAcl(inode, Acls.adjust(context.getFs().getAcl(inode), newMode));
                 break;
             case nfs4_prot.FATTR4_OWNER:
                 utf8str_cs owner = new utf8str_cs();
