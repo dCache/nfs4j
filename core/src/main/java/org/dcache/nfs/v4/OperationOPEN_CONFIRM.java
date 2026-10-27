@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -67,7 +67,9 @@ public class OperationOPEN_CONFIRM extends AbstractNFSv4Operation {
 
         NFS4Client client = context.getStateHandler().getClientIdByStateId(stateid);
         NFS4State state = client.state(stateid);
-        state.getStateOwner().acceptAsNextSequence(_args.opopen_confirm.seqid);
+        if (context.acquireSequence(state.getStateOwner(), _args.opopen_confirm.seqid)) {
+            return;
+        }
 
         state.bumpSeqid();
         state.confirm();

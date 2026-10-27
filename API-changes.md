@@ -4,6 +4,11 @@
 
 - change the signature of `FileTracker#addOpen` to accept a flag that indicates whether the export allows the
   server to hand out open delegations.
+- removed `StateOwner#acceptAsNextSequence`. NFSv4.0 operations acquire the owner's sequence with
+  `CompoundContext#acquireSequence`, which answers retransmissions with the cached reply.
+- `NFS4Client#getOrCreateOwner` doesn't validate the sequence id and no longer throws `BadSeqidException`.
+- custom `OperationExecutor` implementations not derived from `AbstractOperationExecutor` must call
+  `CompoundContext#completeSequence` with the result of each operation, see `AbstractOperationExecutor#execute`.
 
 ## 0.28
 

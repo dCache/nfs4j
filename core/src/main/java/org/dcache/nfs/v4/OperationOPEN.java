@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -91,6 +91,9 @@ public class OperationOPEN extends AbstractNFSv4Operation {
         }
 
         owner = client.getOrCreateOwner(_args.opopen.owner.owner, _args.opopen.seqid);
+        if (context.acquireSequence(owner, _args.opopen.seqid)) {
+            return;
+        }
 
         res.resok4 = new OPEN4resok();
         res.resok4.attrset = new bitmap4();
