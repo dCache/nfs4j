@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.GuardedBy;
 
 import org.dcache.nfs.ChimeraNFSException;
-import org.dcache.nfs.status.BadSeqidException;
 import org.dcache.nfs.status.BadSessionException;
 import org.dcache.nfs.status.BadStateidException;
 import org.dcache.nfs.status.CompleteAlreadyException;
@@ -262,7 +261,6 @@ public class NFS4Client {
         return _serverVerifier.equals(verifier);
     }
 
-
     public synchronized boolean isConfirmed() {
         return _isConfirmed;
     }
@@ -299,8 +297,8 @@ public class NFS4Client {
     }
 
     /**
-     * Expire the client's lease. The client record and its state are preserved,
-     * but any operation using this client's stateid will return NFS4ERR_EXPIRED.
+     * Expire the client's lease. The client record and its state are preserved, but any operation using this client's
+     * stateid will return NFS4ERR_EXPIRED.
      */
     public void expireLease() {
         _lastLeaseUpdate = Instant.EPOCH;
@@ -635,14 +633,15 @@ public class NFS4Client {
     }
 
     /**
-     * Get and validate {@link StateOwner}. If owner does not exist a new owner will be created initial {@code seq}.
+     * Get {@link StateOwner}. If owner does not exist a new owner will be created, which expects {@code seq} as the
+     * sequence id of its first request. The sequence id is validated by the operation, see
+     * {@link CompoundContext#acquireSequence(StateOwner, seqid4)}.
      *
      * @param owner client unique state owner
-     * @param seq open sequence to validate
+     * @param seq sequence id of the request
      * @return state owner
-     * @throws BadSeqidException if sequence out of order.
      */
-    public synchronized StateOwner getOrCreateOwner(byte[] owner, seqid4 seq) throws BadSeqidException {
+    public synchronized StateOwner getOrCreateOwner(byte[] owner, seqid4 seq) {
         StateOwner stateOwner;
         if (_minorVersion == 0) {
             Opaque k = Opaque.forBytes(owner);
@@ -651,10 +650,8 @@ public class NFS4Client {
                 state_owner4 so = new state_owner4();
                 so.clientid = _clientId;
                 so.owner = owner;
-                stateOwner = new StateOwner(so, seq.value);
+                stateOwner = new StateOwner(so, seq.value - 1);
                 _owners.put(k, stateOwner);
-            } else {
-                stateOwner.acceptAsNextSequence(seq);
             }
         } else {
             // for minor version client id derived from session

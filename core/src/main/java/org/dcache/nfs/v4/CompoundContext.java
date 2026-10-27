@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2023 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +38,7 @@ import org.dcache.nfs.status.RestoreFhException;
 import org.dcache.nfs.v4.nlm.LockManager;
 import org.dcache.nfs.v4.xdr.nfs_impl_id4;
 import org.dcache.nfs.v4.xdr.nfs_resop4;
+import org.dcache.nfs.v4.xdr.seqid4;
 import org.dcache.nfs.v4.xdr.server_owner4;
 import org.dcache.nfs.v4.xdr.stateid4;
 import org.dcache.nfs.v4.xdr.uint64_t;
@@ -100,6 +102,19 @@ public class CompoundContext {
     private final verifier4 _rebootVerifier;
 
     private final nfs_impl_id4 _implId;
+
+    /**
+     * State owners and sequence ids acquired by the currently executed nfsv4.0 operation.
+     */
+    private final List<SequencedOwner> _sequencedOwners = new ArrayList<>(2);
+
+    /**
+     * Cached reply to answer the currently executed nfsv4.0 operation with, if it's a retransmission.
+     */
+    private StateOwner.Reply _replay;
+
+    private record SequencedOwner(StateOwner owner, seqid4 seqid) {
+    }
 
     /**
      * Create context of COUMPOUND request.
@@ -278,6 +293,58 @@ public class CompoundContext {
 
     public void setCache(List<nfs_resop4> cache) {
         _cache = cache;
+    }
+
+    /**
+     * Acquire the sequence of a nfsv4.0 open- or lock-owner for the currently executed operation, see
+     * rfc7530#section-9.1.7. If the request is a retransmission, the operation must return immediately; it will be
+     * answered with the cached reply of the original request. Otherwise, the reply of the operation is recorded as the
+     * owner's last reply once the operation is complete. For minor versions with sessions this is a no-op.
+     *
+     * @param owner the state owner which sequences the operation.
+     * @param seqid the sequence id of the request.
+     * @return true if the request is a retransmission.
+     * @throws ChimeraNFSException if the sequence id is out of order or the request is still in progress.
+     */
+    public boolean acquireSequence(StateOwner owner, seqid4 seqid) throws ChimeraNFSException {
+        if (_minorversion != 0) {
+            return false;
+        }
+
+        StateOwner.Reply reply = owner.acquire(seqid);
+        if (reply != null) {
+            _replay = reply;
+            return true;
+        }
+
+        _sequencedOwners.add(new SequencedOwner(owner, seqid));
+        return false;
+    }
+
+    /**
+     * Complete the sequence of the executed operation acquired by {@link #acquireSequence(StateOwner, seqid4)}. If the
+     * request was a retransmission, the current file handle and stateid are restored and the cached reply is returned.
+     * Otherwise, the result is recorded as the reply of the state owners and returned.
+     *
+     * @param result the result of the executed operation.
+     * @return the reply to send to the client.
+     */
+    public nfs_resop4 completeSequence(nfs_resop4 result) {
+
+        if (_replay != null) {
+            _sequencedOwners.forEach(s -> s.owner().release());
+            _sequencedOwners.clear();
+            _currentInode = _replay.currentInode();
+            _currentStateid = _replay.currentStateid();
+            nfs_resop4 reply = _replay.result();
+            _replay = null;
+            return reply;
+        }
+
+        StateOwner.Reply reply = new StateOwner.Reply(result, _currentInode, _currentStateid);
+        _sequencedOwners.forEach(s -> s.owner().update(s.seqid(), reply));
+        _sequencedOwners.clear();
+        return result;
     }
 
     public stateid4 currentStateid() throws ChimeraNFSException {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2025 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2026 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -77,14 +77,23 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             }
 
             NFS4State openState = client.state(oldStateid);
+
+            // the request is a retransmission if any of the sequence ids matches the last request,
+            // rfc7530#section-9.1.9
+            if (context.acquireSequence(openState.getStateOwner(), _args.oplock.locker.open_owner.open_seqid)) {
+                return;
+            }
+            lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner,
+                    _args.oplock.locker.open_owner.lock_seqid);
+            if (context.acquireSequence(lockOwner, _args.oplock.locker.open_owner.lock_seqid)) {
+                return;
+            }
             Stateids.checkStateId(openState.stateid(), oldStateid);
+
             if (context.getMinorversion() == 0) {
-                openState.getStateOwner().acceptAsNextSequence(_args.oplock.locker.open_owner.open_seqid);
                 client.updateLeaseTime();
             }
 
-            lockOwner = client.getOrCreateOwner(_args.oplock.locker.open_owner.lock_owner.owner,
-                    _args.oplock.locker.open_owner.lock_seqid);
             lock_state = client.createLockState(lockOwner, openState);
 
             // lock states do not requires extra confirmation
@@ -94,11 +103,13 @@ public class OperationLOCK extends AbstractNFSv4Operation {
             oldStateid = Stateids.getCurrentStateidIfNeeded(context, _args.oplock.locker.lock_owner.lock_stateid);
             client = context.getStateHandler().getClientIdByStateId(oldStateid);
             lock_state = client.state(oldStateid);
+            lockOwner = lock_state.getStateOwner();
+            if (context.acquireSequence(lockOwner, _args.oplock.locker.lock_owner.lock_seqid)) {
+                return;
+            }
             Stateids.checkStateId(lock_state.stateid(), oldStateid);
 
-            lockOwner = lock_state.getStateOwner();
             if (context.getMinorversion() == 0) {
-                lockOwner.acceptAsNextSequence(_args.oplock.locker.lock_owner.lock_seqid);
                 client.updateLeaseTime();
             }
         }

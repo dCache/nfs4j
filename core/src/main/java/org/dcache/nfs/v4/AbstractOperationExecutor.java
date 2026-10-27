@@ -74,6 +74,9 @@ public abstract class AbstractOperationExecutor implements OperationExecutor {
         } catch (Exception e) {
             LOGGER.error("Unexpected error: op: {} : {}", nfs_opnum4.toString(args.argop), e.getMessage(), e);
             opResult.setStatus(nfsstat.NFSERR_SERVERFAULT);
+        } finally {
+            // record the reply of nfsv4.0 sequenced operations or replace it with the cached one on retransmission
+            opResult = context.completeSequence(opResult);
         }
         return opResult;
     }
