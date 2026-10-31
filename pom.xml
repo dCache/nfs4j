@@ -97,7 +97,7 @@
         <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.7.3.0</version>
+            <version>4.10.5.0</version>
             <configuration>
                <excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
