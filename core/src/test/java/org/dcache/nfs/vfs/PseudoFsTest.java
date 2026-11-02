@@ -847,4 +847,91 @@ public class PseudoFsTest {
         Inode pseudoRoot = pseudoFs.getRootInode();
         pseudoFs.list(pseudoRoot, DirectoryStream.ZERO_VERIFIER, 0);
     }
+
+    @Test
+    public void testNoGetattrOnAclAllow() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(toSubject(17, 17));
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withAcl()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
+
+        VirtualFileSystem spiedVfs = spy(vfs);
+        doReturn(AclCheckable.ALLOW_ALL).when(spiedVfs).getAclCheckable();
+        vfs.mkdir(fsRoot, "dir", ROOT, 0700);
+
+        pseudoFs = new PseudoFs(spiedVfs, mockedRpc, mockedExportFile);
+        pseudoFs.lookup(fsRoot, "dir");
+
+        // the acl decides, the stat is not required for the unix permission check
+        verify(spiedVfs, never()).getattr(any(Inode.class));
+    }
+
+    @Test
+    public void testNoGetattrOnAllRoot() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(toSubject(17, 17));
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withAllRoot()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
+
+        VirtualFileSystem spiedVfs = spy(vfs);
+        vfs.mkdir(fsRoot, "dir", ROOT, 0700);
+
+        pseudoFs = new PseudoFs(spiedVfs, mockedRpc, mockedExportFile);
+        pseudoFs.lookup(fsRoot, "dir");
+
+        verify(spiedVfs, never()).getattr(any(Inode.class));
+    }
+
+    @Test(expected = AccessException.class)
+    public void testGetattrOnUnixPermissionCheck() throws IOException {
+
+        given(mockedTransport.getRemoteSocketAddress()).willReturn(localAddress);
+        given(mockedAuth.getSubject()).willReturn(toSubject(17, 17));
+        given(mockedRpc.getTransport()).willReturn(mockedTransport);
+        given(mockedRpc.getCredential()).willReturn(mockedAuth);
+
+        FsExport export = new FsExport.FsExportBuilder()
+                .rw()
+                .trusted()
+                .withoutAcl()
+                .withSec(FsExport.Sec.NONE)
+                .build("/");
+
+        given(mockedExportFile.getExport(fsRoot.exportIndex(), localAddress.getAddress())).willReturn(export);
+        given(mockedExportFile.exports(localAddress.getAddress())).willReturn(Stream.of(export));
+
+        VirtualFileSystem spiedVfs = spy(vfs);
+        Inode dir = vfs.mkdir(fsRoot, "dir", ROOT, 0700);
+
+        pseudoFs = new PseudoFs(spiedVfs, mockedRpc, mockedExportFile);
+        try {
+            pseudoFs.lookup(dir, ".");
+        } finally {
+            // the unix permission check needs the stat of the directory
+            verify(spiedVfs).getattr(any(Inode.class));
+        }
+    }
 }

@@ -464,16 +464,14 @@ public class PseudoFs extends ForwardingFileSystem {
     }
 
     private Subject checkAccess(Inode inode, int requestedMask, boolean shouldLog) throws IOException {
-        Stat stat;
-        if (requestedMask == ACE4_READ_ATTRIBUTES) {
-            stat = null; // not required
-        } else {
-            stat = _inner.getattr(innerInode(inode));
-        }
-
-        return checkAccess(inode, stat, requestedMask, shouldLog);
+        // the stat is fetched on demand, if the unix permission check is reached
+        return checkAccess(inode, null, requestedMask, shouldLog);
     }
 
+    /**
+     * Check access to the inode. The {@code stat} is {@code null} if not known by the caller; it's fetched only if
+     * the unix permission check is reached.
+     */
     private Subject checkAccess(Inode inode, Stat stat, int requestedMask, boolean shouldLog) throws IOException {
 
         Subject effectiveSubject = _subject;
@@ -542,6 +540,9 @@ public class PseudoFs extends ForwardingFileSystem {
          * ACE4_READ_ATTRIBUTES as unix always allows it.
          */
         if ((aclMatched == Access.UNDEFINED) && (requestedMask != ACE4_READ_ATTRIBUTES)) {
+            if (stat == null) {
+                stat = _inner.getattr(innerInode(inode));
+            }
             int unixAccessmask = unixToAccessmask(effectiveSubject, stat);
             if ((unixAccessmask & requestedMask) != requestedMask) {
                 if (shouldLog) {
