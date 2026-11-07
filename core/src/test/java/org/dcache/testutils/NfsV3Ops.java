@@ -1,5 +1,6 @@
 package org.dcache.testutils;
 
+import org.dcache.nfs.v3.xdr.READ3args;
 import org.dcache.nfs.v3.xdr.READDIR3args;
 import org.dcache.nfs.v3.xdr.READDIRPLUS3args;
 import org.dcache.nfs.v3.xdr.cookie3;
@@ -7,12 +8,22 @@ import org.dcache.nfs.v3.xdr.cookieverf3;
 import org.dcache.nfs.v3.xdr.count3;
 import org.dcache.nfs.v3.xdr.nfs3_prot;
 import org.dcache.nfs.v3.xdr.nfs_fh3;
+import org.dcache.nfs.v3.xdr.offset3;
 import org.dcache.nfs.v3.xdr.uint32;
 import org.dcache.nfs.v3.xdr.uint64;
 import org.dcache.nfs.vfs.FileHandle;
 import org.dcache.nfs.vfs.Inode;
 
 public class NfsV3Ops {
+    public static READ3args read(Inode file, long offset, int count) {
+        READ3args args = new READ3args();
+        args.file = new nfs_fh3();
+        args.file.data = file.toNfsHandle();
+        args.offset = new offset3(new uint64(offset));
+        args.count = new count3(new uint32(count));
+        return args;
+    }
+
     public static READDIR3args readDir(Inode requestedDirHandle) {
         return readDir(requestedDirHandle, 0, new byte[nfs3_prot.NFS3_COOKIEVERFSIZE], Integer.MAX_VALUE);
     }
