@@ -969,7 +969,8 @@ public class NfsServerV3 extends nfs3_protServerStub {
                 System.arraycopy(b, 0, res.resok.data, 0, res.resok.count.value.value);
             }
 
-            if (res.resok.count.value.value + offset == inodeStat.getSize()) {
+            // a read that starts at or past the end is at eof too (RFC 1813, READ)
+            if (res.resok.count.value.value + offset >= inodeStat.getSize()) {
                 res.resok.eof = true;
             }
 
